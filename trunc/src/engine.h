@@ -1,0 +1,38 @@
+#pragma once
+
+#include <boost/filesystem/path.hpp>
+#include <boost/noncopyable.hpp>
+#include <boost/ptr_container/ptr_map.hpp>
+#include <boost/ptr_container/ptr_vector.hpp>
+#include <boost/shared_ptr.hpp>
+
+#include "location.h"
+#include "project.h"
+#include "pool.h"
+
+namespace hammer
+{
+   class basic_target;
+   class type_registry;
+
+   class engine : boost::noncopyable
+   {
+      public:
+         engine(const boost::filesystem::path& root_path);
+         const project& load_project(const location_t& project_path);
+         void insert(project* p);
+         void insert(basic_target* t);
+         type_registry& get_type_registry() { return *type_registry_; }
+         pool& pstring_pool() { return pool_; }
+         ~engine();
+
+      private:
+         typedef boost::ptr_map<const location_t, project> projects_t;
+
+         boost::filesystem::path root_path_;
+         projects_t projects_;
+         boost::ptr_vector<basic_target> targets_;
+         boost::shared_ptr<type_registry> type_registry_;
+         pool pool_;
+   };
+}

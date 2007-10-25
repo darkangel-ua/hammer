@@ -5,6 +5,7 @@
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/format.hpp>
+#include "msvc_project_generator.h"
 
 using namespace std;                                                                                        
 namespace fs = boost::filesystem;
@@ -27,6 +28,9 @@ int main(int argc, char* argv[])
 
       feature_set build_request;
       vector<basic_target*> result(p.instantiate("test1", build_request));
+
+      project_generators::msvc g(e);
+      g.generate(*result.front());
 	}
    catch (std::exception& e)
 	{

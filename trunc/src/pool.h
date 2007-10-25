@@ -8,7 +8,7 @@ namespace hammer
    {
       public:
          pool();
-         void* malloc(unsigned int size);
+         void* malloc(size_t size);
          ~pool();
       
       private:

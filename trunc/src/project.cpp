@@ -25,7 +25,7 @@ namespace hammer{
       return 0;
    }
 
-   const meta_target* 
+   const meta_target*
    project::select_best_alternative(const std::string& target_name, 
                                     const feature_set& f) const
    {
@@ -38,7 +38,7 @@ namespace hammer{
       if (size(r) != 1)
          throw std::runtime_error("Can't select alternative yet :(");
 
-      return &*r.begin();
+      return r.begin()->second;
    }
 
    std::vector<basic_target*> 

@@ -8,7 +8,7 @@ namespace hammer{
 
    }
    
-   void* pool::malloc(unsigned int size)
+   void* pool::malloc(size_t size)
    {
       char* p = new char[size];
       try

@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\build;&quot;..\..\..\libantlr3c-3.0.1\include&quot;;..\..\..\boost_1_33_1"
+				AdditionalIncludeDirectories="..\..\src\build;&quot;..\..\..\libantlr3c-3.0.1\include&quot;;..\..\..\boost_1_34_1;..\..\..\boost.guid"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -117,7 +117,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\..\src\build;&quot;..\..\..\libantlr3c-3.0.1\include&quot;;..\..\..\boost_1_33_1"
+				AdditionalIncludeDirectories="..\..\src\build;&quot;..\..\..\libantlr3c-3.0.1\include&quot;;..\..\..\boost_1_34_1;..\..\..\boost.guid"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
@@ -260,7 +260,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\main_target.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\meta_target.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\msvc_project_generator.cpp"
 				>
 			</File>
 			<File
@@ -354,7 +362,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\main_target.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\meta_target.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\msvc_project_generator.h"
 				>
 			</File>
 			<File

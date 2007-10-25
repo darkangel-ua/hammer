@@ -81,11 +81,6 @@ namespace hammer{
       projects_.insert(p->location(), p);
    }
    
-   void engine::insert(basic_target* t)
-   {
-      targets_.push_back(t);
-   }
-
    engine::~engine()
    {
 

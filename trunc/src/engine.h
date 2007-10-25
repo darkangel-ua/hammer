@@ -21,9 +21,10 @@ namespace hammer
          engine(const boost::filesystem::path& root_path);
          const project& load_project(const location_t& project_path);
          void insert(project* p);
-         void insert(basic_target* t);
          type_registry& get_type_registry() { return *type_registry_; }
          pool& pstring_pool() { return pool_; }
+         const location_t& root() const { return root_path_; }
+         
          ~engine();
 
       private:

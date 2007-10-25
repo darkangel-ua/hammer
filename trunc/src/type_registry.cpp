@@ -20,7 +20,7 @@ namespace hammer{
    {
       types_t::const_iterator i = types_.find(name);
       if (i != types_.end())
-         return &*i;
+         return i->second;
       else
          throw runtime_error("Can't find type with name '" + name + "'");
    }
@@ -30,9 +30,9 @@ namespace hammer{
       string s_name(name.to_string());
       for(types_t::const_iterator i = types_.begin(), last = types_.end(); i != last; ++i)
       {
-         string::size_type p = s_name.rfind(i->suffix().c_str());
+         string::size_type p = s_name.rfind(i->second->suffix().c_str());
          if (p != string::npos)
-            return &*i;
+            return i->second;
       }
 
       throw std::runtime_error("Can't resolve type from target name '" + name.to_string() + '\'');

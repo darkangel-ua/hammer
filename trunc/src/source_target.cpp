@@ -4,15 +4,14 @@
 
 namespace hammer{
 
-   source_target::source_target(const meta_target* mt, const pstring& name, const type* t)
-      : meta_target_(mt), name_(name), type_(t)
+   source_target::source_target(const meta_target* mt, const pstring& name, const hammer::type* t)
+      : basic_target(t), meta_target_(mt), name_(name)
    {
    }
 
    void* source_target::operator new(size_t size, engine* e)
    {
-      void* m = new char[size];
-      e->insert(static_cast<basic_target*>(m));
+      void* m = e->pstring_pool().malloc(size);
       return m;
    }
 }

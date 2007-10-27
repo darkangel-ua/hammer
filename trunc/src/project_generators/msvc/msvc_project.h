@@ -1,6 +1,9 @@
 #pragma once
 
 #include "../../location.h"
+#include <vector>
+#include <utility>
+#include "../../feature_set.h"
 
 namespace hammer
 {
@@ -12,12 +15,13 @@ namespace hammer
       class msvc_project
       {
          public:
-            msvc_project(const main_target* t);
             void add_variant(const main_target* t, 
-                             const feature_set* props);
+                             const feature_set& props);
+            void generate();
 
          private:
-            const main_target* t_;
+            typedef std::vector<std::pair<const main_target*, feature_set> > variants_t;
+            variants_t variants_;
       };
    }
 }

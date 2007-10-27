@@ -9,7 +9,7 @@
 using namespace std;
 
 namespace hammer{
-   meta_target::meta_target(project* p, const pstring& name, const type* t) 
+   meta_target::meta_target(hammer::project* p, const pstring& name, const type* t) 
       : project_(p), name_(name), type_(t)
    {
 
@@ -32,17 +32,17 @@ namespace hammer{
          }
          else
          {
-            const type* tp = project_->get_engine()->get_type_registry().resolve_from_target_name(*i, build_request);
-            source_target* st = new(project_->get_engine()) source_target(this, *i, tp);
+            const type* tp = project_->engine()->get_type_registry().resolve_from_target_name(*i, build_request);
+            source_target* st = new(project_->engine()) source_target(this, *i, tp);
             sources.push_back(st);
          }
       }
 
-      main_target* mt = new(project_->get_engine()->targets_pool()) 
+      main_target* mt = new(project_->engine()->targets_pool()) 
                            main_target(this, 
                                        name(), 
-                                       project_->get_engine()->get_type_registry().resolve(type_, build_request), 
-                                       project_->get_engine()->targets_pool());
+                                       project_->engine()->get_type_registry().resolve(type_, build_request), 
+                                       project_->engine()->targets_pool());
       mt->sources(sources);
       
       vector<basic_target*> result;

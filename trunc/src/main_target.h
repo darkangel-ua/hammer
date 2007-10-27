@@ -16,9 +16,10 @@ namespace hammer
          main_target(const meta_target* mt, const pstring& name, const hammer::type* t, pool& p);
          void sources(const std::vector<basic_target*>& srcs);
          const sources_t& sources() const { return sources_; }
-                          
+         const hammer::meta_target* meta_target() const { return mt_; }
+
       private:
-         const meta_target* mt_;
+         const hammer::meta_target* mt_;
          sources_t sources_;
    };
 }

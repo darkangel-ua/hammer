@@ -26,7 +26,7 @@ namespace hammer
          void add_target(std::auto_ptr<meta_target> t);
          const targets_t& targets() const { return targets_; }
          const meta_target* find_target(const pstring& name) const;
-         engine* get_engine() const { return engine_; }
+         hammer::engine* engine() const { return engine_; }
 
          std::vector<basic_target*> instantiate(const std::string& target_name, const feature_set& build_request) const;
 
@@ -34,7 +34,7 @@ namespace hammer
          pstring id_;
          location_t location_;
          targets_t targets_;
-         engine* engine_;
+         hammer::engine* engine_;
          const meta_target* 
          select_best_alternative(const std::string& target_name, 
                                  const feature_set& f) const;

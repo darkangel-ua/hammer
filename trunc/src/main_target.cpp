@@ -3,7 +3,7 @@
 
 namespace hammer{
 
-   main_target::main_target(const meta_target* mt, const pstring& name, const hammer::type* t, pool& p) 
+   main_target::main_target(const hammer::meta_target* mt, const pstring& name, const hammer::type* t, pool& p) 
       : basic_target(name, t), mt_(mt) 
    {
    }

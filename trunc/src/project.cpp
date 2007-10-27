@@ -7,7 +7,7 @@ using namespace std;
 namespace hammer{
 
    project::project(const pstring& id, 
-                    const location_t& location, engine* e)
+                    const location_t& location, hammer::engine* e)
                    :
                     id_(id), location_(location), engine_(e)
    {

@@ -30,7 +30,8 @@ int main(int argc, char* argv[])
       vector<basic_target*> result(p.instantiate("test1", build_request));
 
       project_generators::msvc g(e);
-      g.generate(*result.front());
+      g.add_variant(result, build_request);
+      g.generate();
 	}
    catch (std::exception& e)
 	{

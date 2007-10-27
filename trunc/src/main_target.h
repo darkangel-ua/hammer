@@ -7,17 +7,18 @@
 
 namespace hammer
 {
+   class meta_target;
    class main_target : public basic_target
    {
       public:
          typedef std::vector<basic_target*> sources_t;
 
-         main_target(const pstring& name, const hammer::type* t);
-         void* operator new(size_t size) { return new char[size]; }
+         main_target(const meta_target* mt, const pstring& name, const hammer::type* t, pool& p);
          void sources(const std::vector<basic_target*>& srcs);
          const sources_t& sources() const { return sources_; }
-
+                          
       private:
+         const meta_target* mt_;
          sources_t sources_;
    };
 }

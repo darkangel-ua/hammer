@@ -20,9 +20,13 @@ namespace hammer{
       t.release();
    }
 
-   meta_target* project::find_target(const pstring& name) const
+   const meta_target* project::find_target(const pstring& name) const
    {
-      return 0;
+      targets_t::const_iterator i = targets_.find(name);
+      if (i == targets_.end())
+         return 0;
+      else
+         return i->second;
    }
 
    const meta_target*

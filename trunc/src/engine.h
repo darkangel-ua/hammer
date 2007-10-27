@@ -23,6 +23,7 @@ namespace hammer
          void insert(project* p);
          type_registry& get_type_registry() { return *type_registry_; }
          pool& pstring_pool() { return pool_; }
+         pool& targets_pool() { return pool_; }
          const location_t& root() const { return root_path_; }
          
          ~engine();
@@ -32,7 +33,6 @@ namespace hammer
 
          boost::filesystem::path root_path_;
          projects_t projects_;
-         boost::ptr_vector<basic_target> targets_;
          boost::shared_ptr<type_registry> type_registry_;
          pool pool_;
    };

@@ -4,6 +4,7 @@
 #include "engine.h"
 #include "type_registry.h"
 #include "source_target.h"
+#include "main_target.h"
 
 using namespace std;
 
@@ -24,10 +25,10 @@ namespace hammer{
       vector<basic_target*> sources;
       for(targets_t::const_iterator i = targets_.begin(), last = targets_.end(); i != last; ++i)
       {
-         if (meta_target* t = project_->find_target(*i))
+         if (const meta_target* t = project_->find_target(*i))
          {
             vector<basic_target*> r(t->instantiate(build_request));
-            sources.insert(result.end(), r.begin(), r.end());
+            sources.insert(sources.end(), r.begin(), r.end());
          }
          else
          {
@@ -37,8 +38,16 @@ namespace hammer{
          }
       }
 
-      main_target* mt = new main_target(name(), type());
+      main_target* mt = new(project_->get_engine()->targets_pool()) 
+                           main_target(this, 
+                                       name(), 
+                                       project_->get_engine()->get_type_registry().resolve(type_, build_request), 
+                                       project_->get_engine()->targets_pool());
       mt->sources(sources);
+      
+      vector<basic_target*> result;
+      result.push_back(mt);
+      
       return result;
    }
 }

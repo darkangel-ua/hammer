@@ -29,6 +29,8 @@ namespace hammer{
       type_registry_->insert(h);
       auto_ptr<type> lib(new type(types::LIB));
       type_registry_->insert(lib);
+      auto_ptr<type> shared_lib(new type(types::SHARED_LIB));
+      type_registry_->insert(shared_lib);
       auto_ptr<type> exe(new type(types::EXE));
       type_registry_->insert(exe);
    }

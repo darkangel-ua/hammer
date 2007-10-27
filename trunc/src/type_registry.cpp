@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "type_registry.h"
 #include "type.h"
+#include "types.h"
 
 using namespace std;
 
@@ -23,6 +24,17 @@ namespace hammer{
          return i->second;
       else
          throw runtime_error("Can't find type with name '" + name + "'");
+   }
+
+   const type* type_registry::resolve(const type* t, const feature_set& fs) const
+   {
+      if (t == resolve_from_name(types::EXE.name()))
+         return t;
+
+      if (t == resolve_from_name(types::LIB.name()))
+         return resolve_from_name(types::SHARED_LIB.name());
+
+      return t;
    }
 
    const type* type_registry::resolve_from_target_name(const pstring& name, const feature_set&) const

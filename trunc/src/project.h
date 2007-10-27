@@ -25,7 +25,7 @@ namespace hammer
          const pstring& id() const { return id_; }
          void add_target(std::auto_ptr<meta_target> t);
          const targets_t& targets() const { return targets_; }
-         meta_target* find_target(const pstring& name) const;
+         const meta_target* find_target(const pstring& name) const;
          engine* get_engine() const { return engine_; }
 
          std::vector<basic_target*> instantiate(const std::string& target_name, const feature_set& build_request) const;

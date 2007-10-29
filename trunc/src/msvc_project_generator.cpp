@@ -52,7 +52,7 @@ namespace hammer{ namespace project_generators{
                                   const feature_set& props)
    {
       projects_t::iterator p = projects_.find(t->name());
-      if (p != projects_.end())
+      if (p == projects_.end())
       {
          auto_ptr<msvc_project> new_project(new msvc_project);
          new_project->add_variant(t, props);
@@ -83,5 +83,8 @@ namespace hammer{ namespace project_generators{
       for(impl_t::target_variants_t::const_iterator i = impl_->target_variants_.begin(), last = impl_->target_variants_.end(); i != last; ++i)
          for(vector<basic_target*>::const_iterator j = i->first.begin(), j_last = i->first.end(); j != j_last; ++j)
             impl_->walk_over_targets(dynamic_cast<const main_target*>(*j), i->second);
+   
+      for(impl_t::projects_t::iterator i = impl_->projects_.begin(), last = impl_->projects_.end(); i != last; ++i)
+         i->second->generate();
    }
 }}

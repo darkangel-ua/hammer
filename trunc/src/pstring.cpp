@@ -43,7 +43,7 @@ namespace hammer{
 
    std::string pstring::to_string() const
    {
-      return std::string(s_);
+      return std::string(s_, s_ + size_);
    }
 
 }

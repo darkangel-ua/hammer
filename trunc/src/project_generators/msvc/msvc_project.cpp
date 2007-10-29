@@ -5,6 +5,7 @@
 #include "../../project.h"
 #include "../../engine.h"
 #include <boost/filesystem/fstream.hpp>
+#include <boost/filesystem/convenience.hpp>
 
 using namespace std;
 
@@ -26,6 +27,8 @@ namespace hammer{ namespace project_generators{
                      mt.meta_target()->project()->location() /
                      "vc80" / (mt.name().to_string() + ".vcproj");
       
-      boost::filesystem::fstream f(l);
+      create_directories(l.branch_path());
+      boost::filesystem::ofstream f(l, std::ios_base::trunc);
+      f << "this is a test"; 
    }
 }}

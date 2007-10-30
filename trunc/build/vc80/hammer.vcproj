@@ -186,6 +186,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\feature_def.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\feature_registry.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\feature_set.cpp"
 				>
 			</File>
@@ -335,6 +343,14 @@
 			</File>
 			<File
 				RelativePath="..\..\src\feature.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\feature_def.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\feature_registry.h"
 				>
 			</File>
 			<File

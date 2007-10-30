@@ -5,11 +5,9 @@ using namespace std;
 
 namespace hammer{
 
-   feature::feature(const string& name, const string& value, 
-                    feature_type::value t)
+   feature::feature(const feature_def* def, const pstring& value)
                    : 
-                    name_(name), value_(value), type_(t)
+                    def_(def), value_(value)
    {
-
    }
 }

@@ -1,21 +1,16 @@
 #pragma once
-#include <string>
+#include "pstring.h"
 
 namespace hammer
 {
-   struct feature_type
-   {
-      typedef enum {path, free, dependency} value;
-   };
-
+   class feature_def;
    class feature
    {
       public:
-         feature(const std::string& name, const std::string& value, feature_type::value t);
+         feature(const feature_def* def, const pstring& value);
       
       private:
-         std::string name_;
-         std::string value_;
-         feature_type::value type_;
+         const feature_def* def_;
+         pstring value_;
    };
 }

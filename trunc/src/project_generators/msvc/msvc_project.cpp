@@ -14,7 +14,7 @@ namespace hammer{ namespace project_generators{
    void msvc_project::add_variant(const main_target* t, 
                                   const feature_set& props)
    {
-      variants_.push_back(make_pair(t, props));
+      variants_.push_back(make_pair(t, &props));
    }
 
    void msvc_project::generate()

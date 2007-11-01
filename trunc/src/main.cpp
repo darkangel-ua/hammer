@@ -2,7 +2,7 @@
 #include <iostream>
 #include "engine.h"
 #include "feature_set.h"
-
+#include "feature_registry.h"
 #include <boost/filesystem/operations.hpp>
 #include <boost/format.hpp>
 #include "msvc_project_generator.h"
@@ -26,11 +26,12 @@ int main(int argc, char* argv[])
       cout << (boost::format("Loaded project id '%s' location '%s'\n") % p.id() % p.location().string());
       cout << "targets size " << p.targets().size();
 
-      feature_set build_request;
-      vector<basic_target*> result(p.instantiate("test1", build_request));
+      feature_set* build_request = e.feature_registry().make_set();
+      build_request->insert("variant", "debug");
+      vector<basic_target*> result(p.instantiate("test1", *build_request));
 
       project_generators::msvc g(e);
-      g.add_variant(result, build_request);
+      g.add_variant(result, *build_request);
       g.generate();
 	}
    catch (std::exception& e)
@@ -40,7 +41,7 @@ int main(int argc, char* argv[])
 	}
    catch(...)
    {
-      cout << "Unkonown exception \n\n";		
+      cout << "Unknown exception \n\n";		
       return -1;
    }
 

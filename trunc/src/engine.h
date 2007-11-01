@@ -14,6 +14,7 @@ namespace hammer
 {
    class basic_target;
    class type_registry;
+   class feature_registry;
 
    class engine : boost::noncopyable
    {
@@ -25,6 +26,7 @@ namespace hammer
          pool& pstring_pool() { return pool_; }
          pool& targets_pool() { return pool_; }
          const location_t& root() const { return root_path_; }
+         hammer::feature_registry& feature_registry() { return *feature_registry_; }
          
          ~engine();
 
@@ -35,5 +37,6 @@ namespace hammer
          projects_t projects_;
          boost::shared_ptr<type_registry> type_registry_;
          pool pool_;
+         hammer::feature_registry* feature_registry_;
    };
 }

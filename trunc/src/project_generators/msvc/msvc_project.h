@@ -20,7 +20,7 @@ namespace hammer
             void generate();
 
          private:
-            typedef std::vector<std::pair<const main_target*, feature_set> > variants_t;
+            typedef std::vector<std::pair<const main_target*, const feature_set*> > variants_t;
             variants_t variants_;
       };
    }

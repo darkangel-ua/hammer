@@ -1,19 +1,25 @@
 #pragma once
 
 #include "feature_def.h"
+#include <map>
 
 namespace hammer
 {
+   class feature_set;
+   class feature;
+   class pool;
    class feature_registry
    {
       public:
-         void add_def(std::auto_ptr<feature_def> def);
-         feature_registry();
+         struct impl_t;
+         feature_registry(pool* p);
+         void add_def(const feature_def& def);
+         feature_set* make_set();
+         feature* create_feature(const char* name, const char* value);
+
          ~feature_registry();
 
       private:
-         typedef boost::ptr_map<const std::string, feature_def> defs_t;
-
-         defs_t defs_;
+         impl_t* impl_;
    };
 }

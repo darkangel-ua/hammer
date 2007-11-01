@@ -4,6 +4,7 @@
 #include "type_registry.h"
 #include "types.h"
 #include "basic_target.h"
+#include "feature_registry.h"
 
 extern "C"
 {
@@ -20,7 +21,7 @@ using namespace std;
 namespace hammer{
 
    engine::engine(const boost::filesystem::path& root_path) 
-      : root_path_(root_path)
+      : root_path_(root_path), feature_registry_(0)
    {
       type_registry_.reset(new type_registry);
       auto_ptr<type> cpp(new type(types::CPP));
@@ -33,6 +34,10 @@ namespace hammer{
       type_registry_->insert(shared_lib);
       auto_ptr<type> exe(new type(types::EXE));
       type_registry_->insert(exe);
+
+      auto_ptr<hammer::feature_registry> fr(new hammer::feature_registry(&pstring_pool()));
+
+      feature_registry_ = fr.release();
    }
 
    static void parse_file(const char* file_name, hammer_walker_context* ctx)
@@ -85,6 +90,6 @@ namespace hammer{
    
    engine::~engine()
    {
-
+      delete feature_registry_;
    }
 }

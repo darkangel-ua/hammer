@@ -26,7 +26,7 @@ namespace hammer{ namespace project_generators{
                              const feature_set& props);
       
       const engine& engine_;
-      typedef vector<pair<vector<basic_target*>, feature_set> > target_variants_t;
+      typedef vector<pair<vector<basic_target*>, const feature_set*> > target_variants_t;
       typedef boost::ptr_map<const pstring, msvc_project> projects_t;
 
       target_variants_t target_variants_;
@@ -75,14 +75,14 @@ namespace hammer{ namespace project_generators{
    void msvc::add_variant(const std::vector<basic_target*>& targets, 
                           const feature_set& variant)
    {
-      impl_->target_variants_.push_back(make_pair(targets, variant));
+      impl_->target_variants_.push_back(make_pair(targets, &variant));
    }
 
    void msvc::generate()
    {
       for(impl_t::target_variants_t::const_iterator i = impl_->target_variants_.begin(), last = impl_->target_variants_.end(); i != last; ++i)
          for(vector<basic_target*>::const_iterator j = i->first.begin(), j_last = i->first.end(); j != j_last; ++j)
-            impl_->walk_over_targets(dynamic_cast<const main_target*>(*j), i->second);
+            impl_->walk_over_targets(dynamic_cast<const main_target*>(*j), *i->second);
    
       for(impl_t::projects_t::iterator i = impl_->projects_.begin(), last = impl_->projects_.end(); i != last; ++i)
          i->second->generate();

@@ -3,8 +3,12 @@
 
 namespace hammer{
 
-   main_target::main_target(const hammer::meta_target* mt, const pstring& name, const hammer::type* t, pool& p) 
-      : basic_target(name, t), mt_(mt) 
+   main_target::main_target(const hammer::meta_target* mt, 
+                            const pstring& name, 
+                            const hammer::type* t, 
+                            const feature_set* props,
+                            pool& p) 
+      : basic_target(name, t), mt_(mt), properties_(props) 
    {
    }
 

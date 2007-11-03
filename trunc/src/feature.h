@@ -9,7 +9,9 @@ namespace hammer
    {
       public:
          feature(const feature_def* def, const pstring& value);
-      
+         const feature_def* def() const { return def_; }
+         const pstring& value() const { return value_; }
+
       private:
          const feature_def* def_;
          pstring value_;

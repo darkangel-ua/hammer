@@ -52,11 +52,16 @@ namespace hammer{
 
    const type* type_registry::resolve_from_suffix(const char* first, const char* last) const
    {
-      types_by_suffix_t::const_iterator i = types_by_suffix_.find(string(first, last));
+      return resolve_from_suffix(string(first, last));
+   }
+
+   const type* type_registry::resolve_from_suffix(const std::string& suffix) const
+   {
+      types_by_suffix_t::const_iterator i = types_by_suffix_.find(suffix);
       if (i != types_by_suffix_.end())
          return i->second;
       else
-         throw runtime_error("Can't find type with suffix '" + string(first, last) + "'");
+         throw runtime_error("Can't find type with suffix '" + suffix + "'");
    }
 
    void type_registry::insert(std::auto_ptr<type>& t)

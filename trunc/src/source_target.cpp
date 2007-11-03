@@ -4,8 +4,8 @@
 
 namespace hammer{
 
-   source_target::source_target(const meta_target* mt, const pstring& name, const hammer::type* t)
-      : basic_target(name, t), meta_target_(mt)
+   source_target::source_target(const main_target* mt, const pstring& name, const hammer::type* t)
+      : basic_target(name, t), main_target_(mt)
    {
    }
 

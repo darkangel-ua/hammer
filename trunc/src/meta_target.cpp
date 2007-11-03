@@ -22,6 +22,13 @@ namespace hammer{
 
    std::vector<basic_target*> meta_target::instantiate(const feature_set& build_request) const
    {
+       main_target* mt = new(project_->engine()->targets_pool()) 
+                           main_target(this, 
+                                       name(), 
+                                       project_->engine()->get_type_registry().resolve(type_, build_request), 
+                                       &build_request,
+                                       project_->engine()->targets_pool());
+
       vector<basic_target*> sources;
       for(targets_t::const_iterator i = targets_.begin(), last = targets_.end(); i != last; ++i)
       {
@@ -33,16 +40,11 @@ namespace hammer{
          else
          {
             const type* tp = project_->engine()->get_type_registry().resolve_from_target_name(*i, build_request);
-            source_target* st = new(project_->engine()) source_target(this, *i, tp);
+            source_target* st = new(project_->engine()) source_target(mt, *i, tp);
             sources.push_back(st);
          }
       }
 
-      main_target* mt = new(project_->engine()->targets_pool()) 
-                           main_target(this, 
-                                       name(), 
-                                       project_->engine()->get_type_registry().resolve(type_, build_request), 
-                                       project_->engine()->targets_pool());
       mt->sources(sources);
       
       vector<basic_target*> result;

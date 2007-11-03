@@ -11,10 +11,12 @@ namespace hammer
    class feature_set : public boost::noncopyable
    {
       public:
-         feature_set(feature_registry* fr);
          typedef std::vector<feature*> features_t;
+
+         feature_set(feature_registry* fr);
          void insert(feature* f);
          void insert(const char* name, const char* value);
+         const feature* get(const char* name) const; // throw if not found
 
       private:
          feature_registry* fr_;

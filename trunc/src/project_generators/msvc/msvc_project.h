@@ -12,6 +12,7 @@ namespace hammer
    class feature_set;
    class main_target;
    class source_target;
+   class basic_target;
    class type;
 
    namespace project_generators
@@ -55,7 +56,7 @@ namespace hammer
                            const std::string& name,
                            const std::string& uid) : types_(t), name(name), uid(uid) {}
                   std::ostream& write(std::ostream& s) const;
-                  bool accept(const type* t);
+                  bool accept(const type* t) const;
 
                private:
                   types_t types_;
@@ -81,6 +82,8 @@ namespace hammer
             void write_header(std::ostream& s);
             void write_configurations(std::ostream& s);
             void write_files(std::ostream& s);
+            void gether_files();
+            void insert_into_files(const basic_target* t, const feature_set* v);
       };
    }
 }

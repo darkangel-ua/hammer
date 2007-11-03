@@ -125,6 +125,7 @@ void msvc_project::generate()
       throw runtime_error("Can't generate empty msvc project");
 
    fill_filters();
+   gether_files();
 
    const main_target& mt = *variants_.front().target;
    location_t l = mt.meta_target()->project()->engine()->root() / 
@@ -138,4 +139,38 @@ void msvc_project::generate()
    write_files(f);
    write_bottom(f);
 }
+
+
+bool msvc_project::filter_t::accept(const type* t) const
+{
+   return false;
+}
+
+void msvc_project::insert_into_files(const basic_target* t, 
+                                     const feature_set* v)
+{
+   const type* tp = t->type();
+   for(files_t::iterator fi = files_.begin(), flast = files_.end(); fi != flast; ++fi)
+   {
+      if (fi->accept(tp))
+      {
+         return;
+      }
+   }
+   
+   throw runtime_error("[msvc_project] Don't know what to do with target '" + t->name().to_string() + "'");
+}
+
+void msvc_project::gether_files()
+{
+   for(variants_t::const_iterator i = variants_.begin(), last = variants_.end(); i != last; ++i)
+   {
+      for(main_target::sources_t::const_iterator mi = i->target->sources().begin(), 
+         mlast = i->target->sources().end(); mi != mlast; ++mi)
+      {
+         insert_into_files(*mi, i->properties);
+      }
+   }
+}
+
 }}

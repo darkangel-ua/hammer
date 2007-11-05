@@ -50,13 +50,14 @@ namespace hammer
 
                   std::string name;
                   std::string uid;
-                  std::vector<file_with_cfgs_t> files_;
+                  std::map<const source_target*, file_with_cfgs_t> files_;
 
                   filter_t(const types_t& t, 
                            const std::string& name,
                            const std::string& uid) : types_(t), name(name), uid(uid) {}
                   std::ostream& write(std::ostream& s) const;
                   bool accept(const type* t) const;
+                  void insert(const source_target* t, const feature_set* v);
 
                private:
                   types_t types_;

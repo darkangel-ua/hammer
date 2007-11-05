@@ -5,6 +5,7 @@
 #include "../../project.h"
 #include "../../engine.h"
 #include "../../type_registry.h"
+#include "../../types.h"
 #include "../../feature.h"
 #include "../../source_target.h"
 
@@ -92,7 +93,7 @@ void msvc_project::file_with_cfgs_t::write(std::ostream& s) const
 {
    s << "         <File\n"
         "            RelativePath=\"" << target->name() << "\"\n"
-        "         </File>\n";
+        "         />\n";
 
 }
 
@@ -103,8 +104,8 @@ std::ostream& msvc_project::filter_t::write(std::ostream& s) const
         "            Filter=\"cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx\"\n"
         "            UniqueIdentifier=\"" << uid << "\">\n";
 
-   for(vector<file_with_cfgs_t>::const_iterator i = files_.begin(), last = files_.end(); i != last; ++i)
-      i->write(s);
+   for(map<const source_target*, file_with_cfgs_t>::const_iterator i = files_.begin(), last = files_.end(); i != last; ++i)
+      i->second.write(s);
 
    s << "         </Filter>\n";
    return s;
@@ -143,7 +144,21 @@ void msvc_project::generate()
 
 bool msvc_project::filter_t::accept(const type* t) const
 {
+   for(types_t::const_iterator i = types_.begin(), last = types_.end(); i != last; ++i)
+   {
+      if (*i == t)
+         return true;
+   }
+
    return false;
+}
+
+void msvc_project::filter_t::insert(const source_target* t, const feature_set* v)
+{
+   file_with_cfgs_t& fwc = files_[t];
+   fwc.target = t;
+   file_configuration& fc = fwc.file_config[v];
+   fc.exclude_from_build = false;
 }
 
 void msvc_project::insert_into_files(const basic_target* t, 
@@ -154,6 +169,7 @@ void msvc_project::insert_into_files(const basic_target* t,
    {
       if (fi->accept(tp))
       {
+         fi->insert(&dynamic_cast<const source_target&>(*t), v);
          return;
       }
    }
@@ -163,12 +179,17 @@ void msvc_project::insert_into_files(const basic_target* t,
 
 void msvc_project::gether_files()
 {
+   engine* e = variants_.front().target->meta_target()->project()->engine();
+
+   const type* shared_lib = e->get_type_registry().resolve_from_name(types::SHARED_LIB.name());
+
    for(variants_t::const_iterator i = variants_.begin(), last = variants_.end(); i != last; ++i)
    {
       for(main_target::sources_t::const_iterator mi = i->target->sources().begin(), 
          mlast = i->target->sources().end(); mi != mlast; ++mi)
       {
-         insert_into_files(*mi, i->properties);
+         if ((**mi).type() != shared_lib)
+            insert_into_files(*mi, i->properties);
       }
    }
 }

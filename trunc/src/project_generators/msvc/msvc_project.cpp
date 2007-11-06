@@ -23,13 +23,12 @@ static std::string make_variant_name(const feature_set& fs)
    return f->value().to_string();
 }
 
-void msvc_project::add_variant(const main_target* t, 
-                               const feature_set& props)
+void msvc_project::add_variant(const main_target* t)
 {
    variant v;
-   v.properties = &props;
+   v.properties = t->properties();
    v.target = t;
-   v.name = make_variant_name(props);
+   v.name = make_variant_name(*t->properties());
    variants_.push_back(v);
 }
 

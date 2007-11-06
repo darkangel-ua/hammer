@@ -21,8 +21,7 @@ namespace hammer
       {
          public:
             msvc_project();
-            void add_variant(const main_target* t, 
-                             const feature_set& props);
+            void add_variant(const main_target* t);
             void generate();
 
          private:
@@ -62,7 +61,6 @@ namespace hammer
                private:
                   types_t types_;
             };
-
 
             struct variant
             {

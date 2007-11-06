@@ -55,7 +55,7 @@ namespace hammer{ namespace project_generators{
       if (p == projects_.end())
       {
          auto_ptr<msvc_project> new_project(new msvc_project);
-         new_project->add_variant(t, props);
+         new_project->add_variant(t);
          projects_.insert(t->name(), new_project.get());
          new_project.release();
       }

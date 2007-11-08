@@ -5,7 +5,6 @@
 #include "feature_registry.h"
 #include <boost/filesystem/operations.hpp>
 #include <boost/format.hpp>
-#include "msvc_project_generator.h"
 
 using namespace std;                                                                                        
 namespace fs = boost::filesystem;
@@ -29,10 +28,6 @@ int main(int argc, char* argv[])
       feature_set* build_request = e.feature_registry().make_set();
       build_request->insert("variant", "debug");
       vector<basic_target*> result(p.instantiate("test1", *build_request));
-
-      project_generators::msvc g(e);
-      g.add_variant(result, *build_request);
-      g.generate();
 	}
    catch (std::exception& e)
 	{

@@ -22,7 +22,7 @@ jam_rule_invoke :	ID ID (':' jam_rule_args?)* ';'	;
 jam_rule_invoke1	:	'[' jam_rule_invoke ']' ;
 jam_rule_args : (ID | jam_var_expand)+;
 jam_var_expand : '$' '(' ID ')';
-jam_var_stmt :	'local'? ID ASSIGN jam_expr ;
+jam_var_stmt :	'local'? (ID ASSIGN | '?=' | '+=') jam_expr ;
 jam_expr : ID | jam_var_expand | jam_rule_invoke1 ;
 jam_if :	'if' jam_cond_expr jam_block ;
 jam_cond_expr 	:	'!' jam_cond | jam_cond_and_or | '(' jam_cond ')';
@@ -38,12 +38,16 @@ jam_cond	:	jam_expr |
                   
 
 jam_block :	 '{' jam_some_construct* '}' ;
+jam_rule : 'rule' ID ('(' jam_rule_args_def? ')')? jam_block ;
+
+jam_rule_args_def :	 jam_rule_arg_def (':' jam_rule_arg_def)* ;
+jam_rule_arg_def 	:	 ID ('*' | '?')? ;
 
 ASSIGN :	'=' ;
-ID	:	('a'..'z' | 'A'..'Z' | ('0'..'9') | '.' | '-' | '_')+  | JAM_STRING ; 
+ID	:	('a'..'z' | 'A'..'Z' | ('0'..'9') | '.' | '-' | '_' | '@' | '/' | '\\')+  | JAM_STRING ; 
 
 fragment 
-JAM_STRING 	: '"' (~('"' | '\n' | '\r'))* '"' ;
+JAM_STRING 	: '"' ('\\"' | ~('"' | '\n' | '\r'))* '"' ;
 
 JAM_COMMENT : '#' (~('\n' | '\r'))* ('\n' | '\r')  { $channel = HIDDEN; };
 WS : (' ' |'\n' |'\r' ) { $channel = HIDDEN; };

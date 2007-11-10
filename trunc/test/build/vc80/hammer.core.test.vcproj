@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\..\boost_1_34_1"
+				AdditionalIncludeDirectories="&quot;..\..\..\..\libantlr3c-3.0.1\include&quot;;..\..\..\..\;..\..\..\..\boost_1_34_1"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="true"
 				ExceptionHandling="2"
@@ -90,6 +90,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				CommandLine="$(TargetPath) $(SolutionDir)../../tests_data"
 			/>
 		</Configuration>
 		<Configuration
@@ -117,7 +118,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\..\..\..\boost_1_34_1"
+				AdditionalIncludeDirectories="&quot;..\..\..\..\libantlr3c-3.0.1\include&quot;;..\..\..\..\;..\..\..\..\boost_1_34_1"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				ExceptionHandling="2"
 				RuntimeLibrary="2"

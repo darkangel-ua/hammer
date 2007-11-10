@@ -245,6 +245,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\parser.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\pool.cpp"
 				>
 			</File>
@@ -356,6 +360,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\meta_target.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\parser.h"
 				>
 			</File>
 			<File

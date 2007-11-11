@@ -1,7 +1,8 @@
 grammar hammer;
 
-options { language = Java; output = AST; k = 2; }
+@lexer::members { boolean some_id_input; }
 
+options { language = Java; output = AST; k = 2; }
 tokens
 {
    PROJECT;
@@ -10,6 +11,7 @@ tokens
    EXE;
    SOURCES;
 }
+
 //project	:	(project_def | meta_target | jam_some_construct)*  -> ^(PROJECT project_def meta_target*);
 project	:	jam_some_construct*;
 meta_target :	lib | exe;
@@ -42,8 +44,8 @@ jam_rule_args_def :	 jam_rule_arg_def (':' jam_rule_arg_def)* ;
 jam_rule_arg_def 	:	 ID ('*' | '?')? ;
 
 ASSIGN :	'=' ;
-ID :	('a'..'z' | 'A'..'Z' | ('0'..'9') | '.' | '-' | 
-		'_' | '@' | '/' | '\\' | '<' | '>' | '*' | ({input.LA(1)!=' '}? '(') | ({input.LA(-1)!=' '}? ')') )+  |
+ID @init{ some_id_input = false; } :	(('a'..'z' | 'A'..'Z' | ('0'..'9') | '.' | '-' | 
+		'_' | '@' | '/' | '\\' | '<' | '>' | '*' | ({input.LA(1)!=' '}? '(')) { some_id_input = true; } | ({some_id_input==true && input.LA(1)!= ' '}? ')') )+  |
 		JAM_STRING ; 
 
 fragment 

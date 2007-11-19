@@ -25,7 +25,7 @@ namespace hammer
          phammerLexer lexer_;
          pANTLR3_COMMON_TOKEN_STREAM tstream_;
          phammerParser parser_;
-         hammerParser_project_return langAST_;
+         hammerParser_rules_return langAST_;
 
          void reset();
    };

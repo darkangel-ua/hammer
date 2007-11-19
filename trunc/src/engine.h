@@ -39,4 +39,6 @@ namespace hammer
          pool pool_;
          hammer::feature_registry* feature_registry_;
    };
+
+   boost::filesystem::path find_root(const boost::filesystem::path& initial_path);
 }

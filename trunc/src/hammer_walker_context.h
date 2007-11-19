@@ -8,6 +8,8 @@ namespace hammer
 
    struct hammer_walker_context
    {
+      hammer_walker_context() : project_(0) {}
+      
       engine* engine_;
       boost::filesystem::path location_;
       project* project_;

@@ -17,7 +17,7 @@ namespace hammer{
       lexer_ = hammerLexerNew(input_);
       tstream_ = antlr3CommonTokenStreamSourceNew(ANTLR3_SIZE_HINT, lexer_->pLexer->tokSource);
       parser_ = hammerParserNew(tstream_);
-      langAST_ = parser_->project(parser_);
+      langAST_ = parser_->rules(parser_);
       return parser_->pParser->rec->errorCount == 0;
    }
    

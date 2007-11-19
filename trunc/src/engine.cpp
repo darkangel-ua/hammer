@@ -43,7 +43,7 @@ namespace hammer{
       if (!p.parse((root_path_ / project_path / "jamfile").native_file_string().c_str()))
          throw runtime_error("parser errors");
       p.walk(&ctx);
-
+      assert(!ctx.project_);
       return *ctx.project_;
    }
 
@@ -55,5 +55,21 @@ namespace hammer{
    engine::~engine()
    {
       delete feature_registry_;
+   }
+
+   boost::filesystem::path find_root(const boost::filesystem::path& initial_path)
+   {
+      boost::filesystem::path p(initial_path);
+      
+      while(true) 
+      {
+         if (p.empty())
+            throw runtime_error("Can't find boost-build.jam");
+
+         if (exists(p / "boost-build.jam"))
+            return p;
+         
+         p = p.branch_path();
+      };
    }
 }

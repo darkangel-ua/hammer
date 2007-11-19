@@ -1,10 +1,11 @@
-
 # no args
 test ;
 
 # empty arg
 test : ;
 
+test adsd;
 # one string list
 test asd asda ;
 
+project test : requirments <include>test ;

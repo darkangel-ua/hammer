@@ -1,9 +1,9 @@
 grammar hammer;
 
-options { language = Java; output = AST;}
+options { language = C; output = AST;}
 
 rules :	 rule*;
-rule 	:	ID rule_args ';' ;
+rule 	:	ID rule_args ';';
 rule_args  : rule_posible_args? (':' rule_posible_args?)* ;
 rule_posible_args : string_list | 
 		    feature_list | 

@@ -21,6 +21,8 @@ namespace hammer
                                 ti_(ti), is_optional_(is_optional) 
          {}
          
+         const std::type_info& ti() const { return *ti_; }
+
       private:
          const std::type_info* ti_;
          bool is_optional_;
@@ -70,7 +72,7 @@ namespace hammer
          virtual std::auto_ptr<call_resolver_call_arg_base> invoke(args_list_t& args) = 0;
          virtual ~call_resolver_function_base() {}
 
-      private:
+      protected:
          args_t args_;
          call_resolver_arg_def result_def_;
    };
@@ -78,7 +80,8 @@ namespace hammer
    template<typename arg_t>
    struct arg_getter
    {
-      static arg_t get(args_list_t& args, unsigned int idx, boost::mpl::true_)
+      typedef call_resolver_function_base::args_t arg_defs_t;
+      static arg_t get(args_list_t& args, const arg_defs_t& defs, unsigned int idx, boost::mpl::true_)
       {
          if (args.size() <= idx)
             return static_cast<arg_t>(0);
@@ -86,7 +89,7 @@ namespace hammer
             return static_cast<arg_t>(args.at(idx).value());
       }
 
-      static arg_t get(args_list_t& args, unsigned int idx, boost::mpl::false_)
+      static arg_t get(args_list_t& args, const arg_defs_t& defs, unsigned int idx, boost::mpl::false_)
       {
          if (args.size() <= idx)
             throw std::runtime_error("Not enough arguments for function.");
@@ -95,9 +98,9 @@ namespace hammer
          return *static_cast<T*>(args.at(idx).value());
       }
 
-      static arg_t get(args_list_t& args, unsigned int idx)
+      static arg_t get(args_list_t& args, const arg_defs_t& defs, unsigned int idx)
       {
-         return get(args, idx, boost::mpl::bool_<boost::is_pointer<arg_t>::value>());
+         return get(args, defs, idx, boost::mpl::bool_<boost::is_pointer<arg_t>::value>());
       }
    };
 
@@ -120,7 +123,7 @@ namespace hammer
          std::auto_ptr<call_resolver_call_arg_base> invoke(args_list_t& args, boost::mpl::int_<1>)
          {
             typedef boost::mpl::at_c<boost::function_types::parameter_types<T>::type, 0>::type arg0_t;
-            f_(arg_getter<arg0_t>::get(args, 0));
+            f_(arg_getter<arg0_t>::get(args, args_, 0));
             return std::auto_ptr<call_resolver_call_arg_base>();
          }
 

@@ -139,3 +139,15 @@ BOOST_FIXTURE_TEST_CASE(one_required_arg_without_arg_rule, call_resolver_env)
    BOOST_CHECK(parse("one_required_arg_without_arg"));
    BOOST_REQUIRE_THROW(walk(), std::exception); 
 }
+
+static void wrong_arg_type_rule(feature_set& fs)
+{
+   BOOST_FAIL("This is should not execute");  
+}
+
+BOOST_FIXTURE_TEST_CASE(wrong_arg_type, call_resolver_env)
+{       
+   resolver_.insert("wrong_arg_type", boost::function<void (feature_set&)>(&wrong_arg_type_rule));
+   BOOST_CHECK(parse("wrong_arg_type"));
+   BOOST_REQUIRE_THROW(walk(), std::exception); 
+}

@@ -26,5 +26,5 @@ namespace hammer
          size_type size_;
    };
 
-   bool operator < (std::ostream& os, const pstring& rhs);
+   bool operator == (const pstring& lhs, const char* rhs);
 }

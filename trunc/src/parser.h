@@ -1,6 +1,7 @@
 #pragma once
 
 #include <boost/noncopyable.hpp>
+#include <boost/filesystem/path.hpp>
 
 extern "C"
 {
@@ -17,6 +18,7 @@ namespace hammer
       public:
          parser();
          bool parse(const char* file_name);
+		 bool parse(const boost::filesystem::path& file_name);
          void walk(hammer_walker_context* ctx);
          ~parser() { reset(); }
 

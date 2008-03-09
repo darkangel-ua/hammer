@@ -9,6 +9,11 @@ namespace hammer{
       memset(&langAST_, 0, sizeof(langAST_));
    }
 
+   bool parser::parse(const boost::filesystem::path& file_name)
+   {
+		return parse(file_name.string().c_str());
+   }
+
    bool parser::parse(const char* file_name)
    {
       reset();
@@ -18,7 +23,8 @@ namespace hammer{
       tstream_ = antlr3CommonTokenStreamSourceNew(ANTLR3_SIZE_HINT, lexer_->pLexer->tokSource);
       parser_ = hammerParserNew(tstream_);
       langAST_ = parser_->rules(parser_);
-      return parser_->pParser->rec->errorCount == 0;
+      return parser_->pParser->rec->errorCount == 0 && 
+		     lexer_->pLexer->rec->error == 0;
    }
    
    void parser::reset()

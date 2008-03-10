@@ -41,7 +41,8 @@ namespace hammer
          hammer::feature_registry* feature_registry_;
          call_resolver resolver_;
 
-         void project_rule(project* p, std::vector<std::string>& name);
+         void project_rule(project* p, std::vector<pstring>& name);
+         void lib_rule(project*p, std::vector<pstring>& name, std::vector<pstring>& sources);
    };
 
    boost::filesystem::path find_root(const boost::filesystem::path& initial_path);

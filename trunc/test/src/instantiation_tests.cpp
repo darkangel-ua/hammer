@@ -34,3 +34,9 @@ BOOST_FIXTURE_TEST_CASE(named_project, instantiation_tests)
    const project* p = 0;
    BOOST_REQUIRE_NO_THROW(p = &load("named_project"));
 }
+
+BOOST_FIXTURE_TEST_CASE(lib1_project, instantiation_tests)
+{
+   const project* p = 0;
+   BOOST_REQUIRE_NO_THROW(p = &load("lib1_project"));
+}

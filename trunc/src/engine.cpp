@@ -32,7 +32,7 @@ engine::engine(const boost::filesystem::path& root_path)
 
    auto_ptr<hammer::feature_registry> fr(new hammer::feature_registry(&pstring_pool()));
 
-   resolver_.insert("project", boost::function<void (project*, vector<string>&)>(boost::bind(&engine::project_rule, this, _1, _2)));
+   resolver_.insert("project", boost::function<void (project*, vector<pstring>&)>(boost::bind(&engine::project_rule, this, _1, _2)));
 
    feature_registry_ = fr.release();
 }
@@ -44,6 +44,8 @@ const project& engine::load_project(const location_t& project_path)
    ctx.location_ = project_path;
    ctx.project_ = new project(this);
    ctx.project_->location(project_path);
+   ctx.call_resolver_ = &resolver_;
+
    parser p;
    if (!p.parse((root_path_ / project_path / "jamfile").native_file_string().c_str()))
       throw runtime_error("parser errors");
@@ -78,7 +80,13 @@ boost::filesystem::path find_root(const boost::filesystem::path& initial_path)
    };
 }
 
-void engine::project_rule(project* p, std::vector<std::string>& name)
+void engine::project_rule(project* p, std::vector<pstring>& name)
+{
+   assert(name.size() == size_t(1));
+   p->id(name[0]);
+}
+
+void engine::lib_rule(project*p, std::vector<pstring>& name, std::vector<pstring>& sources)
 {
 
 }

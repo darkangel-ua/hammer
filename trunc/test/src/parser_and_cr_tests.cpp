@@ -125,7 +125,7 @@ static void one_required_arg(std::vector<pstring>& a)
    BOOST_REQUIRE_EQUAL(a.size(), size_t(1));
    BOOST_REQUIRE_EQUAL(a[0], "arg1");
 }
-
+ 
 BOOST_FIXTURE_TEST_CASE(one_required_arg_with_arg_rule, call_resolver_env)
 {       
    resolver_.insert("one_required_arg", boost::function<void (vector<pstring>&)>(&one_required_arg));

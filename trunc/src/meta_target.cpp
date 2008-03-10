@@ -15,9 +15,9 @@ namespace hammer{
 
    }
 
-   void meta_target::insert(const pstring& t)
+   void meta_target::insert(const pstring& source)
    {
-      targets_.push_back(t);
+      sources_.push_back(source);
    }
 
    std::vector<basic_target*> meta_target::instantiate(const feature_set& build_request) const
@@ -30,7 +30,7 @@ namespace hammer{
                                        project_->engine()->targets_pool());
 
       vector<basic_target*> sources;
-      for(targets_t::const_iterator i = targets_.begin(), last = targets_.end(); i != last; ++i)
+      for(sources_t::const_iterator i = sources_.begin(), last = sources_.end(); i != last; ++i)
       {
          if (const meta_target* t = project_->find_target(*i))
          {

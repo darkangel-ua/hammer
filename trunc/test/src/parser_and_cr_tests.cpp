@@ -8,7 +8,7 @@
 #include <hammer/src/parser.h>
 #include <hammer/src/hammer_walker_context.h>
 
-static boost::filesystem::path test_data_path;
+boost::filesystem::path test_data_path;
 
 using namespace std;
 namespace fs = boost::filesystem;
@@ -47,7 +47,7 @@ BOOST_FIXTURE_TEST_CASE(parser_test, test_evn)
 
 static bool no_args_test_pass = false;
 
-static void no_args()
+static void no_args(project* p)
 {
    no_args_test_pass = true;   
 }
@@ -72,7 +72,7 @@ struct call_resolver_env
 
 BOOST_FIXTURE_TEST_CASE(no_args_test, call_resolver_env)
 {       
-   resolver_.insert("no_args", boost::function<void()>(&no_args));
+   resolver_.insert("no_args", boost::function<void(project*)>(&no_args));
    BOOST_CHECK(parse("no_args"));
    walk(); 
    BOOST_CHECK(no_args_test_pass);
@@ -84,7 +84,7 @@ BOOST_FIXTURE_TEST_CASE(non_existing_rule_test, call_resolver_env)
    BOOST_REQUIRE_THROW(walk(), std::exception); 
 }
 
-static void one_arg_rule(std::vector<pstring>* a)
+static void one_arg_rule(project* p, std::vector<pstring>* a)
 {
    BOOST_REQUIRE(a);
    BOOST_REQUIRE_EQUAL(a->size(), size_t(1));
@@ -93,12 +93,12 @@ static void one_arg_rule(std::vector<pstring>* a)
 
 BOOST_FIXTURE_TEST_CASE(one_arg_rule_test, call_resolver_env)
 {       
-   resolver_.insert("one_arg", boost::function<void (vector<pstring>*)>(&one_arg_rule));
+   resolver_.insert("one_arg", boost::function<void (project*, vector<pstring>*)>(&one_arg_rule));
    BOOST_CHECK(parse("one_arg"));
    BOOST_REQUIRE_NO_THROW(walk()); 
 }
 
-static void one_optional_arg(std::vector<pstring>* a, bool must_be_null)
+static void one_optional_arg(project* p, std::vector<pstring>* a, bool must_be_null)
 {
    if (must_be_null)
    {
@@ -114,13 +114,13 @@ static void one_optional_arg(std::vector<pstring>* a, bool must_be_null)
 
 BOOST_FIXTURE_TEST_CASE(one_optional_arg_rule, call_resolver_env)
 {       
-   resolver_.insert("one_optional_arg_with_arg", boost::function<void (vector<pstring>*)>(boost::bind(&one_optional_arg, _1, false)));
-   resolver_.insert("one_optional_arg_without_arg", boost::function<void (vector<pstring>*)>(boost::bind(&one_optional_arg, _1, true)));
+   resolver_.insert("one_optional_arg_with_arg", boost::function<void (project*, vector<pstring>*)>(boost::bind(&one_optional_arg, _1, _2, false)));
+   resolver_.insert("one_optional_arg_without_arg", boost::function<void (project*, vector<pstring>*)>(boost::bind(&one_optional_arg, _1, _2, true)));
    BOOST_CHECK(parse("one_optional_arg"));
    BOOST_REQUIRE_NO_THROW(walk()); 
 }
 
-static void one_required_arg(std::vector<pstring>& a)
+static void one_required_arg(project* p, std::vector<pstring>& a)
 {
    BOOST_REQUIRE_EQUAL(a.size(), size_t(1));
    BOOST_REQUIRE_EQUAL(a[0], "arg1");
@@ -128,26 +128,26 @@ static void one_required_arg(std::vector<pstring>& a)
  
 BOOST_FIXTURE_TEST_CASE(one_required_arg_with_arg_rule, call_resolver_env)
 {       
-   resolver_.insert("one_required_arg", boost::function<void (vector<pstring>&)>(&one_required_arg));
+   resolver_.insert("one_required_arg", boost::function<void (project* p, vector<pstring>&)>(&one_required_arg));
    BOOST_CHECK(parse("one_required_arg_with_arg"));
    BOOST_REQUIRE_NO_THROW(walk()); 
 }
 
 BOOST_FIXTURE_TEST_CASE(one_required_arg_without_arg_rule, call_resolver_env)
 {       
-   resolver_.insert("one_required_arg", boost::function<void (vector<pstring>&)>(&one_required_arg));
+   resolver_.insert("one_required_arg", boost::function<void (project*, vector<pstring>&)>(&one_required_arg));
    BOOST_CHECK(parse("one_required_arg_without_arg"));
    BOOST_REQUIRE_THROW(walk(), std::exception); 
 }
 
-static void wrong_arg_type_rule(feature_set& fs)
+static void wrong_arg_type_rule(project* p, feature_set& fs)
 {
    BOOST_FAIL("This is should not execute");  
 }
 
 BOOST_FIXTURE_TEST_CASE(wrong_arg_type, call_resolver_env)
 {       
-   resolver_.insert("wrong_arg_type", boost::function<void (feature_set&)>(&wrong_arg_type_rule));
+   resolver_.insert("wrong_arg_type", boost::function<void (project*, feature_set&)>(&wrong_arg_type_rule));
    BOOST_CHECK(parse("wrong_arg_type"));
    BOOST_REQUIRE_THROW(walk(), std::exception); 
 }

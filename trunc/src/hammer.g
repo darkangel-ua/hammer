@@ -7,6 +7,7 @@ NULL_ARG;
 STRING_LIST;
 FEATURE_LIST;
 }
+
 project :	 rules;
 rules :	 rule*;
 rule 	:	ID rule_args ';' -> ^(RULE_CALL ID rule_args);

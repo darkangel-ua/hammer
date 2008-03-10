@@ -127,6 +127,14 @@ namespace hammer
             return std::auto_ptr<call_resolver_call_arg_base>();
          }
 
+         std::auto_ptr<call_resolver_call_arg_base> invoke(args_list_t& args, boost::mpl::int_<2>)
+         {
+            typedef boost::mpl::at_c<boost::function_types::parameter_types<T>::type, 0>::type arg0_t;
+            typedef boost::mpl::at_c<boost::function_types::parameter_types<T>::type, 1>::type arg1_t;
+            f_(arg_getter<arg0_t>::get(args, args_, 0), arg_getter<arg1_t>::get(args, args_, 1));
+            return std::auto_ptr<call_resolver_call_arg_base>();
+         }
+
          virtual std::auto_ptr<call_resolver_call_arg_base> invoke(args_list_t& args)
          {
             return invoke(args, boost::mpl::int_<boost::function_types::function_arity<T>::value>());

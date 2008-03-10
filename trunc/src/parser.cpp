@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "parser.h"
 
+using namespace std;
+
 namespace hammer{
 
    parser::parser() : input_(0), lexer_(0),
@@ -11,11 +13,17 @@ namespace hammer{
 
    bool parser::parse(const boost::filesystem::path& file_name)
    {
-		return parse(file_name.string().c_str());
+      if (!exists(file_name))
+         throw std::runtime_error("Path does not exists '" + file_name.string() + "'");
+
+      return parse(file_name.string().c_str());
    }
 
    bool parser::parse(const char* file_name)
    {
+      if (!exists(boost::filesystem::path(file_name)))
+         throw std::runtime_error("Path does not exists '" + string(file_name) + "'");
+
       reset();
 
       input_	= antlr3AsciiFileStreamNew((pANTLR3_UINT8)file_name);

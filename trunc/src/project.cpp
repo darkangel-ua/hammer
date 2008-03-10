@@ -11,14 +11,18 @@ namespace hammer{
                    :
                     id_(id), location_(location), engine_(e)
    {
-
    }
 
-   void project::add_target(std::auto_ptr<meta_target> t)
-   {
-      targets_.insert(t->name(), t.get());
-      t.release();
-   }
+  void project::id(const pstring& id)
+  {
+      
+  }
+
+  void project::add_target(std::auto_ptr<meta_target> t)
+  {
+     targets_.insert(t->name(), t.get());
+     t.release();
+  }
 
    const meta_target* project::find_target(const pstring& name) const
    {

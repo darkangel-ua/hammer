@@ -17,12 +17,17 @@ namespace hammer
    {
       public:
          typedef boost::ptr_multimap<const pstring, meta_target> targets_t;
+
          project(const pstring& id,
                  const location_t& location,
                  engine* e);
+
+         project(engine* e) : engine_(e) {};
          
          const location_t& location() const { return location_; }
+         void location(const location_t& l) { location_ = l; } 
          const pstring& id() const { return id_; }
+         void id(const pstring& id);
          void add_target(std::auto_ptr<meta_target> t);
          const targets_t& targets() const { return targets_; }
          const meta_target* find_target(const pstring& name) const;

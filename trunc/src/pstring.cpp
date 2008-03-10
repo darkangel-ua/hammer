@@ -28,6 +28,14 @@ namespace hammer{
       size_ = str.size();
       s_[size_] = 0;
    }
+   
+   pstring& pstring::operator = (const pstring& rhs)
+   {
+      s_ = rhs.s_;
+      size_ = rhs.size_;
+
+      return *this;
+   }
 
    std::ostream& operator << (std::ostream& os, const pstring& v)
    {

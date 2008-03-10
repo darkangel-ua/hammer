@@ -6,6 +6,7 @@
 #include "basic_target.h"
 #include "feature_registry.h"
 #include "parser.h"
+#include <boost/bind.hpp>
 
 using namespace std;
 
@@ -14,62 +15,72 @@ using namespace std;
 
 namespace hammer{
 
-   engine::engine(const boost::filesystem::path& root_path) 
-      : root_path_(root_path), feature_registry_(0)
-   {
-      type_registry_.reset(new type_registry);
-      auto_ptr<type> cpp(new type(types::CPP));
-      type_registry_->insert(cpp);
-      auto_ptr<type> h(new type(types::H));
-      type_registry_->insert(h);
-      auto_ptr<type> lib(new type(types::LIB));
-      type_registry_->insert(lib);
-      auto_ptr<type> shared_lib(new type(types::SHARED_LIB));
-      type_registry_->insert(shared_lib);
-      auto_ptr<type> exe(new type(types::EXE));
-      type_registry_->insert(exe);
+engine::engine(const boost::filesystem::path& root_path) 
+   : root_path_(root_path), feature_registry_(0)
+{
+   type_registry_.reset(new type_registry);
+   auto_ptr<type> cpp(new type(types::CPP));
+   type_registry_->insert(cpp);
+   auto_ptr<type> h(new type(types::H));
+   type_registry_->insert(h);
+   auto_ptr<type> lib(new type(types::LIB));
+   type_registry_->insert(lib);
+   auto_ptr<type> shared_lib(new type(types::SHARED_LIB));
+   type_registry_->insert(shared_lib);
+   auto_ptr<type> exe(new type(types::EXE));
+   type_registry_->insert(exe);
 
-      auto_ptr<hammer::feature_registry> fr(new hammer::feature_registry(&pstring_pool()));
+   auto_ptr<hammer::feature_registry> fr(new hammer::feature_registry(&pstring_pool()));
 
-      feature_registry_ = fr.release();
-   }
+   resolver_.insert("project", boost::function<void (project*, vector<string>&)>(boost::bind(&engine::project_rule, this, _1, _2)));
 
-   const project& engine::load_project(const location_t& project_path)
-   {
-      hammer_walker_context ctx;
-      ctx.engine_ = this;
-      ctx.location_ = project_path;
-      parser p;
-      if (!p.parse((root_path_ / project_path / "jamfile").native_file_string().c_str()))
-         throw runtime_error("parser errors");
-      p.walk(&ctx);
-      assert(!ctx.project_);
-      return *ctx.project_;
-   }
+   feature_registry_ = fr.release();
+}
 
-   void engine::insert(project* p)
-   {
-      projects_.insert(p->location(), p);
-   }
+const project& engine::load_project(const location_t& project_path)
+{
+   hammer_walker_context ctx;
+   ctx.engine_ = this;
+   ctx.location_ = project_path;
+   ctx.project_ = new project(this);
+   ctx.project_->location(project_path);
+   parser p;
+   if (!p.parse((root_path_ / project_path / "jamfile").native_file_string().c_str()))
+      throw runtime_error("parser errors");
+   p.walk(&ctx);
+   assert(ctx.project_);
+   return *ctx.project_;
+}
+
+void engine::insert(project* p)
+{
+   projects_.insert(p->location(), p);
+}
+
+engine::~engine()
+{
+   delete feature_registry_;
+}
+
+boost::filesystem::path find_root(const boost::filesystem::path& initial_path)
+{
+   boost::filesystem::path p(initial_path);
    
-   engine::~engine()
+   while(true) 
    {
-      delete feature_registry_;
-   }
+      if (p.empty())
+         throw runtime_error("Can't find boost-build.jam");
 
-   boost::filesystem::path find_root(const boost::filesystem::path& initial_path)
-   {
-      boost::filesystem::path p(initial_path);
+      if (exists(p / "boost-build.jam"))
+         return p;
       
-      while(true) 
-      {
-         if (p.empty())
-            throw runtime_error("Can't find boost-build.jam");
+      p = p.branch_path();
+   };
+}
 
-         if (exists(p / "boost-build.jam"))
-            return p;
-         
-         p = p.branch_path();
-      };
-   }
+void engine::project_rule(project* p, std::vector<std::string>& name)
+{
+
+}
+
 }

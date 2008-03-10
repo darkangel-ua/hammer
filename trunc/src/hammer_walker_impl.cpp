@@ -23,6 +23,7 @@ void hammer_rule_call(void* context, const char* rule_name, void* args_list_in)
 {
    auto_ptr<args_list_t> args_list(static_cast<args_list_t*>(args_list_in));
    hammer_walker_context* ctx = static_cast<hammer_walker_context*>(context);
+   args_list->insert(args_list->begin(), new call_resolver_call_arg<project>(ctx->project_, false));
    ctx->call_resolver_->invoke(rule_name, *args_list);
 }
 

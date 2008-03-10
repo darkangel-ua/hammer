@@ -9,6 +9,7 @@
 #include "location.h"
 #include "project.h"
 #include "pool.h"
+#include "call_resolver.h"
 
 namespace hammer
 {
@@ -38,6 +39,9 @@ namespace hammer
          boost::shared_ptr<type_registry> type_registry_;
          pool pool_;
          hammer::feature_registry* feature_registry_;
+         call_resolver resolver_;
+
+         void project_rule(project* p, std::vector<std::string>& name);
    };
 
    boost::filesystem::path find_root(const boost::filesystem::path& initial_path);

@@ -28,4 +28,6 @@ namespace hammer
    };
 
    bool operator == (const pstring& lhs, const char* rhs);
+   bool operator == (const pstring& lhs, const pstring& rhs);
+
 }

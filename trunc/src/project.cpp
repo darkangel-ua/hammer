@@ -13,10 +13,10 @@ namespace hammer{
    {
    }
 
-  void project::id(const pstring& id)
-  {
-      
-  }
+   void project::id(const pstring& id)
+   {
+      this->id_ = id;
+   }
 
   void project::add_target(std::auto_ptr<meta_target> t)
   {

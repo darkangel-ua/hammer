@@ -39,7 +39,9 @@ namespace hammer{
 
    std::ostream& operator << (std::ostream& os, const pstring& v)
    {
-      os.write(v.s_, v.size_);
+      if (v.size_)
+         os.write(v.s_, v.size_);
+
       return os;
    }
 
@@ -58,7 +60,14 @@ namespace hammer{
 
    bool operator == (const pstring& lhs, const char* rhs)
    {
-      return strcmp(lhs.begin(), rhs) == 0;
+      if (lhs.begin() != NULL && rhs != NULL)
+         return strcmp(lhs.begin(), rhs) == 0;
+      else
+         return lhs.begin() == rhs;
    }
 
+   bool operator == (const pstring& lhs, const pstring& rhs)
+   {
+      return lhs == rhs.begin();
+   }
 }

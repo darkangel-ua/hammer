@@ -33,6 +33,7 @@ engine::engine(const boost::filesystem::path& root_path)
    auto_ptr<hammer::feature_registry> fr(new hammer::feature_registry(&pstring_pool()));
 
    resolver_.insert("project", boost::function<void (project*, vector<pstring>&)>(boost::bind(&engine::project_rule, this, _1, _2)));
+   resolver_.insert("lib", boost::function<void (project*, vector<pstring>&, vector<pstring>&)>(boost::bind(&engine::lib_rule, this, _1, _2, _3)));
 
    feature_registry_ = fr.release();
 }
@@ -88,7 +89,6 @@ void engine::project_rule(project* p, std::vector<pstring>& name)
 
 void engine::lib_rule(project*p, std::vector<pstring>& name, std::vector<pstring>& sources)
 {
-
 }
 
 }

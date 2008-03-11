@@ -27,16 +27,25 @@ BOOST_FIXTURE_TEST_CASE(empty_project, instantiation_tests)
 {
    const project* p = 0;
    BOOST_REQUIRE_NO_THROW(p = &load("empty_project"));
+   BOOST_REQUIRE(p);
+   BOOST_CHECK_EQUAL(p->id(), pstring());
+   BOOST_CHECK(p->targets().empty());
 }
 
 BOOST_FIXTURE_TEST_CASE(named_project, instantiation_tests)
 {
    const project* p = 0;
    BOOST_REQUIRE_NO_THROW(p = &load("named_project"));
+   BOOST_REQUIRE(p);
+   BOOST_REQUIRE_EQUAL(p->id(), "test");
+   BOOST_CHECK(p->targets().empty());
 }
 
 BOOST_FIXTURE_TEST_CASE(lib1_project, instantiation_tests)
 {
    const project* p = 0;
    BOOST_REQUIRE_NO_THROW(p = &load("lib1_project"));
+   BOOST_REQUIRE(p);
+   BOOST_REQUIRE_EQUAL(p->id(), "test");
+   BOOST_CHECK(p->targets().empty());
 }

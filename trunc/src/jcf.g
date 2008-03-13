@@ -1,13 +1,14 @@
 grammar jcf;
 
 options { language = Java; output = AST; }
+tokens{ TARGET; TYPE_ATTR; FEATURES_ATTR; FEATURE; }
 
-target 	: ID ('[' (attribute ';' )*']') ('{' *target '}')* ';' ;
+target 	: ID ('[' (attribute ';' )*']')* ('{' *target '}') ';' -> ^(TARGET attribute* target*);
 attribute 
 	: type | features ;
-type 	: 'type' '=' ID ;	
-features : 'features' '=' feature+ ;
-feature  : '<' ID '>' ID ;
+type 	: 'type' '=' ID -> ^(TYPE_ATTR ID);	
+features : 'features' '=' feature+ -> ^(FEATURES_ATTR feature+);
+feature  : '<' ID '>' ID -> ^(FEATURE ID ID);
 	
 sources : ID ;
 ID  :   ('a'..'z' | 'A'..'Z' | '0'..'9' | '.' | '-' | '_')+  | STRING;

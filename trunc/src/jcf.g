@@ -1,9 +1,9 @@
 grammar jcf;
 
 options { language = Java; output = AST; }
-tokens{ TARGET; TYPE_ATTR; FEATURES_ATTR; FEATURE; }
+tokens{ TARGET; ATTRIBUTES; TARGETS; TYPE_ATTR; FEATURES_ATTR; FEATURE; }
 
-target 	: ID ('[' (attribute ';' )*']')* ('{' *target '}') ';' -> ^(TARGET attribute* target*);
+target 	: ID ('[' (attribute ';' )*']')* ('{' target* '}') -> ^(TARGET ^(ATTRIBUTES attribute*) ^(TARGETS target*));
 attribute 
 	: type | features ;
 type 	: 'type' '=' ID -> ^(TYPE_ATTR ID);	

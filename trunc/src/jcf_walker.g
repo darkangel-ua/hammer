@@ -11,3 +11,16 @@ options
 {
         #include "../jcf_walker_impl.h"
 }
+
+jcf_file : targets ;
+targets : ^(TARGETS target+);
+target 	: ^(TARGET attributes targets);
+
+attributes : ^(ATTRIBUTES attribute+); 
+attribute 
+	: type 
+	| features ;
+	
+type 	: ^(TYPE_ATTR ID);	
+features : ^(FEATURES_ATTR feature+);
+feature  : ^(FEATURE ID ID);

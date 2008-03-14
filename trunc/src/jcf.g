@@ -1,11 +1,19 @@
 grammar jcf;
 
-options { language = Java; output = AST; }
+options { language = C; output = AST; }
 tokens{ TARGET; ATTRIBUTES; TARGETS; TYPE_ATTR; FEATURES_ATTR; FEATURE; }
 
-target 	: ID ('[' (attribute ';' )*']')* ('{' target* '}') -> ^(TARGET ^(ATTRIBUTES attribute*) ^(TARGETS target*));
+jsf_file : targets ;
+targets : target+ -> ^(TARGETS target+)
+        | ;
+target 	: ID ('[' attributes ']')* '{' targets '}' -> ^(TARGET attributes targets);
+
+attributes : (attribute ';' )+ -> ^(ATTRIBUTES attribute+)
+           | ;
 attribute 
-	: type | features ;
+	: type 
+	| features ;
+	
 type 	: 'type' '=' ID -> ^(TYPE_ATTR ID);	
 features : 'features' '=' feature+ -> ^(FEATURES_ATTR feature+);
 feature  : '<' ID '>' ID -> ^(FEATURE ID ID);

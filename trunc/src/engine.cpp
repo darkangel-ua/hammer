@@ -7,6 +7,7 @@
 #include "feature_registry.h"
 #include "parser.h"
 #include <boost/bind.hpp>
+#include "lib_meta_target.h"
 
 using namespace std;
 
@@ -87,8 +88,10 @@ void engine::project_rule(project* p, std::vector<pstring>& name)
    p->id(name[0]);
 }
 
-void engine::lib_rule(project*p, std::vector<pstring>& name, std::vector<pstring>& sources)
+void engine::lib_rule(project* p, std::vector<pstring>& name, std::vector<pstring>& sources)
 {
+   auto_ptr<meta_target> mt(new lib_meta_target(p, name.at(0)));
+   p->add_target(mt);
 }
 
 }

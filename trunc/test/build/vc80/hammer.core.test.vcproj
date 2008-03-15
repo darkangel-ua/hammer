@@ -184,6 +184,74 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\jcf_parser.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\build\jcf_walker.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\src\jcf_walker_impl.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\build\jcfLexer.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\src\build\jcfParser.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="..\..\src\parser_and_cr_tests.cpp"
 				>
 			</File>
@@ -219,6 +287,26 @@
 			>
 			<File
 				RelativePath="..\..\src\enviroment.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\jcf_parser.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\build\jcf_walker.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\jcf_walker_impl.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\build\jcfLexer.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\build\jcfParser.h"
 				>
 			</File>
 			<File

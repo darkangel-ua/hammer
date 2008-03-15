@@ -9,8 +9,8 @@
 using namespace std;
 
 namespace hammer{
-   meta_target::meta_target(hammer::project* p, const pstring& name, const type* t) 
-      : project_(p), name_(name), type_(t)
+   meta_target::meta_target(hammer::project* p, const pstring& name) 
+      : project_(p), name_(name)
    {
 
    }
@@ -25,7 +25,7 @@ namespace hammer{
        main_target* mt = new(project_->engine()->targets_pool()) 
                            main_target(this, 
                                        name(), 
-                                       project_->engine()->get_type_registry().resolve(type_, build_request), 
+                                       instantiate_type(), 
                                        &build_request,
                                        project_->engine()->targets_pool());
 

@@ -14,7 +14,7 @@ options
 
 jcf_file : targets ;
 targets : ^(TARGETS target+);
-target 	: ^(TARGET attributes targets);
+target 	: ^(TARGET attributes* target*);
 
 attributes : ^(ATTRIBUTES attribute+); 
 attribute 

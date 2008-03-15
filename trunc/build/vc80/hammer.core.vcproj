@@ -248,6 +248,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\src\lib_meta_target.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\main_target.cpp"
 				>
 			</File>
@@ -372,6 +376,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\build\hammerParser.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\lib_meta_target.h"
 				>
 			</File>
 			<File

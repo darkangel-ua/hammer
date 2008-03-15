@@ -3,6 +3,7 @@
 #include <boost/filesystem/path.hpp>
 #include "enviroment.h"
 #include <hammer/src/engine.h>
+#include "jcf_parser.h"
 
 using namespace hammer;
 using namespace std;
@@ -19,8 +20,15 @@ struct instantiation_tests
    {
       return engine_.load_project(fs::path("instantiation_tests") / test_dir);
    } 
+   
+   void check(const project* p, const char* test_name)
+   {
+      BOOST_CHECK(checker_.parse(test_data_path / "instantiation_tests" / test_name / "checker.jcf"));
+      BOOST_CHECK(checker_.walk(p));
+   }
 
-   engine engine_;      
+   engine engine_;
+   jcf_parser checker_;
 };
 
 BOOST_FIXTURE_TEST_CASE(empty_project, instantiation_tests)
@@ -46,6 +54,5 @@ BOOST_FIXTURE_TEST_CASE(lib1_project, instantiation_tests)
    const project* p = 0;
    BOOST_REQUIRE_NO_THROW(p = &load("lib1_project"));
    BOOST_REQUIRE(p);
-   BOOST_REQUIRE_EQUAL(p->id(), "test");
-   BOOST_CHECK(p->targets().empty());
+   check(p, "lib1_project");
 }

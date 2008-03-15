@@ -1,4 +1,4 @@
 a [ type = SHARED_LIB; features = <link>shared <runtime-link>shared; ]
 {
-   test.cpp [ type = CPP; ]
+   test.cpp [ type = CPP; ] {}
 }

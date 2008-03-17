@@ -2,10 +2,11 @@
 
 #include <boost/noncopyable.hpp>
 #include <boost/filesystem/path.hpp>
+#include <vector>
 
 namespace hammer
 {
-   class project;
+   class basic_target;
 }
 
 class jcf_parser : public boost::noncopyable
@@ -14,7 +15,7 @@ class jcf_parser : public boost::noncopyable
       jcf_parser();
       bool parse(const char* file_name);
       bool parse(const boost::filesystem::path& file_name);
-      bool walk(const hammer::project* p);
+      bool walk(const std::vector<hammer::basic_target*>& targets);
       ~jcf_parser() { reset(); }
 
    private:

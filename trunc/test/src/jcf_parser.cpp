@@ -72,14 +72,14 @@ void jcf_parser::reset()
    impl_->input_ = 0;
 }                 
 
-bool jcf_parser::walk(const hammer::project* p)
+bool jcf_parser::walk(const vector<hammer::basic_target*>& targets)
 {
    pANTLR3_COMMON_TREE_NODE_STREAM nodes;
    pjcf_walker          jcf_walker;
 
    nodes     = antlr3CommonTreeNodeStreamNewTree(impl_->langAST_.tree, ANTLR3_SIZE_HINT); // sIZE HINT WILL SOON BE DEPRECATED!!
    jcf_walker = jcf_walkerNew(nodes);
-   jcf_walker->jcf_file(jcf_walker);
+   jcf_walker->jcf_file(jcf_walker, const_cast<vector<hammer::basic_target*>*>(&targets));
    
    jcf_walker->free(jcf_walker);
    nodes->free(nodes);

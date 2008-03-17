@@ -4,6 +4,8 @@
 #include "enviroment.h"
 #include <hammer/src/engine.h>
 #include "jcf_parser.h"
+#include <hammer/src/feature_registry.h>
+#include <hammer/src/feature_set.h>
 
 using namespace hammer;
 using namespace std;
@@ -21,10 +23,10 @@ struct instantiation_tests
       return engine_.load_project(fs::path("instantiation_tests") / test_dir);
    } 
    
-   void check(const project* p, const char* test_name)
+   void check(const vector<basic_target*> targets, const char* test_name)
    {
       BOOST_CHECK(checker_.parse(test_data_path / "instantiation_tests" / test_name / "check.jcf"));
-      BOOST_CHECK(checker_.walk(p));
+      BOOST_CHECK(checker_.walk(targets));
    }
 
    engine engine_;
@@ -54,5 +56,9 @@ BOOST_FIXTURE_TEST_CASE(lib1_project, instantiation_tests)
    const project* p = 0;
    BOOST_REQUIRE_NO_THROW(p = &load("lib1_project"));
    BOOST_REQUIRE(p);
-   check(p, "lib1_project");
+   feature_set* build_request = engine_.feature_registry().make_set();
+   build_request->insert("variant", "debug");
+   vector<basic_target*> tt = p->instantiate("a", *build_request);
+   BOOST_REQUIRE_EQUAL(tt.size(), size_t(1));
+   check(tt, "lib1_project");
 }

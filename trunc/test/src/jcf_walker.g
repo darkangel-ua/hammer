@@ -12,15 +12,16 @@ options
         #include "../jcf_walker_impl.h"
 }
 
-jcf_file : targets ;
-targets : ^(TARGETS target+);
-target 	: ^(TARGET attributes* target*);
+jcf_file[void * t] : targets[t] ;
+targets[void* t] : ^(TARGETS target[t, 1]+);
+target[void* t, int is_top]
+@init {void * tt = 0;} 	: ^(TARGET ID { tt = get_target($ID.text->chars, t, is_top); } attributes[tt]* target[tt, 0]*);
 
-attributes : ^(ATTRIBUTES attribute+); 
-attribute 
-	: type 
-	| features ;
+attributes[void* t] : ^(ATTRIBUTES attribute[t]+); 
+attribute[void* t] 
+	: type[t] 
+	| features[t] ;
 	
-type 	: ^(TYPE_ATTR ID);	
-features : ^(FEATURES_ATTR feature+);
-feature  : ^(FEATURE ID ID);
+type[void* t] 	: ^(TYPE_ATTR ID);	
+features[void* t] : ^(FEATURES_ATTR feature[t]+);
+feature[void* t]  : ^(FEATURE ID ID);

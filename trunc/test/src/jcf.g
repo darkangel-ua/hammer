@@ -6,7 +6,7 @@ tokens{ TARGET; ATTRIBUTES; TARGETS; TYPE_ATTR; FEATURES_ATTR; FEATURE; }
 jsf_file : targets ;
 targets : target+ -> ^(TARGETS target+)
         | ;
-target 	: ID ('[' attributes ']')* '{' target* '}' -> ^(TARGET attributes* target*);
+target 	: ID ('[' attributes ']')* '{' target* '}' -> ^(TARGET ID attributes* target*);
 
 attributes : (attribute ';' )+ -> ^(ATTRIBUTES attribute+)
            | ;

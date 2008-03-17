@@ -21,7 +21,7 @@ void* get_target(const char* id, void* t, int is_top)
             return *i;
       }
 
-      cout << "Target '" << id << "' is not found.\n";
+      cout << "checker(0): error: Target '" << id << "' is not found.\n";
       return 0;
    }
    else
@@ -36,12 +36,12 @@ void* get_target(const char* id, void* t, int is_top)
                return *i;
          }
 
-         cout << "Target '" << id << "' is not found.\n";
+         cout << "checker(0): error: Target '" << id << "' is not found.\n";
          return 0;
       }
       else
       {
-         cout << "'" << id << "' is not a main target\n";
+         cout << "checker(0): error: '" << id << "' is not a main target\n";
          return 0;
       }
    }

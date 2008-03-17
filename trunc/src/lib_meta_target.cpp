@@ -19,7 +19,7 @@ const type* lib_meta_target::instantiate_type() const
       return type_;
    else
    {
-      type_ = this->project()->engine()->get_type_registry().resolve_from_name(types::LIB.name());
+      type_ = this->project()->engine()->get_type_registry().resolve_from_name(types::SHARED_LIB.name());
       return type_;
    }
 }

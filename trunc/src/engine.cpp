@@ -8,6 +8,7 @@
 #include "parser.h"
 #include <boost/bind.hpp>
 #include "lib_meta_target.h"
+#include <boost/assign/list_of.hpp>
 
 using namespace std;
 
@@ -36,6 +37,7 @@ engine::engine(const boost::filesystem::path& root_path)
    resolver_.insert("project", boost::function<void (project*, vector<pstring>&)>(boost::bind(&engine::project_rule, this, _1, _2)));
    resolver_.insert("lib", boost::function<void (project*, vector<pstring>&, vector<pstring>&)>(boost::bind(&engine::lib_rule, this, _1, _2, _3)));
 
+   fr->add_def(feature_def("link", boost::assign::list_of<string>("shared")("static"), feature_type()));
    feature_registry_ = fr.release();
 }
 

@@ -6,6 +6,7 @@ RULE_CALL;
 NULL_ARG;
 STRING_LIST;
 FEATURE_LIST;
+FEATURE;
 }
 
 project :        rules;
@@ -20,10 +21,10 @@ rule_posible_args : string_list -> ^(STRING_LIST string_list)
                   | feature_list -> ^(FEATURE_LIST feature_list);
 string_list : string+;
 feature_list : feature+;
-feature  : '<' ID '>' ID ;
+feature  : '<' ID '>' ID -> ^(FEATURE ID ID);
 string  : ID ;
 
-ID  :   ('a'..'z' | 'A'..'Z' | '0'..'9' | '.' | '-' | '_')+  | STRING;
+ID  :   ('a'..'z' | 'A'..'Z' | '0'..'9' | '.' | '-' | '_'| '=')+  | STRING;
 
 fragment 
 STRING  : '"' ('\\"' | ~('"' | '\n' | '\r'))* '"' ;

@@ -97,7 +97,9 @@ void engine::project_rule(project* p, std::vector<pstring>& name)
 void engine::lib_rule(project* p, std::vector<pstring>& name, std::vector<pstring>& sources)
 {
    auto_ptr<meta_target> mt(new lib_meta_target(p, name.at(0)));
+   mt->insert(sources);
    p->add_target(mt);
+   
 }
 
 }

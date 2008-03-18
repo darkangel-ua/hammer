@@ -20,6 +20,11 @@ namespace hammer{
       sources_.push_back(source);
    }
 
+   void meta_target::insert(const std::vector<pstring>& srcs)
+   {
+      sources_.insert(sources_.end(), srcs.begin(), srcs.end());
+   }
+
    std::vector<basic_target*> meta_target::instantiate(const feature_set& build_request) const
    {
        main_target* mt = new(project_->engine()->targets_pool()) 

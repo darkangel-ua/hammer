@@ -18,6 +18,7 @@ namespace hammer
          meta_target(project* p, const pstring& name);
          const pstring& name() const { return name_; }
          void insert(const pstring& source);
+         void insert(const std::vector<pstring>& srcs);
          std::vector<basic_target*> instantiate(const feature_set& build_request) const;
          const hammer::project* project() const { return project_; }
          virtual ~meta_target(){}

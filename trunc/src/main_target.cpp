@@ -7,8 +7,9 @@ namespace hammer{
                             const pstring& name, 
                             const hammer::type* t, 
                             const feature_set* props,
-                            pool& p) 
-      : basic_target(name, t), mt_(mt), properties_(props) 
+                            pool& p)
+
+                           : basic_target(name, t, props), mt_(mt)
    {
    }
 

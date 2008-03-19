@@ -40,7 +40,7 @@ void* hammer_make_string_list()
 void* hammer_make_feature_list(void* context)
 {
    hammer_walker_context* ctx = static_cast<hammer_walker_context*>(context);
-   return new call_resolver_call_arg<feature_set>(new feature_set(&ctx->engine_->feature_registry()), true);
+   return new call_resolver_call_arg<feature_set>(new feature_set(&ctx->engine_->feature_registry()), false);
 }
 
 void hammer_add_arg_to_args_list(void* args_list, void* arg)

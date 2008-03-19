@@ -7,9 +7,10 @@
 
 namespace hammer{
 lib_meta_target::lib_meta_target(hammer::project* p, 
-                                 const pstring& name) 
+                                 const pstring& name,
+                                 const feature_set& fs) 
                                 : 
-                                 meta_target(p, name), type_(0)
+                                 meta_target(p, name, fs), type_(0)
 {
 }
 

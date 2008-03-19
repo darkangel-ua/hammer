@@ -37,7 +37,7 @@ engine::engine(const boost::filesystem::path& root_path)
    auto_ptr<hammer::feature_registry> fr(new hammer::feature_registry(&pstring_pool()));
 
    resolver_.insert("project", boost::function<void (project*, vector<pstring>&)>(boost::bind(&engine::project_rule, this, _1, _2)));
-   resolver_.insert("lib", boost::function<void (project*, vector<pstring>&, vector<pstring>&)>(boost::bind(&engine::lib_rule, this, _1, _2, _3)));
+   resolver_.insert("lib", boost::function<void (project*, vector<pstring>&, vector<pstring>&, feature_set*)>(boost::bind(&engine::lib_rule, this, _1, _2, _3, _4)));
 
    {
       feature_type ft; ft.free = 1;
@@ -96,9 +96,12 @@ void engine::project_rule(project* p, std::vector<pstring>& name)
    p->id(name[0]);
 }
 
-void engine::lib_rule(project* p, std::vector<pstring>& name, std::vector<pstring>& sources)
+void engine::lib_rule(project* p, std::vector<pstring>& name, std::vector<pstring>& sources, feature_set* fs)
 {
-   auto_ptr<meta_target> mt(new lib_meta_target(p, name.at(0)));
+   if (!fs)
+      fs = feature_registry_->make_set();
+
+   auto_ptr<meta_target> mt(new lib_meta_target(p, name.at(0), *fs));
    mt->insert(sources);
    p->add_target(mt);
 }

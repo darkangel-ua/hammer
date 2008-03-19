@@ -20,8 +20,8 @@ target[void* t, int is_top]
 attributes[void* t] : ^(ATTRIBUTES attribute[t]+); 
 attribute[void* t] 
 	: type[t] 
-	| features[t] ;
+	| features[get_features(t)] ;
 	
 type[void* t] 	: ^(TYPE_ATTR ID) { check_type(PARSER->super, t, $ID.text->chars); };	
-features[void* t] : ^(FEATURES_ATTR feature[t]+);
-feature[void* t]  : ^(FEATURE ID ID);
+features[void* f] : ^(FEATURES_ATTR feature[f]+);
+feature[void* f]  : ^(FEATURE name=ID value=ID) { check_feature(f, $name.text->chars, $value.text->chars); };

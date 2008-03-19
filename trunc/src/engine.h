@@ -42,7 +42,7 @@ namespace hammer
          call_resolver resolver_;
 
          void project_rule(project* p, std::vector<pstring>& name);
-         void lib_rule(project*p, std::vector<pstring>& name, std::vector<pstring>& sources);
+         void lib_rule(project*p, std::vector<pstring>& name, std::vector<pstring>& sources, feature_set* fs);
    };
 
    boost::filesystem::path find_root(const boost::filesystem::path& initial_path);

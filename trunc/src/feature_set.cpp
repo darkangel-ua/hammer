@@ -21,13 +21,25 @@ namespace hammer{
       features_.push_back(f);
    }
 
+/*
    const feature* feature_set::get(const char* name_) const
+   {
+      const feature* f = find(name_);
+      if (!f)
+         throw runtime_error("feature '" + string(name_) + "not founded");
+      
+      return f;
+   }
+*/
+
+   const feature* feature_set::find(const char* name_, const char* value) const
    {
       string name(name_);
       for(features_t::const_iterator i = features_.begin(), last = features_.end(); i != last; ++i)
-         if ((**i).def()->name() == name)
+         if ((**i).def()->name() == name && (**i).value() == value)
             return *i;
 
-      throw runtime_error("feature '" + name + "not founded");
+      return 0;
    }
+
 }

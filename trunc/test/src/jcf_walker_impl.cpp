@@ -6,6 +6,8 @@
 #include <hammer/src/engine.h>
 #include <hammer/src/type_registry.h>
 #include <hammer/src/type.h>
+#include <hammer/src/feature.h>
+#include <hammer/src/feature_set.h>
 
 using namespace hammer;
 using namespace std;
@@ -71,4 +73,20 @@ void check_type(void* e, void *t, const char* type_id)
 
    if (*bt->type() != *et)
       cout << "checker(0): error: Expected type '" << bt->type()->name() << "' but got '" << type_id << "'.\n";
+}
+
+void* get_features(void* t)
+{
+   if (!t)
+      return 0;
+
+   const basic_target* bt = static_cast<const basic_target*>(t);
+   return const_cast<feature_set*>(&bt->features());
+}
+
+void check_feature(void* features, const char* name, const char* value)
+{
+   const feature_set* fs = static_cast<const feature_set*>(features);
+   if (!fs->find(name, value))
+      cout << "checker(0): error: Expected feature '" << name << "' with value '" << value << "' not found.\n";
 }

@@ -9,8 +9,9 @@
 using namespace std;
 
 namespace hammer{
-   meta_target::meta_target(hammer::project* p, const pstring& name) 
-      : project_(p), name_(name)
+   meta_target::meta_target(hammer::project* p, const pstring& name, 
+                            const feature_set& fs) 
+                           : project_(p), name_(name), features_(&fs)
    {
 
    }
@@ -45,7 +46,7 @@ namespace hammer{
          else
          {
             const type* tp = project_->engine()->get_type_registry().resolve_from_target_name(*i, build_request);
-            source_target* st = new(project_->engine()) source_target(mt, *i, tp);
+            source_target* st = new(project_->engine()) source_target(mt, *i, tp, &build_request);
             sources.push_back(st);
          }
       }

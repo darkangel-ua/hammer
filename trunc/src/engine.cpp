@@ -27,6 +27,8 @@ engine::engine(const boost::filesystem::path& root_path)
    type_registry_->insert(h);
    auto_ptr<type> lib(new type(types::LIB));
    type_registry_->insert(lib);
+   auto_ptr<type> static_lib(new type(types::STATIC_LIB));
+   type_registry_->insert(static_lib);
    auto_ptr<type> shared_lib(new type(types::SHARED_LIB));
    type_registry_->insert(shared_lib);
    auto_ptr<type> exe(new type(types::EXE));
@@ -99,7 +101,6 @@ void engine::lib_rule(project* p, std::vector<pstring>& name, std::vector<pstrin
    auto_ptr<meta_target> mt(new lib_meta_target(p, name.at(0)));
    mt->insert(sources);
    p->add_target(mt);
-   
 }
 
 }

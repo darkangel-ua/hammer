@@ -26,7 +26,7 @@ struct instantiation_tests
    void check(const vector<basic_target*> targets, const char* test_name)
    {
       BOOST_CHECK(checker_.parse(test_data_path / "instantiation_tests" / test_name / "check.jcf"));
-      BOOST_CHECK(checker_.walk(targets));
+      BOOST_CHECK(checker_.walk(targets, &engine_));
    }
 
    engine engine_;

@@ -22,6 +22,6 @@ attribute[void* t]
 	: type[t] 
 	| features[t] ;
 	
-type[void* t] 	: ^(TYPE_ATTR ID);	
+type[void* t] 	: ^(TYPE_ATTR ID) { check_type(PARSER->super, t, $ID.text->chars); };	
 features[void* t] : ^(FEATURES_ATTR feature[t]+);
 feature[void* t]  : ^(FEATURE ID ID);

@@ -179,6 +179,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\generator.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\build\hammer_walker.c"
 				>
 				<FileConfiguration
@@ -317,6 +321,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\typed_meta_target.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\types.cpp"
 				>
 			</File>
@@ -356,6 +364,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\feature_type.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\generator.h"
 				>
 			</File>
 			<File
@@ -424,6 +436,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\type_registry.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\typed_meta_target.h"
 				>
 			</File>
 			<File

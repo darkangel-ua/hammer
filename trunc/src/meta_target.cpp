@@ -5,13 +5,14 @@
 #include "type_registry.h"
 #include "source_target.h"
 #include "main_target.h"
+#include "feature_set.h"
 
 using namespace std;
 
 namespace hammer{
    meta_target::meta_target(hammer::project* p, const pstring& name, 
-                            const feature_set& fs) 
-                           : project_(p), name_(name), features_(&fs)
+                            const feature_set* fs) 
+                           : project_(p), name_(name), features_(fs)
    {
 
    }
@@ -32,7 +33,7 @@ namespace hammer{
                            main_target(this, 
                                        name(), 
                                        instantiate_type(), 
-                                       &build_request,
+                                       features_->join(build_request),
                                        project_->engine()->targets_pool());
 
       vector<basic_target*> sources;
@@ -45,8 +46,8 @@ namespace hammer{
          }
          else
          {
-            const type* tp = project_->engine()->get_type_registry().resolve_from_target_name(*i, build_request);
-            source_target* st = new(project_->engine()) source_target(mt, *i, tp, &build_request);
+            const type* tp = project_->engine()->get_type_registry().resolve_from_target_name(*i, mt->features());
+            source_target* st = new(project_->engine()) source_target(mt, *i, tp, &mt->features());
             sources.push_back(st);
          }
       }

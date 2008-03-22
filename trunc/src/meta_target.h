@@ -15,7 +15,7 @@ namespace hammer
       public:
          typedef std::vector<pstring> sources_t;
 
-         meta_target(project* p, const pstring& name, const feature_set& fs);
+         meta_target(project* p, const pstring& name, const feature_set* fs);
          const pstring& name() const { return name_; }
          void insert(const pstring& source);
          void insert(const std::vector<pstring>& srcs);

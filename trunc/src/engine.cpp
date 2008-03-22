@@ -8,6 +8,7 @@
 #include "parser.h"
 #include <boost/bind.hpp>
 #include "lib_meta_target.h"
+#include "typed_meta_target.h"
 #include <boost/assign/list_of.hpp>
 
 using namespace std;
@@ -38,6 +39,7 @@ engine::engine(const boost::filesystem::path& root_path)
 
    resolver_.insert("project", boost::function<void (project*, vector<pstring>&)>(boost::bind(&engine::project_rule, this, _1, _2)));
    resolver_.insert("lib", boost::function<void (project*, vector<pstring>&, vector<pstring>&, feature_set*)>(boost::bind(&engine::lib_rule, this, _1, _2, _3, _4)));
+   resolver_.insert("exe", boost::function<void (project*, vector<pstring>&, vector<pstring>&, feature_set*)>(boost::bind(&engine::exe_rule, this, _1, _2, _3, _4)));
 
    {
       feature_type ft; ft.free = 1;
@@ -90,6 +92,11 @@ boost::filesystem::path find_root(const boost::filesystem::path& initial_path)
    };
 }
 
+void engine::generate(basic_target* t)
+{
+
+}
+
 void engine::project_rule(project* p, std::vector<pstring>& name)
 {
    assert(name.size() == size_t(1));
@@ -101,7 +108,17 @@ void engine::lib_rule(project* p, std::vector<pstring>& name, std::vector<pstrin
    if (!fs)
       fs = feature_registry_->make_set();
 
-   auto_ptr<meta_target> mt(new lib_meta_target(p, name.at(0), *fs));
+   auto_ptr<meta_target> mt(new lib_meta_target(p, name.at(0), fs));
+   mt->insert(sources);
+   p->add_target(mt);
+}
+
+void engine::exe_rule(project* p, std::vector<pstring>& name, std::vector<pstring>& sources, feature_set* fs)
+{
+   if (!fs)
+      fs = feature_registry_->make_set();
+
+   auto_ptr<meta_target> mt(new typed_meta_target(p, name.at(0), fs, get_type_registry().resolve_from_name(types::EXE.name())));
    mt->insert(sources);
    p->add_target(mt);
 }

@@ -42,4 +42,12 @@ namespace hammer{
       return 0;
    }
 
+   feature_set* feature_set::join(const feature_set& rhs) const
+   {
+      assert(fr_);
+      feature_set* result = fr_->make_set();
+      result->features_ = features_;
+      result->features_.insert(result->features_.end(), rhs.features_.begin(), rhs.features_.end());
+      return result;
+   }
 }

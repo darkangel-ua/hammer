@@ -63,7 +63,7 @@ void check_type(void* e, void *t, const char* type_id)
    
    try
    {
-      et = eng->get_type_registry().resolve_from_name(type_id);
+      et = &eng->get_type_registry().resolve_from_name(type_id);
    }
    catch(...)
    {
@@ -89,4 +89,4 @@ void check_feature(void* features, const char* name, const char* value)
    const feature_set* fs = static_cast<const feature_set*>(features);
    if (!fs->find(name, value))
       cout << "checker(0): error: Expected feature '" << name << "' with value '" << value << "' not found.\n";
-}
+} 

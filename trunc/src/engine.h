@@ -28,7 +28,7 @@ namespace hammer
          pool& targets_pool() { return pool_; }
          const location_t& root() const { return root_path_; }
          hammer::feature_registry& feature_registry() { return *feature_registry_; }
-         
+         void generate(basic_target* t);     
          ~engine();
 
       private:
@@ -43,6 +43,7 @@ namespace hammer
 
          void project_rule(project* p, std::vector<pstring>& name);
          void lib_rule(project*p, std::vector<pstring>& name, std::vector<pstring>& sources, feature_set* fs);
+         void exe_rule(project*p, std::vector<pstring>& name, std::vector<pstring>& sources, feature_set* fs);
    };
 
    boost::filesystem::path find_root(const boost::filesystem::path& initial_path);

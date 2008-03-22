@@ -17,22 +17,22 @@ namespace hammer{
 
    }
 
-   const type* type_registry::resolve_from_name(const std::string& name) const
+   const type& type_registry::resolve_from_name(const std::string& name) const
    {
       types_t::const_iterator i = types_.find(name);
       if (i != types_.end())
-         return i->second;
+         return *i->second;
       else
          throw runtime_error("Can't find type with name '" + name + "'");
    }
 
    const type* type_registry::resolve(const type* t, const feature_set& fs) const
    {
-      if (t == resolve_from_name(types::EXE.name()))
+      if (t == &resolve_from_name(types::EXE.name()))
          return t;
 
-      if (t == resolve_from_name(types::LIB.name()))
-         return resolve_from_name(types::SHARED_LIB.name());
+      if (t == &resolve_from_name(types::LIB.name()))
+         return &resolve_from_name(types::SHARED_LIB.name());
 
       return t;
    }

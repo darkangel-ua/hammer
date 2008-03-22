@@ -1,0 +1,4 @@
+test [ type = EXE; ]
+{
+   main.cpp [ type = CPP; ] {}
+}

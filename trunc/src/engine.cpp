@@ -10,6 +10,9 @@
 #include "lib_meta_target.h"
 #include "typed_meta_target.h"
 #include <boost/assign/list_of.hpp>
+#include "generator_registry.h"
+
+#include "msvc_generator.h"
 
 using namespace std;
 
@@ -34,6 +37,8 @@ engine::engine(const boost::filesystem::path& root_path)
    type_registry_->insert(shared_lib);
    auto_ptr<type> exe(new type(types::EXE));
    type_registry_->insert(exe);
+   auto_ptr<type> obj(new type(types::OBJ));
+   type_registry_->insert(obj);
 
    auto_ptr<hammer::feature_registry> fr(new hammer::feature_registry(&pstring_pool()));
 
@@ -42,11 +47,20 @@ engine::engine(const boost::filesystem::path& root_path)
    resolver_.insert("exe", boost::function<void (project*, vector<pstring>&, vector<pstring>&, feature_set*)>(boost::bind(&engine::exe_rule, this, _1, _2, _3, _4)));
 
    {
-      feature_type ft; ft.free = 1;
+      feature_type ft = {0}; ft.free = 1;
       fr->add_def(feature_def("define", vector<string>(), ft));
    }
+
+   {
+      feature_type ft = {0}; ft.propagated = 1 ;
+      fr->add_def(feature_def("toolset", vector<string>(), ft));
+   }
+
    fr->add_def(feature_def("link", boost::assign::list_of<string>("shared")("static"), feature_type()));
    feature_registry_ = fr.release();
+
+   generators_.reset(new generator_registry);
+   add_msvc_generators(*this, generators());
 }
 
 const project& engine::load_project(const location_t& project_path)
@@ -90,11 +104,6 @@ boost::filesystem::path find_root(const boost::filesystem::path& initial_path)
       
       p = p.branch_path();
    };
-}
-
-void engine::generate(basic_target* t)
-{
-
 }
 
 void engine::project_rule(project* p, std::vector<pstring>& name)

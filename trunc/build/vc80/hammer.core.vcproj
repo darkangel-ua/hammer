@@ -183,6 +183,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\generator_registry.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\build\hammer_walker.c"
 				>
 				<FileConfiguration
@@ -261,6 +265,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\meta_target.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\msvc_generator.cpp"
 				>
 			</File>
 			<File
@@ -371,6 +379,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\generator_registry.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\build\hammer_walker.h"
 				>
 			</File>
@@ -404,6 +416,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\meta_target.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\msvc_generator.h"
 				>
 			</File>
 			<File

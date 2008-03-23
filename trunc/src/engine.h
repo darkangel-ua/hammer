@@ -16,6 +16,7 @@ namespace hammer
    class basic_target;
    class type_registry;
    class feature_registry;
+   class generator_registry;
 
    class engine : boost::noncopyable
    {
@@ -26,9 +27,9 @@ namespace hammer
          type_registry& get_type_registry() { return *type_registry_; }
          pool& pstring_pool() { return pool_; }
          pool& targets_pool() { return pool_; }
+         generator_registry& generators() const { return *generators_; }
          const location_t& root() const { return root_path_; }
          hammer::feature_registry& feature_registry() { return *feature_registry_; }
-         void generate(basic_target* t);     
          ~engine();
 
       private:
@@ -40,6 +41,7 @@ namespace hammer
          pool pool_;
          hammer::feature_registry* feature_registry_;
          call_resolver resolver_;
+         boost::shared_ptr<generator_registry> generators_;
 
          void project_rule(project* p, std::vector<pstring>& name);
          void lib_rule(project*p, std::vector<pstring>& name, std::vector<pstring>& sources, feature_set* fs);

@@ -26,6 +26,11 @@ namespace hammer{
          throw runtime_error("Can't find type with name '" + name + "'");
    }
 
+   const type& type_registry::resolve_from_name(const type& t) const
+   {
+      return resolve_from_name(t.name());
+   }
+
    const type* type_registry::resolve(const type* t, const feature_set& fs) const
    {
       if (t == &resolve_from_name(types::EXE.name()))

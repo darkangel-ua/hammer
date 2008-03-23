@@ -15,6 +15,7 @@ namespace hammer
       public:
          type_registry();
          const type& resolve_from_name(const std::string& name) const;
+         const type& resolve_from_name(const type& t) const;
          const type* resolve_from_suffix(const char* first, const char* last) const;
          const type* resolve_from_suffix(const std::string& suffix) const;
          const type* resolve_from_target_name(const pstring& name, const feature_set& fs) const;

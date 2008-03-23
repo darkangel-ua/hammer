@@ -1,4 +1,7 @@
 test [ type = EXE; ]
 {
-   main.cpp [ type = CPP; ] {}
+   main [ type = OBJ; ] 
+   {
+       main.cpp [ type = CPP; ] {}
+   }
 }

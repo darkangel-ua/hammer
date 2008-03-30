@@ -6,21 +6,40 @@
 namespace hammer
 {
    class type;
+   class feature_set;
 
    class generator
    {
       public:
-         typedef std::vector<std::pair<const type*, unsigned int> > types_t;
+         struct consumable_type
+         {
+            consumable_type(const type* t, unsigned int f, const feature_set* fs) : type_(t), flags_(f), features_(fs) {}   
+            
+            const type* type_;
+            unsigned int flags_;
+            const feature_set* features_;
+         };
+
+         struct produced_type
+         {
+            produced_type(const type* t, unsigned int f) : type_(t), flags_(f) {}
+
+            const type* type_;
+            unsigned int flags_;
+         };
+
+         typedef std::vector<consumable_type> consumable_types;
+         typedef std::vector<produced_type> prodused_types;
 
          generator(const std::string& name,
-                   const types_t& source_types,
-                   const types_t& target_types);
+                   const consumable_types& source_types,
+                   const prodused_types& target_types);
       
          const std::string& name() const { return name_; }
 
       private:
          const std::string name_;
-         types_t source_types_;
-         types_t target_types_;
+         consumable_type source_types_;
+         prodused_types target_types_;
    };
 }

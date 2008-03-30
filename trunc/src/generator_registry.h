@@ -15,5 +15,7 @@ namespace hammer
 
       private:
          generators_t generators_;
+
+         std::vector<basic_target*> transform_impl();
    };
 }

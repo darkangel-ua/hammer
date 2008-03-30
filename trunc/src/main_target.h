@@ -24,6 +24,7 @@ namespace hammer
          void sources(const std::vector<basic_target*>& srcs);
          const sources_t& sources() const { return sources_; }
          const hammer::meta_target* meta_target() const { return mt_; }
+         virtual std::vector<basic_target*> generate();
 
       private:
          const hammer::meta_target* mt_;

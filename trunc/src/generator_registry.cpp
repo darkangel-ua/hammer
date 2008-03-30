@@ -16,8 +16,18 @@ vector<basic_target*>
 generator_registry::transform(const vector<basic_target*>& targets) const
 {
    vector<basic_target*> result;
+   /*
+   size_t idx = 0;
+   int max_consumed = -1;
 
-   return targets;
+   for(generators_t::const_iterator i = generators_.begin(), last = generators_.end(); i != last; ++i, ++idx)
+   {
+      int consumed = i->can_consume(targets);
+      if (max_consumed < consumed)
+   }
+*/
+
+   return result;
 }
 
 }

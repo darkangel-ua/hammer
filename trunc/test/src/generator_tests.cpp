@@ -5,6 +5,7 @@
 #include <hammer/src/feature_registry.h>
 #include <hammer/src/feature_set.h>
 #include <hammer/src/generator_registry.h>
+#include <hammer/src/basic_target.h>
 
 using namespace hammer;
 using namespace std;
@@ -42,7 +43,7 @@ struct generator_tests
    {
       for(vector<basic_target*>::iterator i = itargets_.begin(), last = itargets_.end(); i != last; ++i)
       {
-         vector<basic_target*> r = engine_.generators().transform(vector<basic_target*>(1, *i));
+         vector<basic_target*> r = (**i).generate();
 
          gtargets_.insert(gtargets_.end(), r.begin(), r.end());
       }

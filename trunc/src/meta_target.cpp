@@ -59,4 +59,11 @@ namespace hammer{
       
       return result;
    }
+
+   std::vector<basic_target*> meta_target::generate() const
+   {
+      return std::vector<basic_target*>();
+//      project_->engine()->generators().generate(*this);
+   }
+
 }

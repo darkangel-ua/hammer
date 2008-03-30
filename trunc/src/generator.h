@@ -7,6 +7,8 @@ namespace hammer
 {
    class type;
    class feature_set;
+   class basic_target;
+   class main_target;
 
    class generator
    {
@@ -36,6 +38,8 @@ namespace hammer
                    const prodused_types& target_types);
       
          const std::string& name() const { return name_; }
+         virtual std::vector<basic_target*> transform(main_target* to_target, 
+                                                      const std::vector<basic_target*>& from_targets) const;
 
       private:
          const std::string name_;

@@ -12,4 +12,11 @@ generator::generator(const std::string& name,
 
 }
 
+std::vector<basic_target*> 
+generator::transform(main_target* to_target, 
+                     const std::vector<basic_target*>& from_targets) const
+{
+   return std::vector<basic_target*>();
+}
+
 }

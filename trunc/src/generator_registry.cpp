@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "generator_registry.h"
 #include <stdexcept>
+#include "main_target.h"
 
 using namespace std;
 
@@ -13,19 +14,14 @@ void generator_registry::insert(const generator& g)
 }
 
 vector<basic_target*> 
-generator_registry::transform(const vector<basic_target*>& targets) const
+generator_registry::transform(main_target* mt) const
 {
    vector<basic_target*> result;
-   /*
-   size_t idx = 0;
-   int max_consumed = -1;
-
-   for(generators_t::const_iterator i = generators_.begin(), last = generators_.end(); i != last; ++i, ++idx)
+   vector<basic_target*> from_targets(mt->sources());
+   for(generators_t::const_iterator i = generators_.begin(), last = generators_.end(); i != last; ++i)
    {
-      int consumed = i->can_consume(targets);
-      if (max_consumed < consumed)
+      vector<basic_target*> r = i->second.transform(mt, from_targets);
    }
-*/
 
    return result;
 }

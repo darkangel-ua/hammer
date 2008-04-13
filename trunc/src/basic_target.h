@@ -3,6 +3,7 @@
 #include <boost/noncopyable.hpp>
 #include "pool.h"
 #include "pstring.h"
+#include "build_node.h"
 
 namespace hammer
 {
@@ -20,11 +21,11 @@ namespace hammer
          {};
 
          const pstring& name() const { return name_; }
-         const hammer::type* type() const { return type_; }
+         const hammer::type& type() const { return *type_; }
          const feature_set& features() const { return *features_; }
          const hammer::main_target* mtarget() const { return mtarget_; }
          
-         virtual std::vector<basic_target*> generate() = 0;
+         virtual std::auto_ptr<build_node> generate() = 0;
          void* operator new (size_t size, pool& p) { return p.malloc(size); }
          void operator delete (void* m, pool& p) {};
          virtual ~basic_target(){};
@@ -34,5 +35,6 @@ namespace hammer
          const hammer::type* type_;
          pstring name_;
          const feature_set* features_;
+         std::vector<basic_target*> dependencies_;
    };
 }

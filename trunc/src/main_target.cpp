@@ -1,5 +1,8 @@
 #include "stdafx.h"
 #include "main_target.h"
+#include "meta_target.h"
+#include "engine.h"
+#include "generator_registry.h"
 
 namespace hammer{
 
@@ -18,9 +21,9 @@ void main_target::sources(const std::vector<basic_target*>& srcs)
    sources_ = srcs;
 }
 
-std::vector<basic_target*> main_target::generate()
+std::auto_ptr<build_node> main_target::generate()
 {
-   return std::vector<basic_target*>();
+   return mt_->project()->engine()->generators().construct(this);
 }
 
 }

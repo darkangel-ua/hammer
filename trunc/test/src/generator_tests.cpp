@@ -28,7 +28,7 @@ struct generator_tests
    void check(const char* test_name)
    {
       BOOST_CHECK(checker_.parse(test_data_path / "generator_tests" / test_name / "check.jcf"));
-      BOOST_CHECK(checker_.walk(gtargets_, &engine_));
+//      BOOST_CHECK(checker_.walk(gtargets_, &engine_));
    }
 
    void instantiate(const char* target_name)
@@ -43,9 +43,10 @@ struct generator_tests
    {
       for(vector<basic_target*>::iterator i = itargets_.begin(), last = itargets_.end(); i != last; ++i)
       {
-         vector<basic_target*> r = (**i).generate();
+         std::auto_ptr<build_node> r((**i).generate());
 
-         gtargets_.insert(gtargets_.end(), r.begin(), r.end());
+         nodes_.push_back(r.get());
+         r.release();
       }
    }
   
@@ -53,7 +54,7 @@ struct generator_tests
    jcf_parser checker_;
    const project* p_;
    vector<basic_target*> itargets_;
-   vector<basic_target*> gtargets_;
+   boost::ptr_vector<build_node> nodes_;
 };
 
 BOOST_FIXTURE_TEST_CASE(simple_exe, generator_tests)

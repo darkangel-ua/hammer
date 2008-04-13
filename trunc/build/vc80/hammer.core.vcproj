@@ -155,6 +155,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\build_node.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\call_resolver.cpp"
 				>
 			</File>
@@ -176,6 +180,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\feature_set.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\file_target.cpp"
 				>
 			</File>
 			<File
@@ -347,6 +355,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\build_node.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\call_resolver.h"
 				>
 			</File>
@@ -372,6 +384,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\feature_type.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\file_target.h"
 				>
 			</File>
 			<File

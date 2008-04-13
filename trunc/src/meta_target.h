@@ -24,7 +24,6 @@ namespace hammer
          const hammer::project* project() const { return project_; }
          const feature_set& features() const { return *features_; }
          virtual ~meta_target(){}
-         virtual std::vector<basic_target*> generate() const;
 
       protected:
          virtual const type* instantiate_type() const = 0;

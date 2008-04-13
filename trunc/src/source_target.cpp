@@ -16,9 +16,10 @@ namespace hammer{
       return m;
    }
 
-   std::vector<basic_target*> source_target::generate()
+   std::auto_ptr<build_node> source_target::generate()
    {
-      return std::vector<basic_target*>(1, this);
+      std::auto_ptr<build_node> result(new build_node);
+      result->products_.push_back(this);
+      return result;
    }
-
 }

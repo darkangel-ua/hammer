@@ -16,6 +16,6 @@ namespace hammer
                        const hammer::type* t, const feature_set* f);
          void* operator new(size_t size, engine* e);
          void operator delete(void* mem, engine*) {};
-         virtual std::vector<basic_target*> generate();
+         virtual std::auto_ptr<build_node> generate();
    };
 }

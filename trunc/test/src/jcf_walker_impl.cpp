@@ -71,8 +71,8 @@ void check_type(void* e, void *t, const char* type_id)
       return;
    }
 
-   if (*bt->type() != *et)
-      cout << "checker(0): error: Expected type '" << bt->type()->name() << "' but got '" << type_id << "'.\n";
+   if (bt->type() != *et)
+      cout << "checker(0): error: Expected type '" << bt->type().name() << "' but got '" << type_id << "'.\n";
 }
 
 void* get_features(void* t)

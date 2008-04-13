@@ -4,19 +4,22 @@
 namespace hammer{
 
 generator::generator(const std::string& name,
-                     const consumable_types& source_types,
-                     const prodused_types& target_types) : 
+                     const consumable_types_t& source_types,
+                     const producable_types_t& target_types,
+                     const feature_set* c) : 
    name_(name), source_types_(source_types_),
-   target_types_(target_types)
+   target_types_(target_types),
+   constraints_(c)
 {
 
 }
-
-std::vector<basic_target*> 
-generator::transform(main_target* to_target, 
-                     const std::vector<basic_target*>& from_targets) const
+ 
+std::auto_ptr<build_node>
+generator::construct(const type& target_type, 
+                     const feature_set& props,
+                     const boost::ptr_vector<build_node>& sources) const
 {
-   return std::vector<basic_target*>();
+   return std::auto_ptr<build_node>();
 }
 
 }

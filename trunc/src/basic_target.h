@@ -25,7 +25,7 @@ namespace hammer
          const feature_set& features() const { return *features_; }
          const hammer::main_target* mtarget() const { return mtarget_; }
          
-         virtual std::auto_ptr<build_node> generate() = 0;
+         virtual boost::intrusive_ptr<build_node> generate() = 0;
          void* operator new (size_t size, pool& p) { return p.malloc(size); }
          void operator delete (void* m, pool& p) {};
          virtual ~basic_target(){};

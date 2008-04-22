@@ -43,10 +43,9 @@ struct generator_tests
    {
       for(vector<basic_target*>::iterator i = itargets_.begin(), last = itargets_.end(); i != last; ++i)
       {
-         std::auto_ptr<build_node> r((**i).generate());
+         boost::intrusive_ptr<build_node> r((**i).generate());
 
-         nodes_.push_back(r.get());
-         r.release();
+         nodes_.push_back(r);
       }
    }
   
@@ -54,7 +53,7 @@ struct generator_tests
    jcf_parser checker_;
    const project* p_;
    vector<basic_target*> itargets_;
-   boost::ptr_vector<build_node> nodes_;
+   vector<boost::intrusive_ptr<build_node> > nodes_;
 };
 
 BOOST_FIXTURE_TEST_CASE(simple_exe, generator_tests)

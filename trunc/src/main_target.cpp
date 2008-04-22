@@ -21,7 +21,7 @@ void main_target::sources(const std::vector<basic_target*>& srcs)
    sources_ = srcs;
 }
 
-std::auto_ptr<build_node> main_target::generate()
+boost::intrusive_ptr<build_node> main_target::generate()
 {
    return mt_->project()->engine()->generators().construct(this);
 }

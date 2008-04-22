@@ -155,10 +155,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\build_node.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\call_resolver.cpp"
 				>
 			</File>

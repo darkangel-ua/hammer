@@ -1,25 +1,30 @@
 #pragma once
 #include <vector>
-#include <boost/noncopyable.hpp>
+#include <boost/intrusive_ptr.hpp>
 
 namespace hammer
 {
    class basic_target; 
 
-   class build_node : public boost::noncopyable
+   class build_node
    {
       public:
-         build_node() : up_(0) {}
-         build_node* up_;
-         std::vector<build_node*> down_;
-         std::vector<const basic_target*> sources_;
-         std::vector<const basic_target*> products_;
-         ~build_node();
+         typedef std::vector<const basic_target*> targets_t;
+         build_node() : up_(0), ref_counter_(0) {}
+         boost::intrusive_ptr<build_node> up_;
+         std::vector<boost::intrusive_ptr<build_node> > down_;
+         targets_t sources_;
+         targets_t products_;
+         unsigned long ref_counter_;
    };
 
-   inline build_node::~build_node()
+   inline void intrusive_ptr_add_ref(build_node* t)
    {
-      for(std::vector<build_node*>::iterator i = down_.begin(), last = down_.end(); i != last; ++i)
-         delete *i;
+      ++t->ref_counter_;
+   }
+
+   inline void intrusive_ptr_release(build_node* t)
+   {
+      if (--t->ref_counter_ == 0) delete t;
    }
 }

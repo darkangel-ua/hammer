@@ -16,9 +16,9 @@ namespace hammer{
       return m;
    }
 
-   std::auto_ptr<build_node> source_target::generate()
+   boost::intrusive_ptr<build_node> source_target::generate()
    {
-      std::auto_ptr<build_node> result(new build_node);
+      boost::intrusive_ptr<build_node> result(new build_node);
       result->products_.push_back(this);
       return result;
    }

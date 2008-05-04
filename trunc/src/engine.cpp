@@ -69,7 +69,7 @@ const project& engine::load_project(const location_t& project_path)
    ctx.engine_ = this;
    ctx.location_ = project_path;
    ctx.project_ = new project(this);
-   ctx.project_->location(project_path);
+   ctx.project_->location(pstring(pstring_pool(), project_path.string()));
    ctx.call_resolver_ = &resolver_;
 
    parser p;

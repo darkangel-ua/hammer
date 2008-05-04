@@ -21,10 +21,12 @@ namespace hammer
                      const feature_set* props,
                      pool& p);
 
+//         virtual const pstring& location() const;
          void sources(const std::vector<basic_target*>& srcs);
          const sources_t& sources() const { return sources_; }
          const hammer::meta_target* meta_target() const { return mt_; }
          virtual boost::intrusive_ptr<build_node> generate();
+         const pstring& intermediate_dir() const;
 
       private:
          const hammer::meta_target* mt_;

@@ -4,7 +4,7 @@
 #include "basic_target.h"
 #include "main_target.h"
 #include "meta_target.h"
-#include "file_target.h"
+#include "generated_target.h"
 #include "engine.h"
 #include "np_helpers.h"
 
@@ -62,9 +62,9 @@ generator::construct(const type& target_type,
          }
       }
 
-      result->products_.push_back(new(engine_->targets_pool()) file_target(sources.front()->products_.front()->mtarget(), 
-                                                                           new_name, 
-                                                                           producable_types().front().type_, &props));
+      result->products_.push_back(new(engine_->targets_pool()) generated_target(sources.front()->products_.front()->mtarget(), 
+                                                                                new_name, 
+                                                                                producable_types().front().type_, &props));
       return result;
    }
    else
@@ -74,7 +74,7 @@ generator::construct(const type& target_type,
       boost::intrusive_ptr<build_node> result(new build_node);
       result->sources_.push_back(t);
       result->down_.push_back(sources.front());
-      result->products_.push_back(new(engine_->targets_pool()) file_target(t->mtarget(), new_name, producable_types().front().type_, &props));
+      result->products_.push_back(new(engine_->targets_pool()) generated_target(t->mtarget(), new_name, producable_types().front().type_, &props));
       
       return result;
    }

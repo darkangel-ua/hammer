@@ -8,7 +8,7 @@ namespace hammer
    {
       public:
          file_target(const main_target* mt, const pstring& name,
-            const hammer::type* t, const feature_set* f) : basic_target(mt, name, t, f) 
+                     const hammer::type* t, const feature_set* f) : basic_target(mt, name, t, f) 
          {
          }
 

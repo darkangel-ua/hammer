@@ -21,6 +21,7 @@ namespace hammer
          {};
 
          const pstring& name() const { return name_; }
+//         virtual const pstring& location() const;
          const hammer::type& type() const { return *type_; }
          const feature_set& properties() const { return *features_; }
          const hammer::main_target* mtarget() const { return mtarget_; }

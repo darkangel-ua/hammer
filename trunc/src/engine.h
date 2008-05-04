@@ -33,7 +33,7 @@ namespace hammer
          ~engine();
 
       private:
-         typedef boost::ptr_map<const location_t, project> projects_t;
+         typedef boost::ptr_map<const pstring, project> projects_t;
 
          boost::filesystem::path root_path_;
          projects_t projects_;

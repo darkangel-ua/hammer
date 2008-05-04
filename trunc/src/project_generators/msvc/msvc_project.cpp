@@ -46,7 +46,7 @@ void msvc_project::fill_filters()
 
 const pstring& msvc_project::name() const
 {
-   return variants_.front().target_->name();
+   return variants_.front().target_->mtarget()->meta_target()->name();
 }
 
 void msvc_project::write_header(ostream& s)
@@ -92,7 +92,7 @@ void msvc_project::write_configurations(std::ostream& s)
 void msvc_project::file_with_cfgs_t::write(std::ostream& s) const
 {
    s << "         <File\n"
-        "            RelativePath=\"" << target->name() << "\"\n"
+        "            RelativePath=\"" << "..\\" << target->name() << "\"\n"
         "         />\n";
 
 }
@@ -130,7 +130,7 @@ void msvc_project::generate()
 
    const main_target& mt = *variants_.front().target_->mtarget();
    location_t l = engine_->root() / 
-                  mt.mtarget()->meta_target()->project()->location() /
+                  mt.mtarget()->meta_target()->project()->location().to_string() /
                   "vc80" / (mt.name().to_string() + ".vcproj");
    
    create_directories(l.branch_path());

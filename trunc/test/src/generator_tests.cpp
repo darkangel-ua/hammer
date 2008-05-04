@@ -6,6 +6,7 @@
 #include <hammer/src/feature_set.h>
 #include <hammer/src/generator_registry.h>
 #include <hammer/src/basic_target.h>
+#include <hammer/src/project_generators/msvc/msvc_project.h>
 
 using namespace hammer;
 using namespace std;
@@ -13,7 +14,7 @@ namespace fs = boost::filesystem;
 
 struct generator_tests
 {
-   generator_tests() : engine_(test_data_path), p_(0)
+   generator_tests() : engine_(test_data_path), ms_prj_(engine_), p_(0)
    {
 
    }
@@ -28,6 +29,7 @@ struct generator_tests
    void check(const char* test_name)
    {
       BOOST_CHECK(checker_.parse(test_data_path / "generator_tests" / test_name / "check.jcf"));
+      BOOST_CHECK_NO_THROW(ms_prj_.generate());
 //      BOOST_CHECK(checker_.walk(gtargets_, &engine_));
    }
 
@@ -44,13 +46,14 @@ struct generator_tests
       for(vector<basic_target*>::iterator i = itargets_.begin(), last = itargets_.end(); i != last; ++i)
       {
          boost::intrusive_ptr<build_node> r((**i).generate());
-
+         ms_prj_.add_variant(r);
          nodes_.push_back(r);
       }
    }
   
    engine engine_;
    jcf_parser checker_;
+   hammer::project_generators::msvc_project ms_prj_;
    const project* p_;
    vector<basic_target*> itargets_;
    vector<boost::intrusive_ptr<build_node> > nodes_;

@@ -21,7 +21,6 @@ namespace hammer{
       features_.push_back(f);
    }
 
-/*
    const feature* feature_set::get(const char* name_) const
    {
       const feature* f = find(name_);
@@ -30,13 +29,20 @@ namespace hammer{
       
       return f;
    }
-*/
 
-   const feature* feature_set::find(const char* name_, const char* value) const
+   const feature* feature_set::find(const char* name, const char* value) const
    {
-      string name(name_);
       for(features_t::const_iterator i = features_.begin(), last = features_.end(); i != last; ++i)
          if ((**i).def()->name() == name && (**i).value() == value)
+            return *i;
+
+      return 0;
+   }
+
+   const feature* feature_set::find(const char* name) const
+   {
+      for(features_t::const_iterator i = features_.begin(), last = features_.end(); i != last; ++i)
+         if ((**i).def()->name() == name )
             return *i;
 
       return 0;

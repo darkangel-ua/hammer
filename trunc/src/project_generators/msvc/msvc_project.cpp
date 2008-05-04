@@ -7,13 +7,12 @@
 #include "../../type_registry.h"
 #include "../../types.h"
 #include "../../feature.h"
-#include "../../source_target.h"
 
 using namespace std;
    
 namespace hammer{ namespace project_generators{
 
-msvc_project::msvc_project() : uid_(boost::guid::create())
+msvc_project::msvc_project(engine& e) : engine_(&e), uid_(boost::guid::create())
 {
 }
 
@@ -23,29 +22,31 @@ static std::string make_variant_name(const feature_set& fs)
    return f->value().to_string();
 }
 
-void msvc_project::add_variant(const main_target* t)
+void msvc_project::add_variant(boost::intrusive_ptr<const build_node> node)
 {
+   assert(!node->products_.empty());
    variant v;
-   v.properties = t->properties();
-   v.target = t;
-   v.name = make_variant_name(*t->properties());
+   const basic_target* t = node->products_[0];
+   v.properties = &t->properties();
+   v.node_ = node;
+   v.target_ = node->products_[0];
+   v.name = make_variant_name(t->properties());
    variants_.push_back(v);
 }
 
 void msvc_project::fill_filters()
 {
-   engine* e = variants_.front().target->meta_target()->project()->engine();
    filter_t::types_t source_types;
-   source_types.push_back(e->get_type_registry().resolve_from_suffix(".cpp"));
+   source_types.push_back(engine_->get_type_registry().resolve_from_suffix(".cpp"));
    files_.push_back(filter_t(source_types, "Source Files", "{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"));
    filter_t::types_t header_types;
-   header_types.push_back(e->get_type_registry().resolve_from_suffix(".h"));
+   header_types.push_back(engine_->get_type_registry().resolve_from_suffix(".h"));
    files_.push_back(filter_t(header_types, "Header Files", "{93995380-89BD-4b04-88EB-625FBE52EBFB}"));
 }
 
 const pstring& msvc_project::name() const
 {
-   return variants_.front().target->name();
+   return variants_.front().target_->name();
 }
 
 void msvc_project::write_header(ostream& s)
@@ -103,7 +104,7 @@ std::ostream& msvc_project::filter_t::write(std::ostream& s) const
         "            Filter=\"cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx\"\n"
         "            UniqueIdentifier=\"" << uid << "\">\n";
 
-   for(map<const source_target*, file_with_cfgs_t>::const_iterator i = files_.begin(), last = files_.end(); i != last; ++i)
+   for(map<const basic_target*, file_with_cfgs_t>::const_iterator i = files_.begin(), last = files_.end(); i != last; ++i)
       i->second.write(s);
 
    s << "         </Filter>\n";
@@ -127,9 +128,9 @@ void msvc_project::generate()
    fill_filters();
    gether_files();
 
-   const main_target& mt = *variants_.front().target;
-   location_t l = mt.meta_target()->project()->engine()->root() / 
-                  mt.meta_target()->project()->location() /
+   const main_target& mt = *variants_.front().target_->mtarget();
+   location_t l = engine_->root() / 
+                  mt.mtarget()->meta_target()->project()->location() /
                   "vc80" / (mt.name().to_string() + ".vcproj");
    
    create_directories(l.branch_path());
@@ -152,44 +153,49 @@ bool msvc_project::filter_t::accept(const type* t) const
    return false;
 }
 
-void msvc_project::filter_t::insert(const source_target* t, const feature_set* v)
+void msvc_project::filter_t::insert(const basic_target* t)
 {
    file_with_cfgs_t& fwc = files_[t];
    fwc.target = t;
-   file_configuration& fc = fwc.file_config[v];
+   file_configuration& fc = fwc.file_config[&t->properties()];
    fc.exclude_from_build = false;
 }
 
-void msvc_project::insert_into_files(const basic_target* t, 
-                                     const feature_set* v)
+void msvc_project::insert_into_files(const basic_target* t)
 {
-   const type* tp = t->type();
+   const type* tp = &t->type();
    for(files_t::iterator fi = files_.begin(), flast = files_.end(); fi != flast; ++fi)
    {
       if (fi->accept(tp))
       {
-         fi->insert(&dynamic_cast<const source_target&>(*t), v);
+         fi->insert(t);
          return;
       }
    }
-   
-   throw runtime_error("[msvc_project] Don't know what to do with target '" + t->name().to_string() + "'");
+}
+
+void msvc_project::gether_files_impl(const build_node& node)
+{
+   //const type& shared_lib = engine_->get_type_registry().resolve_from_name(types::SHARED_LIB.name());
+   typedef build_node::targets_t::const_iterator iter;
+   for(iter mi = node.sources_.begin(), mlast = node.sources_.end(); mi != mlast; ++mi)
+   {
+//      if ((**mi).type() != shared_lib)
+      insert_into_files(*mi);
+   }
+
+   typedef build_node::nodes_t::const_iterator niter;
+   for(niter i = node.down_.begin(), last = node.down_.end(); i != last; ++i)
+   {
+      gether_files_impl(**i);
+   }
 }
 
 void msvc_project::gether_files()
 {
-   engine* e = variants_.front().target->meta_target()->project()->engine();
-
-   const type* shared_lib = e->get_type_registry().resolve_from_name(types::SHARED_LIB.name());
-
    for(variants_t::const_iterator i = variants_.begin(), last = variants_.end(); i != last; ++i)
    {
-      for(main_target::sources_t::const_iterator mi = i->target->sources().begin(), 
-         mlast = i->target->sources().end(); mi != mlast; ++mi)
-      {
-         if ((**mi).type() != shared_lib)
-            insert_into_files(*mi, i->properties);
-      }
+      gether_files_impl(*i->node_);
    }
 }
 

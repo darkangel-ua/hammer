@@ -9,6 +9,8 @@ namespace hammer
    class type;
    class feature_set;
    class basic_target;
+   class pstring;
+   class engine;
 
    class generator
    {
@@ -33,7 +35,8 @@ namespace hammer
          typedef std::vector<consumable_type> consumable_types_t;
          typedef std::vector<produced_type> producable_types_t;
 
-         generator(const std::string& name,
+         generator(engine& e,
+                   const std::string& name,
                    const consumable_types_t& source_types,
                    const producable_types_t& target_types,
                    const feature_set* c = 0);
@@ -45,10 +48,12 @@ namespace hammer
          virtual boost::intrusive_ptr<build_node> construct(const type& target_type, 
                                                             const feature_set& props,
                                                             const std::vector<boost::intrusive_ptr<build_node> >& sources,
-                                                            const basic_target* t) const;
+                                                            const basic_target* t,
+                                                            const pstring* name) const;
          bool is_consumable(const type& t) const;
 
       private:
+         engine* engine_;
          const std::string name_;
          consumable_types_t source_types_;
          producable_types_t target_types_;

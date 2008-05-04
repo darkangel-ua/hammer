@@ -6,22 +6,24 @@
 #include "../../feature_set.h"
 #include "../../pstring.h"
 #include <boost/guid.hpp>
+#include <boost/intrusive_ptr.hpp>
 
 namespace hammer
 {
    class feature_set;
-   class main_target;
    class source_target;
    class basic_target;
    class type;
+   class build_node;
+   class engine;
 
    namespace project_generators
    {
       class msvc_project
       {
          public:
-            msvc_project();
-            void add_variant(const main_target* t);
+            msvc_project(engine& e);
+            void add_variant(boost::intrusive_ptr<const build_node> node);
             void generate();
 
          private:
@@ -39,7 +41,7 @@ namespace hammer
 
                void write(std::ostream& s) const;
                
-               const source_target* target;
+               const basic_target* target;
                file_config_t file_config;
             };
 
@@ -49,14 +51,14 @@ namespace hammer
 
                   std::string name;
                   std::string uid;
-                  std::map<const source_target*, file_with_cfgs_t> files_;
+                  std::map<const basic_target*, file_with_cfgs_t> files_;
 
                   filter_t(const types_t& t, 
                            const std::string& name,
                            const std::string& uid) : types_(t), name(name), uid(uid) {}
                   std::ostream& write(std::ostream& s) const;
                   bool accept(const type* t) const;
-                  void insert(const source_target* t, const feature_set* v);
+                  void insert(const basic_target* t);
 
                private:
                   types_t types_;
@@ -64,7 +66,8 @@ namespace hammer
 
             struct variant
             {
-               const main_target* target;
+               boost::intrusive_ptr<const build_node> node_;
+               const basic_target* target_;
                const feature_set* properties;
                std::string name;
             };
@@ -72,6 +75,7 @@ namespace hammer
             typedef std::vector<variant> variants_t;
             typedef std::vector<filter_t> files_t;
             
+            engine* engine_;
             variants_t variants_;
             files_t files_;
             boost::guid uid_;
@@ -81,8 +85,9 @@ namespace hammer
             void write_header(std::ostream& s);
             void write_configurations(std::ostream& s);
             void write_files(std::ostream& s);
+            void gether_files_impl(const build_node& node);
             void gether_files();
-            void insert_into_files(const basic_target* t, const feature_set* v);
+            void insert_into_files(const basic_target* t);
       };
    }
 }

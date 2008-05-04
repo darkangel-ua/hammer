@@ -81,7 +81,7 @@ void* get_features(void* t)
       return 0;
 
    const basic_target* bt = static_cast<const basic_target*>(t);
-   return const_cast<feature_set*>(&bt->features());
+   return const_cast<feature_set*>(&bt->properties());
 }
 
 void check_feature(void* features, const char* name, const char* value)

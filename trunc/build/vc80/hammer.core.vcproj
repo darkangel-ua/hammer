@@ -276,6 +276,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\project_generators\msvc\msvc_project.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\np_helpers.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\parser.cpp"
 				>
 				<FileConfiguration
@@ -432,6 +440,14 @@
 			</File>
 			<File
 				RelativePath="..\..\src\msvc_generator.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\project_generators\msvc\msvc_project.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\np_helpers.h"
 				>
 			</File>
 			<File

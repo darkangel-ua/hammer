@@ -6,14 +6,16 @@
 #include "meta_target.h"
 #include "file_target.h"
 #include "engine.h"
+#include "np_helpers.h"
 
 namespace hammer{
 
-generator::generator(const std::string& name,
+generator::generator(engine& e, 
+                     const std::string& name,
                      const consumable_types_t& source_types,
                      const producable_types_t& target_types,
                      const feature_set* c) : 
-   name_(name), source_types_(source_types),
+   engine_(&e), name_(name), source_types_(source_types),
    target_types_(target_types),
    constraints_(c)
 {
@@ -33,8 +35,11 @@ boost::intrusive_ptr<build_node>
 generator::construct(const type& target_type, 
                      const feature_set& props,
                      const std::vector<boost::intrusive_ptr<build_node> >& sources,
-                     const basic_target* t) const
+                     const basic_target* t,
+                     const pstring* name) const
 {
+   pstring new_name = (name ? make_name(engine_->pstring_pool(), *name, target_type) 
+                            : make_name(engine_->pstring_pool(), t->name(), t->type(), target_type));
    if (!t)
    {
       boost::intrusive_ptr<build_node> result(new build_node);
@@ -57,10 +62,9 @@ generator::construct(const type& target_type,
          }
       }
 
-      engine& e = *sources.front()->products_.front()->mtarget()->meta_target()->project()->engine();
-      result->products_.push_back(new(e.targets_pool()) file_target(sources.front()->products_.front()->mtarget(), 
-                                                                    pstring(e.pstring_pool(), "?"), 
-                                                                    producable_types().front().type_, &props));
+      result->products_.push_back(new(engine_->targets_pool()) file_target(sources.front()->products_.front()->mtarget(), 
+                                                                           new_name, 
+                                                                           producable_types().front().type_, &props));
       return result;
    }
    else
@@ -70,8 +74,7 @@ generator::construct(const type& target_type,
       boost::intrusive_ptr<build_node> result(new build_node);
       result->sources_.push_back(t);
       result->down_.push_back(sources.front());
-      engine& e = *t->mtarget()->meta_target()->project()->engine();
-      result->products_.push_back(new(e.targets_pool()) file_target(t->mtarget(), pstring(e.pstring_pool(), "?"), producable_types().front().type_, &props));
+      result->products_.push_back(new(engine_->targets_pool()) file_target(t->mtarget(), new_name, producable_types().front().type_, &props));
       
       return result;
    }

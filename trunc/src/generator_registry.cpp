@@ -52,7 +52,7 @@ generator_registry::transform(const generator& target_generator,
       {
          if ((**g_i).is_consumable(t->type()))
          {
-            intrusive_ptr<build_node> r((**g_i).construct(*i->type_, props, vector<intrusive_ptr<build_node> >(1, target_owner), t));
+            intrusive_ptr<build_node> r((**g_i).construct(*i->type_, props, vector<intrusive_ptr<build_node> >(1, target_owner), t, 0));
             result->push_back(r);
             return true;
          }
@@ -121,14 +121,14 @@ generator_registry::construct(main_target* mt) const
    {
       intrusive_ptr<build_node> s(pre_sources.back());
       pre_sources.pop_back();
-      if (!transform_to_consumable(*viable_generators[0], *viable_generators[0], s, &sources, mt->features()))
+      if (!transform_to_consumable(*viable_generators[0], *viable_generators[0], s, &sources, mt->properties()))
          throw runtime_error("Can't find transformation from '?' -> '" + mt->type().name() + "'.");
    }
 
    typedef vector<const generator*>::const_iterator iter;
    for(iter i = viable_generators.begin(), last = viable_generators.end(); i != last; ++i)
    {
-      intrusive_ptr<build_node> r((*i)->construct(mt->type(), mt->features(), sources, 0));
+      intrusive_ptr<build_node> r((*i)->construct(mt->type(), mt->properties(), sources, 0, &mt->name()));
       if (r.get())
          return r;
    }

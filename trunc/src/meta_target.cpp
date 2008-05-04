@@ -46,8 +46,8 @@ namespace hammer{
          }
          else
          {
-            const type* tp = project_->engine()->get_type_registry().resolve_from_target_name(*i, mt->features());
-            source_target* st = new(project_->engine()) source_target(mt, *i, tp, &mt->features());
+            const type* tp = project_->engine()->get_type_registry().resolve_from_target_name(*i, mt->properties());
+            source_target* st = new(project_->engine()) source_target(mt, *i, tp, &mt->properties());
             sources.push_back(st);
          }
       }

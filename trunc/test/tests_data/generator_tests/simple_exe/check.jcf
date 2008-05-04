@@ -1,6 +1,6 @@
-test [ type = EXE; ]
+test.exe [ type = EXE; ]
 {
-   main [ type = OBJ; ] 
+   main.obj [ type = OBJ; ] 
    {
        main.cpp [ type = CPP; ] {}
    }

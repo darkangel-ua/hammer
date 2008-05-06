@@ -52,7 +52,7 @@ namespace hammer{
             return i->second;
       }
 
-      throw std::runtime_error("Can't resolve type from target name '" + name.to_string() + '\'');
+      return 0;
    }
 
    const type* type_registry::resolve_from_suffix(const char* first, const char* last) const

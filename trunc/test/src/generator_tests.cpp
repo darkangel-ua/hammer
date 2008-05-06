@@ -19,16 +19,15 @@ struct generator_tests
 
    }
 
-   void load(const char* test_dir)
+   void load()
    {
       
-      BOOST_REQUIRE_NO_THROW(p_ = &engine_.load_project(fs::path("generator_tests") / test_dir));
+      BOOST_REQUIRE_NO_THROW(p_ = &engine_.load_project(fs::path("generator_tests") / test_name_));
       BOOST_REQUIRE(p_);
    } 
-
-   void check(const char* test_name)
+ 
+   void check()
    {
-      BOOST_CHECK(checker_.parse(test_data_path / "generator_tests" / test_name / "check.jcf"));
       BOOST_CHECK_NO_THROW(ms_prj_.generate());
 //      BOOST_CHECK(checker_.walk(gtargets_, &engine_));
    }
@@ -39,6 +38,8 @@ struct generator_tests
       build_request->insert("variant", "debug");
       build_request->insert("toolset", "msvc");
       itargets_ = p_->instantiate(target_name, *build_request);
+      BOOST_REQUIRE(checker_.parse(test_data_path / "generator_tests" / test_name_ / "check.jcf"));
+      BOOST_CHECK(checker_.walk(itargets_, &engine_));
    }
       
    void run_generators()
@@ -57,12 +58,23 @@ struct generator_tests
    const project* p_;
    vector<basic_target*> itargets_;
    vector<boost::intrusive_ptr<build_node> > nodes_;
+   std::string test_name_;
 };
 
 BOOST_FIXTURE_TEST_CASE(simple_exe, generator_tests)
 {
-   load("simple_exe");
+   test_name_ = "simple_exe";
+   load();
    BOOST_REQUIRE_NO_THROW(instantiate("test"));
    BOOST_REQUIRE_NO_THROW(run_generators());
-   check("simple_exe");
+   check();
+}
+
+BOOST_FIXTURE_TEST_CASE(exe_and_static_lib, generator_tests)
+{
+   test_name_ = "exe_and_static_lib";
+   load();
+   BOOST_REQUIRE_NO_THROW(instantiate("test"));
+   BOOST_REQUIRE_NO_THROW(run_generators());
+   check();
 }

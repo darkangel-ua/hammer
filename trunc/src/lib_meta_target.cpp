@@ -27,9 +27,9 @@ const type* lib_meta_target::instantiate_type() const
       if (link)
       {
          if (link->value() == "static")
-            type_ = &this->project()->engine()->get_type_registry().resolve_from_name(types::STATIC_LIB.name());
+            type_ = &this->project()->engine()->get_type_registry().resolve_from_name(types::STATIC_LIB);
          else
-            type_ = &this->project()->engine()->get_type_registry().resolve_from_name(types::SHARED_LIB.name());
+            type_ = &this->project()->engine()->get_type_registry().resolve_from_name(types::SHARED_LIB);
       }
 
       return type_;

@@ -61,11 +61,8 @@ void check_type(void* e, void *t, const char* type_id)
    engine* eng = static_cast<engine*>(e);
    const type* et = 0;
    
-   try
-   {
-      et = &eng->get_type_registry().resolve_from_name(type_id);
-   }
-   catch(...)
+   et = &eng->get_type_registry().resolve_from_name(type_id);
+   if (et == 0)
    {
       cout << "checker(0): error : Type '" << type_id << "' is unknown.\n";
       return;

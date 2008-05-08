@@ -15,11 +15,16 @@ namespace hammer
          feature_registry(pool* p);
          void add_def(const feature_def& def);
          feature_set* make_set();
-         feature* create_feature(const char* name, const char* value);
+         feature* create_feature(const char* name, const char* value) const;
+         feature* create_feature(const std::string& name, const std::string& value) const
+         {
+            return create_feature(name.c_str(), value.c_str());
+         }
+
          void add_defaults(feature_set* s) const;
          ~feature_registry();
 
       private:
-         impl_t* impl_;
+         mutable impl_t* impl_;
    };
 }

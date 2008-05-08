@@ -18,7 +18,7 @@ namespace hammer
          const hammer::type& type() const { return *type_; }
 
       protected:
-         virtual const hammer::type* instantiate_type() const { return type_; }
+         virtual const hammer::type* instantiate_type(const feature_set&) const { return type_; }
 
      private:
         const hammer::type* type_;

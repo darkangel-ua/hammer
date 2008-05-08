@@ -15,12 +15,13 @@ namespace hammer
          const std::string& name() const { return name_; }
          void set_default(const std::string& v);
          const std::string& get_default() const { return default_; }
+         feature_attributes attributes() const { return attributes_; }
          ~feature_def(); 
 
       private:
          std::string name_;
          std::vector<std::string> legal_values_;
-         feature_attributes type_;
+         feature_attributes attributes_;
          std::string default_;
    };
 }

@@ -13,26 +13,19 @@ lib_meta_target::lib_meta_target(hammer::project* p,
                                  const pstring& name,
                                  const feature_set* fs) 
                                 : 
-                                 meta_target(p, name, fs), type_(0)
+                                 meta_target(p, name, fs)
 {
 }
 
-const type* lib_meta_target::instantiate_type() const
+const type* lib_meta_target::instantiate_type(const feature_set& fs) const
 {
-   if (type_)
-      return type_;
-   else
+   const feature* link = fs.find("link");
+   if (link)
    {
-      const feature* link = properties().find("link");
-      if (link)
-      {
-         if (link->value() == "static")
-            type_ = &this->project()->engine()->get_type_registry().resolve_from_name(types::STATIC_LIB);
-         else
-            type_ = &this->project()->engine()->get_type_registry().resolve_from_name(types::SHARED_LIB);
-      }
-
-      return type_;
+      if (link->value() == "static")
+         return &this->project()->engine()->get_type_registry().resolve_from_name(types::STATIC_LIB);
+      else
+         return &this->project()->engine()->get_type_registry().resolve_from_name(types::SHARED_LIB);
    }
 }
 

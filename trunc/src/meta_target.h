@@ -27,7 +27,7 @@ namespace hammer
          virtual ~meta_target(){}
 
       protected:
-         virtual const type* instantiate_type() const = 0;
+         virtual const type* instantiate_type(const feature_set& fs) const = 0;
          std::vector<basic_target*> 
             instantiate_source(main_target* owner, 
                                const pstring& s, 

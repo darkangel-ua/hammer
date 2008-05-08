@@ -79,7 +79,7 @@ namespace hammer{
          throw std::runtime_error("feature_def with name '" + def.name() + "' already registered");
    }
 
-   feature* feature_registry::create_feature(const char* name, const char* value)
+   feature* feature_registry::create_feature(const char* name, const char* value) const
    {
       auto_ptr<feature> f(new feature(impl_->find_def(name), pstring(*impl_->pstring_pool_, value)));
       impl_->features_list_.push_back(f.get());
@@ -92,7 +92,12 @@ namespace hammer{
       typedef impl_t::defs_t::const_iterator iter;
       for(iter i = impl_->defs_.begin(), last = impl_->defs_.end(); i != last; ++i)
       {
+         if (!i->second.attributes().incidental &&
+             !i->second.attributes().free &&
+             !s->find(i->first.c_str()))
+         {
+            s->insert(create_feature(i->first, i->second.get_default()));
+         }
       }
    }
-
 }

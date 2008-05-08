@@ -6,6 +6,7 @@
 #include "source_target.h"
 #include "main_target.h"
 #include "feature_set.h"
+#include "feature_registry.h"
 
 using namespace std;
 
@@ -50,11 +51,13 @@ namespace hammer{
    
    std::vector<basic_target*> meta_target::instantiate(const feature_set& build_request) const
    {
-       main_target* mt = new(project_->engine()->targets_pool()) 
+      feature_set* mt_fs = features_->join(build_request);
+      project_->engine()->feature_registry().add_defaults(mt_fs);
+      main_target* mt = new(project_->engine()->targets_pool()) 
                            main_target(this, 
                                        name(), 
-                                       instantiate_type(), 
-                                       features_->join(build_request),
+                                       instantiate_type(*mt_fs), 
+                                       mt_fs,
                                        project_->engine()->targets_pool());
 
       vector<basic_target*> sources;

@@ -7,10 +7,10 @@ namespace hammer
 
 feature_def::feature_def(const std::string& name, 
                          const std::vector<std::string>& legal_values,
-                         feature_attributes fdtype)
+                         feature_attributes attrs)
                         :
                          name_(name), legal_values_(legal_values),
-                         type_(fdtype)
+                         attributes_(attrs)
 {
    if (!legal_values_.empty())
       default_ = legal_values_[0];

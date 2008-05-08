@@ -51,7 +51,8 @@ namespace hammer{
    feature_registry::feature_registry(pool* p) : impl_(new impl_t(p))
    {
       {
-         feature_type ft = {0};
+         feature_attributes ft = {0};
+         ft.propagated = 1;
          vector<string> v;
          v += "debug", "release";
          add_def(feature_def("variant", v, ft));
@@ -85,4 +86,14 @@ namespace hammer{
       
       return f.release();
    }
+
+   void add_defaults(feature_set* s) const
+   {
+      typedef impl_t::defs_t::const_iterator iter;
+      for(iter i = impl_->defs_list_.begin(), last = impl_->defs_list_.end(); i != last; ++i)
+      {
+         if (i->second.)
+      }
+   }
+
 }

@@ -2,7 +2,7 @@
 
 namespace hammer
 {
-   struct feature_type
+   struct feature_attributes
    {
       unsigned incidental : 1;
       unsigned propagated : 1;

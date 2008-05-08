@@ -47,16 +47,19 @@ engine::engine(const boost::filesystem::path& root_path)
    resolver_.insert("exe", boost::function<void (project*, vector<pstring>&, vector<pstring>&, feature_set*)>(boost::bind(&engine::exe_rule, this, _1, _2, _3, _4)));
 
    {
-      feature_type ft = {0}; ft.free = 1;
+      feature_attributes ft = {0}; ft.free = 1;
       fr->add_def(feature_def("define", vector<string>(), ft));
    }
 
    {
-      feature_type ft = {0}; ft.propagated = 1 ;
+      feature_attributes ft = {0}; ft.propagated = 1;
       fr->add_def(feature_def("toolset", vector<string>(), ft));
    }
 
-   fr->add_def(feature_def("link", boost::assign::list_of<string>("shared")("static"), feature_type()));
+   {
+      feature_attributes ft = {0}; ft.propagated = 1;
+      fr->add_def(feature_def("link", boost::assign::list_of<string>("shared")("static"), ft));
+   }
    feature_registry_ = fr.release();
 
    generators_.reset(new generator_registry);

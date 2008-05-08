@@ -16,7 +16,7 @@ namespace hammer
          void add_def(const feature_def& def);
          feature_set* make_set();
          feature* create_feature(const char* name, const char* value);
-
+         void add_defaults(feature_set* s) const;
          ~feature_registry();
 
       private:

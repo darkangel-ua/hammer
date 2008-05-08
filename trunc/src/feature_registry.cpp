@@ -87,12 +87,11 @@ namespace hammer{
       return f.release();
    }
 
-   void add_defaults(feature_set* s) const
+   void feature_registry::add_defaults(feature_set* s) const
    {
       typedef impl_t::defs_t::const_iterator iter;
-      for(iter i = impl_->defs_list_.begin(), last = impl_->defs_list_.end(); i != last; ++i)
+      for(iter i = impl_->defs_.begin(), last = impl_->defs_.end(); i != last; ++i)
       {
-         if (i->second.)
       }
    }
 

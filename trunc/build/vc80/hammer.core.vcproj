@@ -379,6 +379,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\feature_attributes.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\feature_def.h"
 				>
 			</File>
@@ -388,10 +392,6 @@
 			</File>
 			<File
 				RelativePath="..\..\src\feature_set.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\feature_type.h"
 				>
 			</File>
 			<File

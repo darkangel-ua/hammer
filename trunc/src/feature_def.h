@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include <string>
-#include "feature_type.h"
+#include "feature_attributes.h"
 
 namespace hammer
 {

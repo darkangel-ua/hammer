@@ -17,7 +17,7 @@ namespace hammer
       private:
          generators_t generators_;
 
-         std::vector<const generator*> find_viable_generators(const type& t) const;
+         std::vector<const generator*> find_viable_generators(const type& t, bool allow_composite) const;
          bool transform_to_consumable(const generator& target_generator, 
                                       const generator& current_generator,
                                       boost::intrusive_ptr<build_node> t, 

@@ -16,11 +16,14 @@ void generator_registry::insert(const generator& g)
 }
 
 vector<const generator*> 
-generator_registry::find_viable_generators(const type& t) const
+generator_registry::find_viable_generators(const type& t, bool allow_composite) const
 {
    vector<const generator*> result;
    for(generators_t::const_iterator i = generators_.begin(), last = generators_.end(); i != last; ++i)
    {
+      if (i->second.is_composite() && !allow_composite)
+         continue;
+
       for(generator::producable_types_t::const_iterator j = i->second.producable_types().begin(), j_last = i->second.producable_types().end(); j != j_last; ++j)
       {
          if (*j->type_ == t)
@@ -47,7 +50,7 @@ generator_registry::transform(const generator& target_generator,
 {
    for(generator::consumable_types_t::const_iterator i = current_generator.consumable_types().begin(), last = current_generator.consumable_types().end(); i != last; ++i)
    {
-      vector<const generator*> vg(find_viable_generators(*i->type_));
+      vector<const generator*> vg(find_viable_generators(*i->type_, false));
       for(vector<const generator*>::const_iterator g_i = vg.begin(), g_last = vg.end(); g_i != g_last; ++g_i)
       {
          if ((**g_i).is_consumable(t->type()))
@@ -108,7 +111,7 @@ bool generator_registry::transform_to_consumable(const generator& target_generat
 intrusive_ptr<build_node>
 generator_registry::construct(main_target* mt) const
 {
-   vector<const generator*> viable_generators(find_viable_generators(mt->type()));
+   vector<const generator*> viable_generators(find_viable_generators(mt->type(), true));
    vector<intrusive_ptr<build_node> > pre_sources;
    for(main_target::sources_t::const_iterator i = mt->sources().begin(), last = mt->sources().end(); i != last; ++i)
    {

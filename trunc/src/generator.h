@@ -39,6 +39,7 @@ namespace hammer
                    const std::string& name,
                    const consumable_types_t& source_types,
                    const producable_types_t& target_types,
+                   bool composite,
                    const feature_set* c = 0);
       
          const std::string& name() const { return name_; }
@@ -51,12 +52,14 @@ namespace hammer
                                                             const basic_target* t,
                                                             const pstring* name) const;
          bool is_consumable(const type& t) const;
+         bool is_composite() const { return composite_; }
 
       private:
          engine* engine_;
          const std::string name_;
          consumable_types_t source_types_;
          producable_types_t target_types_;
+         bool composite_;
          const feature_set* constraints_;
    };
 }

@@ -14,9 +14,11 @@ generator::generator(engine& e,
                      const std::string& name,
                      const consumable_types_t& source_types,
                      const producable_types_t& target_types,
+                     bool composite,
                      const feature_set* c) : 
    engine_(&e), name_(name), source_types_(source_types),
    target_types_(target_types),
+   composite_(composite),
    constraints_(c)
 {
 

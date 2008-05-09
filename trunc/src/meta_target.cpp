@@ -7,6 +7,7 @@
 #include "main_target.h"
 #include "feature_set.h"
 #include "feature_registry.h"
+#include "feature.h"
 
 using namespace std;
 
@@ -33,10 +34,12 @@ namespace hammer{
                                    const pstring& s, 
                                    const feature_set& build_request) const
    {
+      feature_set* new_build_request = build_request.clone();
+      new_build_request->add_propagated(owner->properties());
       std::vector<basic_target*> result;
       if (const meta_target* t = project_->find_target(s))
       {
-         vector<basic_target*> r(t->instantiate(build_request));
+         vector<basic_target*> r(t->instantiate(*new_build_request));
          result.insert(result.end(), r.begin(), r.end());
       }
       else

@@ -56,4 +56,21 @@ namespace hammer{
       result->features_.insert(result->features_.end(), rhs.features_.begin(), rhs.features_.end());
       return result;
    }
+
+   feature_set* feature_set::clone() const
+   {
+      feature_set* result = fr_->make_set();
+      result->features_ = features_;
+      return result;
+   }
+
+   void feature_set::add_propagated(const feature_set& v)
+   {
+      for(const_iterator i = v.begin(), last = v.end(); i != last; ++i)
+      {
+         if ((*i)->attributes().propagated)
+            insert(*i);
+      }
+   }
+
 }

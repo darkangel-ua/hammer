@@ -1,6 +1,7 @@
 #pragma once
 #include "pstring.h"
 #include <boost/noncopyable.hpp>
+#include "feature_def.h"
 
 namespace hammer
 {
@@ -11,6 +12,7 @@ namespace hammer
          feature(const feature_def* def, const pstring& value);
          const feature_def* def() const { return def_; }
          const pstring& value() const { return value_; }
+         feature_attributes attributes() const { return def_->attributes(); }
 
       private:
          const feature_def* def_;

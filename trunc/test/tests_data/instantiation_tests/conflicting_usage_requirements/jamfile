@@ -1,0 +1,3 @@
+lib a : a.cpp : : : <link>static ;
+lib b : b.cpp : : : <link>shared ;
+exe test : a b main.cpp ;

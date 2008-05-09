@@ -1,0 +1,19 @@
+test [ type = EXE; ]
+{  
+   lib1//lib1_1 [ type = SHARED_LIB; ]
+   {
+      a.cpp [ type = CPP; ] {}
+   }
+
+   lib1//lib1_2 [ type = STATIC_LIB; ]
+   {
+      b.cpp [ type = CPP; ] {}
+   }
+   
+   lib2//lib2_2 [ type = SHARED_LIB; ]
+   {
+      b.cpp [ type = CPP; ] {}
+   }
+
+   main.cpp [ type = CPP; ] {}
+}

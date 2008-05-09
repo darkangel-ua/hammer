@@ -108,3 +108,17 @@ BOOST_FIXTURE_TEST_CASE(conflicting_usage_requirements, instantiation_tests)
    // по идее должен кинуть ексепшин что два usage requirements имеют конфликтные базовые свойства
    BOOST_REQUIRE_THROW(p->instantiate("test", *build_request, &tt), std::exception);
 }
+
+BOOST_FIXTURE_TEST_CASE(three_projects, instantiation_tests)
+{
+   name_ = "three_projects";
+   const project* p = 0;
+   BOOST_REQUIRE_NO_THROW(p = &load());
+   BOOST_REQUIRE(p);
+   feature_set* build_request = engine_.feature_registry().make_set();
+   build_request->insert("variant", "debug");
+   vector<basic_target*> tt;
+   p->instantiate("test", *build_request, &tt);
+   BOOST_REQUIRE_EQUAL(tt.size(), size_t(1));
+   check(tt);
+}

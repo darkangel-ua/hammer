@@ -24,7 +24,7 @@ feature_list : feature+;
 feature  : '<' ID '>' ID -> ^(FEATURE ID ID);
 string  : ID ;
 
-ID  :   ('a'..'z' | 'A'..'Z' | '0'..'9' | '.' | '-' | '_'| '=')+  | STRING;
+ID  :   ('a'..'z' | 'A'..'Z' | '0'..'9' | '.' | '-' | '_'| '=' | '/')+  | STRING;
 
 fragment 
 STRING  : '"' ('\\"' | ~('"' | '\n' | '\r'))* '"' ;

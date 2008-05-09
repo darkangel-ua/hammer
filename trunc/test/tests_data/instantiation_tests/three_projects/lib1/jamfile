@@ -1,0 +1,2 @@
+lib lib1_1 : a.cpp ;
+lib lib1_2 : b.cpp ;

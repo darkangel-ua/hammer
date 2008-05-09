@@ -43,8 +43,8 @@ engine::engine(const boost::filesystem::path& root_path)
    auto_ptr<hammer::feature_registry> fr(new hammer::feature_registry(&pstring_pool()));
 
    resolver_.insert("project", boost::function<void (project*, vector<pstring>&)>(boost::bind(&engine::project_rule, this, _1, _2)));
-   resolver_.insert("lib", boost::function<void (project*, vector<pstring>&, vector<pstring>&, feature_set*)>(boost::bind(&engine::lib_rule, this, _1, _2, _3, _4)));
-   resolver_.insert("exe", boost::function<void (project*, vector<pstring>&, vector<pstring>&, feature_set*)>(boost::bind(&engine::exe_rule, this, _1, _2, _3, _4)));
+   resolver_.insert("lib", boost::function<void (project*, vector<pstring>&, vector<pstring>&, feature_set*, feature_set*, feature_set*)>(boost::bind(&engine::lib_rule, this, _1, _2, _3, _4, _5, _6)));
+   resolver_.insert("exe", boost::function<void (project*, vector<pstring>&, vector<pstring>&, feature_set*, feature_set*, feature_set*)>(boost::bind(&engine::exe_rule, this, _1, _2, _3, _4, _5, _6)));
 
    {
       feature_attributes ft = {0}; ft.free = 1;
@@ -115,22 +115,31 @@ void engine::project_rule(project* p, std::vector<pstring>& name)
    p->id(name[0]);
 }
 
-void engine::lib_rule(project* p, std::vector<pstring>& name, std::vector<pstring>& sources, feature_set* fs)
+void engine::lib_rule(project* p, std::vector<pstring>& name, std::vector<pstring>& sources, feature_set* fs,
+                      feature_set* default_build, feature_set* usage_requirements)
 {
    if (!fs)
       fs = feature_registry_->make_set();
 
-   auto_ptr<meta_target> mt(new lib_meta_target(p, name.at(0), fs));
+   if (!usage_requirements)
+      usage_requirements = feature_registry_->make_set();
+
+   auto_ptr<meta_target> mt(new lib_meta_target(p, name.at(0), fs, usage_requirements));
    mt->insert(sources);
    p->add_target(mt);
 }
 
-void engine::exe_rule(project* p, std::vector<pstring>& name, std::vector<pstring>& sources, feature_set* fs)
+void engine::exe_rule(project* p, std::vector<pstring>& name, std::vector<pstring>& sources, feature_set* fs,
+                      feature_set* default_build, feature_set* usage_requirements)
 {
    if (!fs)
       fs = feature_registry_->make_set();
+   
+   if (!usage_requirements)
+      usage_requirements = feature_registry_->make_set();
 
-   auto_ptr<meta_target> mt(new typed_meta_target(p, name.at(0), fs, get_type_registry().resolve_from_name(types::EXE.name())));
+   auto_ptr<meta_target> mt(new typed_meta_target(p, name.at(0), fs, usage_requirements, 
+                                                  get_type_registry().resolve_from_name(types::EXE.name())));
    mt->insert(sources);
    p->add_target(mt);
 }

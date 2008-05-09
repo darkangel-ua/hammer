@@ -34,7 +34,9 @@ namespace hammer
          hammer::engine* engine() const { return engine_; }
          const pstring& intermediate_dir() const { return intermediate_dir_; }
 
-         std::vector<basic_target*> instantiate(const std::string& target_name, const feature_set& build_request) const;
+         void instantiate(const std::string& target_name, 
+                          const feature_set& build_request,
+                          std::vector<basic_target*>* result) const;
 
       private:
          pstring id_;

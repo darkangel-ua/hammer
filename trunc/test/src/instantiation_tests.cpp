@@ -62,7 +62,8 @@ BOOST_FIXTURE_TEST_CASE(lib1_project, instantiation_tests)
    BOOST_REQUIRE(p);
    feature_set* build_request = engine_.feature_registry().make_set();
    build_request->insert("variant", "debug");
-   vector<basic_target*> tt = p->instantiate("a", *build_request);
+   vector<basic_target*> tt;
+   p->instantiate("a", *build_request, &tt);
    BOOST_REQUIRE_EQUAL(tt.size(), size_t(1));
    check(tt);
 }
@@ -75,7 +76,22 @@ BOOST_FIXTURE_TEST_CASE(propagated_features, instantiation_tests)
    BOOST_REQUIRE(p);
    feature_set* build_request = engine_.feature_registry().make_set();
    build_request->insert("variant", "debug");
-   vector<basic_target*> tt = p->instantiate("test", *build_request);
+   vector<basic_target*> tt;
+   p->instantiate("test", *build_request, &tt);
+   BOOST_REQUIRE_EQUAL(tt.size(), size_t(1));
+   check(tt);
+}
+
+BOOST_FIXTURE_TEST_CASE(simple_usage_requirements, instantiation_tests)
+{
+   name_ = "simple_usage_requirements";
+   const project* p = 0;
+   BOOST_REQUIRE_NO_THROW(p = &load());
+   BOOST_REQUIRE(p);
+   feature_set* build_request = engine_.feature_registry().make_set();
+   build_request->insert("variant", "debug");
+   vector<basic_target*> tt;
+   p->instantiate("test", *build_request, &tt);
    BOOST_REQUIRE_EQUAL(tt.size(), size_t(1));
    check(tt);
 }

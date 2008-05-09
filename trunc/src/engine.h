@@ -44,8 +44,10 @@ namespace hammer
          boost::shared_ptr<generator_registry> generators_;
 
          void project_rule(project* p, std::vector<pstring>& name);
-         void lib_rule(project*p, std::vector<pstring>& name, std::vector<pstring>& sources, feature_set* fs);
-         void exe_rule(project*p, std::vector<pstring>& name, std::vector<pstring>& sources, feature_set* fs);
+         void lib_rule(project*p, std::vector<pstring>& name, std::vector<pstring>& sources, 
+                       feature_set* fs, feature_set* default_build, feature_set* usage_requirements);
+         void exe_rule(project*p, std::vector<pstring>& name, std::vector<pstring>& sources, feature_set* fs, 
+                       feature_set* default_build, feature_set* usage_requirements);
    };
 
    boost::filesystem::path find_root(const boost::filesystem::path& initial_path);

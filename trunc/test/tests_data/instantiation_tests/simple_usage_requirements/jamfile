@@ -1,0 +1,2 @@
+lib a : a.cpp : : : <define>NDEBUG=1 ;
+exe test : a main.cpp ;

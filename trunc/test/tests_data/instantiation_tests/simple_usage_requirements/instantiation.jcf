@@ -1,0 +1,8 @@
+test [ type = EXE; features = <define>NDEBUG=1; ]
+{  
+   main.cpp [ type = CPP; features = <define>NDEBUG=1; ] {}
+   a [ type = SHARED_LIB; ]
+   {
+      a.cpp [ type = CPP; ] {}
+   }
+}

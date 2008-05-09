@@ -37,7 +37,7 @@ struct generator_tests
       feature_set* build_request = engine_.feature_registry().make_set();
       build_request->insert("variant", "debug");
       build_request->insert("toolset", "msvc");
-      itargets_ = p_->instantiate(target_name, *build_request);
+      p_->instantiate(target_name, *build_request, &itargets_);
       BOOST_REQUIRE(checker_.parse(test_data_path / "generator_tests" / test_name_ / "check.jcf"));
       BOOST_CHECK(checker_.walk(itargets_, &engine_));
    }

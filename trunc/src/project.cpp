@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "project.h"
 #include "engine.h"
+#include "feature_registry.h"
 
 using namespace std;
 
@@ -49,11 +50,13 @@ namespace hammer{
       return r.begin()->second;
    }
 
-   std::vector<basic_target*> 
-   project::instantiate(const std::string& target_name,
-                        const feature_set& build_request) const
+   
+   void project::instantiate(const std::string& target_name,
+                             const feature_set& build_request,
+                             std::vector<basic_target*>* result) const
    {
       const meta_target* best_target = select_best_alternative(target_name, build_request);
-      return best_target->instantiate(build_request);
+      feature_set* usage_requirements = engine_->feature_registry().make_set();
+      best_target->instantiate(build_request, result, usage_requirements);
    }
 }

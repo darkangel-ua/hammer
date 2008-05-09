@@ -13,8 +13,9 @@ using namespace std;
 
 namespace hammer{
    meta_target::meta_target(hammer::project* p, const pstring& name, 
-                            const feature_set* fs) 
-                           : project_(p), name_(name), features_(fs)
+                            const feature_set* props, const feature_set* usage_req) 
+                           : project_(p), name_(name), requirements_(props),
+                             usage_requirements_(usage_req)
    {
 
    }
@@ -29,39 +30,13 @@ namespace hammer{
       sources_.insert(sources_.end(), srcs.begin(), srcs.end());
    }
 
-   std::vector<basic_target*> 
-   meta_target::instantiate_source(main_target* owner, 
-                                   const pstring& s, 
-                                   const feature_set& build_request) const
-   {
-      feature_set* new_build_request = build_request.clone();
-      new_build_request->add_propagated(owner->properties());
-      std::vector<basic_target*> result;
-      if (const meta_target* t = project_->find_target(s))
-      {
-         vector<basic_target*> r(t->instantiate(*new_build_request));
-         result.insert(result.end(), r.begin(), r.end());
-      }
-      else
-      {
-         const type* tp = project_->engine()->get_type_registry().resolve_from_target_name(s, owner->properties());
-         source_target* st = new(project_->engine()) source_target(owner, s, tp, &owner->properties());
-         result.push_back(st);
-      }
-
-      return result;
-   }
-   
    void meta_target::instantiate_meta_targets(const meta_targets_t& targets, 
                                               const feature_set& build_request,
                                               std::vector<basic_target*>* result, 
                                               feature_set* usage_requirments) const
    {
       for(meta_targets_t::const_iterator i = targets.begin(), last = targets.end(); i != last; ++i)
-      {
-         vector<basic_target*> r((**i).instantiate(build_request));
-         result->insert(result->end(), r.begin(), r.end());
-      }
+         (**i).instantiate(build_request, result, usage_requirments);
    }
 
    void meta_target::instantiate_simple_targets(const sources_t& targets, 
@@ -77,21 +52,22 @@ namespace hammer{
       }
    }
    
-   std::vector<basic_target*> meta_target::instantiate(const feature_set& build_request) const
+   void meta_target::instantiate(const feature_set& build_request,
+                                 std::vector<basic_target*>* result, 
+                                 feature_set* usage_requirements) const
    {
-      feature_set* mt_fs = features_->join(build_request);
+      feature_set* mt_fs = requirements_->join(build_request);
       project_->engine()->feature_registry().add_defaults(mt_fs);
 
       vector<basic_target*> sources;
-      feature_set* usage_requirments = project()->engine()->feature_registry().make_set();
 
       sources_t simple_targets;
       meta_targets_t meta_targets;
       split_sources(&simple_targets, &meta_targets);
 
-      instantiate_meta_targets(meta_targets, *mt_fs, &sources, usage_requirments);
+      instantiate_meta_targets(meta_targets, *mt_fs, &sources, usage_requirements);
       
-      mt_fs->join(*usage_requirments);
+      mt_fs->join(*usage_requirements);
       main_target* mt = new(project_->engine()->targets_pool()) 
                            main_target(this, 
                                        name(), 
@@ -102,11 +78,9 @@ namespace hammer{
       instantiate_simple_targets(simple_targets, *mt_fs, *mt, &sources);
       
       mt->sources(sources);
+      usage_requirements->join(*usage_requirements_);
       
-      vector<basic_target*> result;
-      result.push_back(mt);
-      
-      return result;
+      result->push_back(mt);
    }
 
    void meta_target::split_sources(sources_t* simple_targets, meta_targets_t* meta_targets) const
@@ -119,5 +93,4 @@ namespace hammer{
             simple_targets->push_back(*i);
      }
    }
-
 }

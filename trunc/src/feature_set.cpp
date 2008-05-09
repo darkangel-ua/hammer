@@ -48,13 +48,23 @@ namespace hammer{
       return 0;
    }
 
+   void feature_set::join_impl(feature_set* lhs, const feature_set& rhs) const
+   {
+      lhs->features_.insert(lhs->features_.end(), rhs.features_.begin(), rhs.features_.end());
+   }
+
    feature_set* feature_set::join(const feature_set& rhs) const
    {
       assert(fr_);
       feature_set* result = fr_->make_set();
       result->features_ = features_;
-      result->features_.insert(result->features_.end(), rhs.features_.begin(), rhs.features_.end());
+      join_impl(result, rhs);
       return result;
+   }
+
+   void feature_set::join(const feature_set& rhs)
+   {
+      join_impl(this, rhs);
    }
 
    feature_set* feature_set::clone() const

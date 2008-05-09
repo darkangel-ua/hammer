@@ -23,11 +23,14 @@ namespace hammer
          const feature* find(const char* name, const char* value) const;
          const feature* find(const char* name) const; // find first occurrence 
          feature_set* join(const feature_set& rhs) const;
+         void join(const feature_set& v);
          feature_set* clone() const;
-         void add_propagated(const feature_set& v);
+         void add_propagated(const feature_set& rhs);
 
       private:
          feature_registry* fr_;
          features_t features_;
+
+         void join_impl(feature_set* lhs, const feature_set& rhs) const;
    };
 }

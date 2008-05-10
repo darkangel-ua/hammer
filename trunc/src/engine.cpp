@@ -29,8 +29,10 @@ engine::engine(const boost::filesystem::path& root_path)
    type_registry_->insert(cpp);
    auto_ptr<type> h(new type(types::H));
    type_registry_->insert(h);
+/*
    auto_ptr<type> lib(new type(types::LIB));
    type_registry_->insert(lib);
+*/
    auto_ptr<type> static_lib(new type(types::STATIC_LIB));
    type_registry_->insert(static_lib);
    auto_ptr<type> shared_lib(new type(types::SHARED_LIB));

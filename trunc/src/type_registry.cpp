@@ -31,16 +31,16 @@ namespace hammer{
       return resolve_from_name(t.name());
    }
 
-   const type* type_registry::resolve(const type* t, const feature_set& fs) const
-   {
-      if (t == &resolve_from_name(types::EXE.name()))
-         return t;
-
-      if (t == &resolve_from_name(types::LIB.name()))
-         return &resolve_from_name(types::SHARED_LIB.name());
-
-      return t;
-   }
+//    const type* type_registry::resolve(const type* t, const feature_set& fs) const
+//    {
+//       if (t == &resolve_from_name(types::EXE.name()))
+//          return t;
+// 
+//       if (t == &resolve_from_name(types::LIB.name()))
+//          return &resolve_from_name(types::SHARED_LIB.name());
+// 
+//       return t;
+//    }
 
    const type* type_registry::resolve_from_target_name(const pstring& name, const feature_set&) const
    {
@@ -48,7 +48,8 @@ namespace hammer{
       for(types_t::const_iterator i = types_.begin(), last = types_.end(); i != last; ++i)
       {
          string::size_type p = s_name.rfind(i->second->suffix().c_str());
-         if (p != string::npos)
+         if (p != string::npos && 
+             p + i->second->suffix().size() == s_name.size())
             return i->second;
       }
 

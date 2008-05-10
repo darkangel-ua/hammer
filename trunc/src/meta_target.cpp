@@ -47,6 +47,9 @@ namespace hammer{
       for(sources_t::const_iterator i = targets.begin(), last = targets.end(); i != last; ++i)
       {
          const type* tp = project_->engine()->get_type_registry().resolve_from_target_name(*i, owner.properties());
+         if (tp == 0)
+            throw std::runtime_error("Can't resolve type from source '" + i->to_string() + "'.");
+
          source_target* st = new(project_->engine()) source_target(&owner, *i, tp, &owner.properties());
          result->push_back(st);
       }

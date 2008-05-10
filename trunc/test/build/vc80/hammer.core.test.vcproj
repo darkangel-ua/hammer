@@ -283,6 +283,10 @@
 				RelativePath="..\..\src\test_frmw.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\..\src\type_registry_test.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"

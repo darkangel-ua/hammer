@@ -42,7 +42,7 @@ namespace hammer{
 //       return t;
 //    }
 
-   const type* type_registry::resolve_from_target_name(const pstring& name, const feature_set&) const
+   const type* type_registry::resolve_from_target_name(const pstring& name) const
    {
       string s_name(name.to_string());
       for(types_t::const_iterator i = types_.begin(), last = types_.end(); i != last; ++i)

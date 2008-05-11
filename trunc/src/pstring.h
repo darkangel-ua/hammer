@@ -17,6 +17,7 @@ namespace hammer
          size_type size() const { return size_; }
          std::string to_string() const;
          const char* begin() const { return s_; }
+         const char* end() const { return s_ + size_; }
          pstring& operator = (const pstring& rhs);
          ~pstring(){};
          friend std::ostream& operator << (std::ostream& os, const pstring& rhs);

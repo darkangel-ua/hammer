@@ -79,7 +79,8 @@ const project& engine::load_project(const location_t& project_path)
 
    parser p;
    if (!p.parse((root_path_ / project_path / "jamfile").native_file_string().c_str()))
-      throw runtime_error("parser errors");
+      throw runtime_error("Can't load project at '"  + (root_path_ / project_path).string() + ": parser errors");
+
    p.walk(&ctx);
    assert(ctx.project_);
    return *ctx.project_;

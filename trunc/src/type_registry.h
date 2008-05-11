@@ -18,7 +18,7 @@ namespace hammer
          const type& resolve_from_name(const type& t) const;
          const type* resolve_from_suffix(const char* first, const char* last) const;
          const type* resolve_from_suffix(const std::string& suffix) const;
-         const type* resolve_from_target_name(const pstring& name, const feature_set& fs) const;
+         const type* resolve_from_target_name(const pstring& name) const;
 //         const type* resolve(const type* t, const feature_set& fs) const;
          void insert(std::auto_ptr<type>& t);
          ~type_registry();

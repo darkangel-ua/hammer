@@ -35,16 +35,22 @@ namespace hammer
          typedef std::vector<const meta_target*> meta_targets_t;
 
          virtual const type* instantiate_type(const feature_set& fs) const = 0;
-         void split_sources(sources_t* simple_targets, meta_targets_t* meta_targets) const;
+
+         void split_sources(sources_t* simple_targets, 
+                            meta_targets_t* meta_targets) const;
 
          void instantiate_meta_targets(const meta_targets_t& targets, 
                                        const feature_set& build_request,
                                        std::vector<basic_target*>* result, 
                                        feature_set* usage_requirements) const;
+
          void instantiate_simple_targets(const sources_t& targets, 
                                          const feature_set& build_request,
                                          const main_target& owner, 
                                          std::vector<basic_target*>* result) const;
+
+         void resolve_meta_target_source(const pstring& source, 
+                                         meta_targets_t* meta_targets) const;
 
       private:
          hammer::project* project_;

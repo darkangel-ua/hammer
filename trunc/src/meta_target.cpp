@@ -8,6 +8,8 @@
 #include "feature_set.h"
 #include "feature_registry.h"
 #include "feature.h"
+#include <boost/regex.hpp>
+#include "location.h"
 
 using namespace std;
 
@@ -46,7 +48,7 @@ namespace hammer{
    {
       for(sources_t::const_iterator i = targets.begin(), last = targets.end(); i != last; ++i)
       {
-         const type* tp = project_->engine()->get_type_registry().resolve_from_target_name(*i, owner.properties());
+         const type* tp = project_->engine()->get_type_registry().resolve_from_target_name(*i);
          if (tp == 0)
             throw std::runtime_error("Can't resolve type from source '" + i->to_string() + "'.");
 
@@ -88,12 +90,38 @@ namespace hammer{
 
    void meta_target::split_sources(sources_t* simple_targets, meta_targets_t* meta_targets) const
    {
+      const type_registry& tr = project_->engine()->get_type_registry();
       for(sources_t::const_iterator i = sources_.begin(), last = sources_.end(); i != last; ++i)
       {
-         if (const meta_target* t = project_->find_target(*i))
-            meta_targets->push_back(t);
+         if (const type* t = tr.resolve_from_target_name(*i))
+            simple_targets->push_back(*i); 
          else
-            simple_targets->push_back(*i);
+            resolve_meta_target_source(*i, meta_targets);
      }
+   }
+
+   // TODO: 
+   // 1. Если подаем только директорию проекта и там есть две альтернативы, то по идее нужно было бы выбрать одну из них уже 
+   //    на этом этапе ибо другой возможности у нас уже не будет.
+   static boost::regex project_splitter("(.+?)(?://(.+))?");
+   void meta_target::resolve_meta_target_source(const pstring& source, 
+                                                meta_targets_t* meta_targets) const
+   {
+      boost::cmatch m;
+      if (!boost::regex_match(source.begin(), source.end(), m, project_splitter))
+         throw std::runtime_error("Can't parse meta target '" + source.to_string() + "'.");
+      
+      string target_name = m[1];
+      if (const meta_target* m = project_->find_target(pstring(project_->engine()->pstring_pool(), target_name)))
+      {
+         meta_targets->push_back(m);
+         return;
+      }
+
+      location_t target_path(project_->location().to_string()); 
+      target_path /= target_name;
+      const hammer::project& p = project_->engine()->load_project(target_path);
+      for(hammer::project::targets_t::const_iterator i = p.targets().begin(), last = p.targets().end(); i != last; ++i)
+         meta_targets->push_back(i->second);
    }
 }

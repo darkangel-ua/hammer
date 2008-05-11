@@ -6,6 +6,7 @@
 #include "jcf_parser.h"
 #include <hammer/src/feature_registry.h>
 #include <hammer/src/feature_set.h>
+#include <iostream>
 
 using namespace hammer;
 using namespace std;
@@ -25,6 +26,7 @@ struct instantiation_tests
    
    void check(const vector<basic_target*> targets)
    {
+      std::cout << "check '" << name_ << "'\n";
       BOOST_CHECK(checker_.parse(test_data_path / "instantiation_tests" / name_ / "instantiation.jcf")); 
       BOOST_CHECK(checker_.walk(targets, &engine_));
    }

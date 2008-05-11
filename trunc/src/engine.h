@@ -22,7 +22,7 @@ namespace hammer
    {
       public:
          engine(const boost::filesystem::path& root_path);
-         const project& load_project(const location_t& project_path);
+         const project& load_project(location_t project_path);
          void insert(project* p);
          type_registry& get_type_registry() { return *type_registry_; }
          pool& pstring_pool() { return pool_; }

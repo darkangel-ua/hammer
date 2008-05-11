@@ -87,3 +87,15 @@ void check_feature(void* features, const char* name, const char* value)
    if (!fs->find(name, value))
       cout << "checker(0): error: Expected feature '" << name << "' with value '" << value << "' not found.\n";
 } 
+
+void check_location(void* t, const char* location)
+{
+   const basic_target* bt = static_cast<const basic_target*>(t);
+   if (const main_target* mt = dynamic_cast<const main_target*>(bt))
+   {
+      if (mt->location() != location)
+         cout << "checker(0): error: Expected location '"  << location << "' but got '" << mt->location() << "'.\n";
+   }
+   else
+      cout << "checker(0): error: Target '" << bt->name() << "' is not a main target.\n"; 
+}

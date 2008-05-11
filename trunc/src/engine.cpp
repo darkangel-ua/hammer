@@ -68,8 +68,9 @@ engine::engine(const boost::filesystem::path& root_path)
    add_msvc_generators(*this, generators());
 }
 
-const project& engine::load_project(const location_t& project_path)
+const project& engine::load_project(location_t project_path)
 {
+   project_path.normalize();
    hammer_walker_context ctx;
    ctx.engine_ = this;
    ctx.location_ = project_path;

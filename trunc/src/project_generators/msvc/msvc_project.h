@@ -7,6 +7,7 @@
 #include "../../pstring.h"
 #include <boost/guid.hpp>
 #include <boost/intrusive_ptr.hpp>
+#include "../../build_node.h"
 
 namespace hammer
 {
@@ -14,17 +15,23 @@ namespace hammer
    class source_target;
    class basic_target;
    class type;
-   class build_node;
    class engine;
+   class meta_target;
+   class main_target;
 
    namespace project_generators
    {
       class msvc_project
       {
          public:
+            typedef std::vector<const hammer::main_target*> dependencies_t;
+
             msvc_project(engine& e);
             void add_variant(boost::intrusive_ptr<const build_node> node);
-            void generate();
+            void generate() const;
+            const std::string& id() const { return id_; }
+            const hammer::meta_target& meta_target() const { return *meta_target_; }
+            const dependencies_t& dependencies() const { return dependencies_;}
 
          private:
             struct file_configuration
@@ -76,18 +83,21 @@ namespace hammer
             typedef std::vector<filter_t> files_t;
             
             engine* engine_;
-            variants_t variants_;
-            files_t files_;
+            mutable variants_t variants_;
+            mutable files_t files_;
             boost::guid uid_;
+            std::string id_;
+            const hammer::meta_target* meta_target_;
+            mutable dependencies_t dependencies_;
 
             const pstring& name() const;
-            void fill_filters();
-            void write_header(std::ostream& s);
-            void write_configurations(std::ostream& s);
-            void write_files(std::ostream& s);
-            void gether_files_impl(const build_node& node);
-            void gether_files();
-            void insert_into_files(const basic_target* t);
+            void fill_filters() const;
+            void write_header(std::ostream& s) const;
+            void write_configurations(std::ostream& s) const;
+            void write_files(std::ostream& s) const;
+            void gether_files_impl(const build_node& node) const;
+            void gether_files() const;
+            void insert_into_files(const basic_target* t) const;
       };
    }
 }

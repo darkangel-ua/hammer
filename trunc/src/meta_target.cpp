@@ -22,6 +22,11 @@ namespace hammer{
 
    }
 
+   const pstring& meta_target::location() const
+   {
+      return project_->location();
+   }
+
    void meta_target::insert(const pstring& source)
    {
       sources_.push_back(source);

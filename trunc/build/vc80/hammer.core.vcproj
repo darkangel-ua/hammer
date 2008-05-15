@@ -300,6 +300,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\project_generators\msvc\msvc_solution.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\np_helpers.cpp"
 				>
 			</File>
@@ -484,6 +488,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\project_generators\msvc\msvc_project.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\project_generators\msvc\msvc_solution.h"
 				>
 			</File>
 			<File

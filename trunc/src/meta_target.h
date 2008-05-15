@@ -26,6 +26,7 @@ namespace hammer
                           std::vector<basic_target*>* result, 
                           feature_set* usage_requirements) const;
          const hammer::project* project() const { return project_; }
+         const pstring& location() const;
          const feature_set& properties() const { return *requirements_; }
          const feature_set& usage_requirements() const { return *usage_requirements_; }
 

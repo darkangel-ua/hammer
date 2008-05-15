@@ -32,9 +32,14 @@ void msvc_project::add_variant(boost::intrusive_ptr<const build_node> node)
    v.target_ = node->products_[0];
    v.name = make_variant_name(t->properties());
    variants_.push_back(v);
+   if (id_.empty())
+   {
+      id_ = v.target_->mtarget()->location().to_string();
+      meta_target_ = v.target_->mtarget()->meta_target();
+   }
 }
 
-void msvc_project::fill_filters()
+void msvc_project::fill_filters() const
 {
    filter_t::types_t source_types;
    source_types.push_back(engine_->get_type_registry().resolve_from_suffix(".cpp"));
@@ -49,7 +54,7 @@ const pstring& msvc_project::name() const
    return variants_.front().target_->mtarget()->meta_target()->name();
 }
 
-void msvc_project::write_header(ostream& s)
+void msvc_project::write_header(ostream& s) const
 {
    s << "<?xml version=\"1.0\" encoding=\"windows-1251\"?>\n"
         "<VisualStudioProject\n"
@@ -70,7 +75,7 @@ static void write_bottom(std::ostream& s)
    s << "</VisualStudioProject>";
 }
 
-void msvc_project::write_configurations(std::ostream& s)
+void msvc_project::write_configurations(std::ostream& s) const
 {
    s << "   <Configurations>\n";
    
@@ -111,7 +116,7 @@ std::ostream& msvc_project::filter_t::write(std::ostream& s) const
    return s;
 }
 
-void msvc_project::write_files(std::ostream& s)
+void msvc_project::write_files(std::ostream& s) const
 {
    s << "      <Files>\n";
    for(files_t::const_iterator i = files_.begin(), last = files_.end(); i != last; ++i)
@@ -120,7 +125,7 @@ void msvc_project::write_files(std::ostream& s)
    s << "      </Files>\n";
 }
 
-void msvc_project::generate()
+void msvc_project::generate() const
 {
    if (variants_.empty())
       throw runtime_error("Can't generate empty msvc project");
@@ -161,7 +166,7 @@ void msvc_project::filter_t::insert(const basic_target* t)
    fc.exclude_from_build = false;
 }
 
-void msvc_project::insert_into_files(const basic_target* t)
+void msvc_project::insert_into_files(const basic_target* t) const
 {
    const type* tp = &t->type();
    for(files_t::iterator fi = files_.begin(), flast = files_.end(); fi != flast; ++fi)
@@ -174,29 +179,37 @@ void msvc_project::insert_into_files(const basic_target* t)
    }
 }
 
-void msvc_project::gether_files_impl(const build_node& node)
+void msvc_project::gether_files_impl(const build_node& node) const
 {
    //const type& shared_lib = engine_->get_type_registry().resolve_from_name(types::SHARED_LIB.name());
+   bool should_go_deeper = false;
    typedef build_node::targets_t::const_iterator iter;
    for(iter mi = node.sources_.begin(), mlast = node.sources_.end(); mi != mlast; ++mi)
    {
-//      if ((**mi).type() != shared_lib)
-      insert_into_files(*mi);
+      if ((**mi).mtarget()->meta_target() == meta_target_)
+      {
+         insert_into_files(*mi);
+         should_go_deeper = true;
+      }
+      else
+         dependencies_.push_back((**mi).mtarget());
    }
+
+   if (!should_go_deeper)
+      return;
 
    typedef build_node::nodes_t::const_iterator niter;
    for(niter i = node.down_.begin(), last = node.down_.end(); i != last; ++i)
-   {
       gether_files_impl(**i);
-   }
 }
 
-void msvc_project::gether_files()
+void msvc_project::gether_files() const
 {
    for(variants_t::const_iterator i = variants_.begin(), last = variants_.end(); i != last; ++i)
-   {
       gether_files_impl(*i->node_);
-   }
+
+   std::sort(dependencies_.begin(), dependencies_.end());
+   dependencies_.erase(std::unique(dependencies_.begin(), dependencies_.end()), dependencies_.end());
 }
 
 }}

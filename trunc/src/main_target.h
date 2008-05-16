@@ -27,10 +27,12 @@ namespace hammer
          const hammer::meta_target* meta_target() const { return mt_; }
          virtual boost::intrusive_ptr<build_node> generate();
          const pstring& intermediate_dir() const;
+         boost::intrusive_ptr<const hammer::build_node> build_node() const { return build_node_; }
 
       private:
          const hammer::meta_target* mt_;
          sources_t sources_;
+         boost::intrusive_ptr<hammer::build_node> build_node_;
    };
 }
 

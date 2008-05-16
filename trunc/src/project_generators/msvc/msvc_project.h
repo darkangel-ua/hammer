@@ -28,6 +28,7 @@ namespace hammer
 
             msvc_project(engine& e);
             void add_variant(boost::intrusive_ptr<const build_node> node);
+            bool has_variant(const main_target* v) const;
             void generate() const;
             const std::string& id() const { return id_; }
             const hammer::meta_target& meta_target() const { return *meta_target_; }
@@ -74,7 +75,7 @@ namespace hammer
             struct variant
             {
                boost::intrusive_ptr<const build_node> node_;
-               const basic_target* target_;
+               const main_target* target_;
                const feature_set* properties;
                std::string name;
             };

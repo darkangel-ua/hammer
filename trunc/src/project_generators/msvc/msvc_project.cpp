@@ -29,13 +29,13 @@ void msvc_project::add_variant(boost::intrusive_ptr<const build_node> node)
    const basic_target* t = node->products_[0];
    v.properties = &t->properties();
    v.node_ = node;
-   v.target_ = node->products_[0];
+   v.target_ = node->products_[0]->mtarget();
    v.name = make_variant_name(t->properties());
    variants_.push_back(v);
    if (id_.empty())
    {
-      id_ = v.target_->mtarget()->location().to_string();
-      meta_target_ = v.target_->mtarget()->meta_target();
+      id_ = v.target_->location().to_string();
+      meta_target_ = v.target_->meta_target();
    }
 }
 
@@ -51,7 +51,7 @@ void msvc_project::fill_filters() const
 
 const pstring& msvc_project::name() const
 {
-   return variants_.front().target_->mtarget()->meta_target()->name();
+   return variants_.front().target_->meta_target()->name();
 }
 
 void msvc_project::write_header(ostream& s) const
@@ -133,7 +133,7 @@ void msvc_project::generate() const
    fill_filters();
    gether_files();
 
-   const main_target& mt = *variants_.front().target_->mtarget();
+   const main_target& mt = *variants_.front().target_;
    location_t l = engine_->root() / 
                   mt.mtarget()->meta_target()->project()->location().to_string() /
                   "vc80" / (mt.name().to_string() + ".vcproj");
@@ -210,6 +210,17 @@ void msvc_project::gether_files() const
 
    std::sort(dependencies_.begin(), dependencies_.end());
    dependencies_.erase(std::unique(dependencies_.begin(), dependencies_.end()), dependencies_.end());
+}
+
+bool msvc_project::has_variant(const main_target* v) const
+{
+   for(variants_t::const_iterator i = variants_.begin(), last = variants_.end(); i != last; ++i)
+   {
+      if (i->target_ == v)
+         return true;
+   }
+
+   return false;
 }
 
 }}

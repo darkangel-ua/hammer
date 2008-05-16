@@ -42,21 +42,27 @@ void impl_t::generate_dependencies(impl_t::dependencies_t::const_iterator first,
    dependencies_t dependencies;
    for(; first != last; ++first)
    {
-      projects_t::iterator i = projects_.find(*first);
-      if (i != projects_.end())
+      projects_t::const_iterator i = projects_.find((**first).meta_target());
+      if (i == projects_.end() ||
+         (i != projects_.end() &&
+          !i->second->has_variant(*first)))
       {
+         
          auto_ptr<msvc_project> p_guard(new msvc_project(engine_));
          msvc_project* p = p_guard.get();
          projects_.insert(&p->meta_target(), p_guard);
-         p->add_variant((**i).build_node());
+         p->add_variant((**first).build_node());
          p->generate();
-         result.insert(result.end(), p->dependencies().begin(), p->dependencies().end());
+         dependencies.insert(dependencies.end(), p->dependencies().begin(), p->dependencies().end());
       }
    }
 
-   std::sort(dependencies.begin(), dependencies.end());
-   dependencies.erase(std::unique(dependencies.begin(), dependencies.end()), dependencies.end());
-   generate_dependencies(dependencies.begin(), dependencies.end());
+   if (!dependencies.empty())
+   {
+      std::sort(dependencies.begin(), dependencies.end());
+      dependencies.erase(std::unique(dependencies.begin(), dependencies.end()), dependencies.end());
+      generate_dependencies(dependencies.begin(), dependencies.end());
+   }
 }
 
 msvc_solution::msvc_solution(engine& e) : impl_(new impl_t(e))

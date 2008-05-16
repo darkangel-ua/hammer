@@ -23,7 +23,8 @@ void main_target::sources(const std::vector<basic_target*>& srcs)
 
 boost::intrusive_ptr<build_node> main_target::generate()
 {
-   return mt_->project()->engine()->generators().construct(this);
+   build_node_ = mt_->project()->engine()->generators().construct(this);
+   return build_node_;
 }
 
 const pstring& main_target::intermediate_dir() const

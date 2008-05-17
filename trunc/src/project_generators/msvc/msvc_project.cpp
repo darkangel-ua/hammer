@@ -27,15 +27,18 @@ void msvc_project::add_variant(boost::intrusive_ptr<const build_node> node)
    assert(!node->products_.empty());
    variant v;
    const basic_target* t = node->products_[0];
-   v.properties = &t->properties();
+   v.properties_ = &t->properties();
    v.node_ = node;
    v.target_ = node->products_[0]->mtarget();
-   v.name = make_variant_name(t->properties());
+   v.name_ = make_variant_name(t->properties());
    variants_.push_back(v);
    if (id_.empty())
    {
       id_ = v.target_->location().to_string();
       meta_target_ = v.target_->meta_target();
+      location_ = engine_->root() / 
+                  v.target_->meta_target()->project()->location().to_string() /
+                  "vc80" / (name().to_string() + ".vcproj");
    }
 }
 
@@ -82,7 +85,7 @@ void msvc_project::write_configurations(std::ostream& s) const
    for(variants_t::const_iterator i = variants_.begin(), last = variants_.end(); i != last; ++i)
    {
       s << "      <Configuration\n"
-           "         Name=\"" << i->name << "|Win32\"\n"
+           "         Name=\"" << i->name_ << "|Win32\"\n"
            "         OutputDirectory=\"$(SolutionDir)$(ConfigurationName)\"\n"
            "         IntermediateDirectory=\"$(ConfigurationName)\"\n"
            "         ConfigurationType=\"1\"\n"
@@ -134,12 +137,9 @@ void msvc_project::generate() const
    gether_files();
 
    const main_target& mt = *variants_.front().target_;
-   location_t l = engine_->root() / 
-                  mt.mtarget()->meta_target()->project()->location().to_string() /
-                  "vc80" / (mt.name().to_string() + ".vcproj");
    
-   create_directories(l.branch_path());
-   boost::filesystem::ofstream f(l, std::ios_base::trunc);
+   create_directories(location_.branch_path());
+   boost::filesystem::ofstream f(location_, std::ios_base::trunc);
    write_header(f);
    write_configurations(f);
    write_files(f);

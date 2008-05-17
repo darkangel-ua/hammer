@@ -26,14 +26,28 @@ namespace hammer
          public:
             typedef std::vector<const hammer::main_target*> dependencies_t;
 
+            struct variant
+            {
+               boost::intrusive_ptr<const build_node> node_;
+               const main_target* target_;
+               const feature_set* properties_;
+               std::string name_;
+            };
+
+            typedef std::vector<variant> variants_t;
+
             msvc_project(engine& e);
             void add_variant(boost::intrusive_ptr<const build_node> node);
             bool has_variant(const main_target* v) const;
             void generate() const;
             const std::string& id() const { return id_; }
+            const boost::guid& guid() const { return uid_; }
             const hammer::meta_target& meta_target() const { return *meta_target_; }
             const dependencies_t& dependencies() const { return dependencies_;}
-
+            location_t location() const { return location_; } // путь относительно meta_target проекта и имя файла проекта
+            const pstring& name() const;
+            const variants_t& variants() const { return variants_; }
+            
          private:
             struct file_configuration
             {
@@ -72,15 +86,6 @@ namespace hammer
                   types_t types_;
             };
 
-            struct variant
-            {
-               boost::intrusive_ptr<const build_node> node_;
-               const main_target* target_;
-               const feature_set* properties;
-               std::string name;
-            };
-
-            typedef std::vector<variant> variants_t;
             typedef std::vector<filter_t> files_t;
             
             engine* engine_;
@@ -90,8 +95,8 @@ namespace hammer
             std::string id_;
             const hammer::meta_target* meta_target_;
             mutable dependencies_t dependencies_;
+            location_t location_;
 
-            const pstring& name() const;
             void fill_filters() const;
             void write_header(std::ostream& s) const;
             void write_configurations(std::ostream& s) const;

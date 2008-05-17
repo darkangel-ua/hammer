@@ -7,7 +7,7 @@
 #include "../../main_target.h"
 #include "../../engine.h"
 #include <boost/filesystem/fstream.hpp>
-
+#include <set>
 using namespace std;
 
 namespace hammer{ namespace project_generators{
@@ -27,6 +27,7 @@ struct msvc_solution::impl_t
    impl_t(engine& e) : engine_(e){}
    void generate_dependencies(dependencies_t::const_iterator first, 
                               dependencies_t::const_iterator last) const;
+   void write_project_section(ostream& os, const msvc_project& project) const;
 
    engine& engine_;
    location_t output_location_;
@@ -50,10 +51,10 @@ void impl_t::generate_dependencies(impl_t::dependencies_t::const_iterator first,
          
          auto_ptr<msvc_project> p_guard(new msvc_project(engine_));
          msvc_project* p = p_guard.get();
-         projects_.insert(&p->meta_target(), p_guard);
          p->add_variant((**first).build_node());
          p->generate();
          dependencies.insert(dependencies.end(), p->dependencies().begin(), p->dependencies().end());
+         projects_.insert(&p->meta_target(), p_guard);
       }
    }
 
@@ -63,6 +64,33 @@ void impl_t::generate_dependencies(impl_t::dependencies_t::const_iterator first,
       dependencies.erase(std::unique(dependencies.begin(), dependencies.end()), dependencies.end());
       generate_dependencies(dependencies.begin(), dependencies.end());
    }
+}
+
+// FIXME: при генерации солюшена может произойти хохма
+// lib a : a.cpp ;
+// lib b : a/<link>static b.cpp ;
+// exe xoxma : main.cpp a b ;
+//
+// в этом случае имеем две разные конфигурации проекта в одной конфигурации солюшена чего студия не позволяет
+ 
+
+void msvc_solution::impl_t::write_project_section(ostream& os, const msvc_project& project) const
+{
+   os << "Project(\"{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}\") = \"" << project.name() 
+      << "\", \"" << project.location() << "\", \"{" << project.guid() << "}\"\n" ;
+
+   os << "\tProjectSection(ProjectDependencies) = postProject\n";
+   typedef msvc_project::dependencies_t::const_iterator iter;
+   for(iter i = project.dependencies().begin(), last = project.dependencies().end(); i != last; ++i)
+   {
+      projects_t::const_iterator p = projects_.find((**i).meta_target());
+      if (p == projects_.end())
+         throw std::logic_error("Found target that is unknown to solution.");
+      os << "\t\t{" << p->second->guid() << "} = {" << p->second->guid() << "}\n";
+   }
+
+   os << "\tEndProjectSection\n"
+      << "EndProject\n";
 }
 
 msvc_solution::msvc_solution(engine& e) : impl_(new impl_t(e))
@@ -91,6 +119,8 @@ void msvc_solution::write() const
    location_t filename = impl_->output_location_ / "dummy.sln";
    f.open(filename, std::ios::trunc);
    //throw std::runtime_error("Can't write '" + filename.string() + "'.";
+   f << "Microsoft Visual Studio Solution File, Format Version 9.00\n"
+        "# Visual Studio 2005\n";
    msvc_project::dependencies_t dependencies;
    typedef impl_t::projects_t::const_iterator iter;
    for(iter i = impl_->projects_.begin(), last = impl_->projects_.end(); i != last; ++i)
@@ -102,6 +132,21 @@ void msvc_solution::write() const
    }
 
    impl_->generate_dependencies(dependencies.begin(), dependencies.end());
+
+   set<string> variant_names;
+   for(iter i = impl_->projects_.begin(), last = impl_->projects_.end(); i != last; ++i)
+   {
+      impl_->write_project_section(f, *i->second);
+      typedef msvc_project::variants_t::const_iterator viter;
+      for(viter v = i->second->variants().begin(), vlast = i->second->variants().end(); v != vlast; ++v)
+         variant_names.insert(v->name_);
+   }
+   
+   f << "Global\n"
+     << "\tGlobalSection(SolutionConfigurationPlatforms) = preSolution\n";
+   for(set<string>::const_iterator i = variant_names.begin(), last = variant_names.end(); i != last; ++i)
+      f << "\t\t" << *i << "|Win32" << " = " << *i << "|Win32\n";
+   f << "EndGlobalSection\n";
 }
 
 }}

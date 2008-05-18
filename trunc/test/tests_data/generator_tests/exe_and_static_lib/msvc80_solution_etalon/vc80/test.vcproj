@@ -17,6 +17,10 @@
          IntermediateDirectory="$(ConfigurationName)"
          ConfigurationType="1"
          CharacterSet="1">
+         <Tool
+            Name="VCCLCompilerTool"
+            PreprocessorDefinitions=""
+         />
       </Configuration>
    </Configurations>
       <Files>

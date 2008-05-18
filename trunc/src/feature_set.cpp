@@ -33,7 +33,7 @@ namespace hammer{
    const feature* feature_set::find(const char* name, const char* value) const
    {
       for(features_t::const_iterator i = features_.begin(), last = features_.end(); i != last; ++i)
-         if ((**i).def()->name() == name && (**i).value() == value)
+         if ((**i).def().name() == name && (**i).value() == value)
             return *i;
 
       return 0;
@@ -42,7 +42,7 @@ namespace hammer{
    const feature* feature_set::find(const char* name) const
    {
       for(features_t::const_iterator i = features_.begin(), last = features_.end(); i != last; ++i)
-         if ((**i).def()->name() == name )
+         if ((**i).def().name() == name )
             return *i;
 
       return 0;

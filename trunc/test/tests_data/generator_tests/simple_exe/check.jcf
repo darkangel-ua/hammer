@@ -1,4 +1,4 @@
 test [ type = EXE; ]
 {
-   main.cpp [ type = CPP; ] {}
+   main.cpp [ type = CPP; features = <define>NDEBUG=1; ] {}
 }

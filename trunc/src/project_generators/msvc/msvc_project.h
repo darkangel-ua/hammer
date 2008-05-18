@@ -85,6 +85,7 @@ namespace hammer
                private:
                   types_t types_;
             };
+            struct options;
 
             typedef std::vector<filter_t> files_t;
             
@@ -105,6 +106,7 @@ namespace hammer
             void gether_files() const;
             void insert_into_files(const basic_target* t) const;
             unsigned int resolve_configuration_type(const variant& v) const;
+            void fill_options(const feature_set& props, options* opts) const;
       };
    }
 }

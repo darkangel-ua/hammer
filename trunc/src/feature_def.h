@@ -17,6 +17,7 @@ namespace hammer
          const std::string& get_default() const { return default_; }
          feature_attributes attributes() const { return attributes_; }
          ~feature_def(); 
+         bool operator ==(const feature_def& rhs) const { return this == &rhs; }
 
       private:
          std::string name_;

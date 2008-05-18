@@ -101,9 +101,9 @@ namespace hammer{
       }
    }
 
-   const feature_def* feature_registry::find_def(const std::string& name) const
+   const feature_def& feature_registry::get_def(const std::string& name) const
    {
-      return impl_->find_def(name.c_str());
+      return *impl_->find_def(name.c_str());
    }
 
 }

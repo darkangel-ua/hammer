@@ -7,10 +7,17 @@
 #include "../../type_registry.h"
 #include "../../types.h"
 #include "../../feature.h"
+#include "../../feature_def.h"
+#include "../../feature_registry.h"
 
 using namespace std;
    
 namespace hammer{ namespace project_generators{
+
+struct msvc_project::options
+{
+   std::ostringstream defines_;
+};
 
 msvc_project::msvc_project(engine& e, const boost::guid& uid) 
    : engine_(&e), uid_(uid)
@@ -96,12 +103,26 @@ unsigned int msvc_project::resolve_configuration_type(const variant& v) const
             throw std::runtime_error("[msvc_project] Can't resolve type '" + v.target_->type().name() + "'.");
 } 
 
+void msvc_project::fill_options(const feature_set& props, options* opts) const
+{
+   const feature_def& define_def = engine_->feature_registry().get_def("define");
+   for(feature_set::const_iterator i = props.begin(), last = props.end(); i != last; ++i)
+   {
+      if ((**i).def() == define_def)
+      {
+         opts->defines_ << (**i).value() << ';';
+      }
+   }
+}
+
 void msvc_project::write_configurations(std::ostream& s) const
 {
    s << "   <Configurations>\n";
    
    for(variants_t::const_iterator i = variants_.begin(), last = variants_.end(); i != last; ++i)
    {
+      options opts;
+      fill_options(*i->properties_, &opts);
       s << "      <Configuration\n"
            "         Name=\"" << i->name_ << "|Win32\"\n"
            "         OutputDirectory=\"$(SolutionDir)$(ConfigurationName)\"\n"
@@ -109,6 +130,11 @@ void msvc_project::write_configurations(std::ostream& s) const
            "         ConfigurationType=\"" << resolve_configuration_type(*i) << "\"\n"
            "         CharacterSet=\"1\">\n";
 
+      s << "         <Tool\n"
+           "            Name=\"VCCLCompilerTool\"\n"
+           "            PreprocessorDefinitions=\"" << opts.defines_.str() << "\"\n"
+           "         />\n";
+        
       s << "      </Configuration>\n";
    }
 

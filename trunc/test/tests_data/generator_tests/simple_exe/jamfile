@@ -1,1 +1,1 @@
-exe test : main.cpp ;
+exe test : main.cpp : <define>NDEBUG=1 ;

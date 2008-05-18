@@ -36,7 +36,7 @@ namespace hammer
 
             typedef std::vector<variant> variants_t;
 
-            msvc_project(engine& e);
+            msvc_project(engine& e, const boost::guid& uid = boost::guid::create());
             void add_variant(boost::intrusive_ptr<const build_node> node);
             bool has_variant(const main_target* v) const;
             void generate() const;

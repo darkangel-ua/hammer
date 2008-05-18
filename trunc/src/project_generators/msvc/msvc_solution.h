@@ -1,5 +1,6 @@
 #pragma once
 #include "../../build_node.h"
+#include <boost/guid.hpp>
 
 namespace hammer
 {
@@ -17,6 +18,10 @@ namespace hammer
             void add_target(boost::intrusive_ptr<const build_node> node);
             void write() const;
             ~msvc_solution();
+         
+         protected:
+            // used for testing now
+            virtual boost::guid generate_id() const;
 
          private:
             impl_t* impl_;

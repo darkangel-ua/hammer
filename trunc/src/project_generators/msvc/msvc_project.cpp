@@ -12,7 +12,8 @@ using namespace std;
    
 namespace hammer{ namespace project_generators{
 
-msvc_project::msvc_project(engine& e) : engine_(&e), uid_(boost::guid::create())
+msvc_project::msvc_project(engine& e, const boost::guid& uid) 
+   : engine_(&e), uid_(uid)
 {
 }
 

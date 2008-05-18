@@ -24,11 +24,12 @@ struct msvc_solution::impl_t
    typedef msvc_project::dependencies_t dependencies_t;
    typedef boost::ptr_map<const meta_target*, msvc_project> projects_t;
 
-   impl_t(engine& e) : engine_(e){}
+   impl_t(msvc_solution* owner, engine& e) : owner_(owner), engine_(e){}
    void generate_dependencies(dependencies_t::const_iterator first, 
                               dependencies_t::const_iterator last) const;
    void write_project_section(ostream& os, const msvc_project& project) const;
-
+   boost::guid generate_id() const { return boost::guid::create(); }
+   msvc_solution* owner_;
    engine& engine_;
    location_t output_location_;
 
@@ -49,7 +50,7 @@ void impl_t::generate_dependencies(impl_t::dependencies_t::const_iterator first,
           !i->second->has_variant(*first)))
       {
          
-         auto_ptr<msvc_project> p_guard(new msvc_project(engine_));
+         auto_ptr<msvc_project> p_guard(new msvc_project(engine_, owner_->generate_id()));
          msvc_project* p = p_guard.get();
          p->add_variant((**first).build_node());
          p->generate();
@@ -93,7 +94,7 @@ void msvc_solution::impl_t::write_project_section(ostream& os, const msvc_projec
       << "EndProject\n";
 }
 
-msvc_solution::msvc_solution(engine& e) : impl_(new impl_t(e))
+msvc_solution::msvc_solution(engine& e) : impl_(new impl_t(this, e))
 {
 }
 
@@ -104,7 +105,7 @@ msvc_solution::~msvc_solution()
 
 void msvc_solution::add_target(boost::intrusive_ptr<const build_node> node)
 {
-   std::auto_ptr<msvc_project> p_guarg(new msvc_project(impl_->engine_));
+   std::auto_ptr<msvc_project> p_guarg(new msvc_project(impl_->engine_, generate_id()));
    msvc_project* p = p_guarg.get();
    typedef vector<const main_target*> dependencies_t;
    dependencies_t dependencies;
@@ -147,6 +148,11 @@ void msvc_solution::write() const
    for(set<string>::const_iterator i = variant_names.begin(), last = variant_names.end(); i != last; ++i)
       f << "\t\t" << *i << "|Win32" << " = " << *i << "|Win32\n";
    f << "EndGlobalSection\n";
+}
+
+boost::guid msvc_solution::generate_id() const
+{
+   return impl_->generate_id();
 }
 
 }}

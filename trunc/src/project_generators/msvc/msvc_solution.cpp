@@ -32,6 +32,7 @@ struct msvc_solution::impl_t
    msvc_solution* owner_;
    engine& engine_;
    location_t output_location_;
+   std::string name_; // solution name;
 
    mutable projects_t projects_;
 };
@@ -112,12 +113,13 @@ void msvc_solution::add_target(boost::intrusive_ptr<const build_node> node)
    p->add_variant(node);
    impl_->projects_.insert(&p->meta_target(), p_guarg);
    impl_->output_location_ = impl_->engine_.root() / p->meta_target().location().to_string();
+   impl_->name_ = p->meta_target().name().to_string();
 }
 
 void msvc_solution::write() const
 {
    boost::filesystem::ofstream f;
-   location_t filename = impl_->output_location_ / "dummy.sln";
+   location_t filename = impl_->output_location_ / (impl_->name_ + ".sln");
    f.open(filename, std::ios::trunc);
    //throw std::runtime_error("Can't write '" + filename.string() + "'.";
    f << "Microsoft Visual Studio Solution File, Format Version 9.00\n"

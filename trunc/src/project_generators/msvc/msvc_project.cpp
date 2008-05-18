@@ -79,6 +79,23 @@ static void write_bottom(std::ostream& s)
    s << "</VisualStudioProject>";
 }
 
+unsigned int msvc_project::resolve_configuration_type(const variant& v) const
+{
+   const type& exe_type = engine_->get_type_registry().resolve_from_name(types::EXE);
+   const type& static_lib_type = engine_->get_type_registry().resolve_from_name(types::STATIC_LIB);
+   const type& shared_lib_type = engine_->get_type_registry().resolve_from_name(types::SHARED_LIB);
+   if (v.target_->type() == exe_type)
+      return 1;
+   else
+      if (v.target_->type() == static_lib_type)
+         return 4;
+      else
+         if (v.target_->type() == shared_lib_type)
+            return 2;
+         else
+            throw std::runtime_error("[msvc_project] Can't resolve type '" + v.target_->type().name() + "'.");
+} 
+
 void msvc_project::write_configurations(std::ostream& s) const
 {
    s << "   <Configurations>\n";
@@ -89,7 +106,7 @@ void msvc_project::write_configurations(std::ostream& s) const
            "         Name=\"" << i->name_ << "|Win32\"\n"
            "         OutputDirectory=\"$(SolutionDir)$(ConfigurationName)\"\n"
            "         IntermediateDirectory=\"$(ConfigurationName)\"\n"
-           "         ConfigurationType=\"1\"\n"
+           "         ConfigurationType=\"" << resolve_configuration_type(*i) << "\"\n"
            "         CharacterSet=\"1\">\n";
 
       s << "      </Configuration>\n";

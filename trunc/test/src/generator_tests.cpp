@@ -134,8 +134,17 @@ struct generator_tests
       
       // gather files
       for(fs::recursive_directory_iterator last_etalon_files; i_etalon_files != last_etalon_files; ++i_etalon_files)
+      {
+         if (is_directory(*i_generated_files) &&
+            i_etalon_files->leaf() == ".svn")
+         {
+            i_etalon_files.no_push();
+            continue;
+         }
+
          if (!is_directory(*i_etalon_files))
             etalon_files.insert(relative_path(*i_etalon_files, etalon_files_path));
+      }
 
       for(fs::recursive_directory_iterator last_generated_files; i_generated_files != last_generated_files; ++i_generated_files)
       {

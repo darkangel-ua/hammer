@@ -15,7 +15,7 @@
          Name="release|Win32"
          OutputDirectory="$(SolutionDir)$(ConfigurationName)"
          IntermediateDirectory="$(ConfigurationName)"
-         ConfigurationType="1"
+         ConfigurationType="4"
          CharacterSet="1">
       </Configuration>
    </Configurations>

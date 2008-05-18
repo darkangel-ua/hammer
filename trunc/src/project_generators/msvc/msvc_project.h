@@ -104,6 +104,7 @@ namespace hammer
             void gether_files_impl(const build_node& node) const;
             void gether_files() const;
             void insert_into_files(const basic_target* t) const;
+            unsigned int resolve_configuration_type(const variant& v) const;
       };
    }
 }

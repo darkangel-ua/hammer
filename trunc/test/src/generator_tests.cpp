@@ -7,6 +7,7 @@
 #include <hammer/src/generator_registry.h>
 #include <hammer/src/basic_target.h>
 #include <hammer/src/project_generators/msvc/msvc_solution.h>
+#include <hammer/src/fs_helpers.h>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
 #include <boost/filesystem/fstream.hpp>
@@ -15,55 +16,6 @@
 using namespace hammer;
 using namespace std;
 namespace fs = boost::filesystem;
-
-fs::path relative_path(fs::path p, const fs::path& relative_to) 
-{ 
-   using namespace fs;
-   path current = relative_to; 
-
-   // Trivial case 
-   if(equivalent(current, p)) return p; 
-
-
-   // Doesn't share a root 
-   if(!equivalent(current.root_path(), p.root_path())) 
-          return p; 
-
-
-   // We don't care about the root anymore 
-   // (and makes the rest easier) 
-   current = current.relative_path(); 
-   p = p.relative_path(); 
-
-
-   path final(".", native); 
-
-
-   path::iterator pit = p.begin(), 
-                 cit = current.begin(); 
-   // Find the shared directory 
-   for(;pit != p.end() && cit != current.end(); ++pit, ++cit) 
-          if(*pit != *cit) // May not be right 
-                  break; 
-
-
-   // Put needed parent dirs in 
-   while(cit != current.end()) 
-   { 
-          final = ".." / final; 
-          ++cit; 
-   } 
-
-
-   // Add the path from shared 
-   while(pit != p.end()) 
-          // Gah! Why doesn't *path::iterator return paths? 
-          final /= path(*pit++, native); 
-
-
-   // .normalize()? 
-   return final; 
-}
 
 static void compare_files(const fs::path& lhs, const fs::path& rhs, const fs::path& test_root)
 {
@@ -253,6 +205,15 @@ BOOST_FIXTURE_TEST_CASE(simple_exe, generator_tests)
 BOOST_FIXTURE_TEST_CASE(exe_and_static_lib, generator_tests)
 {
    test_name_ = "exe_and_static_lib";
+   load();
+   BOOST_REQUIRE_NO_THROW(instantiate("test"));
+   BOOST_REQUIRE_NO_THROW(run_generators());
+   check();
+}
+
+BOOST_FIXTURE_TEST_CASE(path_features, generator_tests)
+{
+   test_name_ = "path_features";
    load();
    BOOST_REQUIRE_NO_THROW(instantiate("test"));
    BOOST_REQUIRE_NO_THROW(run_generators());

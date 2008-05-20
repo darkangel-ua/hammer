@@ -8,6 +8,8 @@
 #include <hammer/src/type.h>
 #include <hammer/src/feature.h>
 #include <hammer/src/feature_set.h>
+#include <hammer/src/feature_registry.h>
+#include <hammer/src/fs_helpers.h>
 
 using namespace hammer;
 using namespace std;
@@ -81,10 +83,31 @@ void* get_features(void* t)
    return const_cast<feature_set*>(&bt->properties());
 }
 
-void check_feature(void* features, const char* name, const char* value)
+void check_feature(void* e, void* t, void* features, const char* name, const char* value)
 {
    const feature_set* fs = static_cast<const feature_set*>(features);
-   if (!fs->find(name, value))
+   const basic_target* bt = static_cast<const basic_target*>(t);
+   engine* eng = static_cast<engine*>(e);
+   const feature_def& fd = eng->feature_registry().get_def(name);
+   feature_set::const_iterator f = fs->find(name);
+   if (f == fs->end())
+   {
+      cout << "checker(0): error: Expected feature '" << name << "' not found.\n";
+      return;
+   }
+   
+   if (fd.attributes().path)
+   {
+      location_t p1(location_t((**f).get<feature::path_data>().target_->mtarget()->location().to_string()) / (**f).value().to_string());
+      location_t p = relative_path(location_t(bt->mtarget()->location().to_string()), 
+                                    p1);
+      if (p.string() != value)      
+         cout << "checker(0): error: Expected feature '" << name << "' with value '" << value << "' but found value '" << p << "'.\n";
+
+      return;
+   }
+
+   if ((*f)->value() != value)
       cout << "checker(0): error: Expected feature '" << name << "' with value '" << value << "' not found.\n";
 } 
 

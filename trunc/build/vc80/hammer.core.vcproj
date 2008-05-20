@@ -199,6 +199,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\fs_helpers.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\generated_target.cpp"
 				>
 			</File>
@@ -432,6 +436,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\file_target.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\fs_helpers.h"
 				>
 			</File>
 			<File

@@ -21,7 +21,9 @@ namespace hammer
          const_iterator end() const { return features_.end(); }
          const feature* get(const char* name) const; // throw if not found
          const feature* find(const char* name, const char* value) const;
-         const feature* find(const char* name) const; // find first occurrence 
+//         const feature* find(const char* name) const; // find first occurrence 
+         const_iterator find(const char* name) const; // find first occurrence 
+         const_iterator find(const_iterator from, const char* name) const; // find next occurrence 
          feature_set* join(const feature_set& rhs) const;
          void join(const feature_set& v);
          feature_set* clone() const;

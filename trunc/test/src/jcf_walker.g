@@ -20,10 +20,10 @@ target[void* t, int is_top]
 attributes[void* t] : ^(ATTRIBUTES attribute[t]+); 
 attribute[void* t] 
         : type[t] 
-        | features[get_features(t)]
+        | features[t, get_features(t)]
         | location[t] ;
         
 type[void* t]   : ^(TYPE_ATTR ID) { check_type(PARSER->super, t, $ID.text->chars); };   
-features[void* f] : ^(FEATURES_ATTR feature[f]+);
-feature[void* f]  : ^(FEATURE name=ID value=ID) { check_feature(f, $name.text->chars, $value.text->chars); };
+features[void* t, void* f] : ^(FEATURES_ATTR feature[t, f]+);
+feature[void* t, void* f]  : ^(FEATURE name=ID value=ID) { check_feature(PARSER->super, t, f, $name.text->chars, $value.text->chars); };
 location[void* t] : ^(LOCATION ID) { check_location(t, $ID.text->chars); };

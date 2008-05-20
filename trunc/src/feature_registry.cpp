@@ -94,7 +94,7 @@ namespace hammer{
       {
          if (!i->second.attributes().incidental &&
              !i->second.attributes().free &&
-             !s->find(i->first.c_str()))
+             s->find(i->first.c_str()) == s->end())
          {
             s->insert(create_feature(i->first, i->second.get_default()));
          }

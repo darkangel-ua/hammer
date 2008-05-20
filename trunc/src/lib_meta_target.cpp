@@ -20,10 +20,10 @@ lib_meta_target::lib_meta_target(hammer::project* p,
 
 const type* lib_meta_target::instantiate_type(const feature_set& fs) const
 {
-   const feature* link = fs.find("link");
-   if (link)
+   feature_set::const_iterator link = fs.find("link");
+   if (link != fs.end())
    {
-      if (link->value() == "static")
+      if ((*link)->value() == "static")
          return &this->project()->engine()->get_type_registry().resolve_from_name(types::STATIC_LIB);
       else
          return &this->project()->engine()->get_type_registry().resolve_from_name(types::SHARED_LIB);

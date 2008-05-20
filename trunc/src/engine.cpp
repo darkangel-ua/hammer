@@ -54,6 +54,11 @@ engine::engine(const boost::filesystem::path& root_path)
    }
 
    {
+      feature_attributes ft = {0}; ft.path = ft.free = 1;
+      fr->add_def(feature_def("include", vector<string>(), ft));
+   }
+
+   {
       feature_attributes ft = {0}; ft.propagated = 1;
       fr->add_def(feature_def("toolset", vector<string>(), ft));
    }

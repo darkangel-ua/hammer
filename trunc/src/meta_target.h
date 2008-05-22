@@ -2,6 +2,7 @@
 
 #include "pstring.h"
 #include <vector>
+#include "basic_meta_target.h"
 
 namespace hammer
 {
@@ -12,23 +13,20 @@ namespace hammer
    class generated_target;
    class main_target;
 
-   class meta_target
+   class meta_target : public basic_meta_target
    {
       public:
          typedef std::vector<pstring> sources_t;
 
-         meta_target(project* p, const pstring& name, const feature_set* props,
-                     const feature_set* usage_req);
-         const pstring& name() const { return name_; }
+         meta_target(project* p, const pstring& name, feature_set* props,
+                     feature_set* usage_req);
          void insert(const pstring& source);
          void insert(const std::vector<pstring>& srcs);
          void instantiate(const feature_set& build_request, 
                           std::vector<basic_target*>* result, 
                           feature_set* usage_requirements) const;
          const hammer::project* project() const { return project_; }
-         const pstring& location() const;
-         const feature_set& properties() const { return *requirements_; }
-         const feature_set& usage_requirements() const { return *usage_requirements_; }
+         virtual const pstring& location() const;
 
          virtual ~meta_target(){}
 
@@ -55,9 +53,6 @@ namespace hammer
 
       private:
          hammer::project* project_;
-         pstring name_;
          sources_t sources_;
-         const feature_set* requirements_;
-         const feature_set* usage_requirements_;
    };
 }

@@ -15,9 +15,8 @@ using namespace std;
 
 namespace hammer{
    meta_target::meta_target(hammer::project* p, const pstring& name, 
-                            const feature_set* props, const feature_set* usage_req) 
-                           : project_(p), name_(name), requirements_(props),
-                             usage_requirements_(usage_req)
+                            feature_set* props, feature_set* usage_req) 
+                           : basic_meta_target(name, props, usage_req), project_(p) 
    {
 
    }
@@ -66,7 +65,7 @@ namespace hammer{
                                  std::vector<basic_target*>* result, 
                                  feature_set* usage_requirements) const
    {
-      feature_set* mt_fs = requirements_->join(build_request);
+      feature_set* mt_fs = requirements().join(build_request);
       project_->engine()->feature_registry().add_defaults(mt_fs);
 
       vector<basic_target*> sources;
@@ -88,7 +87,7 @@ namespace hammer{
       instantiate_simple_targets(simple_targets, *mt_fs, *mt, &sources);
       
       mt->sources(sources);
-      usage_requirements->join(*usage_requirements_);
+      usage_requirements->join(this->usage_requirements());
       
       result->push_back(mt);
    }

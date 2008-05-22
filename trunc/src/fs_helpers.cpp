@@ -11,7 +11,8 @@ boost::filesystem::path relative_path(boost::filesystem::path p,
    path current = relative_to; 
 
    // Trivial case 
-   if(equivalent(current, p)) return p; 
+   if(equivalent(current, p)) 
+      return path("."); 
 
 
    // Doesn't share a root 

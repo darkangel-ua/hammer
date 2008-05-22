@@ -11,8 +11,8 @@ namespace hammer{
 
 lib_meta_target::lib_meta_target(hammer::project* p, 
                                  const pstring& name,
-                                 const feature_set* fs,
-                                 const feature_set* usage_req) 
+                                 feature_set* fs,
+                                 feature_set* usage_req) 
                                 : 
                                  meta_target(p, name, fs, usage_req)
 {

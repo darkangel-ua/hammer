@@ -6,13 +6,13 @@
 namespace hammer
 {
    class feature_def;
-   class main_target;
+   class basic_meta_target;
    class feature : public boost::noncopyable
    {
       public:
          struct path_data
          {
-            const main_target* target_;
+            const basic_meta_target* target_;
          };
 
          feature(const feature_def* def, const pstring& value);
@@ -21,6 +21,8 @@ namespace hammer
          feature_attributes attributes() const { return def_->attributes(); }
          template<typename T>
          const T& get() const { return get_impl(static_cast<const T*>(0)); }
+         template<typename T>
+         T& get() { return get_impl(static_cast<T*>(0)); }
          void set(const path_data& v) { path_data_ = v; }
 
       private:
@@ -29,5 +31,6 @@ namespace hammer
          path_data path_data_;
 
          const path_data& get_impl(const path_data*) const { return path_data_; }
+         path_data& get_impl(path_data*) { return path_data_; }
    };
 }

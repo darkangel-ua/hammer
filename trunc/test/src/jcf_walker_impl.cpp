@@ -98,10 +98,16 @@ void check_feature(void* e, void* t, void* features, const char* name, const cha
    
    if (fd.attributes().path)
    {
-      location_t p1(location_t((**f).get<feature::path_data>().target_->mtarget()->location().to_string()) / (**f).value().to_string());
-      location_t p = relative_path(location_t(bt->mtarget()->location().to_string()), 
-                                    p1);
-      if (p.string() != value)      
+      location_t p1(eng->root() / (**f).get<feature::path_data>().target_->location().to_string() / (**f).value().to_string());
+      location_t p2(eng->root() / bt->mtarget()->location().to_string());
+      p1.normalize();
+      p2.normalize();
+      location_t p = relative_path(p1, 
+                                   p2);
+      p.normalize();
+      location_t expected_path(value);
+      expected_path.normalize();
+      if (p != expected_path)      
          cout << "checker(0): error: Expected feature '" << name << "' with value '" << value << "' but found value '" << p << "'.\n";
 
       return;

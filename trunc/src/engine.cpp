@@ -121,7 +121,7 @@ boost::filesystem::path find_root(const boost::filesystem::path& initial_path)
 void engine::project_rule(project* p, std::vector<pstring>& name)
 {
    assert(name.size() == size_t(1));
-   p->id(name[0]);
+   p->name(name[0]);
 }
 
 void engine::lib_rule(project* p, std::vector<pstring>& name, std::vector<pstring>& sources, feature_set* fs,
@@ -129,6 +129,7 @@ void engine::lib_rule(project* p, std::vector<pstring>& name, std::vector<pstrin
 {
    if (!fs)
       fs = feature_registry_->make_set();
+
 
    if (!usage_requirements)
       usage_requirements = feature_registry_->make_set();

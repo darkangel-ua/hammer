@@ -7,16 +7,11 @@ using namespace std;
 
 namespace hammer{
 
-   project::project(const pstring& id, 
+   project::project(const pstring& name, 
                     const pstring& location, hammer::engine* e)
                    :
-                    id_(id), location_(location), engine_(e)
+                    basic_meta_target(name, 0, 0), location_(location), engine_(e)
    {
-   }
-
-   void project::id(const pstring& id)
-   {
-      this->id_ = id;
    }
 
   void project::add_target(std::auto_ptr<meta_target> t)

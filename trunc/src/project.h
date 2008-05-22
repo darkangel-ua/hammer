@@ -6,6 +6,7 @@
 #include <memory>
 #include <vector>
 #include "meta_target.h"
+#include "basic_meta_target.h"
 
 namespace hammer
 {
@@ -13,21 +14,19 @@ namespace hammer
    class engine;
    class base_target;
 
-   class project
+   class project : public basic_meta_target
    {
       public:
          typedef boost::ptr_multimap<const pstring, meta_target> targets_t;
 
-         project(const pstring& id,
+         project(const pstring& name,
                  const pstring& location,
                  engine* e);
 
          project(engine* e) : engine_(e) {};
          
-         const pstring& location() const { return location_; }
+         virtual const pstring& location() const { return location_; }
          void location(const pstring& l) { location_ = l; } 
-         const pstring& id() const { return id_; }
-         void id(const pstring& id);
          void add_target(std::auto_ptr<meta_target> t);
          const targets_t& targets() const { return targets_; }
          const meta_target* find_target(const pstring& name) const;
@@ -39,7 +38,6 @@ namespace hammer
                           std::vector<basic_target*>* result) const;
 
       private:
-         pstring id_;
          pstring location_;
          targets_t targets_;
          hammer::engine* engine_;

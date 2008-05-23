@@ -9,6 +9,7 @@
 #include "../../feature.h"
 #include "../../feature_def.h"
 #include "../../feature_registry.h"
+#include "../../fs_helpers.h"
 
 using namespace std;
    
@@ -17,6 +18,7 @@ namespace hammer{ namespace project_generators{
 struct msvc_project::options
 {
    std::ostringstream defines_;
+   std::ostringstream includes_;
 };
 
 msvc_project::msvc_project(engine& e, const boost::guid& uid) 
@@ -103,16 +105,37 @@ unsigned int msvc_project::resolve_configuration_type(const variant& v) const
             throw std::runtime_error("[msvc_project] Can't resolve type '" + v.target_->type().name() + "'.");
 } 
 
-void msvc_project::fill_options(const feature_set& props, options* opts) const
+void msvc_project::fill_options(const feature_set& props, options* opts, const main_target& mt) const
 {
    const feature_def& define_def = engine_->feature_registry().get_def("define");
+   const feature_def& include_def = engine_->feature_registry().get_def("include");
    for(feature_set::const_iterator i = props.begin(), last = props.end(); i != last; ++i)
    {
       if ((**i).def() == define_def)
       {
          opts->defines_ << (**i).value() << ';';
       }
+      else
+         if ((**i).def() == include_def)
+         {
+            const basic_meta_target* bmt = (**i).get_path_data().target_;
+            location_t p1(engine_->root() / bmt->location().to_string());
+            p1.normalize();
+            location_t p2(engine_->root() / mt.location().to_string() / (**i).value().to_string() / "vc80");
+            p2.normalize();
+            location_t p = relative_path(p1, p2);
+            p.normalize();
+
+            opts->includes_ << p << ';';
+         }
    }
+}
+
+void msvc_project::write_includes(std::ostream& os, const options& opts) const
+{
+   string s = opts.includes_.str();
+   if (!s.empty())
+      os << "            AdditionalIncludeDirectories=\"" << opts.includes_.str() << "\"\n";
 }
 
 void msvc_project::write_configurations(std::ostream& s) const
@@ -122,7 +145,7 @@ void msvc_project::write_configurations(std::ostream& s) const
    for(variants_t::const_iterator i = variants_.begin(), last = variants_.end(); i != last; ++i)
    {
       options opts;
-      fill_options(*i->properties_, &opts);
+      fill_options(*i->properties_, &opts, *i->target_);
       s << "      <Configuration\n"
            "         Name=\"" << i->name_ << "|Win32\"\n"
            "         OutputDirectory=\"$(SolutionDir)$(ConfigurationName)\"\n"
@@ -132,9 +155,10 @@ void msvc_project::write_configurations(std::ostream& s) const
 
       s << "         <Tool\n"
            "            Name=\"VCCLCompilerTool\"\n"
-           "            PreprocessorDefinitions=\"" << opts.defines_.str() << "\"\n"
-           "         />\n";
+           "            PreprocessorDefinitions=\"" << opts.defines_.str() << "\"\n";
+      write_includes(s, opts);
         
+      s << "         />\n";
       s << "      </Configuration>\n";
    }
 

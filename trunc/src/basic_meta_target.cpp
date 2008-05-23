@@ -11,7 +11,7 @@ static void adjust_feature_set(feature_set* f, const basic_meta_target* t)
    for(iter i = f->begin(), last = f->end(); i != last; ++i)
    {
       if ((**i).attributes().path)
-         (**i).get<feature::path_data>().target_ = t;
+         (**i).get_path_data().target_ = t;
    }
 }
 

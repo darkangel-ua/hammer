@@ -106,7 +106,8 @@ namespace hammer
             void gether_files() const;
             void insert_into_files(const basic_target* t) const;
             unsigned int resolve_configuration_type(const variant& v) const;
-            void fill_options(const feature_set& props, options* opts) const;
+            void fill_options(const feature_set& props, options* opts, const main_target& mt) const;
+            void write_includes(std::ostream& os, const options& opts) const;
       };
    }
 }

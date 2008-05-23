@@ -20,7 +20,7 @@ namespace hammer
          bool parse(const char* file_name);
          bool parse(const boost::filesystem::path& file_name);
          void walk(hammer_walker_context* ctx);
-         ~parser() { reset(); }
+         ~parser();
 
       private:
          pANTLR3_INPUT_STREAM input_;

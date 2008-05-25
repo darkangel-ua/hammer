@@ -1,13 +1,11 @@
 #include "stdafx.h"
 #include "feature_registry.h"
-#include <boost/assign/std/vector.hpp>
 #include <boost/checked_delete.hpp>
 #include "feature_set.h"
 #include "feature.h"
 #include <list>
 
 using namespace std;
-using namespace boost::assign;
 
 namespace hammer{
 
@@ -20,7 +18,7 @@ namespace hammer{
       typedef std::list<feature_set*> defs_list_t;
       typedef std::list<feature*> features_list_t;
       
-      const feature_def* find_def(const char* name) const;
+      feature_def* find_def(const char* name);
 
       pool* pstring_pool_;
       defs_t defs_;
@@ -28,9 +26,9 @@ namespace hammer{
       features_list_t features_list_;
    };
    
-   const feature_def* feature_registry::impl_t::find_def(const char* name) const
+   feature_def* feature_registry::impl_t::find_def(const char* name)
    {
-      defs_t::const_iterator i = defs_.find(string(name));
+      defs_t::iterator i = defs_.find(string(name));
       if (i == defs_.end())
          throw runtime_error("Unknown feature '" + string(name) + "'");
 
@@ -50,13 +48,6 @@ namespace hammer{
 
    feature_registry::feature_registry(pool* p) : impl_(new impl_t(p))
    {
-      {
-         feature_attributes ft = {0};
-         ft.propagated = 1;
-         vector<string> v;
-         v += "debug", "release";
-         add_def(feature_def("variant", v, ft));
-      }
    }
 
    feature_registry::~feature_registry()
@@ -96,12 +87,12 @@ namespace hammer{
              !i->second.attributes().free &&
              s->find(i->first.c_str()) == s->end())
          {
-            s->insert(create_feature(i->first, i->second.get_default()));
+            s->join(create_feature(i->first, i->second.get_default()));
          }
       }
    }
 
-   const feature_def& feature_registry::get_def(const std::string& name) const
+   feature_def& feature_registry::get_def(const std::string& name)
    {
       return *impl_->find_def(name.c_str());
    }

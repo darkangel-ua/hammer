@@ -14,7 +14,7 @@ namespace hammer
          struct impl_t;
          feature_registry(pool* p);
          void add_def(const feature_def& def);
-         const feature_def& get_def(const std::string& name) const;
+         feature_def& get_def(const std::string& name);
          feature_set* make_set();
          feature* create_feature(const char* name, const char* value) const;
          feature* create_feature(const std::string& name, const std::string& value) const

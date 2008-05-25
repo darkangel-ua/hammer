@@ -116,6 +116,12 @@ void msvc_solution::add_target(boost::intrusive_ptr<const build_node> node)
    impl_->name_ = p->meta_target().name().to_string();
 }
 
+static bool less_by_name(const msvc_project* lhs, 
+                         const msvc_project* rhs)
+{
+   return lhs->name() < rhs->name();
+}
+
 void msvc_solution::write() const
 {
    boost::filesystem::ofstream f;
@@ -136,12 +142,20 @@ void msvc_solution::write() const
 
    impl_->generate_dependencies(dependencies.begin(), dependencies.end());
 
-   set<string> variant_names;
+   // стабилизируем порядок проектов с солюшине, а то он все время меняется и 
+   // невозможно нормально это тестировать
+   typedef vector<const msvc_project*> sorted_projects_t;
+   sorted_projects_t sorted_projects;
    for(iter i = impl_->projects_.begin(), last = impl_->projects_.end(); i != last; ++i)
+      sorted_projects.push_back(i->second);
+
+   sort(sorted_projects.begin(), sorted_projects.end(), less_by_name);
+   set<string> variant_names;
+   for(sorted_projects_t::const_iterator i = sorted_projects.begin(), last = sorted_projects.end(); i != last; ++i)
    {
-      impl_->write_project_section(f, *i->second);
+      impl_->write_project_section(f, **i);
       typedef msvc_project::variants_t::const_iterator viter;
-      for(viter v = i->second->variants().begin(), vlast = i->second->variants().end(); v != vlast; ++v)
+      for(viter v = (*i)->variants().begin(), vlast = (*i)->variants().end(); v != vlast; ++v)
          variant_names.insert(v->name_);
    }
    

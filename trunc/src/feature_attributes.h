@@ -12,5 +12,6 @@ namespace hammer
       unsigned path       : 1;
       unsigned implicit   : 1;
       unsigned dependency : 1;
+      unsigned composite  : 1;
    };
 }

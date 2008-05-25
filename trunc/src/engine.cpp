@@ -5,11 +5,14 @@
 #include "types.h"
 #include "basic_target.h"
 #include "feature_registry.h"
+#include "feature_set.h"
+#include "feature.h"
 #include "parser.h"
 #include <boost/bind.hpp>
 #include "lib_meta_target.h"
 #include "typed_meta_target.h"
 #include <boost/assign/list_of.hpp>
+#include <boost/assign/std/vector.hpp>
 #include "generator_registry.h"
 
 #include "msvc_generator.h"
@@ -47,6 +50,9 @@ engine::engine(const boost::filesystem::path& root_path)
    resolver_.insert("project", boost::function<void (project*, vector<pstring>&)>(boost::bind(&engine::project_rule, this, _1, _2)));
    resolver_.insert("lib", boost::function<void (project*, vector<pstring>&, vector<pstring>&, feature_set*, feature_set*, feature_set*)>(boost::bind(&engine::lib_rule, this, _1, _2, _3, _4, _5, _6)));
    resolver_.insert("exe", boost::function<void (project*, vector<pstring>&, vector<pstring>&, feature_set*, feature_set*, feature_set*)>(boost::bind(&engine::exe_rule, this, _1, _2, _3, _4, _5, _6)));
+   resolver_.insert("import", boost::function<void (vector<pstring>&)>(boost::bind(&engine::import_rule, this, _1)));
+   resolver_.insert("feature.feature", boost::function<void (project*, vector<pstring>&, vector<pstring>*, vector<pstring>&)>(boost::bind(&engine::feature_feature_rule, this, _1, _2, _3, _4)));
+   resolver_.insert("feature.compose", boost::function<void (project*, feature_set&, feature_set&)>(boost::bind(&engine::feature_compose_rule, this, _1, _2, _3)));
 
    {
       feature_attributes ft = {0}; ft.free = 1;
@@ -68,6 +74,15 @@ engine::engine(const boost::filesystem::path& root_path)
       fr->add_def(feature_def("link", boost::assign::list_of<string>("shared")("static"), ft));
    }
    feature_registry_ = fr.release();
+
+   {
+      using namespace boost::assign;
+      feature_attributes ft = {0};
+      ft.propagated = 1;
+      vector<string> v;
+      v += "debug", "release";
+      feature_registry_->add_def(feature_def("variant", v, ft));
+   }
 
    generators_.reset(new generator_registry);
    add_msvc_generators(*this, generators());
@@ -152,6 +167,76 @@ void engine::exe_rule(project* p, std::vector<pstring>& name, std::vector<pstrin
                                                   get_type_registry().resolve_from_name(types::EXE.name())));
    mt->insert(sources);
    p->add_target(mt);
+}
+
+void engine::import_rule(std::vector<pstring>& name)
+{
+
+}
+
+static feature_attributes resolve_attributes(std::vector<pstring>& attributes)
+{
+   typedef std::vector<pstring>::const_iterator iter;
+   feature_attributes result = {0};
+   
+   iter i = find(attributes.begin(), attributes.end(), "propagated");
+   if (i != attributes.end())
+      result.propagated = true;
+
+   i = find(attributes.begin(), attributes.end(), "composite");
+   if (i != attributes.end())
+      result.composite = true;
+
+   i = find(attributes.begin(), attributes.end(), "free");
+   if (i != attributes.end())
+      result.free = true;
+
+   i = find(attributes.begin(), attributes.end(), "path");
+   if (i != attributes.end())
+      result.path = true;
+   
+   i = find(attributes.begin(), attributes.end(), "incidental");
+   if (i != attributes.end())
+      result.incidental = true;
+
+   i = find(attributes.begin(), attributes.end(), "optional");
+   if (i != attributes.end())
+      result.optional = true;
+
+   i = find(attributes.begin(), attributes.end(), "symmetric");
+   if (i != attributes.end())
+      result.symmetric = true;
+
+   return result;
+}
+
+void engine::feature_feature_rule(project* p, std::vector<pstring>& name, 
+                                  std::vector<pstring>* values,
+                                  std::vector<pstring>& attributes)
+{
+   if (name.empty() || name.size() > 1)
+      throw std::runtime_error("[feature.feature] Bad feature name.");
+
+   vector<string> def_values;
+   if (values)
+   {
+      for(vector<pstring>::const_iterator i = values->begin(), last = values->end(); i != last; ++i)
+         def_values.push_back(i->to_string());
+   }
+
+   feature_def def(name[0].to_string(), def_values, resolve_attributes(attributes));
+
+   feature_registry_->add_def(def);
+}
+
+void engine::feature_compose_rule(project* p, feature_set& fs, feature_set& components)
+{
+   if (fs.size() != 1)
+      throw std::runtime_error("[feature.compose] Bad feature name.");
+
+   feature_set* cc = components.clone();
+   const feature& f = **fs.begin();
+   feature_registry_->get_def(f.def().name()).compose(f.value().to_string(), cc);
 }
 
 }

@@ -61,7 +61,7 @@ void hammer_add_feature_to_list(void* context, void* args_list, const char* feat
 {
    hammer_walker_context* ctx = static_cast<hammer_walker_context*>(context);
    call_resolver_call_arg<feature_set>* args_list_ = static_cast<call_resolver_call_arg<feature_set>*>(args_list);
-   args_list_->value()->insert(feature_name, feature_value);
+   args_list_->value()->join(feature_name, feature_value);
 }
 
 /*

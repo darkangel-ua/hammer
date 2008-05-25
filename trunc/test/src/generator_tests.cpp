@@ -167,8 +167,8 @@ struct generator_tests
    void instantiate(const char* target_name)
    {
       feature_set* build_request = engine_.feature_registry().make_set();
-      build_request->insert("variant", "release");
-      build_request->insert("toolset", "msvc");
+      build_request->join("variant", "release");
+      build_request->join("toolset", "msvc");
       p_->instantiate(target_name, *build_request, &itargets_);
       BOOST_REQUIRE(checker_.parse(test_data_path / "generator_tests" / test_name_ / "check.jcf"));
       BOOST_CHECK(checker_.walk(itargets_, &engine_));
@@ -193,6 +193,7 @@ struct generator_tests
    std::string test_name_;
 };
 
+/*
 BOOST_FIXTURE_TEST_CASE(simple_exe, generator_tests)
 {
    test_name_ = "simple_exe";
@@ -219,3 +220,13 @@ BOOST_FIXTURE_TEST_CASE(path_features, generator_tests)
    BOOST_REQUIRE_NO_THROW(run_generators());
    check();
 }
+
+BOOST_FIXTURE_TEST_CASE(composite_features, generator_tests)
+{
+   test_name_ = "composite_features";
+   load();
+   BOOST_REQUIRE_NO_THROW(instantiate("test"));
+   BOOST_REQUIRE_NO_THROW(run_generators());
+   check();
+}
+*/

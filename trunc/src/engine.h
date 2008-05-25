@@ -48,6 +48,10 @@ namespace hammer
                        feature_set* fs, feature_set* default_build, feature_set* usage_requirements);
          void exe_rule(project*p, std::vector<pstring>& name, std::vector<pstring>& sources, feature_set* fs, 
                        feature_set* default_build, feature_set* usage_requirements);
+         void import_rule(std::vector<pstring>& name);
+         void feature_feature_rule(project* p, std::vector<pstring>& name, std::vector<pstring>* values,
+                                   std::vector<pstring>& attributes);
+         void feature_compose_rule(project* p, feature_set& f, feature_set& components);
    };
 
    boost::filesystem::path find_root(const boost::filesystem::path& initial_path);

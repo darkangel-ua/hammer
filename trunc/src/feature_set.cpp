@@ -2,23 +2,53 @@
 #include "feature_set.h"
 #include "feature_registry.h"
 #include "feature.h"
+#include <iterator>
 
 using namespace std;
 
 namespace hammer{
 
-   feature_set::feature_set(feature_registry* fr) : fr_(fr)
+   feature_set::feature_set(feature_registry* fr) : fr_(fr), size_(0)
    {
    }
 
-   void feature_set::insert(const char* name, const char* value)
+   feature_set& feature_set::join(const char* name, const char* value)
    {
-      features_.push_back(fr_->create_feature(name, value));
+      return join(fr_->create_feature(name, value));
    }
 
-   void feature_set::insert(feature* f)
+   static size_t compute_size(const feature& f)
    {
-      features_.push_back(f);
+      if (f.attributes().composite)
+         return f.composite_size();
+      else
+         return 1;
+   }
+
+   feature_set& feature_set::join(feature* f)
+   {
+      if (!f->attributes().free)
+      {
+         iterator i = find(f->name());
+         if (i != end())
+         {
+            size_t old_size = compute_size(**i);
+            *i = f;
+            size_ = size_ - old_size + compute_size(*f);
+         }
+         else
+         {
+            features_.push_back(f);
+            size_ += compute_size(*f);
+         }
+      }
+      else
+      {
+         features_.push_back(f);
+         size_ += compute_size(*f);
+      }
+      
+      return *this;
    }
 
    const feature* feature_set::get(const char* name_) const
@@ -29,7 +59,19 @@ namespace hammer{
       
       return *f;
    }
+   
+   feature_set::iterator feature_set::deconstify(const_iterator i)
+   {
+      iterator result = features_.begin();
+      std::advance(result, std::distance<feature_set::const_iterator>(features_.begin(), i));
+      return result;
+   }
 
+   feature_set::iterator feature_set::find(const char* name)
+   {
+      return deconstify(static_cast<const feature_set*>(this)->find(name));
+   }
+   
    feature_set::const_iterator feature_set::find(const char* name) const
    {
       return find(features_.begin(), name);
@@ -44,6 +86,11 @@ namespace hammer{
       return features_.end();
    }
 
+   feature_set::iterator feature_set::find(iterator from, const char* name)
+   {
+      return deconstify(static_cast<const feature_set*>(this)->find(from, name));
+   }
+
    const feature* feature_set::find(const char* name, const char* value) const
    {
       for(features_t::const_iterator i = features_.begin(), last = features_.end(); i != last; ++i)
@@ -52,17 +99,6 @@ namespace hammer{
 
       return 0;
    }
-
-/*
-   const feature* feature_set::find(const char* name) const
-   {
-      for(features_t::const_iterator i = features_.begin(), last = features_.end(); i != last; ++i)
-         if ((**i).def().name() == name )
-            return *i;
-
-      return 0;
-   }
-*/
 
    void feature_set::join_impl(feature_set* lhs, const feature_set& rhs) const
    {
@@ -90,13 +126,12 @@ namespace hammer{
       return result;
    }
 
-   void feature_set::add_propagated(const feature_set& v)
+   void feature_set::copy_propagated(const feature_set& v)
    {
       for(const_iterator i = v.begin(), last = v.end(); i != last; ++i)
       {
          if ((*i)->attributes().propagated)
-            insert(*i);
+            join(*i);
       }
    }
-
 }

@@ -27,19 +27,6 @@ void feature_def::set_default(const std::string& v)
    default_ = v;
 }
 
-static size_t compute_size(const feature_set& fs)
-{
-   size_t result = 0;
-   for(feature_set::const_iterator i = fs.begin(), last = fs.end(); i != last; ++i)
-   {
-      ++result;
-      if ((**i).attributes().composite)
-         result += (**i).def().composite_size((**i).value().to_string());
-   }
-
-   return result + 1;
-}
-
 void feature_def::compose(const std::string& value, feature_set* c)
 {
    assert(attributes().composite);
@@ -48,17 +35,18 @@ void feature_def::compose(const std::string& value, feature_set* c)
    if (i != components_.end())
       throw std::runtime_error("Feature components already defined.");
 
-   components_.insert(make_pair(value, component_t(c, compute_size(*c))));
+   components_.insert(make_pair(value, component_t(c, 0)));
 }
 
-size_t feature_def::composite_size(const std::string& value) const
+void feature_def::expand_composites(const std::string value, feature_set* fs) const
 {
    assert(attributes().composite);
    components_t::const_iterator i = components_.find(value);
    if (i == components_.end())
-      throw std::runtime_error("There is no such value '" + value + "' in legals values.");
-   
-   return i->second.size_;  
+      throw std::runtime_error("The feature def '" + name() + "' doesn't have composite value '" + value + "'.");
+
+   for(feature_set::const_iterator f = i->second.components_->begin(), last = i->second.components_->end(); f != last; ++f)
+      fs->join(*f);
 }
 
 feature_def::~feature_def()

@@ -19,7 +19,7 @@ namespace hammer
          const std::string& get_default() const { return default_; }
          feature_attributes attributes() const { return attributes_; }
          void compose(const std::string& value, feature_set* c); // take ownership of c
-         size_t composite_size(const std::string& value) const;
+         void expand_composites(const std::string value, feature_set* fs) const;
          ~feature_def(); 
          bool operator ==(const feature_def& rhs) const { return this == &rhs; }
 

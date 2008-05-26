@@ -22,7 +22,6 @@ namespace hammer
          feature_attributes attributes() const { return def_->attributes(); }
          const path_data& get_path_data() const { return path_data_; }
          path_data& get_path_data() { return path_data_; }
-         size_t composite_size() const { return def().composite_size(value().to_string()); }
 
       private:
          const feature_def* def_;

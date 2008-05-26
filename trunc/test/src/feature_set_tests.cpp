@@ -101,7 +101,3 @@ BOOST_FIXTURE_TEST_CASE(simple_composite, enviroment)
    f->join("variant", "debug");
    BOOST_REQUIRE_EQUAL(f->size(), 3);
 }
-
-BOOST_FIXTURE_TEST_CASE(walk_over_composite, enviroment)
-{
-}

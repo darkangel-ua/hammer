@@ -7,7 +7,7 @@ namespace hammer
 {
    class feature;
    class feature_registry;
-
+   class feature_def; 
    class feature_set : public boost::noncopyable
    {
       public:
@@ -32,14 +32,14 @@ namespace hammer
          void join(const feature_set& v);
          feature_set* clone() const;
          void copy_propagated(const feature_set& rhs);
-         size_t size() const { return size_; }
+         size_t size() const { return features_.size(); }
 
       private:
          feature_registry* fr_;
          features_t features_;
-         size_t size_;
 
          void join_impl(feature_set* lhs, const feature_set& rhs) const;
          iterator deconstify(const_iterator i);
+         void add_composites(const feature_def& def);
    };
 }

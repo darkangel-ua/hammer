@@ -8,7 +8,7 @@ using namespace std;
 
 namespace hammer{
 
-   feature_set::feature_set(feature_registry* fr) : fr_(fr), size_(0)
+   feature_set::feature_set(feature_registry* fr) : fr_(fr)
    {
    }
 
@@ -17,36 +17,21 @@ namespace hammer{
       return join(fr_->create_feature(name, value));
    }
 
-   static size_t compute_size(const feature& f)
-   {
-      if (f.attributes().composite)
-         return f.composite_size();
-      else
-         return 1;
-   }
-
    feature_set& feature_set::join(feature* f)
    {
       if (!f->attributes().free)
       {
          iterator i = find(f->name());
          if (i != end())
-         {
-            size_t old_size = compute_size(**i);
             *i = f;
-            size_ = size_ - old_size + compute_size(*f);
-         }
          else
-         {
             features_.push_back(f);
-            size_ += compute_size(*f);
-         }
+
+         if (f->attributes().composite)
+            f->def().expand_composites(f->value().to_string(), this);
       }
       else
-      {
          features_.push_back(f);
-         size_ += compute_size(*f);
-      }
       
       return *this;
    }

@@ -1,8 +1,6 @@
 #ifndef __HAMMER_WALKER_IMPL__
 #define __HAMMER_WALKER_IMPL__
 
-#include <antlr3collections.h>
-
 #ifdef __cplusplus
 extern "C"
 {

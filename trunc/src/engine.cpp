@@ -14,7 +14,6 @@
 #include <boost/assign/list_of.hpp>
 #include <boost/assign/std/vector.hpp>
 #include "generator_registry.h"
-
 #include "msvc_generator.h"
 
 using namespace std;
@@ -98,7 +97,7 @@ const project& engine::load_project(location_t project_path)
    ctx.project_->location(pstring(pstring_pool(), project_path.string()));
    ctx.call_resolver_ = &resolver_;
 
-   parser p;
+   parser p(this);
    if (!p.parse((root_path_ / project_path / "jamfile").native_file_string().c_str()))
       throw runtime_error("Can't load project at '"  + (root_path_ / project_path).string() + ": parser errors");
 

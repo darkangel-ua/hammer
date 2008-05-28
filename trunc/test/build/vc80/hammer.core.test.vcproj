@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;..\..\..\..\libantlr3c-3.0.1\include&quot;;..\..\..\..\;..\..\..\..\boost_1_34_1;..\..\..\..\boost.guid"
+				AdditionalIncludeDirectories="&quot;..\..\..\..\libantlr3c-3.1b2\include&quot;;..\..\..\..\;..\..\..\..\boost_1_34_1;..\..\..\..\boost.guid"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="true"
 				ExceptionHandling="2"
@@ -118,7 +118,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;..\..\..\..\libantlr3c-3.0.1\include&quot;;..\..\..\..\;..\..\..\..\boost_1_34_1;..\..\..\..\boost.guid"
+				AdditionalIncludeDirectories="&quot;..\..\..\..\libantlr3c-3.1b2\include&quot;;..\..\..\..\;..\..\..\..\boost_1_34_1;..\..\..\..\boost.guid"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				ExceptionHandling="2"
 				RuntimeLibrary="2"

@@ -9,6 +9,11 @@ FEATURE_LIST;
 FEATURE;
 }
 
+@header
+{
+        #include "../hammer_parser_context.h"
+}
+
 project :        rules;
 rules :  rule*;
 rule    :       ID rule_args ';' -> ^(RULE_CALL ID rule_args);

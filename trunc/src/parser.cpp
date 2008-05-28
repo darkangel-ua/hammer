@@ -1,12 +1,19 @@
 #include "stdafx.h"
 #include "parser.h"
+#include "hammer_parser_context.h"
+#include <antlr3recognizersharedstate.h>
 
 using namespace std;
 
 namespace hammer{
 
-   parser::parser() : input_(0), lexer_(0),
-                      tstream_(0), parser_(0)
+   static void displayRecognitionError(pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_UINT8 * tokenNames)
+   {
+      static_cast<details::hammer_parser_context*>(static_cast<pANTLR3_PARSER>(recognizer->super)->super)->base_displayRecognitionError(recognizer, tokenNames);
+   }
+
+   parser::parser(engine* e) : engine_(e), input_(0), lexer_(0),
+                               tstream_(0), parser_(0)
    {
       memset(&langAST_, 0, sizeof(langAST_));
    }
@@ -33,11 +40,16 @@ namespace hammer{
 
       input_	= antlr3AsciiFileStreamNew((pANTLR3_UINT8)file_name);
       lexer_ = hammerLexerNew(input_);
-      tstream_ = antlr3CommonTokenStreamSourceNew(ANTLR3_SIZE_HINT, lexer_->pLexer->tokSource);
+      tstream_ = antlr3CommonTokenStreamSourceNew(ANTLR3_SIZE_HINT, TOKENSOURCE(lexer_));
       parser_ = hammerParserNew(tstream_);
+      details::hammer_parser_context ctx;
+      ctx.base_displayRecognitionError = parser_->pParser->rec->displayRecognitionError;
+      parser_->pParser->rec->displayRecognitionError = &displayRecognitionError;
+      ctx.engine_ = engine_;
+      parser_->pParser->super = &ctx;
       langAST_ = parser_->rules(parser_);
-      return parser_->pParser->rec->errorCount == 0 && 
-		       lexer_->pLexer->rec->error == 0;
+
+      return ctx.error_count_ == 0;
    }
    
    void parser::reset()

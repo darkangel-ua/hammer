@@ -41,7 +41,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/EHsc"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\build;&quot;..\..\..\libantlr3c-3.0.1\include&quot;;..\..\..\boost_1_34_1;..\..\..\boost.guid"
+				AdditionalIncludeDirectories="..\..\src\build;&quot;..\..\..\libantlr3c-3.1b2\include&quot;;..\..\..\boost_1_34_1;..\..\..\boost.guid"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB"
 				MinimalRebuild="true"
 				ExceptionHandling="0"
@@ -105,7 +105,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\..\src\build;&quot;..\..\..\libantlr3c-3.0.1\include&quot;;..\..\..\boost_1_34_1;..\..\..\boost.guid"
+				AdditionalIncludeDirectories="..\..\src\build;&quot;..\..\..\libantlr3c-3.1b2\include&quot;;..\..\..\boost_1_34_1;..\..\..\boost.guid"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
@@ -219,6 +219,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\hammer_parser_context.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\build\hammer_walker.c"
 				>
 				<FileConfiguration
@@ -275,7 +279,7 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -456,6 +460,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\generator_registry.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\hammer_parser_context.h"
 				>
 			</File>
 			<File

@@ -32,6 +32,7 @@ struct test_evn
    }
 };
      
+/*
 BOOST_FIXTURE_TEST_CASE(parser_test, test_evn)
 {       
 //   _CrtSetBreakAlloc(1240);
@@ -44,6 +45,7 @@ BOOST_FIXTURE_TEST_CASE(parser_test, test_evn)
    BOOST_CHECK(p.parse(tp / "rule_with_string_list"));
    BOOST_CHECK(p.parse(tp / "rule_with_feature_list"));
 }
+*/
 
 static bool no_args_test_pass = false;
 
@@ -52,6 +54,7 @@ static void no_args(project* p)
    no_args_test_pass = true;   
 }
 
+/*
 struct call_resolver_env
 {
    call_resolver_env() : tp_(test_data_path / "call_resolver_test"), engine_(tp_)
@@ -69,7 +72,9 @@ struct call_resolver_env
    call_resolver resolver_;
    hammer_walker_context hwc_;
 };
+*/
 
+/*
 BOOST_FIXTURE_TEST_CASE(no_args_test, call_resolver_env)
 {       
    resolver_.insert("no_args", boost::function<void(project*)>(&no_args));
@@ -83,6 +88,7 @@ BOOST_FIXTURE_TEST_CASE(non_existing_rule_test, call_resolver_env)
    BOOST_CHECK(parse("non_existing_rule"));
    BOOST_REQUIRE_THROW(walk(), std::exception); 
 }
+*/
 
 static void one_arg_rule(project* p, std::vector<pstring>* a)
 {
@@ -91,12 +97,14 @@ static void one_arg_rule(project* p, std::vector<pstring>* a)
    BOOST_CHECK_EQUAL(a->at(0), "arg1");
 }
 
+/*
 BOOST_FIXTURE_TEST_CASE(one_arg_rule_test, call_resolver_env)
 {       
    resolver_.insert("one_arg", boost::function<void (project*, vector<pstring>*)>(&one_arg_rule));
    BOOST_CHECK(parse("one_arg"));
    BOOST_REQUIRE_NO_THROW(walk()); 
 }
+*/
 
 static void one_optional_arg(project* p, std::vector<pstring>* a, bool must_be_null)
 {
@@ -112,6 +120,7 @@ static void one_optional_arg(project* p, std::vector<pstring>* a, bool must_be_n
    }
 }
 
+/*
 BOOST_FIXTURE_TEST_CASE(one_optional_arg_rule, call_resolver_env)
 {       
    resolver_.insert("one_optional_arg_with_arg", boost::function<void (project*, vector<pstring>*)>(boost::bind(&one_optional_arg, _1, _2, false)));
@@ -119,6 +128,7 @@ BOOST_FIXTURE_TEST_CASE(one_optional_arg_rule, call_resolver_env)
    BOOST_CHECK(parse("one_optional_arg"));
    BOOST_REQUIRE_NO_THROW(walk()); 
 }
+*/
 
 static void one_required_arg(project* p, std::vector<pstring>& a)
 {
@@ -126,6 +136,7 @@ static void one_required_arg(project* p, std::vector<pstring>& a)
    BOOST_REQUIRE_EQUAL(a[0], "arg1");
 }
  
+/*
 BOOST_FIXTURE_TEST_CASE(one_required_arg_with_arg_rule, call_resolver_env)
 {       
    resolver_.insert("one_required_arg", boost::function<void (project* p, vector<pstring>&)>(&one_required_arg));
@@ -151,3 +162,4 @@ BOOST_FIXTURE_TEST_CASE(wrong_arg_type, call_resolver_env)
    BOOST_CHECK(parse("wrong_arg_type"));
    BOOST_REQUIRE_THROW(walk(), std::exception); 
 }
+*/

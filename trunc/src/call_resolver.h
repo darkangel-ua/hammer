@@ -191,10 +191,28 @@ namespace hammer
          boost::function<T> f_;
    };
 
+   namespace
+   {
+      template<typename T, int idx>
+      void push_arg_impl(std::vector<call_resolver_arg_def>* args, boost::mpl::int_<idx>)
+      {
+         typedef typename boost::mpl::at_c<typename boost::function_types::parameter_types<T>::type, idx>::type arg_t;
+         typedef typename boost::remove_pointer<arg_t>::type not_a_pointer_arg_t;
+         typedef typename boost::remove_reference<not_a_pointer_arg_t>::type pure_arg_t;
+         args->insert(args->begin(), call_resolver_arg_def(&typeid(pure_arg_t)));
+         push_arg_impl<T>(args, boost::mpl::int_<idx - 1>());
+      }
+
+      template<typename T>
+      void push_arg_impl(std::vector<call_resolver_arg_def>* args, boost::mpl::int_<-1>){}
+   }
+
    template<typename T>
    std::vector<call_resolver_arg_def> make_args()
    {
-      return std::vector<call_resolver_arg_def>();
+      std::vector<call_resolver_arg_def> result;
+      push_arg_impl<T>(&result, boost::mpl::int_<boost::function_types::function_arity<T>::value>());
+      return result;
    }
 
    class call_resolver : public boost::noncopyable

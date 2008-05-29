@@ -9,7 +9,10 @@ namespace hammer{
 
    static void displayRecognitionError(pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_UINT8 * tokenNames)
    {
-      static_cast<details::hammer_parser_context*>(static_cast<pANTLR3_PARSER>(recognizer->super)->super)->base_displayRecognitionError(recognizer, tokenNames);
+      
+      details::hammer_parser_context* ctx = static_cast<details::hammer_parser_context*>(static_cast<pANTLR3_PARSER>(recognizer->super)->super);
+      ++ctx->error_count_;
+      ctx->base_displayRecognitionError(recognizer, tokenNames);
    }
 
    parser::parser(engine* e) : engine_(e), input_(0), lexer_(0),

@@ -3,12 +3,9 @@
 #include <boost/noncopyable.hpp>
 #include <boost/filesystem/path.hpp>
 
-extern "C"
-{
 #  include "build/hammerLexer.h"
 #  include "build/hammerParser.h"
 #  include "build/hammer_walker.h"
-};
 
 namespace hammer
 {

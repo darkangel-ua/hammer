@@ -27,6 +27,25 @@ struct jcf_parser::impl_t
    jcfParser_jsf_file_return langAST_;
 };
 
+namespace 
+{
+   struct jcf_parser_context
+   {
+      jcf_parser_context() : error_count_(0) {}
+
+      void (*base_displayRecognitionError)(pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_UINT8 * tokenNames);
+      unsigned int error_count_;
+   };
+   
+   void displayRecognitionError(pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_UINT8 * tokenNames)
+   {
+
+      jcf_parser_context* ctx = static_cast<jcf_parser_context*>(static_cast<pANTLR3_PARSER>(recognizer->super)->super);
+      ++ctx->error_count_;
+      ctx->base_displayRecognitionError(recognizer, tokenNames);
+   }
+}
+
 jcf_parser::jcf_parser() : impl_(new impl_t)
 {
 }
@@ -51,10 +70,12 @@ bool jcf_parser::parse(const char* file_name)
    impl_->tstream_ = antlr3CommonTokenStreamSourceNew(ANTLR3_SIZE_HINT, TOKENSOURCE(impl_->lexer_));
    impl_->parser_ = jcfParserNew(impl_->tstream_);
    impl_->langAST_ = impl_->parser_->jsf_file(impl_->parser_);
+
+   jcf_parser_context ctx;
+   ctx.base_displayRecognitionError = impl_->parser_->pParser->rec->displayRecognitionError;
+   impl_->parser_->pParser->super = &ctx;
    
- //  return impl_->parser_->pParser->rec->errorCount == 0 && 
-//          impl_->lexer_->pLexer->rec->error == 0;
-   return true;
+   return ctx.error_count_ == 0;
 }
 
 void jcf_parser::reset()

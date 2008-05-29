@@ -30,6 +30,7 @@ namespace hammer
          generator_registry& generators() const { return *generators_; }
          const location_t& root() const { return root_path_; }
          hammer::feature_registry& feature_registry() { return *feature_registry_; }
+         hammer::call_resolver& call_resolver() { return resolver_; }
          ~engine();
 
       private:
@@ -40,7 +41,7 @@ namespace hammer
          boost::shared_ptr<type_registry> type_registry_;
          pool pool_;
          hammer::feature_registry* feature_registry_;
-         call_resolver resolver_;
+         hammer::call_resolver resolver_;
          boost::shared_ptr<generator_registry> generators_;
 
          void project_rule(project* p, std::vector<pstring>& name);

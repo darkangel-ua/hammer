@@ -9,20 +9,24 @@ FEATURE_LIST;
 FEATURE;
 }
 
-@header
+@parser::preincludes
 {
         #include "../hammer_parser_context.h"
+        using namespace hammer::details;
 }
 
 project :        rules;
 rules :  rule*;
-rule    :       ID rule_args ';' -> ^(RULE_CALL ID rule_args);
+rule    :       ID { on_enter_rule(PARSER, $ID.text->chars); } rule_args ';' -> ^(RULE_CALL ID rule_args);
 rule_args  : rule_posible_args? maybe_arg*;
 maybe_arg 
         : ':' rule_posible_args -> rule_posible_args
         | ':' -> ^(NULL_ARG)
         ;               
-rule_posible_args : string_list -> ^(STRING_LIST string_list)
+rule_posible_args 
+@init{ on_rule_argument(PARSER); } 
+                  : string_list -> ^(STRING_LIST string_list)
+                  | { argument_is_feature(PARSER) }? feature -> ^(FEATURE feature)
                   | feature_list -> ^(FEATURE_LIST feature_list);
 string_list : string+;
 feature_list : feature+;

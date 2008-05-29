@@ -71,6 +71,7 @@ namespace hammer
                                      : result_def_(result_def), args_(args) {}
          virtual std::auto_ptr<call_resolver_call_arg_base> invoke(args_list_t& args) = 0;
          virtual ~call_resolver_function_base() {}
+         const args_t& args() const { return args_; }
 
       protected:
          args_t args_;
@@ -201,6 +202,7 @@ namespace hammer
          typedef std::map<std::string, boost::shared_ptr<call_resolver_function_base> > functions_t;
 
       public:
+         typedef functions_t::const_iterator const_iterator;
          template<typename T>
          void insert(const std::string& func_name, boost::function<T> f)
          {
@@ -216,7 +218,9 @@ namespace hammer
          }
 
          std::auto_ptr<call_resolver_call_arg_base> invoke(const char* func_name, args_list_t& args);
-      
+         const_iterator find(const char* func_name) const;
+         const_iterator end() const { return functions_.end(); }
+
       private:
          functions_t functions_;
 

@@ -19,7 +19,7 @@
          CharacterSet="1">
          <Tool
             Name="VCCLCompilerTool"
-            PreprocessorDefinitions=""
+            PreprocessorDefinitions="WIN32;"
          />
       </Configuration>
    </Configurations>

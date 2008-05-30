@@ -24,9 +24,9 @@ maybe_arg
         | ':' -> ^(NULL_ARG)
         ;               
 rule_posible_args 
-@init{ on_rule_argument(PARSER); } 
+@init{ on_rule_argument(PARSER); bool is_feature = argument_is_feature(PARSER); } 
                   : string_list -> ^(STRING_LIST string_list)
-                  | { argument_is_feature(PARSER) }? feature -> ^(FEATURE feature)
+                  | { is_feature }? feature
                   | feature_list -> ^(FEATURE_LIST feature_list);
 string_list : string+;
 feature_list : feature+;

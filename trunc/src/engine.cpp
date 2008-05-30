@@ -51,7 +51,7 @@ engine::engine(const boost::filesystem::path& root_path)
    resolver_.insert("exe", boost::function<void (project*, vector<pstring>&, vector<pstring>&, feature_set*, feature_set*, feature_set*)>(boost::bind(&engine::exe_rule, this, _1, _2, _3, _4, _5, _6)));
    resolver_.insert("import", boost::function<void (vector<pstring>&)>(boost::bind(&engine::import_rule, this, _1)));
    resolver_.insert("feature.feature", boost::function<void (project*, vector<pstring>&, vector<pstring>*, vector<pstring>&)>(boost::bind(&engine::feature_feature_rule, this, _1, _2, _3, _4)));
-   resolver_.insert("feature.compose", boost::function<void (project*, feature_set&, feature_set&)>(boost::bind(&engine::feature_compose_rule, this, _1, _2, _3)));
+   resolver_.insert("feature.compose", boost::function<void (project*, feature&, feature_set&)>(boost::bind(&engine::feature_compose_rule, this, _1, _2, _3)));
 
    {
       feature_attributes ft = {0}; ft.free = 1;
@@ -228,13 +228,9 @@ void engine::feature_feature_rule(project* p, std::vector<pstring>& name,
    feature_registry_->add_def(def);
 }
 
-void engine::feature_compose_rule(project* p, feature_set& fs, feature_set& components)
+void engine::feature_compose_rule(project* p, feature& f, feature_set& components)
 {
-   if (fs.size() != 1)
-      throw std::runtime_error("[feature.compose] Bad feature name.");
-
    feature_set* cc = components.clone();
-   const feature& f = **fs.begin();
    feature_registry_->get_def(f.def().name()).compose(f.value().to_string(), cc);
 }
 

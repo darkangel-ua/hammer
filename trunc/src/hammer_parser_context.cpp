@@ -18,7 +18,7 @@ void on_enter_rule(pANTLR3_PARSER parser, pANTLR3_UINT8 rule_name_)
    if (i == resolver.end())
       throw std::runtime_error("Unknown rule '" + string(rule_name) + "'.");
    ctx.current_rule_ = i;
-   ctx.current_arg_ = -1;
+   ctx.current_arg_ = 0; // first argument always project*
 }
 
 void on_rule_argument(pANTLR3_PARSER parser)

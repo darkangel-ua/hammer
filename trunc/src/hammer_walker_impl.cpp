@@ -10,6 +10,8 @@
 #include "call_resolver.h"
 #include <boost/ptr_container/ptr_vector.hpp>
 #include "feature_set.h"
+#include "feature_registry.h"
+#include "feature.h"
 
 using namespace std;
 using namespace hammer;
@@ -62,6 +64,14 @@ void hammer_add_feature_to_list(void* context, void* args_list, const char* feat
    hammer_walker_context* ctx = static_cast<hammer_walker_context*>(context);
    call_resolver_call_arg<feature_set>* args_list_ = static_cast<call_resolver_call_arg<feature_set>*>(args_list);
    args_list_->value()->join(feature_name, feature_value);
+}
+
+void hammer_add_feature_argument(void* context, void* args_list, const char* feature_name, const char* feature_value)
+{
+   hammer_walker_context* ctx = static_cast<hammer_walker_context*>(context);
+   args_list_t* args_list_ = static_cast<args_list_t*>(args_list);
+   call_resolver_call_arg<feature>* arg = new call_resolver_call_arg<feature>(ctx->engine_->feature_registry().create_feature(feature_name, feature_value), false);
+   args_list_->push_back(arg);
 }
 
 /*

@@ -51,7 +51,6 @@ namespace hammer{
       ctx.engine_ = engine_;
       parser_->pParser->super = &ctx;
       langAST_ = parser_->rules(parser_);
-
       return ctx.error_count_ == 0;
    }
    
@@ -73,6 +72,10 @@ namespace hammer{
 
    void parser::walk(hammer_walker_context* ctx)
    {
+      // if parsed empty file than tree will be null
+      if (!langAST_.tree)
+         return;
+
       pANTLR3_COMMON_TREE_NODE_STREAM nodes;
       phammer_walker          hammer_walker;
 

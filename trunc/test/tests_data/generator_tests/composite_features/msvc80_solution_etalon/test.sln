@@ -1,10 +1,10 @@
 Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual Studio 2005
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lib1", "D:/Projects/C++/hammer/test/build/vc80/../../tests_data/generator_tests/path_features/lib1/vc80/lib1.vcproj", "{00000000-0000-0000-0000-000000000002}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "a", "D:/Projects/C++/hammer/test/build/vc80/../../tests_data/generator_tests/composite_features/vc80/a.vcproj", "{00000000-0000-0000-0000-000000000002}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test", "D:/Projects/C++/hammer/test/build/vc80/../../tests_data/generator_tests/path_features/vc80/test.vcproj", "{00000000-0000-0000-0000-000000000001}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test", "D:/Projects/C++/hammer/test/build/vc80/../../tests_data/generator_tests/composite_features/vc80/test.vcproj", "{00000000-0000-0000-0000-000000000001}"
 	ProjectSection(ProjectDependencies) = postProject
 		{00000000-0000-0000-0000-000000000002} = {00000000-0000-0000-0000-000000000002}
 	EndProjectSection

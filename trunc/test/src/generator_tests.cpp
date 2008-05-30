@@ -46,6 +46,7 @@ namespace
       public:
          test_msvc_solution(engine& e) : msvc_solution(e)
          {
+            fill(id_, id_ + 16, 0);
          }
 
       protected:
@@ -56,10 +57,8 @@ namespace
          }
       
       private:
-         static unsigned char id_[16];
+         mutable unsigned char id_[16];
    };
-
-   unsigned char test_msvc_solution::id_[16] = {0};
 }
 
 struct generator_tests

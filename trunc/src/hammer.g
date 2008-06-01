@@ -31,10 +31,9 @@ maybe_arg
 rule_posible_args 
 @init{ 
 	on_rule_argument(PARSER); 
-	bool is_feature = argument_is_feature(PARSER); 
 } 
                   : string_list -> ^(STRING_LIST string_list)
-                  | { is_feature }? feature
+                  | { argument_is_feature(PARSER) }? WS+ feature -> feature
                   | { argument_is_requirements(PARSER) }? requirements -> ^(REQUIREMENTS_DECL requirements)
                   | feature_list -> ^(FEATURE_LIST feature_list);
 string_list : (WS+ string)+ -> string+;

@@ -192,7 +192,6 @@ struct generator_tests
    std::string test_name_;
 };
 
-/*
 BOOST_FIXTURE_TEST_CASE(simple_exe, generator_tests)
 {
    test_name_ = "simple_exe";
@@ -220,7 +219,6 @@ BOOST_FIXTURE_TEST_CASE(path_features, generator_tests)
    check();
 }
 
-*/
 BOOST_FIXTURE_TEST_CASE(composite_features, generator_tests)
 {
    test_name_ = "composite_features";

@@ -1,0 +1,2 @@
+lib a : a.cpp : <link>static:<define>STATIC_HERE : : <link>static:<define>STATIC_UP ;
+exe test : a main.cpp : <variant>debug:<define>WIN32 ;

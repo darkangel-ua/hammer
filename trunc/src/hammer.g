@@ -18,9 +18,11 @@ CONDITION;
         using namespace hammer::details;
 }
 
-project :        rules;
+project : WS* rules -> rules;
 rules :  rule*;
-rule    :       WS* ID { on_enter_rule(PARSER, $ID.text->chars); } rule_args WS+ ';' -> ^(RULE_CALL ID rule_args);
+rule    : ID { on_enter_rule(PARSER, $ID.text->chars); } rule_args WS+ ';' rule_tail -> ^(RULE_CALL ID rule_args);
+rule_tail : WS+
+          | ;
 rule_args  : rule_posible_args? maybe_arg*;
 maybe_arg 
         : WS+ ':' rule_posible_args -> rule_posible_args

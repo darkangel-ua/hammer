@@ -29,7 +29,7 @@ const type* lib_meta_target::instantiate_type(const feature_set& fs) const
          return &this->project()->engine()->get_type_registry().resolve_from_name(types::SHARED_LIB);
    }
 
-   assert(false && "This is must be unreachible.");
+   assert(false && "This is must be unreachable.");
    return 0;
 }
 

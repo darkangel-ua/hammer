@@ -30,6 +30,8 @@ namespace hammer
 
    bool operator == (const pstring& lhs, const char* rhs);
    inline bool operator != (const pstring& lhs, const char* rhs) { return !(lhs == rhs); }
+   inline bool operator != (const pstring& lhs, const pstring& rhs) { return !(lhs == rhs.begin()); }
    bool operator == (const pstring& lhs, const pstring& rhs);
+   inline bool operator == (const std::string& lhs, const pstring& rhs) { return rhs == lhs.c_str(); }
 
 }

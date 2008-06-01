@@ -12,13 +12,15 @@ namespace hammer
    class type;
    class generated_target;
    class main_target;
+   class requirements_decl;
 
    class meta_target : public basic_meta_target
    {
       public:
          typedef std::vector<pstring> sources_t;
 
-         meta_target(project* p, const pstring& name, feature_set* props,
+         meta_target(project* p, const pstring& name, 
+                     const requirements_decl& props,
                      feature_set* usage_req);
          void insert(const pstring& source);
          void insert(const std::vector<pstring>& srcs);

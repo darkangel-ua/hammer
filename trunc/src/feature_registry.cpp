@@ -96,5 +96,4 @@ namespace hammer{
    {
       return *impl_->find_def(name.c_str());
    }
-
 }

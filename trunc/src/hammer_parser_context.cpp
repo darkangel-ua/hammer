@@ -2,6 +2,8 @@
 #include "hammer_parser_context.h"
 #include "engine.h"
 #include "feature.h"
+#include "requirements_decl.h"
+
 using namespace std;
 
 namespace hammer{ namespace details{
@@ -31,6 +33,12 @@ bool argument_is_feature(pANTLR3_PARSER parser)
 {
    MAKE_CTX();
    return ctx.current_rule_->second->args().at(ctx.current_arg_).ti() == typeid(hammer::feature);
+}
+ 
+bool argument_is_requirements(pANTLR3_PARSER parser)
+{
+   MAKE_CTX();
+   return ctx.current_rule_->second->args().at(ctx.current_arg_).ti() == typeid(hammer::requirements_decl);
 }
 
 }}

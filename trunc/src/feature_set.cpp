@@ -23,12 +23,20 @@ namespace hammer{
       {
          iterator i = find(f->name());
          if (i != end())
-            *i = f;
+         {
+            if ((**i).value() != f->value())
+            {
+               *i = f;
+               if (f->attributes().composite)
+                  f->def().expand_composites(f->value().to_string(), this);
+            }
+         }
          else
+         {
             features_.push_back(f);
-
-         if (f->attributes().composite)
-            f->def().expand_composites(f->value().to_string(), this);
+            if (f->attributes().composite)
+               f->def().expand_composites(f->value().to_string(), this);
+         }
       }
       else
          features_.push_back(f);
@@ -119,4 +127,31 @@ namespace hammer{
             join(*i);
       }
    }
+
+   feature_set::const_iterator feature_set::find(const feature& f) const
+   {
+      if (f.attributes().free)
+      {
+         for(const_iterator i = find(f.name()), last = end(); i != last;)
+            if ((**i).value() == f.value())
+               return i;
+            else
+               i = find(i, f.name());
+         
+         return end();
+      }
+      else
+         return find(f.name());
+   }
+
+   void set_path_data(feature_set* f, const basic_meta_target* t)
+   {
+      typedef feature_set::iterator iter;
+      for(iter i = f->begin(), last = f->end(); i != last; ++i)
+      {
+         if ((**i).attributes().path)
+            (**i).get_path_data().target_ = t;
+      }
+   }
+
 }

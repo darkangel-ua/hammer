@@ -10,12 +10,15 @@
 #include "feature.h"
 #include <boost/regex.hpp>
 #include "location.h"
+#include "requirements_decl.h"
 
 using namespace std;
 
 namespace hammer{
-   meta_target::meta_target(hammer::project* p, const pstring& name, 
-                            feature_set* props, feature_set* usage_req) 
+   meta_target::meta_target(hammer::project* p, 
+                            const pstring& name, 
+                            const requirements_decl& props, 
+                            feature_set* usage_req) 
                            : basic_meta_target(name, props, usage_req), project_(p) 
    {
 
@@ -65,7 +68,8 @@ namespace hammer{
                                  std::vector<basic_target*>* result, 
                                  feature_set* usage_requirements) const
    {
-      feature_set* mt_fs = requirements().join(build_request);
+      feature_set* mt_fs = build_request.clone();
+      requirements().eval(mt_fs, project()->engine()->feature_registry());
       project_->engine()->feature_registry().add_defaults(mt_fs);
 
       vector<basic_target*> sources;
@@ -74,7 +78,9 @@ namespace hammer{
       meta_targets_t meta_targets;
       split_sources(&simple_targets, &meta_targets);
 
-      instantiate_meta_targets(meta_targets, *mt_fs, &sources, usage_requirements);
+      feature_set* build_request_with_propagated = build_request.clone();
+      build_request_with_propagated->copy_propagated(*mt_fs);
+      instantiate_meta_targets(meta_targets, *build_request_with_propagated, &sources, usage_requirements);
       
       mt_fs->join(*usage_requirements);
       main_target* mt = new(project_->engine()->targets_pool()) 

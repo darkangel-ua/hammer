@@ -45,6 +45,11 @@ void* hammer_make_feature_list(void* context)
    return new call_resolver_call_arg<feature_set>(new feature_set(&ctx->engine_->feature_registry()), false);
 }
 
+void* hammer_make_requirements_decl()
+{
+   return new call_resolver_call_arg<requirements_decl>(new requirements_decl, true);
+}
+
 void hammer_add_arg_to_args_list(void* args_list, void* arg)
 {
    args_list_t* args_list_ = static_cast<args_list_t*>(args_list);
@@ -74,46 +79,39 @@ void hammer_add_feature_argument(void* context, void* args_list, const char* fea
    args_list_->push_back(arg);
 }
 
-/*
-static type* type_from_file_name(const char* file_name)
-{
-   return 0;
-}      
-
-void hammer_make_project(void* context, const char* project_id)
+void* hammer_create_feature(void* context, const char* feature_name, const char* feature_value)
 {
    hammer_walker_context* ctx = static_cast<hammer_walker_context*>(context);
-   auto_ptr<project> p(new project(pstring(ctx->engine_->pstring_pool(), project_id), ctx->location_, ctx->engine_));
-   ctx->engine_->insert(p.get());
-   ctx->project_ = p.release();
+   return ctx->engine_->feature_registry().create_feature(feature_name, feature_value);
 }
 
-static void* hammer_add_meta_target(void* context, const char* target_id, const type& t)
+void* hammer_make_requirements_condition()
 {
-   hammer_walker_context* ctx = static_cast<hammer_walker_context*>(context);
-   auto_ptr<meta_target> mt(new meta_target(ctx->project_, 
-                                            pstring(ctx->engine_->pstring_pool(), target_id), 
-                                            ctx->engine_->get_type_registry().resolve_from_name(t.name())));
-   meta_target* result = mt.get();
-   ctx->project_->add_target(mt);
-   return result;
+   return new linear_and_condition;
 }
 
-void* hammer_add_lib_meta_target(void* context, const char* target_id)
+void hammer_add_conditional_to_rdecl(void* condition, void* rdecl)
 {
-   return hammer_add_meta_target(context, target_id, types::LIB);
+   call_resolver_call_arg<requirements_decl>* r = static_cast<call_resolver_call_arg<requirements_decl>*>(rdecl);
+   std::auto_ptr<requirement_base> c(static_cast<linear_and_condition*>(condition)); 
+   r->value()->add(c);
 }
 
-void* hammer_add_exe_meta_target(void* context, const char* target_id)
+void hammer_add_feature_to_rdecl(void* feature, void* rdecl)
 {
-   return hammer_add_meta_target(context, target_id, types::EXE);
+   call_resolver_call_arg<requirements_decl>* r = static_cast<call_resolver_call_arg<requirements_decl>*>(rdecl);
+   std::auto_ptr<requirement_base> nr(new just_feature_requirement(static_cast<hammer::feature*>(feature)));
+   r->value()->add(nr);
 }
 
-void hammer_add_target_to_mt(void* context, void* mt_, const char* target_name_)
+void hammer_set_condition_result(void* condition, void* feature)
 {
-   hammer_walker_context* ctx = static_cast<hammer_walker_context*>(context);
-   meta_target* mt = static_cast<meta_target*>(mt_);
-   pstring target_name(ctx->engine_->pstring_pool(), target_name_);
-   mt->insert(target_name);
+   linear_and_condition* c = static_cast<linear_and_condition*>(condition);
+   c->result(static_cast<hammer::feature*>(feature));
 }
-*/
+
+void hammer_add_feature_to_condition(void* feature, void* condition)
+{
+   linear_and_condition* c = static_cast<linear_and_condition*>(condition);
+   c->add(static_cast<hammer::feature*>(feature));
+}

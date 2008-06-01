@@ -22,7 +22,14 @@ extern "C"
    void hammer_add_id_to_string_list(void* context, void* string_list, const char* id);
    void hammer_add_feature_to_list(void* context, void* args_list, const char* feature_name, const char* feature_value);
    void hammer_add_feature_argument(void* context, void* args_list, const char* feature_name, const char* feature_value);
-   
+   // requirements
+   void* hammer_make_requirements_decl();
+   void* hammer_make_requirements_condition();
+   void* hammer_create_feature(void* context, const char* feature_name, const char* feature_value);
+   void hammer_add_conditional_to_rdecl(void* condition, void* rdecl);
+   void hammer_add_feature_to_rdecl(void* feature, void* rdecl);
+   void hammer_set_condition_result(void* condition, void* feature);
+   void hammer_add_feature_to_condition(void* feature, void* condition);
 #ifdef __cplusplus
 };
 #endif

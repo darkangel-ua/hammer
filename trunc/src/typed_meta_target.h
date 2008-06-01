@@ -10,9 +10,9 @@ namespace hammer
    {
       public:
          typed_meta_target(hammer::project* p, const pstring& name, 
-                           feature_set* fs, feature_set* usage_req,
+                           const requirements_decl& req, feature_set* usage_req,
                            const hammer::type& t) :  
-            meta_target(p, name, fs, usage_req), type_(&t)
+            meta_target(p, name, req, usage_req), type_(&t)
          {
          }
          

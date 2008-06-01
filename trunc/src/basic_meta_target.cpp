@@ -2,28 +2,23 @@
 #include "basic_meta_target.h"
 #include "feature_set.h"
 #include "feature.h"
+#include "requirements_decl.h"
 
 namespace hammer{
 
-static void adjust_feature_set(feature_set* f, const basic_meta_target* t)
-{
-   typedef feature_set::const_iterator iter;
-   for(iter i = f->begin(), last = f->end(); i != last; ++i)
-   {
-      if ((**i).attributes().path)
-         (**i).get_path_data().target_ = t;
-   }
-}
-
 basic_meta_target::basic_meta_target(const pstring& name, 
-                                     feature_set* req, 
+                                     const requirements_decl& req, 
                                      feature_set* usage_req)
                                      : name_(name),
                                      requirements_(req),
                                      usage_requirements_(usage_req)
 {
-   adjust_feature_set(requirements_, this);   
-   adjust_feature_set(usage_requirements_, this);   
+   requirements_.setup_path_data(this);
+   set_path_data(usage_requirements_, this);
+}
+
+basic_meta_target::~basic_meta_target()
+{
 }
 
 }

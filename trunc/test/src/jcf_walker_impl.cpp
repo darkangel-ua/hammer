@@ -89,15 +89,10 @@ void check_feature(void* e, void* t, void* features, const char* name, const cha
    const basic_target* bt = static_cast<const basic_target*>(t);
    engine* eng = static_cast<engine*>(e);
    const feature_def& fd = eng->feature_registry().get_def(name);
-   feature_set::const_iterator f = fs->find(*eng->feature_registry().create_feature(name, value));
-   if (f == fs->end())
-   {
-      cout << "checker(0): error: Expected feature '" << name << "' with value '" << value << "' not found.\n";
-      return;
-   }
    
    if (fd.attributes().path)
    {
+      feature_set::const_iterator f = fs->find(name);
       location_t p1(eng->root() / (**f).get_path_data().target_->location().to_string() / (**f).value().to_string());
       location_t p2(eng->root() / bt->mtarget()->location().to_string());
       p1.normalize();
@@ -110,6 +105,13 @@ void check_feature(void* e, void* t, void* features, const char* name, const cha
       if (p != expected_path)      
          cout << "checker(0): error: Expected feature '" << name << "' with value '" << value << "' but found value '" << p << "'.\n";
 
+      return;
+   }
+
+   feature_set::const_iterator f = fs->find(*eng->feature_registry().create_feature(name, value));
+   if (f == fs->end())
+   {
+      cout << "checker(0): error: Expected feature '" << name << "' with value '" << value << "' not found.\n";
       return;
    }
 } 

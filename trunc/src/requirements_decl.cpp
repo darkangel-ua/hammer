@@ -76,6 +76,13 @@ void requirements_decl::eval(feature_set* result,
       i->eval(result, fr);
 }
 
+void requirements_decl::eval(const feature_set& build_request, 
+                             feature_set* result) const
+{
+   for(impl_t::requirements_t::const_iterator i = impl_->requirements_.begin(), last = impl_->requirements_.end(); i != last; ++i)
+      i->eval(build_request, result);
+}
+
 void linear_and_condition::eval(feature_set* result, 
                                 feature_registry& fr) const
 {
@@ -83,6 +90,17 @@ void linear_and_condition::eval(feature_set* result,
    for(features_t::const_iterator i = features_.begin(), last = features_.end(); i != last; ++i)
       satisfy = satisfy && (result->find(**i) != result->end() ||
                             fr.get_def((**i).name()).get_default() == (**i).value());
+
+   if (satisfy)
+      result->join(result_);
+}
+
+void linear_and_condition::eval(const feature_set& build_request,
+                                feature_set* result) const
+{
+   bool satisfy = true;
+   for(features_t::const_iterator i = features_.begin(), last = features_.end(); i != last; ++i)
+      satisfy = satisfy && (build_request.find(**i) != build_request.end());
 
    if (satisfy)
       result->join(result_);
@@ -96,6 +114,12 @@ void linear_and_condition::setup_path_data(const basic_meta_target* t)
 
 void just_feature_requirement::eval(feature_set* result, 
                                     feature_registry& fr) const
+{
+   result->join(f_);
+}
+
+void just_feature_requirement::eval(const feature_set& build_request,
+                                    feature_set* result) const
 {
    result->join(f_);
 }

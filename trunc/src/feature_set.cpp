@@ -136,7 +136,7 @@ namespace hammer{
             if ((**i).value() == f.value())
                return i;
             else
-               i = find(i, f.name());
+               i = find(++i, f.name());
          
          return end();
       }

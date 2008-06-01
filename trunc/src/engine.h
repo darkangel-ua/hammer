@@ -47,9 +47,9 @@ namespace hammer
 
          void project_rule(project* p, std::vector<pstring>& name);
          void lib_rule(project* p, std::vector<pstring>& name, std::vector<pstring>& sources, 
-                       requirements_decl* fs, feature_set* default_build, feature_set* usage_requirements);
+                       requirements_decl* fs, feature_set* default_build, requirements_decl* usage_requirements);
          void exe_rule(project* p, std::vector<pstring>& name, std::vector<pstring>& sources, requirements_decl* fs, 
-                       feature_set* default_build, feature_set* usage_requirements);
+                       feature_set* default_build, requirements_decl* usage_requirements);
          void import_rule(std::vector<pstring>& name);
          void feature_feature_rule(project* p, std::vector<pstring>& name, std::vector<pstring>* values,
                                    std::vector<pstring>& attributes);

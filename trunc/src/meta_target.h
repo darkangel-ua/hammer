@@ -12,7 +12,6 @@ namespace hammer
    class type;
    class generated_target;
    class main_target;
-   class requirements_decl;
 
    class meta_target : public basic_meta_target
    {
@@ -21,7 +20,7 @@ namespace hammer
 
          meta_target(project* p, const pstring& name, 
                      const requirements_decl& props,
-                     feature_set* usage_req);
+                     const requirements_decl& usage_req);
          void insert(const pstring& source);
          void insert(const std::vector<pstring>& srcs);
          void instantiate(const feature_set& build_request, 

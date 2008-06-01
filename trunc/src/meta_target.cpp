@@ -18,7 +18,7 @@ namespace hammer{
    meta_target::meta_target(hammer::project* p, 
                             const pstring& name, 
                             const requirements_decl& props, 
-                            feature_set* usage_req) 
+                            const requirements_decl& usage_req) 
                            : basic_meta_target(name, props, usage_req), project_(p) 
    {
 
@@ -93,7 +93,7 @@ namespace hammer{
       instantiate_simple_targets(simple_targets, *mt_fs, *mt, &sources);
       
       mt->sources(sources);
-      usage_requirements->join(this->usage_requirements());
+      this->usage_requirements().eval(*mt_fs, usage_requirements);
       
       result->push_back(mt);
    }

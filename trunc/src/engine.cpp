@@ -47,8 +47,8 @@ engine::engine(const boost::filesystem::path& root_path)
    auto_ptr<hammer::feature_registry> fr(new hammer::feature_registry(&pstring_pool()));
 
    resolver_.insert("project", boost::function<void (project*, vector<pstring>&)>(boost::bind(&engine::project_rule, this, _1, _2)));
-   resolver_.insert("lib", boost::function<void (project*, vector<pstring>&, vector<pstring>&, requirements_decl*, feature_set*, feature_set*)>(boost::bind(&engine::lib_rule, this, _1, _2, _3, _4, _5, _6)));
-   resolver_.insert("exe", boost::function<void (project*, vector<pstring>&, vector<pstring>&, requirements_decl*, feature_set*, feature_set*)>(boost::bind(&engine::exe_rule, this, _1, _2, _3, _4, _5, _6)));
+   resolver_.insert("lib", boost::function<void (project*, vector<pstring>&, vector<pstring>&, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::lib_rule, this, _1, _2, _3, _4, _5, _6)));
+   resolver_.insert("exe", boost::function<void (project*, vector<pstring>&, vector<pstring>&, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::exe_rule, this, _1, _2, _3, _4, _5, _6)));
    resolver_.insert("import", boost::function<void (vector<pstring>&)>(boost::bind(&engine::import_rule, this, _1)));
    resolver_.insert("feature.feature", boost::function<void (project*, vector<pstring>&, vector<pstring>*, vector<pstring>&)>(boost::bind(&engine::feature_feature_rule, this, _1, _2, _3, _4)));
    resolver_.insert("feature.compose", boost::function<void (project*, feature&, feature_set&)>(boost::bind(&engine::feature_compose_rule, this, _1, _2, _3)));
@@ -139,23 +139,19 @@ void engine::project_rule(project* p, std::vector<pstring>& name)
 }
 
 void engine::lib_rule(project* p, std::vector<pstring>& name, std::vector<pstring>& sources, requirements_decl* requirements,
-                      feature_set* default_build, feature_set* usage_requirements)
+                      feature_set* default_build, requirements_decl* usage_requirements)
 {
-   if (!usage_requirements)
-      usage_requirements = feature_registry_->make_set();
-
-   auto_ptr<meta_target> mt(new lib_meta_target(p, name.at(0), requirements ? *requirements : requirements_decl(), usage_requirements));
+   auto_ptr<meta_target> mt(new lib_meta_target(p, name.at(0), requirements ? *requirements : requirements_decl(), 
+                                                usage_requirements ? *usage_requirements : requirements_decl()));
    mt->insert(sources);
    p->add_target(mt);
 }
 
 void engine::exe_rule(project* p, std::vector<pstring>& name, std::vector<pstring>& sources, requirements_decl* requirements,
-                      feature_set* default_build, feature_set* usage_requirements)
+                      feature_set* default_build, requirements_decl* usage_requirements)
 {
-   if (!usage_requirements)
-      usage_requirements = feature_registry_->make_set();
-
-   auto_ptr<meta_target> mt(new typed_meta_target(p, name.at(0), requirements ? *requirements : requirements_decl(), usage_requirements, 
+   auto_ptr<meta_target> mt(new typed_meta_target(p, name.at(0), requirements ? *requirements : requirements_decl(), 
+                                                  usage_requirements ? *usage_requirements : requirements_decl(), 
                                                   get_type_registry().resolve_from_name(types::EXE.name())));
    mt->insert(sources);
    p->add_target(mt);

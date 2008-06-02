@@ -16,7 +16,6 @@ struct instantiation_tests
 {
    instantiation_tests() : engine_(test_data_path)
    {
-
    }
    
    const project& load()

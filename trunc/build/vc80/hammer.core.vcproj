@@ -341,6 +341,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\project_requirements_decl.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\pstring.cpp"
 				>
 			</File>
@@ -532,6 +536,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\project.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\project_requirements_decl.h"
 				>
 			</File>
 			<File

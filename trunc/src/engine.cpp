@@ -26,6 +26,7 @@ namespace hammer{
 engine::engine(const boost::filesystem::path& root_path) 
    : root_path_(root_path), feature_registry_(0)
 {
+//   _CrtSetBreakAlloc(959);
    type_registry_.reset(new type_registry);
    auto_ptr<type> cpp(new type(types::CPP));
    type_registry_->insert(cpp);
@@ -89,21 +90,30 @@ engine::engine(const boost::filesystem::path& root_path)
 
 const project& engine::load_project(location_t project_path)
 {
-   project_path.normalize();
    hammer_walker_context ctx;
-   ctx.engine_ = this;
-   ctx.location_ = project_path;
-   ctx.project_ = new project(this);
-   ctx.project_->location(pstring(pstring_pool(), project_path.string()));
-   ctx.call_resolver_ = &resolver_;
+   try
+   {
+      project_path.normalize();
+      ctx.engine_ = this;
+      ctx.location_ = project_path;
+      ctx.project_ = new project(this);
+      ctx.project_->location(pstring(pstring_pool(), project_path.string()));
+      ctx.call_resolver_ = &resolver_;
 
-   parser p(this);
-   if (!p.parse((root_path_ / project_path / "jamfile").native_file_string().c_str()))
-      throw runtime_error("Can't load project at '"  + (root_path_ / project_path).string() + ": parser errors");
+      parser p(this);
+      if (!p.parse((root_path_ / project_path / "jamfile").native_file_string().c_str()))
+         throw runtime_error("Can't load project at '"  + (root_path_ / project_path).string() + ": parser errors");
 
-   p.walk(&ctx);
-   assert(ctx.project_);
-   return *ctx.project_;
+      p.walk(&ctx);
+      assert(ctx.project_);
+      insert(ctx.project_);
+      return *ctx.project_;
+   }
+   catch(...)
+   {
+      delete ctx.project_;
+      throw;
+   }
 }
 
 void engine::insert(project* p)

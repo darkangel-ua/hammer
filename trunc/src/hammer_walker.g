@@ -23,7 +23,8 @@ args[void* args_list] : string_list[args_list] |
 			feature_list[args_list] | 
 			null_arg[args_list] | 
 			feature_arg[args_list] |
-			requirements[args_list]; 
+			requirements[args_list];
+			
 
 string_list[void* args_list]
 @init{ void* arg = hammer_make_string_list(); }
@@ -44,6 +45,7 @@ feature[void* list]
 null_arg[void* args_list]
 @init { void* arg = hammer_make_null_arg(); }
         : NULL_ARG { hammer_add_arg_to_args_list(args_list, arg); };            
+project_requirements[void* args_list] : ^(PROJECT_REQUIREMENTS ID requirements[args_list]);
 requirements[void* args_list] 
 @init { void* rdecl = hammer_make_requirements_decl(); }
 	: ^(REQUIREMENTS_DECL (conditional_features { hammer_add_conditional_to_rdecl($conditional_features.c, rdecl); } | 

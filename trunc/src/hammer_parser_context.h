@@ -23,5 +23,6 @@ namespace hammer
       void on_rule_argument(pANTLR3_PARSER parser);
       bool argument_is_feature(pANTLR3_PARSER parser);
       bool argument_is_requirements(pANTLR3_PARSER parser);
+      bool argument_is_project_requirements(pANTLR3_PARSER parser);
    }
 }

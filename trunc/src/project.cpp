@@ -7,10 +7,13 @@ using namespace std;
 
 namespace hammer{
 
-   project::project(const pstring& name, 
-                    const pstring& location, hammer::engine* e)
+   project::project(hammer::engine* e, 
+                    const pstring& name, 
+                    const pstring& location, 
+                    const requirements_decl& req,
+                    const requirements_decl& usage_req)
                    :
-                    basic_meta_target(name, requirements_decl(), requirements_decl()), location_(location), engine_(e)
+                    basic_meta_target(name, req, usage_req), location_(location), engine_(e)
    {
    }
 

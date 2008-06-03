@@ -19,9 +19,12 @@ namespace hammer
       public:
          typedef boost::ptr_multimap<const pstring, meta_target> targets_t;
 
-         project(const pstring& name,
+         project(engine* e, 
+                 const pstring& name,
                  const pstring& location,
-                 engine* e);
+                 const requirements_decl& req,
+                 const requirements_decl& usage_req
+                 );
 
          project(engine* e) : engine_(e) {};
          

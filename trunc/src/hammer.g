@@ -10,6 +10,7 @@ FEATURE;
 REQUIREMENTS_DECL;
 CONDITIONAL_FEATURES;
 CONDITION;
+PROJECT_REQUIREMENTS;
 }
 
 @parser::preincludes
@@ -32,12 +33,14 @@ rule_posible_args
 @init{ 
 	on_rule_argument(PARSER); 
 } 
-                  : string_list -> ^(STRING_LIST string_list)
+                  : { argument_is_project_requirements(PARSER) }? project_requirements 
+                  | string_list -> ^(STRING_LIST string_list)
                   | { argument_is_feature(PARSER) }? WS+ feature -> feature
                   | { argument_is_requirements(PARSER) }? requirements -> ^(REQUIREMENTS_DECL requirements)
                   | feature_list -> ^(FEATURE_LIST feature_list);
 string_list : (WS+ string)+ -> string+;
 feature_list : (WS+ feature)+ -> feature+;
+project_requirements :	string requirements -> ^(PROJECT_REQUIREMENTS string requirements);
 requirements : (r_feature | r_conditional_features)+;
 r_feature : WS+ feature -> feature;
 r_conditional_features 	: WS+ conditional_features -> conditional_features;

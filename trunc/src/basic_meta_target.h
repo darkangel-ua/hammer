@@ -19,6 +19,8 @@ namespace hammer
          void name(const pstring& v) { name_ = v; }
          const requirements_decl& usage_requirements() const { return usage_requirements_; }
          const requirements_decl& requirements() const { return requirements_; }
+         requirements_decl& usage_requirements() { return usage_requirements_; }
+         requirements_decl& requirements() { return requirements_; }
          void usage_requirements(const requirements_decl& r) { usage_requirements_ = r; }
          void requirements(const requirements_decl& r) { requirements_ = r; }
          virtual const pstring& location() const = 0;

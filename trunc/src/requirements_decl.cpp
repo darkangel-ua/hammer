@@ -12,6 +12,8 @@ struct requirements_decl::impl_t
    impl_t() : ref_counter_(1) {}   
    
    typedef boost::ptr_vector<requirement_base> requirements_t;
+   typedef requirements_t::const_iterator const_iterator;
+   typedef requirements_t::iterator iterator;
 
    impl_t* clone() const;
    requirements_t requirements_;
@@ -137,8 +139,14 @@ void linear_and_condition::add(feature* c)
 
 void requirements_decl::setup_path_data(const basic_meta_target* t)
 {
-   for(impl_t::requirements_t::iterator i = impl_->requirements_.begin(), last = impl_->requirements_.end(); i != last; ++i)
+   for(impl_t::iterator i = impl_->requirements_.begin(), last = impl_->requirements_.end(); i != last; ++i)
       i->setup_path_data(t);
+}
+
+void requirements_decl::insert_infront(const requirements_decl& v)
+{
+   for(impl_t::const_iterator i = v.impl_->requirements_.begin(), last = v.impl_->requirements_.end(); i!= last; ++i)
+      impl_->requirements_.insert(impl_->requirements_.begin(), i->clone());
 }
 
 }

@@ -12,6 +12,7 @@
 #include "feature_set.h"
 #include "feature_registry.h"
 #include "feature.h"
+#include "project_requirements_decl.h"
 
 using namespace std;
 using namespace hammer;
@@ -47,7 +48,7 @@ void* hammer_make_feature_list(void* context)
 
 void* hammer_make_requirements_decl()
 {
-   return new call_resolver_call_arg<requirements_decl>(new requirements_decl, true);
+   return new requirements_decl;
 }
 
 void hammer_add_arg_to_args_list(void* args_list, void* arg)
@@ -90,18 +91,38 @@ void* hammer_make_requirements_condition()
    return new linear_and_condition;
 }
 
+void* hammer_make_project_requirements_decl(const char* id, void* rdecl)
+{
+   requirements_decl* r = static_cast<requirements_decl*>(rdecl);
+   project_requirements_decl* result = new project_requirements_decl(id, *r);
+   delete r;
+   return result;
+}
+
+void* hammer_make_requirements_decl_arg(void* rdecl)
+{
+   requirements_decl* r = static_cast<requirements_decl*>(rdecl);
+   return new call_resolver_call_arg<requirements_decl>(r, true);
+}
+
+void* hammer_make_project_requirements_decl_arg(void* pdecl)
+{
+   project_requirements_decl* p = static_cast<project_requirements_decl*>(pdecl);
+   return new call_resolver_call_arg<project_requirements_decl>(p, true);
+}
+
 void hammer_add_conditional_to_rdecl(void* condition, void* rdecl)
 {
-   call_resolver_call_arg<requirements_decl>* r = static_cast<call_resolver_call_arg<requirements_decl>*>(rdecl);
+   requirements_decl* r = static_cast<requirements_decl*>(rdecl);
    std::auto_ptr<requirement_base> c(static_cast<linear_and_condition*>(condition)); 
-   r->value()->add(c);
+   r->add(c);
 }
 
 void hammer_add_feature_to_rdecl(void* feature, void* rdecl)
 {
-   call_resolver_call_arg<requirements_decl>* r = static_cast<call_resolver_call_arg<requirements_decl>*>(rdecl);
+   requirements_decl* r = static_cast<requirements_decl*>(rdecl);
    std::auto_ptr<requirement_base> nr(new just_feature_requirement(static_cast<hammer::feature*>(feature)));
-   r->value()->add(nr);
+   r->add(nr);
 }
 
 void hammer_set_condition_result(void* condition, void* feature)

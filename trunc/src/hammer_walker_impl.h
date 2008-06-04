@@ -5,14 +5,6 @@
 extern "C"
 {
 #endif
-
-/*
-   void hammer_make_project(void* context, const char* project_id);
-   void* hammer_add_lib_meta_target(void* context, const char* target_id);
-   void* hammer_add_exe_meta_target(void* context, const char* target_id);
-   void hammer_add_target_to_mt(void* context, void* mt, const char*);
-*/
-
    void hammer_rule_call(void* context, const char* rule_name, void* args_list);
    void* hammer_make_args_list(void* context);
    void* hammer_make_null_arg();
@@ -24,6 +16,9 @@ extern "C"
    void hammer_add_feature_argument(void* context, void* args_list, const char* feature_name, const char* feature_value);
    // requirements
    void* hammer_make_requirements_decl();
+   void* hammer_make_project_requirements_decl(const char* id, void* rdecl);
+   void* hammer_make_requirements_decl_arg(void* rdecl);
+   void* hammer_make_project_requirements_decl_arg(void* pdecl);
    void* hammer_make_requirements_condition();
    void* hammer_create_feature(void* context, const char* feature_name, const char* feature_value);
    void hammer_add_conditional_to_rdecl(void* condition, void* rdecl);

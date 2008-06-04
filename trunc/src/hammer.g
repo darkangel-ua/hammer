@@ -40,7 +40,7 @@ rule_posible_args
                   | feature_list -> ^(FEATURE_LIST feature_list);
 string_list : (WS+ string)+ -> string+;
 feature_list : (WS+ feature)+ -> feature+;
-project_requirements :	string requirements -> ^(PROJECT_REQUIREMENTS string requirements);
+project_requirements :	WS+ string requirements -> ^(PROJECT_REQUIREMENTS string ^(REQUIREMENTS_DECL requirements));
 requirements : (r_feature | r_conditional_features)+;
 r_feature : WS+ feature -> feature;
 r_conditional_features 	: WS+ conditional_features -> conditional_features;

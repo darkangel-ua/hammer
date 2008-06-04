@@ -15,6 +15,7 @@
 #include <boost/assign/std/vector.hpp>
 #include "generator_registry.h"
 #include "msvc_generator.h"
+#include "project_requirements_decl.h"
 
 using namespace std;
 
@@ -47,7 +48,7 @@ engine::engine(const boost::filesystem::path& root_path)
 
    auto_ptr<hammer::feature_registry> fr(new hammer::feature_registry(&pstring_pool()));
 
-   resolver_.insert("project", boost::function<void (project*, vector<pstring>&)>(boost::bind(&engine::project_rule, this, _1, _2)));
+   resolver_.insert("project", boost::function<void (project*, vector<pstring>&, project_requirements_decl*, project_requirements_decl*)>(boost::bind(&engine::project_rule, this, _1, _2, _3, _4)));
    resolver_.insert("lib", boost::function<void (project*, vector<pstring>&, vector<pstring>&, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::lib_rule, this, _1, _2, _3, _4, _5, _6)));
    resolver_.insert("exe", boost::function<void (project*, vector<pstring>&, vector<pstring>&, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::exe_rule, this, _1, _2, _3, _4, _5, _6)));
    resolver_.insert("import", boost::function<void (vector<pstring>&)>(boost::bind(&engine::import_rule, this, _1)));
@@ -142,10 +143,16 @@ boost::filesystem::path find_root(const boost::filesystem::path& initial_path)
    };
 }
 
-void engine::project_rule(project* p, std::vector<pstring>& name)
+void engine::project_rule(project* p, std::vector<pstring>& name,
+                          project_requirements_decl* req, project_requirements_decl* usage_req)
 {
    assert(name.size() == size_t(1));
    p->name(name[0]);
+   
+   if (req)
+      p->requirements(req->requirements());
+   if (usage_req)
+      p->usage_requirements(usage_req->requirements());
 }
 
 void engine::lib_rule(project* p, std::vector<pstring>& name, std::vector<pstring>& sources, requirements_decl* requirements,

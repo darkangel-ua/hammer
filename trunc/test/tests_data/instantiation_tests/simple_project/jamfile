@@ -1,0 +1,5 @@
+project test : requirements <define>requirements=1
+             : usage-requirements <define>usage_requirements=1
+             ;
+lib a : a.cpp : : : <define>NDEBUG=1 ;
+exe test : a main.cpp : <define>WIN32 ;

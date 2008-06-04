@@ -21,7 +21,8 @@ namespace hammer{
                             const requirements_decl& usage_req) 
                            : basic_meta_target(name, props, usage_req), project_(p) 
    {
-
+      requirements().insert_infront(p->requirements());
+      usage_requirements().insert_infront(p->usage_requirements());
    }
 
    const pstring& meta_target::location() const

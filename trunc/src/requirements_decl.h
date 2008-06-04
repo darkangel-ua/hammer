@@ -64,6 +64,7 @@ namespace hammer
          void eval(const feature_set& build_request, 
                    feature_set* result) const;
          void setup_path_data(const basic_meta_target* t);
+         void insert_infront(const requirements_decl& v);
          ~requirements_decl();
 
       private:

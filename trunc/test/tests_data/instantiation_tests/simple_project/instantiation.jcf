@@ -1,0 +1,12 @@
+test [ type = EXE; features = <define>NDEBUG=1; ]
+{  
+   main.cpp [ type = CPP; features = <define>NDEBUG=1 
+                                     <define>WIN32 
+                                     <define>requirements=1 
+                                     <define>usage_requirements=1; 
+            ] {}
+   a [ type = SHARED_LIB; features = <define>requirements=1; ]
+   {
+      a.cpp [ type = CPP; ] {}
+   }
+}

@@ -18,6 +18,7 @@ namespace hammer
    class feature_registry;
    class generator_registry;
    class feature;
+   class project_requirements_decl;
 
    class engine : boost::noncopyable
    {
@@ -45,7 +46,7 @@ namespace hammer
          hammer::call_resolver resolver_;
          boost::shared_ptr<generator_registry> generators_;
 
-         void project_rule(project* p, std::vector<pstring>& name);
+         void project_rule(project* p, std::vector<pstring>& name, project_requirements_decl* req, project_requirements_decl* usage_req);
          void lib_rule(project* p, std::vector<pstring>& name, std::vector<pstring>& sources, 
                        requirements_decl* fs, feature_set* default_build, requirements_decl* usage_requirements);
          void exe_rule(project* p, std::vector<pstring>& name, std::vector<pstring>& sources, requirements_decl* fs, 

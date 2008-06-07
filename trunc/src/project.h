@@ -21,15 +21,15 @@ namespace hammer
 
          project(engine* e, 
                  const pstring& name,
-                 const pstring& location,
+                 const location_t& location,
                  const requirements_decl& req,
                  const requirements_decl& usage_req
                  );
 
          project(engine* e) : engine_(e) {};
          
-         virtual const pstring& location() const { return location_; }
-         void location(const pstring& l) { location_ = l; } 
+         virtual const location_t& location() const { return location_; }
+         void location(const location_t& l) { location_ = l; } 
          void add_target(std::auto_ptr<meta_target> t);
          const targets_t& targets() const { return targets_; }
          const meta_target* find_target(const pstring& name) const;
@@ -41,7 +41,7 @@ namespace hammer
                           std::vector<basic_target*>* result) const;
 
       private:
-         pstring location_;
+         location_t location_;
          targets_t targets_;
          hammer::engine* engine_;
          pstring intermediate_dir_;

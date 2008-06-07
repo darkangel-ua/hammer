@@ -3,6 +3,7 @@
 
 #include "basic_target.h"
 #include "pstring.h"
+#include "location.h"
 #include <vector>
 
 namespace hammer
@@ -21,7 +22,7 @@ namespace hammer
                      const feature_set* props,
                      pool& p);
 
-         virtual const pstring& location() const;
+         virtual const location_t& location() const;
          void sources(const std::vector<basic_target*>& srcs);
          const sources_t& sources() const { return sources_; }
          const hammer::meta_target* meta_target() const { return mt_; }

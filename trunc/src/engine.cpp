@@ -113,7 +113,7 @@ project& engine::load_project(location_t project_path)
       ctx.engine_ = this;
       ctx.location_ = project_path;
       ctx.project_ = new project(this);
-      ctx.project_->location(pstring(pstring_pool(), project_path.string()));
+      ctx.project_->location(project_path);
       ctx.call_resolver_ = &resolver_;
 
       parser p(this);
@@ -154,7 +154,7 @@ project& engine::load_project(location_t project_path)
 
 void engine::insert(project* p)
 {
-   projects_.insert(location_t(p->location().to_string()), p);
+   projects_.insert(p->location(), p);
 }
 
 engine::~engine()

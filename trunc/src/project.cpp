@@ -9,7 +9,7 @@ namespace hammer{
 
    project::project(hammer::engine* e, 
                     const pstring& name, 
-                    const pstring& location, 
+                    const location_t& location, 
                     const requirements_decl& req,
                     const requirements_decl& usage_req)
                    :

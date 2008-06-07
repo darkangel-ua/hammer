@@ -27,7 +27,7 @@ namespace hammer
                           std::vector<basic_target*>* result, 
                           feature_set* usage_requirements) const;
          const hammer::project* project() const { return project_; }
-         virtual const pstring& location() const;
+         virtual const location_t& location() const;
 
          virtual ~meta_target(){}
 

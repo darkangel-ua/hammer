@@ -112,7 +112,7 @@ void msvc_solution::add_target(boost::intrusive_ptr<const build_node> node)
    dependencies_t dependencies;
    p->add_variant(node);
    impl_->projects_.insert(&p->meta_target(), p_guarg);
-   impl_->output_location_ = location_t(p->meta_target().location().to_string());
+   impl_->output_location_ = p->meta_target().location();
    impl_->name_ = p->meta_target().name().to_string();
 }
 

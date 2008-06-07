@@ -2,6 +2,7 @@
 
 #include "pstring.h"
 #include "requirements_decl.h"
+#include "location.h"
 
 namespace hammer
 {
@@ -23,7 +24,7 @@ namespace hammer
          requirements_decl& requirements() { return requirements_; }
          void usage_requirements(const requirements_decl& r) { usage_requirements_ = r; }
          void requirements(const requirements_decl& r) { requirements_ = r; }
-         virtual const pstring& location() const = 0;
+         virtual const location_t& location() const = 0;
 
       private:
          pstring name_;

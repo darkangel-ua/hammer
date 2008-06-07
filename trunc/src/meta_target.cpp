@@ -25,7 +25,7 @@ namespace hammer{
       usage_requirements().insert_infront(p->usage_requirements());
    }
 
-   const pstring& meta_target::location() const
+   const location_t& meta_target::location() const
    {
       return project_->location();
    }
@@ -129,7 +129,7 @@ namespace hammer{
          return;
       }
 
-      location_t target_path(project_->location().to_string()); 
+      location_t target_path(project_->location()); 
       target_path /= target_name;
       const hammer::project& p = project_->engine()->load_project(target_path);
       for(hammer::project::targets_t::const_iterator i = p.targets().begin(), last = p.targets().end(); i != last; ++i)

@@ -32,7 +32,7 @@ const pstring& main_target::intermediate_dir() const
    return meta_target()->project()->intermediate_dir();
 }
 
-const pstring& main_target::location() const
+const location_t& main_target::location() const
 {
    return meta_target()->project()->location();
 }

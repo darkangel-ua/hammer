@@ -93,8 +93,8 @@ void check_feature(void* e, void* t, void* features, const char* name, const cha
    if (fd.attributes().path)
    {
       feature_set::const_iterator f = fs->find(name);
-      location_t p1(location_t((**f).get_path_data().target_->location().to_string()) / (**f).value().to_string());
-      location_t p2(bt->mtarget()->location().to_string());
+      location_t p1((**f).get_path_data().target_->location() / (**f).value().to_string());
+      location_t p2(bt->mtarget()->location());
       p1.normalize();
       p2.normalize();
       location_t p = relative_path(p1, p2);

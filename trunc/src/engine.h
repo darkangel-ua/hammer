@@ -23,14 +23,13 @@ namespace hammer
    class engine : boost::noncopyable
    {
       public:
-         engine(const boost::filesystem::path& root_path);
+         engine();
          const project& load_project(location_t project_path);
          void insert(project* p);
          type_registry& get_type_registry() { return *type_registry_; }
          pool& pstring_pool() { return pool_; }
          pool& targets_pool() { return pool_; }
          generator_registry& generators() const { return *generators_; }
-         const location_t& root() const { return root_path_; }
          hammer::feature_registry& feature_registry() { return *feature_registry_; }
          hammer::call_resolver& call_resolver() { return resolver_; }
          ~engine();
@@ -38,7 +37,6 @@ namespace hammer
       private:
          typedef boost::ptr_map<const pstring, project> projects_t;
 
-         boost::filesystem::path root_path_;
          projects_t projects_;
          boost::shared_ptr<type_registry> type_registry_;
          pool pool_;

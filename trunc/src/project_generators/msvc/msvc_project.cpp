@@ -46,8 +46,7 @@ void msvc_project::add_variant(boost::intrusive_ptr<const build_node> node)
    {
       id_ = v.target_->location().to_string();
       meta_target_ = v.target_->meta_target();
-      location_ = engine_->root() / 
-                  v.target_->meta_target()->project()->location().to_string() /
+      location_ = location_t(v.target_->meta_target()->project()->location().to_string()) /
                   "vc80" / (name().to_string() + ".vcproj");
    }
 }
@@ -119,9 +118,9 @@ void msvc_project::fill_options(const feature_set& props, options* opts, const m
          if ((**i).def() == include_def)
          {
             const basic_meta_target* bmt = (**i).get_path_data().target_;
-            location_t p1(engine_->root() / bmt->location().to_string());
+            location_t p1(bmt->location().to_string());
             p1.normalize();
-            location_t p2(engine_->root() / mt.location().to_string() / (**i).value().to_string() / "vc80");
+            location_t p2(location_t(mt.location().to_string()) / (**i).value().to_string() / "vc80");
             p2.normalize();
             location_t p = relative_path(p1, p2);
             p.normalize();

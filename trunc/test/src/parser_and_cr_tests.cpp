@@ -7,6 +7,7 @@
 #include <hammer/src/engine.h>
 #include <hammer/src/parser.h>
 #include <hammer/src/hammer_walker_context.h>
+#include <boost/filesystem/operations.hpp>
 
 boost::filesystem::path test_data_path;
 
@@ -20,7 +21,7 @@ init_unit_test_suite( int argc, char* argv[] )
    if (argc < 2)
       throw runtime_error("Need test data directory path");
        
-   test_data_path = boost::filesystem::path(argv[1]); 
+   test_data_path = fs::path(argv[1]); 
 
    return 0;            
 }                             

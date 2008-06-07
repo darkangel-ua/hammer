@@ -63,7 +63,7 @@ namespace
 
 struct generator_tests
 {
-   generator_tests() : engine_(test_data_path), msvc_solution_(engine_), p_(0)
+   generator_tests() : msvc_solution_(engine_), p_(0)
    {
 
    }
@@ -71,7 +71,7 @@ struct generator_tests
    void load()
    {
       
-      BOOST_REQUIRE_NO_THROW(p_ = &engine_.load_project(fs::path("generator_tests") / test_name_));
+      BOOST_REQUIRE_NO_THROW(p_ = &engine_.load_project(test_data_path / fs::path("generator_tests") / test_name_));
       BOOST_REQUIRE(p_);
    } 
  

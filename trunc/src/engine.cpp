@@ -24,10 +24,9 @@ using namespace std;
 
 namespace hammer{
 
-engine::engine(const boost::filesystem::path& root_path) 
-   : root_path_(root_path), feature_registry_(0)
+engine::engine() 
+   :  feature_registry_(0)
 {
-//   _CrtSetBreakAlloc(959);
    type_registry_.reset(new type_registry);
    auto_ptr<type> cpp(new type(types::CPP));
    type_registry_->insert(cpp);
@@ -102,8 +101,8 @@ const project& engine::load_project(location_t project_path)
       ctx.call_resolver_ = &resolver_;
 
       parser p(this);
-      if (!p.parse((root_path_ / project_path / "jamfile").native_file_string().c_str()))
-         throw runtime_error("Can't load project at '"  + (root_path_ / project_path).string() + ": parser errors");
+      if (!p.parse((project_path / "jamfile").native_file_string().c_str()))
+         throw runtime_error("Can't load project at '"  + project_path.string() + ": parser errors");
 
       p.walk(&ctx);
       assert(ctx.project_);

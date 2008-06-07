@@ -1,11 +1,11 @@
 Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual Studio 2005
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test", "D:/Projects/C++/hammer/test/build/vc80/../../tests_data/generator_tests/exe_and_static_lib/vc80/test.vcproj", "{00000000-0000-0000-0000-000000000001}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test", "D:/Projects/C++/hammer/test/tests_data/generator_tests/exe_and_static_lib/vc80/test.vcproj", "{00000000-0000-0000-0000-000000000001}"
 	ProjectSection(ProjectDependencies) = postProject
 		{00000000-0000-0000-0000-000000000002} = {00000000-0000-0000-0000-000000000002}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "static_lib", "D:/Projects/C++/hammer/test/build/vc80/../../tests_data/generator_tests/exe_and_static_lib/vc80/static_lib.vcproj", "{00000000-0000-0000-0000-000000000002}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "static_lib", "D:/Projects/C++/hammer/test/tests_data/generator_tests/exe_and_static_lib/vc80/static_lib.vcproj", "{00000000-0000-0000-0000-000000000002}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject

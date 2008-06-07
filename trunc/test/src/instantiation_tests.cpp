@@ -14,13 +14,13 @@ namespace fs = boost::filesystem;
 
 struct instantiation_tests
 {
-   instantiation_tests() : engine_(test_data_path)
+   instantiation_tests()
    {
    }
    
    const project& load()
    {
-      return engine_.load_project(fs::path("instantiation_tests") / name_);
+      return engine_.load_project(test_data_path / "instantiation_tests" / name_);
    } 
    
    void check(const vector<basic_target*> targets)

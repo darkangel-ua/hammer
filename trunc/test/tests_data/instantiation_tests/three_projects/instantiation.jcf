@@ -1,16 +1,16 @@
 test [ type = EXE; ]
 {  
-   lib1_1 [ type = SHARED_LIB; location = instantiation_tests/three_projects/lib1; ]
+   lib1_1 [ type = SHARED_LIB; features = <define>lib1_1; ]
    {
       a.cpp [ type = CPP; ] {}
    }
 
-   lib1_2 [ type = SHARED_LIB; location = instantiation_tests/three_projects/lib1; ]
+   lib1_2 [ type = SHARED_LIB; features = <define>lib1_2; ]
    {
       b.cpp [ type = CPP; ] {}
    }
    
-   lib2_2 [ type = SHARED_LIB; location = instantiation_tests/three_projects/lib2; ]
+   lib2_2 [ type = SHARED_LIB; features = <define>lib2_2; ]
    {
       b.cpp [ type = CPP; ] {}
    }

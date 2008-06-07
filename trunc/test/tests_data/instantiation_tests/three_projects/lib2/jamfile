@@ -1,2 +1,2 @@
-lib lib2_1 : a.cpp ;
-lib lib2_2 : b.cpp ;
+lib lib2_1 : a.cpp : <define>lib2_1 ;
+lib lib2_2 : b.cpp : <define>lib2_2 ;

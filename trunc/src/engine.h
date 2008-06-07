@@ -24,7 +24,7 @@ namespace hammer
    {
       public:
          engine();
-         const project& load_project(location_t project_path);
+         project& load_project(location_t project_path);
          void insert(project* p);
          type_registry& get_type_registry() { return *type_registry_; }
          pool& pstring_pool() { return pool_; }
@@ -35,7 +35,7 @@ namespace hammer
          ~engine();
 
       private:
-         typedef boost::ptr_map<const pstring, project> projects_t;
+         typedef boost::ptr_map<const location_t, project> projects_t;
 
          projects_t projects_;
          boost::shared_ptr<type_registry> type_registry_;
@@ -44,6 +44,7 @@ namespace hammer
          hammer::call_resolver resolver_;
          boost::shared_ptr<generator_registry> generators_;
 
+         project* get_upper_project(const location_t& project_path);
          void project_rule(project* p, std::vector<pstring>& name, project_requirements_decl* req, project_requirements_decl* usage_req);
          void lib_rule(project* p, std::vector<pstring>& name, std::vector<pstring>& sources, 
                        requirements_decl* fs, feature_set* default_build, requirements_decl* usage_requirements);

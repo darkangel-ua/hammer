@@ -1,0 +1,12 @@
+test [ type = EXE; ]
+{
+   main.cpp [ type = CPP; features = <define>project_test; ] {}
+   lib1 [ type = STATIC_LIB; ]
+   {
+      a.cpp [ type = CPP; features = <define>lib1 !<define>project_test; ] {}
+   }
+   lib2 [ type = STATIC_LIB; ]
+   {
+      a.cpp [ type = CPP; features = <define>lib2 <define>project_test; ] {}
+   }
+}

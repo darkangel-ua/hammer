@@ -149,4 +149,11 @@ void requirements_decl::insert_infront(const requirements_decl& v)
       impl_->requirements_.insert(impl_->requirements_.begin(), i->clone());
 }
 
+void requirements_decl::insert(const requirements_decl& v)
+{
+   for(impl_t::const_iterator i = v.impl_->requirements_.begin(), last = v.impl_->requirements_.end(); i!= last; ++i)
+      impl_->requirements_.insert(impl_->requirements_.end(), i->clone());
+}
+
+
 }

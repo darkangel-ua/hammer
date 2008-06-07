@@ -1,0 +1,2 @@
+project lib1 : requirements <define>lib1 ;
+lib lib1 : a.cpp : <link>static ;

@@ -1,7 +1,7 @@
 grammar jcf;
 
 options { language = C; output = AST; }
-tokens{ TARGET; ATTRIBUTES; TARGETS; TYPE_ATTR; FEATURES_ATTR; FEATURE; LOCATION; }
+tokens{ TARGET; ATTRIBUTES; TARGETS; TYPE_ATTR; FEATURES_ATTR; FEATURE; NOT_FEATURE; LOCATION; }
 
 jsf_file : targets ;
 targets : target+ -> ^(TARGETS target+)
@@ -18,7 +18,8 @@ attribute
         
 type    : 'type' '=' ID -> ^(TYPE_ATTR ID);     
 features : 'features' '=' feature+ -> ^(FEATURES_ATTR feature+);
-feature  : '<' ID '>' ID -> ^(FEATURE ID ID);
+feature  : '<' ID '>' ID -> ^(FEATURE ID ID)
+         | '!<' ID '>' ID-> ^(NOT_FEATURE ID ID);
 location : 'location' '=' ID -> ^(LOCATION ID);        
 
 sources : ID ;

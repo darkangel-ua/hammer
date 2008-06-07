@@ -65,6 +65,7 @@ namespace hammer
                    feature_set* result) const;
          void setup_path_data(const basic_meta_target* t);
          void insert_infront(const requirements_decl& v);
+         void insert(const requirements_decl& v); // insert in the end
          ~requirements_decl();
 
       private:

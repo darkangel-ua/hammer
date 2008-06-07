@@ -97,8 +97,7 @@ void check_feature(void* e, void* t, void* features, const char* name, const cha
       location_t p2(bt->mtarget()->location().to_string());
       p1.normalize();
       p2.normalize();
-      location_t p = relative_path(p1, 
-                                   p2);
+      location_t p = relative_path(p1, p2);
       p.normalize();
       location_t expected_path(value);
       expected_path.normalize();
@@ -108,13 +107,20 @@ void check_feature(void* e, void* t, void* features, const char* name, const cha
       return;
    }
 
-   feature_set::const_iterator f = fs->find(*eng->feature_registry().create_feature(name, value));
-   if (f == fs->end())
+   if (!fs->find(name, value))
    {
-      cout << "checker(0): error: Expected feature '" << name << "' with value '" << value << "' not found.\n";
+      cout << "checker(0): error: Expected feature '" << name << "' with value '" << value 
+           << "' for target '" << bt->mtarget()->location() << "\\\\" << bt->name() << "' not found.\n";
       return;
    }
 } 
+
+void check_not_feature(void* e, void* t, void* features, const char* name, const char* value)
+{
+   const feature_set* fs = static_cast<const feature_set*>(features);
+   if (fs->find(name, value))
+      cout << "checker(0): error: Unexpected feature '" << name << "' with value '" << value << " found in properties.\n";
+}
 
 void check_location(void* t, const char* location)
 {

@@ -88,8 +88,24 @@ engine::engine()
    add_msvc_generators(*this, generators());
 }
 
-const project& engine::load_project(location_t project_path)
+project* engine::get_upper_project(const location_t& project_path)
 {
+   location_t upper_path = project_path.branch_path();
+   if (exists(upper_path / "jamfile"))
+      return &load_project(upper_path);
+   
+   if (exists(upper_path / "jamroot"))
+      return &load_project(upper_path);
+   
+   return 0;
+}
+
+project& engine::load_project(location_t project_path)
+{
+   projects_t::iterator i = projects_.find(project_path);
+   if (i != projects_.end())
+      return *i->second;
+
    hammer_walker_context ctx;
    try
    {
@@ -101,8 +117,28 @@ const project& engine::load_project(location_t project_path)
       ctx.call_resolver_ = &resolver_;
 
       parser p(this);
-      if (!p.parse((project_path / "jamfile").native_file_string().c_str()))
-         throw runtime_error("Can't load project at '"  + project_path.string() + ": parser errors");
+      location_t project_file = project_path / "jamfile";
+      bool is_top_level = false;
+      if (!exists(project_file))
+      {
+         project_file = project_path / "jamroot";
+         is_top_level = true;
+      }
+
+      if (!p.parse(project_file.native_file_string().c_str()))
+         throw  runtime_error("Can't load project at '"  + project_path.string() + ": parser errors");
+
+      // до того как мы начнем парсить сам проект нужно уже знать все реквизиты предыдущего
+      // и выставить их для этого проекта
+      if (!is_top_level)
+      {
+         project* p = get_upper_project(project_path);
+         if (p)
+         {
+            ctx.project_->requirements().insert_infront(p->requirements());
+            ctx.project_->usage_requirements().insert_infront(p->usage_requirements());
+         }
+      }
 
       p.walk(&ctx);
       assert(ctx.project_);
@@ -118,7 +154,7 @@ const project& engine::load_project(location_t project_path)
 
 void engine::insert(project* p)
 {
-   projects_.insert(p->location(), p);
+   projects_.insert(location_t(p->location().to_string()), p);
 }
 
 engine::~engine()
@@ -148,10 +184,12 @@ void engine::project_rule(project* p, std::vector<pstring>& name,
    assert(name.size() == size_t(1));
    p->name(name[0]);
    
+   // здесь производиться вставка так как на этаме загрузки 
+   // engine уже выставила унаследованные свойства проекта от его родителя
    if (req)
-      p->requirements(req->requirements());
+      p->requirements().insert(req->requirements());
    if (usage_req)
-      p->usage_requirements(usage_req->requirements());
+      p->usage_requirements().insert(usage_req->requirements());
 }
 
 void engine::lib_rule(project* p, std::vector<pstring>& name, std::vector<pstring>& sources, requirements_decl* requirements,

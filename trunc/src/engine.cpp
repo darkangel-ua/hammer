@@ -50,7 +50,7 @@ engine::engine()
    resolver_.insert("project", boost::function<void (project*, vector<pstring>&, project_requirements_decl*, project_requirements_decl*)>(boost::bind(&engine::project_rule, this, _1, _2, _3, _4)));
    resolver_.insert("lib", boost::function<void (project*, vector<pstring>&, vector<pstring>&, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::lib_rule, this, _1, _2, _3, _4, _5, _6)));
    resolver_.insert("exe", boost::function<void (project*, vector<pstring>&, vector<pstring>&, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::exe_rule, this, _1, _2, _3, _4, _5, _6)));
-   resolver_.insert("import", boost::function<void (vector<pstring>&)>(boost::bind(&engine::import_rule, this, _1)));
+   resolver_.insert("import", boost::function<void (project*, vector<pstring>&)>(boost::bind(&engine::import_rule, this, _1, _2)));
    resolver_.insert("feature.feature", boost::function<void (project*, vector<pstring>&, vector<pstring>*, vector<pstring>&)>(boost::bind(&engine::feature_feature_rule, this, _1, _2, _3, _4)));
    resolver_.insert("feature.compose", boost::function<void (project*, feature&, feature_set&)>(boost::bind(&engine::feature_compose_rule, this, _1, _2, _3)));
 
@@ -211,7 +211,7 @@ void engine::exe_rule(project* p, std::vector<pstring>& name, std::vector<pstrin
    p->add_target(mt);
 }
 
-void engine::import_rule(std::vector<pstring>& name)
+void engine::import_rule(project* p, std::vector<pstring>& name)
 {
 
 }
@@ -277,4 +277,13 @@ void engine::feature_compose_rule(project* p, feature& f, feature_set& component
    feature_registry_->get_def(f.def().name()).compose(f.value().to_string(), cc);
 }
 
+void engine::alias_rule(project* p, 
+                        pstring& name, 
+                        std::vector<pstring>& sources, 
+                        requirements_decl* fs, 
+                        feature_set* default_build, 
+                        requirements_decl* usage_requirements)
+{
+
+}
 }

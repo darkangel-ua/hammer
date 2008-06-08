@@ -80,6 +80,14 @@ void hammer_add_feature_argument(void* context, void* args_list, const char* fea
    args_list_->push_back(arg);
 }
 
+void hammer_add_string_arg_to_args_list(void* context, void* args_list, const char* id)
+{
+   hammer_walker_context* ctx = static_cast<hammer_walker_context*>(context);
+   call_resolver_call_arg<pstring>* arg = new call_resolver_call_arg<pstring>(new pstring(ctx->engine_->pstring_pool(), id), false);
+   args_list_t* args_list_ = static_cast<args_list_t*>(args_list);
+   args_list_->push_back(arg);
+}
+
 void* hammer_create_feature(void* context, const char* feature_name, const char* feature_value)
 {
    hammer_walker_context* ctx = static_cast<hammer_walker_context*>(context);

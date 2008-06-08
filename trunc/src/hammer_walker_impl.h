@@ -14,6 +14,7 @@ extern "C"
    void hammer_add_id_to_string_list(void* context, void* string_list, const char* id);
    void hammer_add_feature_to_list(void* context, void* args_list, const char* feature_name, const char* feature_value);
    void hammer_add_feature_argument(void* context, void* args_list, const char* feature_name, const char* feature_value);
+   void hammer_add_string_arg_to_args_list(void* context, void* args_list, const char* id);
    // requirements
    void* hammer_make_requirements_decl();
    void* hammer_make_project_requirements_decl(const char* id, void* rdecl);

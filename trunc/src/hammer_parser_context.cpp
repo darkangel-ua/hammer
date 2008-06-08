@@ -21,13 +21,25 @@ void on_enter_rule(pANTLR3_PARSER parser, pANTLR3_UINT8 rule_name_)
    if (i == resolver.end())
       throw std::runtime_error("Unknown rule '" + string(rule_name) + "'.");
    ctx.current_rule_ = i;
-   ctx.current_arg_ = 0; // first argument always project*
+   ctx.current_arg_ = 1; // first argument always project*
 }
 
 void on_rule_argument(pANTLR3_PARSER parser)
 {
    MAKE_CTX();
    ++ctx.current_arg_;
+}
+
+bool argument_is_string(pANTLR3_PARSER parser)
+{
+   MAKE_CTX();
+   return ctx.current_rule_->second->args().at(ctx.current_arg_).ti() == typeid(pstring);
+}
+
+bool argument_is_string_list(pANTLR3_PARSER parser)
+{
+   MAKE_CTX();
+   return ctx.current_rule_->second->args().at(ctx.current_arg_).ti() == typeid(vector<pstring>);
 }
 
 bool argument_is_feature(pANTLR3_PARSER parser)

@@ -1,0 +1,4 @@
+lib lib1 : lib1.cpp : ; 
+lib lib2 : lib2.cpp : : : <define>lib2 ;
+alias foo : lib1 foo.cpp : <define>alias_foo : : <define>alias_foo_usage ;
+exe test : foo lib2 main.cpp ;

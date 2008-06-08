@@ -27,7 +27,7 @@ args[void* args_list] : string_list[args_list]
 			| requirements { hammer_add_arg_to_args_list(args_list, hammer_make_requirements_decl_arg($requirements.result)); }
 			| project_requirements { hammer_add_arg_to_args_list(args_list, hammer_make_project_requirements_decl_arg($project_requirements.result)); } ;
 
-string_arg[void* args_list] : ^(STRING_ARG ID) { hammer_add_string_arg_to_args_list(PARSER, args_list, $ID.text->chars); };
+string_arg[void* args_list] : ^(STRING_ARG ID) { hammer_add_string_arg_to_args_list(PARSER->super, args_list, $ID.text->chars); };
 string_list[void* args_list]
 @init{ void* arg = hammer_make_string_list(); }
         : ^(STRING_LIST string_list_id[arg]+) { hammer_add_arg_to_args_list(args_list, arg); }; 

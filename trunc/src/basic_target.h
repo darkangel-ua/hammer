@@ -24,6 +24,7 @@ namespace hammer
 //         virtual const pstring& location() const;
          const hammer::type& type() const { return *type_; }
          const feature_set& properties() const { return *features_; }
+         void properties(const feature_set* p) { features_ = p; }
          const hammer::main_target* mtarget() const { return mtarget_; }
          
          virtual boost::intrusive_ptr<build_node> generate() = 0;

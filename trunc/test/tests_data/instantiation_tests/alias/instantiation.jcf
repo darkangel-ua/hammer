@@ -1,0 +1,9 @@
+test [ type = EXE; features = <define>alias_foo_usage; ]
+{
+   main.cpp [ type = CPP; ] {}
+   foo.cpp  [ type = CPP; ] {}
+   lib1 [ type = SHARED_LIB; ]
+   {
+       lib1.cpp [ type = CPP; ] {}
+   }
+}

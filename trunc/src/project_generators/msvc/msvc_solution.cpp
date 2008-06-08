@@ -6,9 +6,12 @@
 #include <vector>
 #include "../../main_target.h"
 #include "../../engine.h"
+#include "../../meta_target.h"
 #include <boost/filesystem/fstream.hpp>
 #include <set>
+
 using namespace std;
+
 
 namespace hammer{ namespace project_generators{
 

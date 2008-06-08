@@ -35,6 +35,7 @@ struct instantiation_tests
    string name_;
 };
 
+/*
 BOOST_FIXTURE_TEST_CASE(empty_project, instantiation_tests)
 {
    name_ = "empty_project";
@@ -165,6 +166,7 @@ BOOST_FIXTURE_TEST_CASE(jamroot_test, instantiation_tests)
    BOOST_REQUIRE_EQUAL(tt.size(), size_t(1));
    check(tt);
 }
+*/
 
 BOOST_FIXTURE_TEST_CASE(alias, instantiation_tests)
 {

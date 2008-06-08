@@ -13,17 +13,17 @@ namespace hammer{
                     const requirements_decl& req,
                     const requirements_decl& usage_req)
                    :
-                    basic_meta_target(name, req, usage_req), location_(location), engine_(e)
+                    basic_meta_target(this, name, req, usage_req), location_(location), engine_(e)
    {
    }
 
-  void project::add_target(std::auto_ptr<meta_target> t)
+  void project::add_target(std::auto_ptr<basic_meta_target> t)
   {
      targets_.insert(t->name(), t.get());
      t.release();
   }
 
-   const meta_target* project::find_target(const pstring& name) const
+   const basic_meta_target* project::find_target(const pstring& name) const
    {
       targets_t::const_iterator i = targets_.find(name);
       if (i == targets_.end())
@@ -32,7 +32,7 @@ namespace hammer{
          return i->second;
    }
 
-   const meta_target*
+   const basic_meta_target*
    project::select_best_alternative(const std::string& target_name, 
                                     const feature_set& f) const
    {
@@ -53,8 +53,17 @@ namespace hammer{
                              const feature_set& build_request,
                              std::vector<basic_target*>* result) const
    {
-      const meta_target* best_target = select_best_alternative(target_name, build_request);
+      const basic_meta_target* best_target = select_best_alternative(target_name, build_request);
       feature_set* usage_requirements = engine_->feature_registry().make_set();
-      best_target->instantiate(build_request, result, usage_requirements);
+      best_target->instantiate(0, build_request, result, usage_requirements);
    }
+   
+   void project::instantiate(const main_target* owner, 
+                             const feature_set& build_request,
+                             std::vector<basic_target*>* result, 
+                             feature_set* usage_requirements) const
+   {
+      assert(false && "not implemented.");
+   }
+
 }

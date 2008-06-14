@@ -41,6 +41,8 @@ engine::engine()
    type_registry_->insert(static_lib);
    auto_ptr<type> shared_lib(new type(types::SHARED_LIB));
    type_registry_->insert(shared_lib);
+   auto_ptr<type> import_lib(new type(types::IMPORT_LIB));
+   type_registry_->insert(import_lib);
    auto_ptr<type> exe(new type(types::EXE));
    type_registry_->insert(exe);
    auto_ptr<type> obj(new type(types::OBJ));

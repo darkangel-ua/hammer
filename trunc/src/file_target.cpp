@@ -4,9 +4,9 @@
 namespace hammer
 {
 
-boost::intrusive_ptr<build_node> file_target::generate()
+std::vector<boost::intrusive_ptr<build_node> > file_target::generate()
 {
-   return boost::intrusive_ptr<build_node>();
+   return std::vector<boost::intrusive_ptr<build_node> >();
 }
 
 }

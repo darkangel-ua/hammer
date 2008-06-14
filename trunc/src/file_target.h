@@ -12,6 +12,6 @@ namespace hammer
          {
          }
 
-         virtual boost::intrusive_ptr<build_node> generate();
+         virtual std::vector<boost::intrusive_ptr<build_node> > generate();
    };
 }

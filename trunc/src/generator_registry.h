@@ -1,5 +1,6 @@
 #pragma once
 #include "generator.h"
+#include <boost/ptr_container/ptr_map.hpp>
 
 namespace hammer
 {
@@ -9,10 +10,10 @@ namespace hammer
    class generator_registry
    {
       public:
-         typedef std::map<std::string, generator> generators_t;
+         typedef boost::ptr_map<std::string, generator> generators_t;
 
-         void insert(const generator& g);
-         boost::intrusive_ptr<build_node> construct(main_target* mt) const;
+         void insert(std::auto_ptr<generator> g);
+         std::vector<boost::intrusive_ptr<build_node> > construct(main_target* mt) const;
 
       private:
          generators_t generators_;

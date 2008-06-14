@@ -45,9 +45,9 @@ const location_t& basic_meta_target::location() const
 }
 
 void basic_meta_target::instantiate_simple_targets(const sources_t& targets, 
-                                             const feature_set& build_request,
-                                             const main_target& owner, 
-                                             std::vector<basic_target*>* result) const
+                                                   const feature_set& build_request,
+                                                   const main_target& owner, 
+                                                   std::vector<basic_target*>* result) const
 {
    for(sources_t::const_iterator i = targets.begin(), last = targets.end(); i != last; ++i)
    {

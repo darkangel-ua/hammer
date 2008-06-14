@@ -248,26 +248,23 @@ void msvc_project::insert_into_files(const basic_target* t) const
 
 void msvc_project::gether_files_impl(const build_node& node) const
 {
-   //const type& shared_lib = engine_->get_type_registry().resolve_from_name(types::SHARED_LIB.name());
-   bool should_go_deeper = false;
    typedef build_node::targets_t::const_iterator iter;
    for(iter mi = node.sources_.begin(), mlast = node.sources_.end(); mi != mlast; ++mi)
    {
       if ((**mi).mtarget()->meta_target() == meta_target_)
       {
          insert_into_files(*mi);
-         should_go_deeper = true;
+         
+         typedef build_node::nodes_t::const_iterator niter;
+         for(niter i = node.down_.begin(), last = node.down_.end(); i != last; ++i)
+         {
+            if ((**i).find_product(*mi))
+               gether_files_impl(**i);
+         }
       }
       else
          dependencies_.push_back((**mi).mtarget());
    }
-
-   if (!should_go_deeper)
-      return;
-
-   typedef build_node::nodes_t::const_iterator niter;
-   for(niter i = node.down_.begin(), last = node.down_.end(); i != last; ++i)
-      gether_files_impl(**i);
 }
 
 void msvc_project::gether_files() const

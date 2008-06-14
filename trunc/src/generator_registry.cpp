@@ -9,10 +9,11 @@ using namespace boost;
 
 namespace hammer{
 
-void generator_registry::insert(const generator& g)
+void generator_registry::insert(std::auto_ptr<generator> g)
 {
-   if (!generators_.insert(std::make_pair(g.name(), g)).second)
-      throw std::runtime_error("Generator '" + g.name() + "' already registered.");
+   generator* tmp = g.get();
+   if (!generators_.insert(tmp->name(), g).second)
+      throw std::runtime_error("Generator '" + g->name() + "' already registered.");
 }
 
 vector<const generator*> 
@@ -21,20 +22,17 @@ generator_registry::find_viable_generators(const type& t, bool allow_composite) 
    vector<const generator*> result;
    for(generators_t::const_iterator i = generators_.begin(), last = generators_.end(); i != last; ++i)
    {
-      if (i->second.is_composite() && !allow_composite)
+      if (i->second->is_composite() && !allow_composite)
          continue;
 
-      for(generator::producable_types_t::const_iterator j = i->second.producable_types().begin(), j_last = i->second.producable_types().end(); j != j_last; ++j)
+      for(generator::producable_types_t::const_iterator j = i->second->producable_types().begin(), j_last = i->second->producable_types().end(); j != j_last; ++j)
       {
          if (*j->type_ == t)
-            result.push_back(&i->second);
+            result.push_back(i->second);
       }
    }
 
-   if (result.empty())
-      throw std::runtime_error("No generator found");
-   
-   if (result.size() != 1)
+   if (result.size() > 1)
       throw std::runtime_error("More than one generator found");
 
    return result;
@@ -51,12 +49,15 @@ generator_registry::transform(const generator& target_generator,
    for(generator::consumable_types_t::const_iterator i = current_generator.consumable_types().begin(), last = current_generator.consumable_types().end(); i != last; ++i)
    {
       vector<const generator*> vg(find_viable_generators(*i->type_, false));
+      if (vg.empty())
+         return false;
+
       for(vector<const generator*>::const_iterator g_i = vg.begin(), g_last = vg.end(); g_i != g_last; ++g_i)
       {
          if ((**g_i).is_consumable(t->type()))
          {
-            intrusive_ptr<build_node> r((**g_i).construct(*i->type_, props, vector<intrusive_ptr<build_node> >(1, target_owner), t, 0));
-            result->push_back(r);
+            std::vector<boost::intrusive_ptr<build_node> > r((**g_i).construct(*i->type_, props, vector<intrusive_ptr<build_node> >(1, target_owner), t, 0));
+            result->insert(result->end(), r.begin(), r.end());
             return true;
          }
          else
@@ -108,15 +109,15 @@ bool generator_registry::transform_to_consumable(const generator& target_generat
    return some_was_consumed;
 }
 
-intrusive_ptr<build_node>
+std::vector<boost::intrusive_ptr<build_node> >
 generator_registry::construct(main_target* mt) const
 {
    vector<const generator*> viable_generators(find_viable_generators(mt->type(), true));
    vector<intrusive_ptr<build_node> > pre_sources;
    for(main_target::sources_t::const_iterator i = mt->sources().begin(), last = mt->sources().end(); i != last; ++i)
    {
-      intrusive_ptr<build_node> r((**i).generate());
-      pre_sources.push_back(r);
+      std::vector<boost::intrusive_ptr<build_node> > r((**i).generate());
+      pre_sources.insert(pre_sources.end(), r.begin(), r.end());
    }
 
    vector<intrusive_ptr<build_node> > sources;
@@ -131,8 +132,8 @@ generator_registry::construct(main_target* mt) const
    typedef vector<const generator*>::const_iterator iter;
    for(iter i = viable_generators.begin(), last = viable_generators.end(); i != last; ++i)
    {
-      intrusive_ptr<build_node> r((*i)->construct(mt->type(), mt->properties(), sources, 0, &mt->name()));
-      if (r.get())
+      std::vector<boost::intrusive_ptr<build_node> > r((*i)->construct(mt->type(), mt->properties(), sources, 0, &mt->name()));
+      if (!r.empty())
          return r;
    }
 

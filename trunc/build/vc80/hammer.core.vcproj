@@ -361,6 +361,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\static_lib_generator.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\stdafx.cpp"
 				>
 				<FileConfiguration
@@ -560,6 +564,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\source_target.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\static_lib_generator.h"
 				>
 			</File>
 			<File

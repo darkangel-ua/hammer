@@ -46,11 +46,12 @@ namespace hammer
          const consumable_types_t& consumable_types() const { return source_types_; }
          const producable_types_t& producable_types() const { return target_types_; }
          const feature_set& constraints() const { return *constraints_; }
-         virtual boost::intrusive_ptr<build_node> construct(const type& target_type, 
-                                                            const feature_set& props,
-                                                            const std::vector<boost::intrusive_ptr<build_node> >& sources,
-                                                            const basic_target* t,
-                                                            const pstring* name) const;
+         virtual std::vector<boost::intrusive_ptr<build_node> >
+            construct(const type& target_type, 
+                      const feature_set& props,
+                      const std::vector<boost::intrusive_ptr<build_node> >& sources,
+                      const basic_target* t,
+                      const pstring* name /* name for composite target*/) const;
          bool is_consumable(const type& t) const;
          bool is_composite() const { return composite_; }
 

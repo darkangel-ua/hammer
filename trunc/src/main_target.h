@@ -26,7 +26,7 @@ namespace hammer
          void sources(const std::vector<basic_target*>& srcs);
          const sources_t& sources() const { return sources_; }
          const hammer::meta_target* meta_target() const { return mt_; }
-         virtual boost::intrusive_ptr<build_node> generate();
+         virtual std::vector<boost::intrusive_ptr<build_node> > generate();
          const pstring& intermediate_dir() const;
          boost::intrusive_ptr<const hammer::build_node> build_node() const { return build_node_; }
 

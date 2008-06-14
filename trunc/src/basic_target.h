@@ -21,13 +21,12 @@ namespace hammer
          {};
 
          const pstring& name() const { return name_; }
-//         virtual const pstring& location() const;
          const hammer::type& type() const { return *type_; }
          const feature_set& properties() const { return *features_; }
          void properties(const feature_set* p) { features_ = p; }
          const hammer::main_target* mtarget() const { return mtarget_; }
          
-         virtual boost::intrusive_ptr<build_node> generate() = 0;
+         virtual std::vector<boost::intrusive_ptr<build_node> > generate() = 0;
          void* operator new (size_t size, pool& p) { return p.malloc(size); }
          void operator delete (void* m, pool& p) {};
          virtual ~basic_target(){};

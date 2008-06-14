@@ -177,9 +177,11 @@ struct generator_tests
    {
       for(vector<basic_target*>::iterator i = itargets_.begin(), last = itargets_.end(); i != last; ++i)
       {
-         boost::intrusive_ptr<build_node> r((**i).generate());
-         msvc_solution_.add_target(r);
-         nodes_.push_back(r);
+         std::vector<boost::intrusive_ptr<build_node> > r((**i).generate());
+         typedef std::vector<boost::intrusive_ptr<build_node> >::iterator iter;
+         for(iter j = r.begin(), j_last = r.end(); j != j_last; ++j)
+            msvc_solution_.add_target(*j);
+         nodes_.insert(nodes_.end(), r.begin(), r.end());
       }
    }
   
@@ -192,6 +194,7 @@ struct generator_tests
    std::string test_name_;
 };
 
+/*
 BOOST_FIXTURE_TEST_CASE(simple_exe, generator_tests)
 {
    test_name_ = "simple_exe";
@@ -222,6 +225,16 @@ BOOST_FIXTURE_TEST_CASE(path_features, generator_tests)
 BOOST_FIXTURE_TEST_CASE(composite_features, generator_tests)
 {
    test_name_ = "composite_features";
+   load();
+   BOOST_REQUIRE_NO_THROW(instantiate("test"));
+   BOOST_REQUIRE_NO_THROW(run_generators());
+   check();
+}
+*/
+
+BOOST_FIXTURE_TEST_CASE(cpp_libs, generator_tests)
+{
+   test_name_ = "cpp_libs";
    load();
    BOOST_REQUIRE_NO_THROW(instantiate("test"));
    BOOST_REQUIRE_NO_THROW(run_generators());

@@ -33,15 +33,13 @@ bool generator::is_consumable(const type& t) const
    return false;
 }
  
-boost::intrusive_ptr<build_node> 
+std::vector<boost::intrusive_ptr<build_node> >
 generator::construct(const type& target_type, 
                      const feature_set& props,
                      const std::vector<boost::intrusive_ptr<build_node> >& sources,
                      const basic_target* t,
-                     const pstring* name) const
+                     const pstring* name /* name for composite target*/) const
 {
-   pstring new_name = (name ? make_name(engine_->pstring_pool(), *name, target_type) 
-                            : make_name(engine_->pstring_pool(), t->name(), t->type(), target_type));
    if (!t)
    {
       boost::intrusive_ptr<build_node> result(new build_node);
@@ -64,22 +62,29 @@ generator::construct(const type& target_type,
          }
       }
 
-      result->products_.push_back(new(engine_->targets_pool()) generated_target(sources.front()->products_.front()->mtarget(), 
-                                                                                new_name, 
-                                                                                producable_types().front().type_, &props));
-      return result;
+      for(producable_types_t::const_iterator i = target_types_.begin(), last = target_types_.end(); i != last; ++i)
+      {
+         pstring new_name = make_name(engine_->pstring_pool(), *name, *i->type_);
+         result->products_.push_back(new(engine_->targets_pool()) generated_target(sources.front()->products_.front()->mtarget(), 
+                                                                                   new_name, 
+                                                                                   i->type_, &props));
+      }
+
+      result->targeting_type_ = &target_type;
+      return std::vector<boost::intrusive_ptr<build_node> >(1, result);
    }
    else
    {
-      assert(sources.size() == 1);
+     pstring new_name = make_name(engine_->pstring_pool(), t->name(), t->type(), target_type);
+     assert(sources.size() == 1);
       
       boost::intrusive_ptr<build_node> result(new build_node);
       result->sources_.push_back(t);
       result->down_.push_back(sources.front());
       result->products_.push_back(new(engine_->targets_pool()) generated_target(t->mtarget(), new_name, producable_types().front().type_, &props));
-      
-      return result;
-   }
+      result->targeting_type_ = &target_type;
+      return std::vector<boost::intrusive_ptr<build_node> >(1, result);
+  }
 }
 
 }

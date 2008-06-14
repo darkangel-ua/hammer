@@ -4,6 +4,7 @@
 #include "project.h"
 #include "engine.h"
 #include "generator_registry.h"
+#include "build_node.h"
 
 namespace hammer{
 
@@ -21,10 +22,12 @@ void main_target::sources(const std::vector<basic_target*>& srcs)
    sources_ = srcs;
 }
 
-boost::intrusive_ptr<build_node> main_target::generate()
+std::vector<boost::intrusive_ptr<build_node> > 
+main_target::generate()
 {
-   build_node_ = mt_->project()->engine()->generators().construct(this);
-   return build_node_;
+   std::vector<boost::intrusive_ptr<hammer::build_node> >  result(mt_->project()->engine()->generators().construct(this));   
+   build_node_ = result.front();
+   return result;
 }
 
 const pstring& main_target::intermediate_dir() const

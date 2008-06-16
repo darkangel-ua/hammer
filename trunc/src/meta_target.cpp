@@ -35,7 +35,7 @@ namespace hammer{
 
       vector<basic_target*> sources;
 
-      sources_t simple_targets;
+      sources_decl simple_targets;
       meta_targets_t meta_targets;
       split_sources(&simple_targets, &meta_targets);
 

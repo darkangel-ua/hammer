@@ -25,7 +25,8 @@ args[void* args_list] : string_list[args_list]
 			| string_arg[args_list]
 			| feature_arg[args_list] 
 			| requirements { hammer_add_arg_to_args_list(args_list, hammer_make_requirements_decl_arg($requirements.result)); }
-			| project_requirements { hammer_add_arg_to_args_list(args_list, hammer_make_project_requirements_decl_arg($project_requirements.result)); } ;
+			| project_requirements { hammer_add_arg_to_args_list(args_list, hammer_make_project_requirements_decl_arg($project_requirements.result)); } 
+			| sources_decl { hammer_add_arg_to_args_list(args_list, hammer_make_sources_decl_arg($sources_decl.result)); };
 
 string_arg[void* args_list] : ^(STRING_ARG ID) { hammer_add_string_arg_to_args_list(PARSER->super, args_list, $ID.text->chars); };
 string_list[void* args_list]
@@ -61,5 +62,6 @@ condition[void* c]
 	: ^(CONDITION (cfeature { hammer_add_feature_to_condition($cfeature.feature, c); })+);
 cfeature returns[void* feature]
 	: ^(FEATURE feature_name=ID feature_value=ID) { feature = hammer_create_feature(PARSER->super, $feature_name.text->chars, $feature_value.text->chars); };
-	
+sources_decl returns[void* result]
+@init { result = hammer_make_sources_decl(); } : ^(SOURCES_DECL (ID { hammer_add_source_to_sources_decl(PARSER->super, $ID.text->chars, result); } )+);
 	

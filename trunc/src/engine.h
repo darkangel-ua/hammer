@@ -46,13 +46,13 @@ namespace hammer
 
          project* get_upper_project(const location_t& project_path);
          void project_rule(project* p, std::vector<pstring>& name, project_requirements_decl* req, project_requirements_decl* usage_req);
-         void lib_rule(project* p, std::vector<pstring>& name, std::vector<pstring>& sources, 
+         void lib_rule(project* p, std::vector<pstring>& name, sources_decl& sources, 
                        requirements_decl* fs, feature_set* default_build, requirements_decl* usage_requirements);
-         void exe_rule(project* p, std::vector<pstring>& name, std::vector<pstring>& sources, requirements_decl* fs, 
+         void exe_rule(project* p, std::vector<pstring>& name, sources_decl& sources, requirements_decl* fs, 
                        feature_set* default_build, requirements_decl* usage_requirements);
          void alias_rule(project* p, 
                          pstring& name, 
-                         std::vector<pstring>& sources, 
+                         sources_decl& sources, 
                          requirements_decl* fs, 
                          feature_set* default_build, 
                          requirements_decl* usage_requirements);

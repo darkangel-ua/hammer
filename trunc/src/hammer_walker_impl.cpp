@@ -13,6 +13,7 @@
 #include "feature_registry.h"
 #include "feature.h"
 #include "project_requirements_decl.h"
+#include "sources_decl.h"
 
 using namespace std;
 using namespace hammer;
@@ -143,4 +144,20 @@ void hammer_add_feature_to_condition(void* feature, void* condition)
 {
    linear_and_condition* c = static_cast<linear_and_condition*>(condition);
    c->add(static_cast<hammer::feature*>(feature));
+}
+
+void* hammer_make_sources_decl()
+{
+   return new sources_decl();
+}
+
+void hammer_add_source_to_sources_decl(void* context, const char* id, void* result)
+{
+   hammer_walker_context* ctx = static_cast<hammer_walker_context*>(context);
+   static_cast<sources_decl*>(result)->push_back(pstring(ctx->engine_->pstring_pool(), id));
+}
+
+void* hammer_make_sources_decl_arg(void* s)
+{
+   return new call_resolver_call_arg<sources_decl>(s, true);
 }

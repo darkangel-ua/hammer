@@ -12,6 +12,7 @@ REQUIREMENTS_DECL;
 CONDITIONAL_FEATURES;
 CONDITION;
 PROJECT_REQUIREMENTS;
+SOURCES_DECL;
 }
 
 @parser::preincludes
@@ -36,7 +37,8 @@ rule_posible_args
                   | { argument_is_string_list(PARSER) }?=> string_list -> ^(STRING_LIST string_list)
                   | { argument_is_feature(PARSER) }?=> feature_arg
                   | { argument_is_requirements(PARSER) }?=> requirements -> ^(REQUIREMENTS_DECL requirements)
-                  | feature_list -> ^(FEATURE_LIST feature_list);
+                  | feature_list -> ^(FEATURE_LIST feature_list)
+                  | { argument_is_sources(PARSER) }?=> sources_decl -> ^(SOURCES_DECL sources_decl);
 string_list : (WS+ string)+ -> string+;
 feature_list : (WS+ feature)+ -> feature+;
 project_requirements : WS+ string requirements -> ^(PROJECT_REQUIREMENTS string ^(REQUIREMENTS_DECL requirements));
@@ -50,7 +52,7 @@ condition  : feature (',' feature)* -> ^(CONDITION feature+);
 condition_result : feature;
 feature  : '<' ID '>' ID -> ^(FEATURE ID ID);
 string  : ID ;
-
+sources_decl  : string_list ;
 ID  :   ('a'..'z' | 'A'..'Z' | '0'..'9' | '.' | '-' | '_'| '=' | '/')+  | STRING;
 
 fragment 

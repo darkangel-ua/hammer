@@ -26,6 +26,9 @@ extern "C"
    void hammer_add_feature_to_rdecl(void* feature, void* rdecl);
    void hammer_set_condition_result(void* condition, void* feature);
    void hammer_add_feature_to_condition(void* feature, void* condition);
+   void* hammer_make_sources_decl();
+   void hammer_add_source_to_sources_decl(void* context, const char* id, void* result);
+   void* hammer_make_sources_decl_arg(void* s);
 #ifdef __cplusplus
 };
 #endif

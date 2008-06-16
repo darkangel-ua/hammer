@@ -8,7 +8,7 @@ namespace hammer
    {
       public:
          alias_meta_target(hammer::project* p, const pstring& name, 
-                           const sources_t& sources,
+                           const sources_decl& sources,
                            const requirements_decl& req,
                            const requirements_decl& usage_req);
          virtual void instantiate(const main_target* owner, 
@@ -16,7 +16,7 @@ namespace hammer
                                   std::vector<basic_target*>* result, 
                                   feature_set* usage_requirements) const;
       private:
-         virtual void transfer_sources(sources_t* simple_targets, 
+         virtual void transfer_sources(sources_decl* simple_targets, 
                                        meta_targets_t* meta_targets) const;
    };
 }

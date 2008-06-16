@@ -4,6 +4,7 @@
 #include "feature.h"
 #include "requirements_decl.h"
 #include "project_requirements_decl.h"
+#include "sources_decl.h"
 
 using namespace std;
 
@@ -58,6 +59,12 @@ bool argument_is_project_requirements(pANTLR3_PARSER parser)
 {
    MAKE_CTX();
    return ctx.current_rule_->second->args().at(ctx.current_arg_).ti() == typeid(hammer::project_requirements_decl);
+}
+
+bool argument_is_sources(pANTLR3_PARSER parser)
+{
+   MAKE_CTX();
+   return ctx.current_rule_->second->args().at(ctx.current_arg_).ti() == typeid(hammer::sources_decl);
 }
 
 }}

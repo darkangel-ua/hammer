@@ -5,12 +5,12 @@
 namespace hammer{
 
 alias_meta_target::alias_meta_target(hammer::project* p, const pstring& name, 
-                                     const sources_t& sources,
+                                     const sources_decl& sources,
                                      const requirements_decl& req,
                                      const requirements_decl& usage_req) 
                                      : basic_meta_target(p, name, req, usage_req)
 {
-   insert(sources);
+   this->sources(sources);
 }
    
 void alias_meta_target::instantiate(const main_target* owner, 
@@ -21,7 +21,7 @@ void alias_meta_target::instantiate(const main_target* owner,
    this->usage_requirements().eval(owner->properties(), usage_requirements);
 }
 
-void alias_meta_target::transfer_sources(sources_t* simple_targets, 
+void alias_meta_target::transfer_sources(sources_decl* simple_targets, 
                                          meta_targets_t* meta_targets) const
 {
    split_sources(simple_targets, meta_targets);

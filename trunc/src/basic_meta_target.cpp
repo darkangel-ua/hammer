@@ -34,9 +34,9 @@ void basic_meta_target::insert(const pstring& source)
    sources_.push_back(source);
 }
 
-void basic_meta_target::insert(const std::vector<pstring>& srcs)
+void basic_meta_target::sources(const sources_decl& s)
 {
-   sources_.insert(sources_.end(), srcs.begin(), srcs.end());
+   sources_ = s;
 }
 
 const location_t& basic_meta_target::location() const 
@@ -44,12 +44,12 @@ const location_t& basic_meta_target::location() const
    return project()->location();
 }
 
-void basic_meta_target::instantiate_simple_targets(const sources_t& targets, 
+void basic_meta_target::instantiate_simple_targets(const sources_decl& targets, 
                                                    const feature_set& build_request,
                                                    const main_target& owner, 
                                                    std::vector<basic_target*>* result) const
 {
-   for(sources_t::const_iterator i = targets.begin(), last = targets.end(); i != last; ++i)
+   for(sources_decl::const_iterator i = targets.begin(), last = targets.end(); i != last; ++i)
    {
       const hammer::type* tp = project_->engine()->get_type_registry().resolve_from_target_name(*i);
       if (tp == 0)
@@ -70,10 +70,10 @@ void basic_meta_target::instantiate_meta_targets(const meta_targets_t& targets,
       (**i).instantiate(owner, build_request, result, usage_requirments);
 }
 
-void basic_meta_target::split_sources(sources_t* simple_targets, meta_targets_t* meta_targets) const
+void basic_meta_target::split_sources(sources_decl* simple_targets, meta_targets_t* meta_targets) const
 {
    const type_registry& tr = project_->engine()->get_type_registry();
-   for(sources_t::const_iterator i = sources_.begin(), last = sources_.end(); i != last; ++i)
+   for(sources_decl::const_iterator i = sources_.begin(), last = sources_.end(); i != last; ++i)
    {
       if (const type* t = tr.resolve_from_target_name(*i))
          simple_targets->push_back(*i); 
@@ -87,7 +87,7 @@ void basic_meta_target::split_sources(sources_t* simple_targets, meta_targets_t*
 //    на этом этапе ибо другой возможности у нас уже не будет.
 static boost::regex project_splitter("(.+?)(?://(.+))?");
 void basic_meta_target::resolve_meta_target_source(const pstring& source,
-                                                   sources_t* simple_targets,
+                                                   sources_decl* simple_targets,
                                                    meta_targets_t* meta_targets) const
 {
    boost::cmatch m;
@@ -112,7 +112,7 @@ void basic_meta_target::resolve_meta_target_source(const pstring& source,
    }
 }
 
-void basic_meta_target::transfer_sources(sources_t* simple_targets, 
+void basic_meta_target::transfer_sources(sources_decl* simple_targets, 
                                          meta_targets_t* meta_targets) const
 {
 

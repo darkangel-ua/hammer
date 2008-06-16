@@ -183,6 +183,26 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\dos_wildcard.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="..\..\src\engine.cpp"
 				>
 			</File>
@@ -358,6 +378,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\source_target.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\sources_decl.cpp"
 				>
 			</File>
 			<File
@@ -567,6 +591,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\sources_decl.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\static_lib_generator.h"
 				>
 			</File>
@@ -588,6 +616,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\types.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\wildcard.hpp"
 				>
 			</File>
 		</Filter>

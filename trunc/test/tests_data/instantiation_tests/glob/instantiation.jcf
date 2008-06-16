@@ -1,0 +1,8 @@
+test [ type = EXE; ]
+{
+   main.cpp [ type = CPP; ] {}
+   lib1 [ type = SHARED_LIB; ]
+   {
+      ../lib1_src/lib1.cpp [ type = CPP; ] {}
+   }
+}

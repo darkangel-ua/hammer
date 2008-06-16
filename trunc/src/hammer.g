@@ -23,7 +23,8 @@ SOURCES_DECL;
 
 project : WS* rules -> rules;
 rules :  rule*;
-rule    : ID { on_enter_rule(PARSER, $ID.text->chars); } rule_args WS+ ';' rule_tail -> ^(RULE_CALL ID rule_args);
+rule    : rule_impl WS+ ';' rule_tail -> rule_impl;
+rule_impl : ID { on_enter_rule(PARSER, $ID.text->chars); } rule_args -> ^(RULE_CALL ID rule_args);
 rule_tail : WS+
           | ;
 rule_args  : (rule_posible_args { on_rule_argument(PARSER); })? (maybe_arg { on_rule_argument(PARSER); })*;
@@ -52,8 +53,10 @@ condition  : feature (',' feature)* -> ^(CONDITION feature+);
 condition_result : feature;
 feature  : '<' ID '>' ID -> ^(FEATURE ID ID);
 string  : ID ;
-sources_decl  : string_list ;
-ID  :   ('a'..'z' | 'A'..'Z' | '0'..'9' | '.' | '-' | '_'| '=' | '/')+  | STRING;
+sources_decl  : string_list |
+                rule_invoke ;
+rule_invoke : WS+ '[' WS+ rule_impl WS+ ']' -> rule_impl;
+ID  :   ('a'..'z' | 'A'..'Z' | '0'..'9' | '.' | '-' | '_'| '=' | '/' | '*')+  | STRING;
 
 fragment 
 STRING  : '"' ('\\"' | ~('"' | '\n' | '\r'))* '"' ;

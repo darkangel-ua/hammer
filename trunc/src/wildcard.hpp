@@ -1,5 +1,3 @@
-
-
 #ifndef BOOST_WILDCARD_HPP
 #define BOOST_WILDCARD_HPP
 

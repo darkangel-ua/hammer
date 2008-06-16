@@ -23,12 +23,18 @@ void* hammer_make_args_list(void* context)
    return new args_list_t();
 }
 
-void hammer_rule_call(void* context, const char* rule_name, void* args_list_in)
+void* hammer_rule_call(void* context, const char* rule_name, void* args_list_in)
 {
    auto_ptr<args_list_t> args_list(static_cast<args_list_t*>(args_list_in));
    hammer_walker_context* ctx = static_cast<hammer_walker_context*>(context);
    args_list->insert(args_list->begin(), new call_resolver_call_arg<project>(ctx->project_, false));
-   ctx->call_resolver_->invoke(rule_name, *args_list);
+   auto_ptr<call_resolver_call_arg_base> result(ctx->call_resolver_->invoke(rule_name, *args_list));
+   return result.release();
+}
+
+void hammer_delete_rule_result(void* result)
+{
+   delete static_cast<call_resolver_call_arg_base*>(result);
 }
 
 void* hammer_make_null_arg()
@@ -160,4 +166,10 @@ void hammer_add_source_to_sources_decl(void* context, const char* id, void* resu
 void* hammer_make_sources_decl_arg(void* s)
 {
    return new call_resolver_call_arg<sources_decl>(s, true);
+}
+
+void hammer_add_rule_result_to_source_decl(void* rule_result, void* sources)
+{
+   call_resolver_call_arg<sources_decl>* rr = static_cast<call_resolver_call_arg<sources_decl>*>(rule_result);
+   static_cast<sources_decl*>(sources)->transfer_from(*rr->value());
 }

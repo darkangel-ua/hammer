@@ -51,7 +51,7 @@ namespace hammer{
       ctx.engine_ = engine_;
       parser_->pParser->super = &ctx;
       langAST_ = parser_->rules(parser_);
-//      pANTLR3_STRING s = langAST_.tree->toStringTree(langAST_.tree);
+      pANTLR3_STRING s = langAST_.tree->toStringTree(langAST_.tree);
       return ctx.error_count_ == 0;
    }
    

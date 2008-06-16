@@ -5,7 +5,8 @@
 extern "C"
 {
 #endif
-   void hammer_rule_call(void* context, const char* rule_name, void* args_list);
+   void* hammer_rule_call(void* context, const char* rule_name, void* args_list);
+   void  hammer_delete_rule_result(void* result);
    void* hammer_make_args_list(void* context);
    void* hammer_make_null_arg();
    void* hammer_make_string_list();
@@ -29,6 +30,7 @@ extern "C"
    void* hammer_make_sources_decl();
    void hammer_add_source_to_sources_decl(void* context, const char* id, void* result);
    void* hammer_make_sources_decl_arg(void* s);
+   void hammer_add_rule_result_to_source_decl(void* rule_result, void* sources);
 #ifdef __cplusplus
 };
 #endif

@@ -17,6 +17,8 @@
 #include "generator_registry.h"
 #include "msvc_generator.h"
 #include "project_requirements_decl.h"
+#include "wildcard.hpp"
+#include <boost/filesystem/operations.hpp>
 
 using namespace std;
 
@@ -57,6 +59,7 @@ engine::engine()
    resolver_.insert("import", boost::function<void (project*, vector<pstring>&)>(boost::bind(&engine::import_rule, this, _1, _2)));
    resolver_.insert("feature.feature", boost::function<void (project*, vector<pstring>&, vector<pstring>*, vector<pstring>&)>(boost::bind(&engine::feature_feature_rule, this, _1, _2, _3, _4)));
    resolver_.insert("feature.compose", boost::function<void (project*, feature&, feature_set&)>(boost::bind(&engine::feature_compose_rule, this, _1, _2, _3)));
+   resolver_.insert("glob", boost::function<sources_decl (project*, std::vector<pstring>&)>(boost::bind(&engine::glob_rule, this, _1, _2)));
 
    {
       feature_attributes ft = {0}; ft.free = 1;
@@ -293,4 +296,36 @@ void engine::alias_rule(project* p,
                                                         usage_requirements ? *usage_requirements : requirements_decl()));
    p->add_target(mt);
 }
+
+sources_decl engine::glob_rule(project* p, std::vector<pstring>& patterns)
+{
+   using namespace boost::filesystem;
+   sources_decl result;
+
+   typedef std::vector<pstring>::const_iterator iter;
+   for(iter i = patterns.begin(), last = patterns.end(); i != last; ++i)
+   {
+      string pattern(i->to_string());
+      string::size_type mask_pos = pattern.find_first_of("*?");
+      if (mask_pos == string::npos)
+         throw runtime_error("[glob] You must specify patterns to match");
+      string::size_type separator_pos = pattern.find_last_of("/\\", mask_pos);
+      path relative_path(separator_pos == string::npos ? path() : path(pattern.begin(), 
+                                                                       pattern.begin() + separator_pos));
+      path searching_path(p->location() / relative_path);
+      boost::dos_wildcard wildcard(string(pattern.begin() + mask_pos, pattern.end()));
+      for(directory_iterator f(searching_path), l = directory_iterator(); f != l; ++f)
+      {
+         if (!is_directory(*f) && wildcard.match(f->leaf()))
+         {
+            pstring v(pstring_pool(), (relative_path / f->leaf()).string());
+            result.push_back(v);
+         }
+      }
+   }
+   
+   result.unique();
+   return result;
+}
+
 }

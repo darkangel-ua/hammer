@@ -36,13 +36,23 @@ namespace hammer
          sources_decl& operator = (const sources_decl& rhs);
 
          void push_back(const pstring& v);
+         
          // добавляет в конец
          void insert(const std::vector<pstring>& v);
+         
+         // перебрасывает все что есть в s в конец данного инстанса
+         // s после переброски пуст
+         void transfer_from(sources_decl& s);
+         
          const_iterator begin() const { return const_iterator(*this, false); }
          const_iterator end() const { return const_iterator(*this, true); }
+         void clear();
+         void unique();
 
       private:
          struct impl_t;
          impl_t* impl_;
+
+         void clone_if_needed();
    };
 }

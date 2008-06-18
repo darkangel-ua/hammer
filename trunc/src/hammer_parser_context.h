@@ -27,5 +27,6 @@ namespace hammer
       bool argument_is_requirements(pANTLR3_PARSER parser);
       bool argument_is_project_requirements(pANTLR3_PARSER parser);
       bool argument_is_sources(pANTLR3_PARSER parser);
+      bool is_conditional_feature(pANTLR3_PARSER parser);
    }
 }

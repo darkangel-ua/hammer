@@ -1,1 +1,1 @@
-exe test : lib1 main.cpp ;
+exe test : lib1 [ glob glob_src1/*.cpp ] main.cpp ;

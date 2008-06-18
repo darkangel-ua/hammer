@@ -23,44 +23,42 @@ SOURCES_DECL;
 
 project : WS* rules -> rules;
 rules :  rule*;
-rule    : rule_impl WS+ ';' rule_tail -> rule_impl;
+rule    : rule_impl ';' -> rule_impl;
 rule_impl : ID { on_enter_rule(PARSER, $ID.text->chars); } rule_args -> ^(RULE_CALL ID rule_args);
-rule_tail : WS+
-          | ;
 rule_args  : (rule_posible_args { on_rule_argument(PARSER); })? (maybe_arg { on_rule_argument(PARSER); })*;
+
 maybe_arg 
-        : WS+ ':' rule_posible_args -> rule_posible_args
-        | WS+ ':' -> ^(NULL_ARG)
-        ;               
+        : ':' rule_posible_args -> rule_posible_args
+        | ':' -> ^(NULL_ARG)
+        ;         
 rule_posible_args 
                   : { argument_is_string(PARSER) }?=> string_arg
                   | { argument_is_project_requirements(PARSER) }?=> project_requirements 
-                  | { argument_is_string_list(PARSER) }?=> string_list -> ^(STRING_LIST string_list)
+                  | { argument_is_string_list(PARSER) }?=> string_list
                   | { argument_is_feature(PARSER) }?=> feature_arg
                   | { argument_is_requirements(PARSER) }?=> requirements -> ^(REQUIREMENTS_DECL requirements)
                   | feature_list -> ^(FEATURE_LIST feature_list)
                   | { argument_is_sources(PARSER) }?=> sources_decl -> ^(SOURCES_DECL sources_decl);
-string_list : (WS+ string)+ -> string+;
-feature_list : (WS+ feature)+ -> feature+;
-project_requirements : WS+ string requirements -> ^(PROJECT_REQUIREMENTS string ^(REQUIREMENTS_DECL requirements));
-requirements : (r_feature | r_conditional_features)+;
-string_arg  : WS+ string -> ^(STRING_ARG string);
-feature_arg : WS+ feature -> feature;
-r_feature : WS+ feature -> feature;
-r_conditional_features 	: WS+ conditional_features -> conditional_features;
-conditional_features : condition ':' condition_result -> ^(CONDITIONAL_FEATURES condition condition_result);
+string_list : string+ -> ^(STRING_LIST string+);
+feature_list : feature+;
+project_requirements : string requirements -> ^(PROJECT_REQUIREMENTS string ^(REQUIREMENTS_DECL requirements));
+requirements : (feature | conditional_features)+;
+string_arg  : string -> ^(STRING_ARG string);
+feature_arg : feature -> feature;
+conditional_features : { is_conditional_feature(PARSER) }?=> condition condition_result -> ^(CONDITIONAL_FEATURES condition condition_result);
 condition  : feature (',' feature)* -> ^(CONDITION feature+);
-condition_result : feature;
+// COLON needed for is_conditional_feature so we put it into token stream
+condition_result : COLON feature;
 feature  : '<' ID '>' ID -> ^(FEATURE ID ID);
-string  : ID ;
-sources_decl  : string_list |
-                rule_invoke ;
-rule_invoke : WS+ '[' WS+ rule_impl WS+ ']' -> rule_impl;
-ID  :   ('a'..'z' | 'A'..'Z' | '0'..'9' | '.' | '-' | '_'| '=' | '/' | '*')+  | STRING;
+string  : ID;
+sources_decl  : (string | rule_invoke)+ ;
+rule_invoke : '[' rule_impl ']' -> rule_impl;
 
+ID  :   ('a'..'z' | 'A'..'Z' | '0'..'9' | '.' | '-' | '_'| '=' | '/' | '*')+  | STRING;
+COLON 	: ':';
 fragment 
 STRING  : '"' ('\\"' | ~('"' | '\n' | '\r'))* '"' ;
 
 COMMENT : '#' (~('\n' | '\r'))* ('\n' | '\r')?  { $channel = HIDDEN; };
 
-WS : (' ' |'\n' |'\r' ) ; //{ $channel = HIDDEN; };
+WS : (' ' |'\n' |'\r' ) { $channel = HIDDEN; };

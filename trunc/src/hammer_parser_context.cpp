@@ -67,4 +67,11 @@ bool argument_is_sources(pANTLR3_PARSER parser)
    return ctx.current_rule_->second->args().at(ctx.current_arg_).ti() == typeid(hammer::sources_decl);
 }
 
+bool is_conditional_feature(pANTLR3_PARSER parser)
+{
+   pANTLR3_COMMON_TOKEN t1 = parser->tstream->_LT(parser->tstream, 4);
+   pANTLR3_COMMON_TOKEN t2 = parser->tstream->_LT(parser->tstream, 5);
+   return t1->stop + 1 == t2->start;
+}
+
 }}

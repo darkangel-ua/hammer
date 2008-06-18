@@ -1,6 +1,7 @@
 test [ type = EXE; ]
 {
    main.cpp [ type = CPP; ] {}
+   glob_src1/src1.cpp [ type = CPP; ] {}
    lib1 [ type = SHARED_LIB; ]
    {
       ../lib1_src/lib1.cpp [ type = CPP; ] {}

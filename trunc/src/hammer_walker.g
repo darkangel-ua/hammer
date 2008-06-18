@@ -57,13 +57,16 @@ requirements returns[void* result]
 	   );
 conditional_features returns[void* c] 
 @init { c = hammer_make_requirements_condition(); }
-	: ^(CONDITIONAL_FEATURES condition[c] cfeature { hammer_set_condition_result(c, $cfeature.feature); });
+	: ^(CONDITIONAL_FEATURES condition[c] COLON cfeature { hammer_set_condition_result(c, $cfeature.feature); });
 condition[void* c]
 	: ^(CONDITION (cfeature { hammer_add_feature_to_condition($cfeature.feature, c); })+);
 cfeature returns[void* feature]
 	: ^(FEATURE feature_name=ID feature_value=ID) { feature = hammer_create_feature(PARSER->super, $feature_name.text->chars, $feature_value.text->chars); };
 sources_decl returns[void* sources]
 @init { sources = hammer_make_sources_decl(); } 
-	: ^(SOURCES_DECL (ID { hammer_add_source_to_sources_decl(PARSER->super, $ID.text->chars, sources); } )+) 
-	| ^(SOURCES_DECL rule) { hammer_add_rule_result_to_source_decl($rule.result, sources); hammer_delete_rule_result($rule.result); };
+//	: ^(SOURCES_DECL (ID { hammer_add_source_to_sources_decl(PARSER->super, $ID.text->chars, sources); } )+) 
+//	| ^(SOURCES_DECL rule) { hammer_add_rule_result_to_source_decl($rule.result, sources); hammer_delete_rule_result($rule.result); }
+	:  ^(SOURCES_DECL (ID { hammer_add_source_to_sources_decl(PARSER->super, $ID.text->chars, sources); } | sources_decl_rule_invoke[sources])+);
 	
+sources_decl_rule_invoke[void* sources] : rule { hammer_add_rule_result_to_source_decl($rule.result, sources); hammer_delete_rule_result($rule.result); };
+

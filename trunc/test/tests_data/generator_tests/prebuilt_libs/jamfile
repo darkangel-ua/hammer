@@ -1,0 +1,3 @@
+lib winsock : <name>winsock.lib ;
+lib lib1 : lib1.cpp winsock : <link>static ;
+exe test : main.cpp lib1 ;

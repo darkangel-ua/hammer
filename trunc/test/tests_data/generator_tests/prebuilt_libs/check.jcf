@@ -1,0 +1,9 @@
+test [ type = EXE; ]
+{
+   main.cpp [ type = CPP; ]{}
+   lib1 [ type = STATIC_LIB; ]
+   {
+      lib1.cpp [ type = CPP; ]{}
+      winsock [ type = SEARCHED_LIB; ] {}
+   }
+}

@@ -11,6 +11,6 @@ namespace hammer
                          const requirements_decl& usage_req);
       
       protected:
-         virtual const type* instantiate_type(const feature_set& fs) const;
+         virtual main_target* construct_main_target(const feature_set* properties) const;
    };
 }

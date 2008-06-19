@@ -42,12 +42,7 @@ namespace hammer{
       feature_set* build_request_with_propagated = build_request.clone();
       build_request_with_propagated->copy_propagated(*mt_fs);
       
-      main_target* mt = new(project()->engine()->targets_pool()) 
-                           main_target(this, 
-                                       name(), 
-                                       instantiate_type(*mt_fs), 
-                                       mt_fs,
-                                       project()->engine()->targets_pool());
+      main_target* mt = construct_main_target(mt_fs);
       instantiate_meta_targets(meta_targets, *build_request_with_propagated, mt, &sources, usage_requirements);
       mt_fs->join(*usage_requirements);
       mt->properties(mt_fs);

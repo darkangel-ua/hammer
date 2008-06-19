@@ -23,6 +23,6 @@ namespace hammer
          virtual ~meta_target(){}
 
       protected:
-         virtual const type* instantiate_type(const feature_set& fs) const = 0;
+         virtual main_target* construct_main_target(const feature_set* properties) const = 0;
    };
 }

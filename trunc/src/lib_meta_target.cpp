@@ -6,6 +6,7 @@
 #include "types.h"
 #include "feature.h"
 #include "feature_set.h"
+#include "main_target.h"
 
 namespace hammer{
 
@@ -18,19 +19,25 @@ lib_meta_target::lib_meta_target(hammer::project* p,
 {
 }
 
-const type* lib_meta_target::instantiate_type(const feature_set& fs) const
+main_target* lib_meta_target::construct_main_target(const feature_set* properties) const
 {
-   feature_set::const_iterator link = fs.find("link");
-   if (link != fs.end())
+   feature_set::const_iterator link = properties->find("link");
+   const type* target_type = 0;
+   if (link != properties->end())
    {
       if ((*link)->value() == "static")
-         return &this->project()->engine()->get_type_registry().resolve_from_name(types::STATIC_LIB);
+         target_type = &this->project()->engine()->get_type_registry().resolve_from_name(types::STATIC_LIB);
       else
-         return &this->project()->engine()->get_type_registry().resolve_from_name(types::SHARED_LIB);
+         target_type = &this->project()->engine()->get_type_registry().resolve_from_name(types::SHARED_LIB);
    }
 
-   assert(false && "This is must be unreachable.");
-   return 0;
+   main_target* mt = new(project()->engine()->targets_pool()) 
+                         main_target(this, 
+                                    name(), 
+                                    target_type, 
+                                    properties,
+                                    project()->engine()->targets_pool());
+   return mt;
 }
 
 }

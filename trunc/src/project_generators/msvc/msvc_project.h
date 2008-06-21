@@ -21,6 +21,11 @@ namespace hammer
 
    namespace project_generators
    {
+      namespace configuration_types
+      {
+         enum value {exe = 1, static_lib = 4, shared_lib = 2};
+      }
+
       class msvc_project
       {
          public:
@@ -105,7 +110,7 @@ namespace hammer
             void gether_files_impl(const build_node& node) const;
             void gether_files() const;
             void insert_into_files(const basic_target* t) const;
-            unsigned int resolve_configuration_type(const variant& v) const;
+            configuration_types::value resolve_configuration_type(const variant& v) const;
             void fill_options(const feature_set& props, options* opts, const main_target& mt) const;
             void write_includes(std::ostream& os, const options& opts) const;
       };

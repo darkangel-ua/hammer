@@ -25,7 +25,7 @@ void main_target::sources(const std::vector<basic_target*>& srcs)
 std::vector<boost::intrusive_ptr<build_node> > 
 main_target::generate()
 {
-   std::vector<boost::intrusive_ptr<hammer::build_node> >  result(mt_->project()->engine()->generators().construct(this));   
+   std::vector<boost::intrusive_ptr<hammer::build_node> >  result(mt_->project()->engine()->generators().construct(this));
    build_node_ = result.front();
    return result;
 }

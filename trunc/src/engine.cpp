@@ -35,16 +35,14 @@ engine::engine()
    type_registry_->insert(cpp);
    auto_ptr<type> h(new type(types::H));
    type_registry_->insert(h);
-/*
-   auto_ptr<type> lib(new type(types::LIB));
-   type_registry_->insert(lib);
-*/
    auto_ptr<type> static_lib(new type(types::STATIC_LIB));
    type_registry_->insert(static_lib);
    auto_ptr<type> shared_lib(new type(types::SHARED_LIB));
    type_registry_->insert(shared_lib);
    auto_ptr<type> import_lib(new type(types::IMPORT_LIB));
    type_registry_->insert(import_lib);
+   auto_ptr<type> searched_lib(new type(types::SEARCHED_LIB));
+   type_registry_->insert(searched_lib);
    auto_ptr<type> exe(new type(types::EXE));
    type_registry_->insert(exe);
    auto_ptr<type> obj(new type(types::OBJ));
@@ -53,7 +51,7 @@ engine::engine()
    auto_ptr<hammer::feature_registry> fr(new hammer::feature_registry(&pstring_pool()));
 
    resolver_.insert("project", boost::function<void (project*, vector<pstring>&, project_requirements_decl*, project_requirements_decl*)>(boost::bind(&engine::project_rule, this, _1, _2, _3, _4)));
-   resolver_.insert("lib", boost::function<void (project*, vector<pstring>&, sources_decl&, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::lib_rule, this, _1, _2, _3, _4, _5, _6)));
+   resolver_.insert("lib", boost::function<void (project*, vector<pstring>&, sources_decl*, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::lib_rule, this, _1, _2, _3, _4, _5, _6)));
    resolver_.insert("exe", boost::function<void (project*, vector<pstring>&, sources_decl&, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::exe_rule, this, _1, _2, _3, _4, _5, _6)));
    resolver_.insert("alias", boost::function<void (project*, pstring&, sources_decl&, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::alias_rule, this, _1, _2, _3, _4, _5, _6)));
    resolver_.insert("import", boost::function<void (project*, vector<pstring>&)>(boost::bind(&engine::import_rule, this, _1, _2)));
@@ -80,6 +78,22 @@ engine::engine()
       feature_attributes ft = {0}; ft.propagated = 1;
       fr->add_def(feature_def("link", boost::assign::list_of<string>("shared")("static"), ft));
    }
+   
+   {
+      feature_attributes ft = {0}; ft.free = 1;
+      fr->add_def(feature_def("name", vector<string>(), ft));
+   }
+
+   {
+      feature_attributes ft = {0}; ft.free = 1;
+      fr->add_def(feature_def("__searched_lib_name", vector<string>(), ft));
+   }
+
+   {
+      feature_attributes ft = {0}; ft.free = ft.path = 1;
+      fr->add_def(feature_def("search", vector<string>(), ft));
+   }
+
    feature_registry_ = fr.release();
 
    {
@@ -199,12 +213,14 @@ void engine::project_rule(project* p, std::vector<pstring>& name,
       p->usage_requirements().insert(usage_req->requirements());
 }
 
-void engine::lib_rule(project* p, std::vector<pstring>& name, sources_decl& sources, requirements_decl* requirements,
+void engine::lib_rule(project* p, std::vector<pstring>& name, sources_decl* sources, requirements_decl* requirements,
                       feature_set* default_build, requirements_decl* usage_requirements)
 {
    auto_ptr<basic_meta_target> mt(new lib_meta_target(p, name.at(0), requirements ? *requirements : requirements_decl(), 
                                                       usage_requirements ? *usage_requirements : requirements_decl()));
-   mt->sources(sources);
+   if (sources)
+      mt->sources(*sources);
+
    p->add_target(mt);
 }
 

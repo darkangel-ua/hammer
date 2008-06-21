@@ -6,7 +6,7 @@ namespace hammer
    class static_lib_generator : public generator
    {
       public:
-         static_lib_generator(engine& e,
+         static_lib_generator(hammer::engine& e,
                               const std::string& name,
                               const consumable_types_t& source_types,
                               const producable_types_t& target_types,
@@ -21,5 +21,6 @@ namespace hammer
       private:
          const type* shared_lib_;
          const type* static_lib_;
+         const type* searched_lib_;
    };
 }

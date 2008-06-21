@@ -10,7 +10,7 @@
 
 namespace hammer{
 
-generator::generator(engine& e, 
+generator::generator(hammer::engine& e, 
                      const std::string& name,
                      const consumable_types_t& source_types,
                      const producable_types_t& target_types,

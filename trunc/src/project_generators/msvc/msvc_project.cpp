@@ -19,6 +19,7 @@ struct msvc_project::options
 {
    std::ostringstream defines_;
    std::ostringstream includes_;
+   std::ostringstream searched_libs_;
 };
 
 msvc_project::msvc_project(engine& e, const boost::guid& uid) 
@@ -87,19 +88,19 @@ static void write_bottom(std::ostream& s)
    s << "</VisualStudioProject>";
 }
 
-unsigned int msvc_project::resolve_configuration_type(const variant& v) const
+configuration_types::value msvc_project::resolve_configuration_type(const variant& v) const
 {
    const type& exe_type = engine_->get_type_registry().resolve_from_name(types::EXE);
    const type& static_lib_type = engine_->get_type_registry().resolve_from_name(types::STATIC_LIB);
    const type& shared_lib_type = engine_->get_type_registry().resolve_from_name(types::SHARED_LIB);
    if (v.target_->type() == exe_type)
-      return 1;
+      return configuration_types::exe;
    else
       if (v.target_->type() == static_lib_type)
-         return 4;
+         return configuration_types::static_lib;
       else
          if (v.target_->type() == shared_lib_type)
-            return 2;
+            return configuration_types::shared_lib;
          else
             throw std::runtime_error("[msvc_project] Can't resolve type '" + v.target_->type().name() + "'.");
 } 
@@ -108,6 +109,8 @@ void msvc_project::fill_options(const feature_set& props, options* opts, const m
 {
    const feature_def& define_def = engine_->feature_registry().get_def("define");
    const feature_def& include_def = engine_->feature_registry().get_def("include");
+   const feature_def& searched_lib = engine_->feature_registry().get_def("__searched_lib_name");
+   
    for(feature_set::const_iterator i = props.begin(), last = props.end(); i != last; ++i)
    {
       if ((**i).def() == define_def)
@@ -127,6 +130,9 @@ void msvc_project::fill_options(const feature_set& props, options* opts, const m
 
             opts->includes_ << p << ';';
          }
+         else
+            if ((**i).def() == searched_lib)
+               opts->searched_libs_ << (**i).value() << ' ';
    }
 }
 
@@ -144,12 +150,13 @@ void msvc_project::write_configurations(std::ostream& s) const
    for(variants_t::const_iterator i = variants_.begin(), last = variants_.end(); i != last; ++i)
    {
       options opts;
+      configuration_types::value cfg_type = resolve_configuration_type(*i);
       fill_options(*i->properties_, &opts, *i->target_);
       s << "      <Configuration\n"
            "         Name=\"" << i->name_ << "|Win32\"\n"
            "         OutputDirectory=\"$(SolutionDir)$(ConfigurationName)\"\n"
            "         IntermediateDirectory=\"$(ConfigurationName)\"\n"
-           "         ConfigurationType=\"" << resolve_configuration_type(*i) << "\"\n"
+           "         ConfigurationType=\"" << cfg_type << "\"\n"
            "         CharacterSet=\"1\">\n";
 
       s << "         <Tool\n"
@@ -158,6 +165,20 @@ void msvc_project::write_configurations(std::ostream& s) const
       write_includes(s, opts);
         
       s << "         />\n";
+
+      switch(cfg_type)
+      {
+         case configuration_types::exe:
+         case configuration_types::shared_lib:
+         {
+            s << "         <Tool\n"
+                 "            Name=\"VCLinkerTool\"\n"
+                 "            AdditionalDependencies=\"" << opts.searched_libs_.str() << "\"\n"
+                 "         />\n";
+            break;
+         }
+      }
+
       s << "      </Configuration>\n";
    }
 

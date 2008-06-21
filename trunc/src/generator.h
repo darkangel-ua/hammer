@@ -42,21 +42,24 @@ namespace hammer
                    bool composite,
                    const feature_set* c = 0);
       
+         hammer::engine& engine() { return *engine_; }
          const std::string& name() const { return name_; }
          const consumable_types_t& consumable_types() const { return source_types_; }
          const producable_types_t& producable_types() const { return target_types_; }
          const feature_set& constraints() const { return *constraints_; }
+ 
          virtual std::vector<boost::intrusive_ptr<build_node> >
             construct(const type& target_type, 
                       const feature_set& props,
                       const std::vector<boost::intrusive_ptr<build_node> >& sources,
                       const basic_target* t,
                       const pstring* name /* name for composite target*/) const;
+
          bool is_consumable(const type& t) const;
          bool is_composite() const { return composite_; }
 
       private:
-         engine* engine_;
+         hammer::engine* engine_;
          const std::string name_;
          consumable_types_t source_types_;
          producable_types_t target_types_;

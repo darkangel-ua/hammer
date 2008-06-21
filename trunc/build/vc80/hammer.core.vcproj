@@ -207,6 +207,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\exe_and_shared_lib_generator.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\feature.cpp"
 				>
 			</File>
@@ -377,6 +381,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\searched_lib_main_target.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\source_target.cpp"
 				>
 			</File>
@@ -419,20 +427,6 @@
 			<File
 				RelativePath="..\..\src\typed_meta_target.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\src\types.cpp"
@@ -462,6 +456,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\engine.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\exe_and_shared_lib_generator.h"
 				>
 			</File>
 			<File
@@ -582,6 +580,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\requirements_decl.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\searched_lib_main_target.h"
 				>
 			</File>
 			<File

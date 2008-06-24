@@ -15,13 +15,6 @@ using namespace std;
    
 namespace hammer{ namespace project_generators{
 
-struct msvc_project::options
-{
-   std::ostringstream defines_;
-   std::ostringstream includes_;
-   std::ostringstream searched_libs_;
-};
-
 msvc_project::msvc_project(engine& e, const boost::guid& uid) 
    : engine_(&e), uid_(uid)
 {
@@ -42,6 +35,7 @@ void msvc_project::add_variant(boost::intrusive_ptr<const build_node> node)
    v.node_ = node;
    v.target_ = node->products_[0]->mtarget();
    v.name_ = make_variant_name(t->properties());
+   v.options_.reset(new options);
    variants_.push_back(v);
    if (id_.empty())
    {
@@ -147,9 +141,9 @@ void msvc_project::write_configurations(std::ostream& s) const
 {
    s << "   <Configurations>\n";
    
-   for(variants_t::const_iterator i = variants_.begin(), last = variants_.end(); i != last; ++i)
+   for(variants_t::iterator i = variants_.begin(), last = variants_.end(); i != last; ++i)
    {
-      options opts;
+      options& opts = *i->options_;
       configuration_types::value cfg_type = resolve_configuration_type(*i);
       fill_options(*i->properties_, &opts, *i->target_);
       s << "      <Configuration\n"

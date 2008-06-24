@@ -94,6 +94,11 @@ engine::engine()
       fr->add_def(feature_def("search", vector<string>(), ft));
    }
 
+   {
+      feature_attributes ft = {0}; ft.free = ft.path = 1;
+      fr->add_def(feature_def("file", vector<string>(), ft));
+   }
+
    feature_registry_ = fr.release();
 
    {

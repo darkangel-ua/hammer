@@ -8,6 +8,7 @@
 #include <boost/guid.hpp>
 #include <boost/intrusive_ptr.hpp>
 #include "../../build_node.h"
+#include <boost/shared_ptr.hpp>
 
 namespace hammer
 {
@@ -31,12 +32,20 @@ namespace hammer
          public:
             typedef std::vector<const hammer::main_target*> dependencies_t;
 
+            struct options
+            {
+               std::ostringstream defines_;
+               std::ostringstream includes_;
+               std::ostringstream searched_libs_;
+            };
+
             struct variant
             {
                boost::intrusive_ptr<const build_node> node_;
                const main_target* target_;
                const feature_set* properties_;
                std::string name_;
+               boost::shared_ptr<options> options_;
             };
 
             typedef std::vector<variant> variants_t;
@@ -90,7 +99,6 @@ namespace hammer
                private:
                   types_t types_;
             };
-            struct options;
 
             typedef std::vector<filter_t> files_t;
             

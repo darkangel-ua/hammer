@@ -12,6 +12,8 @@ namespace hammer
          {
          }
 
+         void* operator new (size_t size, pool& p) { return p.malloc(size); }
+
          virtual std::vector<boost::intrusive_ptr<build_node> > generate();
    };
 }

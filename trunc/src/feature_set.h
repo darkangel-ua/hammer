@@ -22,7 +22,7 @@ namespace hammer
          const_iterator end() const { return features_.end(); }
          iterator begin(){ return features_.begin(); }
          iterator end() { return features_.end(); }
-         const feature* get(const char* name) const; // throw if not found
+         const feature& get(const char* name) const; // throw if not found
          const feature* find(const char* name, const char* value) const;
          const_iterator find(const char* name) const; // find first occurrence 
          const_iterator find(const std::string& name) const { return find(name.c_str()); } // find first occurrence 

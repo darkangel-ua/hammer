@@ -29,9 +29,9 @@ searched_lib_main_target::generate()
    if (i != properties().end())
    {
       engine* e = mtarget()->meta_target()->project()->engine();
-      basic_target* t = new(e->pstring_pool()) file_target(this, (**i).value(), e->get_type_registry().resolve_from_target_name((**i).value()), &properties());
+      basic_target* t = new(e->pstring_pool()) file_target(this, name(), e->get_type_registry().resolve_from_target_name((**i).value()), &properties());
       result->products_.push_back(t);
-      result->targeting_type_ = &t->type();
+      result->targeting_type_ = &this->type();
    }
    else
    {

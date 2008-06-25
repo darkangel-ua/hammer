@@ -58,7 +58,8 @@ namespace hammer
             const boost::guid& guid() const { return uid_; }
             const hammer::meta_target& meta_target() const { return *meta_target_; }
             const dependencies_t& dependencies() const { return dependencies_;}
-            location_t location() const { return location_; } // путь относительно meta_target проекта и имя файла проекта
+            location_t full_project_name() const { return full_project_name_; } // путь относительно meta_target проекта и имя файла проекта
+            const location_t& location() const { return location_; }
             const pstring& name() const;
             const variants_t& variants() const { return variants_; }
             
@@ -109,13 +110,16 @@ namespace hammer
             std::string id_;
             const hammer::meta_target* meta_target_;
             mutable dependencies_t dependencies_;
+            location_t full_project_name_;
             location_t location_;
+            
+            const type* searched_lib_;
 
             void fill_filters() const;
             void write_header(std::ostream& s) const;
             void write_configurations(std::ostream& s) const;
             void write_files(std::ostream& s) const;
-            void gether_files_impl(const build_node& node) const;
+            void gether_files_impl(const build_node& node, variant& v) const;
             void gether_files() const;
             void insert_into_files(const basic_target* t) const;
             configuration_types::value resolve_configuration_type(const variant& v) const;

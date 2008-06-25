@@ -3,7 +3,7 @@
    ProjectType="Visual C++"
    Version="8,00"
    Name="lib4"
-   ProjectGUID="{00000000-0000-0000-0000-000000000004}"
+   ProjectGUID="{00000000-0000-0000-0000-000000000003}"
    RootNamespace="lib4"
    Keyword="Win32Proj">
 	<Platforms>

@@ -44,13 +44,13 @@ namespace hammer{
       return *this;
    }
 
-   const feature* feature_set::get(const char* name_) const
+   const feature& feature_set::get(const char* name_) const
    {
       const_iterator f = find(name_);
       if (f == features_.end())
          throw runtime_error("feature '" + string(name_) + "not founded");
       
-      return *f;
+      return **f;
    }
    
    feature_set::iterator feature_set::deconstify(const_iterator i)

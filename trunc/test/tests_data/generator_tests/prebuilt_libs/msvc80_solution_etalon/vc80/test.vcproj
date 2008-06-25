@@ -23,7 +23,7 @@
          />
          <Tool
             Name="VCLinkerTool"
-            AdditionalDependencies=""
+            AdditionalDependencies="../lib2/lib2.lib winsock.lib "
          />
       </Configuration>
    </Configurations>

@@ -21,6 +21,10 @@
             Name="VCCLCompilerTool"
             PreprocessorDefinitions=""
          />
+         <Tool
+            Name="VCLinkerTool"
+            AdditionalDependencies=""
+         />
       </Configuration>
    </Configurations>
       <Files>

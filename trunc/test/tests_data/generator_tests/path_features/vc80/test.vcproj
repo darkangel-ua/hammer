@@ -22,6 +22,10 @@
             PreprocessorDefinitions=""
             AdditionalIncludeDirectories="../lib1;"
          />
+         <Tool
+            Name="VCLinkerTool"
+            AdditionalDependencies=""
+         />
       </Configuration>
    </Configurations>
       <Files>

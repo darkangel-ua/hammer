@@ -36,20 +36,26 @@ exe_and_shared_lib_generator::construct(const type& target_type,
    {
       if (*(**i).targeting_type_ == *searched_lib_)
       {
-         if (!new_props)
-            new_props = props.clone();
-         
-         // searched_lib produce only one products - self.
+        
+         // searched_lib produce only one products - self or file target.
          const basic_target& lib_target = *(**i).products_.front();
 
-         const feature& lib_name = *lib_target.properties().get("name");
-         new_props->join("__searched_lib_name", lib_name.value().begin());
+         if (lib_target.type() == *searched_lib_)
+         {
+            if (!new_props)
+               new_props = props.clone();
 
-         feature_set::const_iterator search_location = lib_target.properties().find("search");
-         if (search_location != lib_target.properties().end())
-            new_props->join(*search_location);
+            const feature& lib_name = lib_target.properties().get("name");
+            new_props->join("__searched_lib_name", lib_name.value().begin());
 
-         i = modified_sources.erase(i);
+            feature_set::const_iterator search_location = lib_target.properties().find("search");
+            if (search_location != lib_target.properties().end())
+               new_props->join(*search_location);
+
+            i = modified_sources.erase(i);
+         }
+         else
+            ++i; // file target we pass pass to generator
       }
       else
          ++i;

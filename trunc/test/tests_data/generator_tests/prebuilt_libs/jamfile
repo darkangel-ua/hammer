@@ -1,4 +1,3 @@
 lib winsock : : <name>winsock.lib <search>dummydir ;
-lib lib2 : : <file>lib2/lib2.lib ;
 lib lib1 : lib1.cpp winsock lib2 : <link>static ;
 exe test : main.cpp lib1 ;

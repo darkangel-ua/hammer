@@ -21,6 +21,10 @@
             Name="VCCLCompilerTool"
             PreprocessorDefinitions="NDEBUG=1;"
          />
+         <Tool
+            Name="VCLinkerTool"
+            AdditionalDependencies=""
+         />
       </Configuration>
    </Configurations>
       <Files>

@@ -18,12 +18,13 @@ namespace hammer{ namespace project_generators{
 msvc_project::msvc_project(engine& e, const boost::guid& uid) 
    : engine_(&e), uid_(uid)
 {
+   searched_lib_ = &engine_->get_type_registry().resolve_from_name(types::SEARCHED_LIB);
 }
 
 static std::string make_variant_name(const feature_set& fs)
 {
-   const feature* f = fs.get("variant");
-   return f->value().to_string();
+   const feature& f = fs.get("variant");
+   return f.value().to_string();
 }
 
 void msvc_project::add_variant(boost::intrusive_ptr<const build_node> node)
@@ -41,8 +42,9 @@ void msvc_project::add_variant(boost::intrusive_ptr<const build_node> node)
    {
       id_ = v.target_->location().string();
       meta_target_ = v.target_->meta_target();
-      location_ = v.target_->meta_target()->project()->location() /
-                  "vc80" / (name().to_string() + ".vcproj");
+      full_project_name_ = v.target_->meta_target()->project()->location() /
+                           "vc80" / (name().to_string() + ".vcproj");
+      location_ = v.target_->meta_target()->project()->location() / "vc80";
    }
 }
 
@@ -220,8 +222,8 @@ void msvc_project::generate() const
 
    const main_target& mt = *variants_.front().target_;
    
-   create_directories(location_.branch_path());
-   boost::filesystem::ofstream f(location_, std::ios_base::trunc);
+   create_directories(full_project_name_.branch_path());
+   boost::filesystem::ofstream f(full_project_name_, std::ios_base::trunc);
    write_header(f);
    write_configurations(f);
    write_files(f);
@@ -261,7 +263,7 @@ void msvc_project::insert_into_files(const basic_target* t) const
    }
 }
 
-void msvc_project::gether_files_impl(const build_node& node) const
+void msvc_project::gether_files_impl(const build_node& node, variant& v) const
 {
    typedef build_node::targets_t::const_iterator iter;
    for(iter mi = node.sources_.begin(), mlast = node.sources_.end(); mi != mlast; ++mi)
@@ -274,18 +276,28 @@ void msvc_project::gether_files_impl(const build_node& node) const
          for(niter i = node.down_.begin(), last = node.down_.end(); i != last; ++i)
          {
             if ((**i).find_product(*mi))
-               gether_files_impl(**i);
+               gether_files_impl(**i, v);
          }
       }
       else
-         dependencies_.push_back((**mi).mtarget());
+      {
+         if ((**mi).mtarget()->type() == *searched_lib_)
+         { // this target is searched lib product
+            const feature& file_name = (**mi).properties().get("file");
+            location_t searched_file(relative_path((**mi).mtarget()->location(), location_) / file_name.value().to_string());
+            searched_file.normalize();
+            v.options_->searched_libs_ << searched_file << ' ';
+         }
+         else
+            dependencies_.push_back((**mi).mtarget());
+      }
    }
 }
 
 void msvc_project::gether_files() const
 {
-   for(variants_t::const_iterator i = variants_.begin(), last = variants_.end(); i != last; ++i)
-      gether_files_impl(*i->node_);
+   for(variants_t::iterator i = variants_.begin(), last = variants_.end(); i != last; ++i)
+      gether_files_impl(*i->node_, *i);
 
    std::sort(dependencies_.begin(), dependencies_.end());
    dependencies_.erase(std::unique(dependencies_.begin(), dependencies_.end()), dependencies_.end());

@@ -82,7 +82,7 @@ void impl_t::generate_dependencies(impl_t::dependencies_t::const_iterator first,
 void msvc_solution::impl_t::write_project_section(ostream& os, const msvc_project& project) const
 {
    os << "Project(\"{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}\") = \"" << project.name() 
-      << "\", \"" << project.location() << "\", \"{" << project.guid() << "}\"\n" ;
+      << "\", \"" << project.full_project_name() << "\", \"{" << project.guid() << "}\"\n" ;
 
    os << "\tProjectSection(ProjectDependencies) = postProject\n";
    typedef msvc_project::dependencies_t::const_iterator iter;

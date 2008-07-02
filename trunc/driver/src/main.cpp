@@ -54,7 +54,10 @@ namespace
    void add_all_targets(vector<string>& targets, const hammer::project& project)
    {
       for(hammer::project::targets_t::const_iterator i = project.targets().begin(), last = project.targets().end(); i != last; ++i)
-         targets.push_back(i->first.to_string());
+      {
+         if (!i->second->is_explicit())
+            targets.push_back(i->first.to_string());
+      }
    }
 
    vector<basic_target*> 

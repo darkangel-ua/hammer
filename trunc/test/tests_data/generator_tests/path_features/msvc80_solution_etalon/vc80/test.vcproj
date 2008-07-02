@@ -20,7 +20,7 @@
          <Tool
             Name="VCCLCompilerTool"
             PreprocessorDefinitions=""
-            AdditionalIncludeDirectories="../lib1;"
+            AdditionalIncludeDirectories="..\lib1;"
          />
          <Tool
             Name="VCLinkerTool"

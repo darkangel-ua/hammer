@@ -33,6 +33,8 @@ engine::engine()
    type_registry_.reset(new type_registry);
    auto_ptr<type> cpp(new type(types::CPP));
    type_registry_->insert(cpp);
+   auto_ptr<type> c(new type(types::C));
+   type_registry_->insert(c);
    auto_ptr<type> h(new type(types::H));
    type_registry_->insert(h);
    auto_ptr<type> static_lib(new type(types::STATIC_LIB));
@@ -58,6 +60,7 @@ engine::engine()
    resolver_.insert("feature.feature", boost::function<void (project*, vector<pstring>&, vector<pstring>*, vector<pstring>&)>(boost::bind(&engine::feature_feature_rule, this, _1, _2, _3, _4)));
    resolver_.insert("feature.compose", boost::function<void (project*, feature&, feature_set&)>(boost::bind(&engine::feature_compose_rule, this, _1, _2, _3)));
    resolver_.insert("glob", boost::function<sources_decl (project*, std::vector<pstring>&)>(boost::bind(&engine::glob_rule, this, _1, _2)));
+   resolver_.insert("explicit", boost::function<void (project*, const pstring&)>(boost::bind(&engine::explicit_rule, this, _1, _2)));
 
    {
       feature_attributes ft = {0}; ft.free = 1;
@@ -347,6 +350,14 @@ sources_decl engine::glob_rule(project* p, std::vector<pstring>& patterns)
    
    result.unique();
    return result;
+}
+
+void engine::explicit_rule(project* p, const pstring& target_name)
+{
+   basic_meta_target* target = p->find_target(target_name);
+   if (target == 0)
+      throw std::runtime_error("target '" + target_name.to_string() + "' not found.");
+   target->set_explicit(true);
 }
 
 }

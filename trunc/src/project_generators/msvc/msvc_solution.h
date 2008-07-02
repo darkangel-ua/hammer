@@ -1,5 +1,6 @@
 #pragma once
 #include "../../build_node.h"
+#include "../../location.h"
 #include <boost/guid.hpp>
 
 namespace hammer
@@ -14,7 +15,7 @@ namespace hammer
          public:
             struct impl_t;
 
-            msvc_solution(engine& e);
+            msvc_solution(engine& e, const location_t& output_path);
             void add_target(boost::intrusive_ptr<const build_node> node);
             void write() const;
             ~msvc_solution();

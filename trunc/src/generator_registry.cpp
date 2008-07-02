@@ -32,8 +32,9 @@ generator_registry::find_viable_generators(const type& t, bool allow_composite) 
       }
    }
 
-   if (result.size() > 1)
-      throw std::runtime_error("More than one generator found");
+//   disable this check until more complicated algorithm will be introduced
+//   if (result.size() > 1)
+//      throw std::runtime_error("More than one generator found");
 
    return result;
 }

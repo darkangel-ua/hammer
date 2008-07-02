@@ -23,7 +23,8 @@ basic_meta_target::basic_meta_target(hammer::project* p,
                                      project_(p),
                                      name_(name),
                                      requirements_(req),
-                                     usage_requirements_(usage_req)
+                                     usage_requirements_(usage_req),
+                                     is_explicit_(false)
 {
    requirements_.setup_path_data(this);
    usage_requirements_.setup_path_data(this);
@@ -107,8 +108,11 @@ void basic_meta_target::resolve_meta_target_source(const pstring& source,
    const hammer::project& p = project_->engine()->load_project(target_path);
    for(hammer::project::targets_t::const_iterator i = p.targets().begin(), last = p.targets().end(); i != last; ++i)
    {
-      i->second->transfer_sources(simple_targets, meta_targets);
-      meta_targets->push_back(i->second);
+      if (!i->second->is_explicit())
+      {
+         i->second->transfer_sources(simple_targets, meta_targets);
+         meta_targets->push_back(i->second);
+      }
    }
 }
 

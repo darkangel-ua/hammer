@@ -32,6 +32,7 @@ namespace hammer
          void add_target(std::auto_ptr<basic_meta_target> t);
          const targets_t& targets() const { return targets_; }
          const basic_meta_target* find_target(const pstring& name) const;
+         basic_meta_target* find_target(const pstring& name);
          hammer::engine* engine() const { return engine_; }
          const pstring& intermediate_dir() const { return intermediate_dir_; }
 

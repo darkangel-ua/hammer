@@ -6,6 +6,7 @@ namespace hammer
    namespace types
    {
       extern const type CPP;
+      extern const type C;
 //      extern const type LIB;
       extern const type H;
       extern const type OBJ;

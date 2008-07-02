@@ -44,7 +44,7 @@ namespace
    class test_msvc_solution : public hammer::project_generators::msvc_solution
    {
       public:
-         test_msvc_solution(engine& e) : msvc_solution(e)
+         test_msvc_solution(engine& e, const location_t& output_location) : msvc_solution(e, output_location)
          {
             fill(id_, id_ + 16, 0);
          }
@@ -63,14 +63,13 @@ namespace
 
 struct generator_tests
 {
-   generator_tests() : msvc_solution_(engine_), p_(0)
+   generator_tests() : p_(0)
    {
 
    }
 
    void load()
    {
-      
       BOOST_REQUIRE_NO_THROW(p_ = &engine_.load_project(test_data_path / fs::path("generator_tests") / test_name_));
       BOOST_REQUIRE(p_);
    } 
@@ -158,7 +157,7 @@ struct generator_tests
 
    void check()
    {
-      BOOST_CHECK_NO_THROW(msvc_solution_.write());
+      BOOST_CHECK_NO_THROW(msvc_solution_->write());
       check_msvc_solution();
 //      BOOST_CHECK(checker_.walk(gtargets_, &engine_));
    }
@@ -175,19 +174,20 @@ struct generator_tests
       
    void run_generators()
    {
+      msvc_solution_.reset(new test_msvc_solution(engine_, test_data_path / "generator_tests" / test_name_));
       for(vector<basic_target*>::iterator i = itargets_.begin(), last = itargets_.end(); i != last; ++i)
       {
          std::vector<boost::intrusive_ptr<build_node> > r((**i).generate());
          typedef std::vector<boost::intrusive_ptr<build_node> >::iterator iter;
          for(iter j = r.begin(), j_last = r.end(); j != j_last; ++j)
-            msvc_solution_.add_target(*j);
+            msvc_solution_->add_target(*j);
          nodes_.insert(nodes_.end(), r.begin(), r.end());
       }
    }
   
    engine engine_;
    jcf_parser checker_;
-   test_msvc_solution msvc_solution_;
+   auto_ptr<test_msvc_solution> msvc_solution_;
    const project* p_;
    vector<basic_target*> itargets_;
    vector<boost::intrusive_ptr<build_node> > nodes_;

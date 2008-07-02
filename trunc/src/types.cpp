@@ -4,6 +4,7 @@
 namespace hammer{ namespace types{
 
    const type CPP("CPP", ".cpp");
+   const type C("C", ".c");
 //   const type LIB("LIB", "");
    const type H("H", ".h");
    const type OBJ("OBJ", ".obj");

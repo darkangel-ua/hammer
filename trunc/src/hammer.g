@@ -52,7 +52,7 @@ condition_result : COLON feature;
 feature  : '<' ID '>' ID -> ^(FEATURE ID ID);
 string  : ID;
 sources_decl  : (string | rule_invoke)+ ;
-rule_invoke : '[' rule_impl ']' -> rule_impl;
+rule_invoke : '[' { on_nested_rule_enter(PARSER); } rule_impl { on_nested_rule_leave(PARSER); }']' -> rule_impl;
 
 ID  :   ('a'..'z' | 'A'..'Z' | '0'..'9' | '.' | '-' | '_'| '=' | '/' | '*')+  | STRING;
 COLON 	: ':';

@@ -61,6 +61,7 @@ namespace hammer
                                    std::vector<pstring>& attributes);
          void feature_compose_rule(project* p, feature& f, feature_set& components);
          sources_decl glob_rule(project* p, std::vector<pstring>& patterns);
+         void explicit_rule(project* p, const pstring& target_name);
    };
 
    boost::filesystem::path find_root(const boost::filesystem::path& initial_path);

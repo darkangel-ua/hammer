@@ -85,9 +85,10 @@ namespace
       return result;
    }
 
-   void generate_msvc80_solution(const nodes_t& nodes, hammer::engine& engine)
+   void generate_msvc80_solution(const nodes_t& nodes, hammer::engine& engine,
+                                 const location_t& output_location)
    {
-      project_generators::msvc_solution solution(engine);
+      project_generators::msvc_solution solution(engine, output_location);
       for(nodes_t::const_iterator i = nodes.begin(), last = nodes.end(); i != last; ++i)
          solution.add_target(*i);
 
@@ -99,12 +100,6 @@ int main(int argc, char** argv)
 {
    try
    {
-      if (argc == 1)
-      {
-         cout << "Type 'hammer --help' for usage.\n";
-         return 0;
-      }
-      
       init_options();
       po::variables_map vm;
       po::parsed_options options = po::command_line_parser(argc, argv).options(desc).positional(build_request_options).run();
@@ -130,7 +125,7 @@ int main(int argc, char** argv)
       vector<basic_target*> instantiated_targets(instantiate_targets(targets, project_to_build, *build_request));
       nodes_t nodes(generate_targets(instantiated_targets));
 
-      generate_msvc80_solution(nodes, engine);
+      generate_msvc80_solution(nodes, engine, fs::current_path());
 
       return 0;
    }

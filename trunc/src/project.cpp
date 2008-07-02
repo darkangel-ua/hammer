@@ -25,7 +25,12 @@ namespace hammer{
 
    const basic_meta_target* project::find_target(const pstring& name) const
    {
-      targets_t::const_iterator i = targets_.find(name);
+      return const_cast<project*>(this)->find_target(name);
+   }
+
+   basic_meta_target* project::find_target(const pstring& name)
+   {
+      targets_t::iterator i = targets_.find(name);
       if (i == targets_.end())
          return 0;
       else

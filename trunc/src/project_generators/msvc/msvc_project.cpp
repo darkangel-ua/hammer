@@ -42,16 +42,16 @@ void msvc_project::add_variant(boost::intrusive_ptr<const build_node> node)
    {
       id_ = v.target_->location().string();
       meta_target_ = v.target_->meta_target();
-      full_project_name_ = v.target_->meta_target()->project()->location() /
-                           "vc80" / (name().to_string() + ".vcproj");
-      location_ = v.target_->meta_target()->project()->location() / "vc80";
+      location_ = meta_target_->location() / "vc80";
+      full_project_name_ = location_ / (name().to_string() + ".vcproj");
    }
 }
 
 void msvc_project::fill_filters() const
 {
    filter_t::types_t source_types;
-   source_types.push_back(engine_->get_type_registry().resolve_from_suffix(".cpp"));
+   source_types.push_back(&engine_->get_type_registry().resolve_from_name(types::CPP));
+   source_types.push_back(&engine_->get_type_registry().resolve_from_name(types::C));
    files_.push_back(filter_t(source_types, "Source Files", "{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"));
    filter_t::types_t header_types;
    header_types.push_back(engine_->get_type_registry().resolve_from_suffix(".h"));
@@ -117,14 +117,18 @@ void msvc_project::fill_options(const feature_set& props, options* opts, const m
          if ((**i).def() == include_def)
          {
             const basic_meta_target* bmt = (**i).get_path_data().target_;
-            location_t p1(bmt->location());
+            location_t p1(bmt->location() / (**i).value().to_string());
             p1.normalize();
-            location_t p2(mt.location() / (**i).value().to_string() / "vc80");
+            location_t p2(mt.location() / "vc80");
             p2.normalize();
-            location_t p = relative_path(p1, p2);
+            // ".." потому как мы пишем проекты в папку vc80, которая находиться на уровень глубже чем 
+            // относительный путь двух проектов. По уму это нужно вообще отсюда убрать 
+            // и передавать в эту функцию variant для которого идет заполнение опций и уже у него брать путь
+            // относительно которого будут путезависимые опции
+            location_t p = relative_path(p1, p2) ;
             p.normalize();
 
-            opts->includes_ << p << ';';
+            opts->includes_ << p.native_file_string() << ';';
          }
          else
             if ((**i).def() == searched_lib)
@@ -183,8 +187,9 @@ void msvc_project::write_configurations(std::ostream& s) const
 
 void msvc_project::file_with_cfgs_t::write(std::ostream& s) const
 {
+   location_t p(target->name().to_string());
    s << "         <File\n"
-        "            RelativePath=\"" << "..\\" << target->name() << "\"\n"
+        "            RelativePath=\"" << "..\\" << p.native_file_string() << "\"\n"
         "         />\n";
 
 }

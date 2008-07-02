@@ -38,6 +38,8 @@ namespace hammer
                                   const feature_set& build_request,
                                   std::vector<basic_target*>* result, 
                                   feature_set* usage_requirements) const = 0;
+         void set_explicit(bool v) { is_explicit_ = true; }
+         bool is_explicit() const { return is_explicit_; }
 
       protected:
          typedef std::vector<const basic_meta_target*> meta_targets_t;
@@ -66,5 +68,6 @@ namespace hammer
          sources_decl sources_;
          requirements_decl requirements_;
          requirements_decl usage_requirements_;
+         bool is_explicit_;
    };
 }

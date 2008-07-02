@@ -27,7 +27,11 @@ struct msvc_solution::impl_t
    typedef msvc_project::dependencies_t dependencies_t;
    typedef boost::ptr_map<const meta_target*, msvc_project> projects_t;
 
-   impl_t(msvc_solution* owner, engine& e) : owner_(owner), engine_(e){}
+   impl_t(msvc_solution* owner, engine& e, const location_t& output_path) 
+      : owner_(owner), engine_(e), output_location_(output_path)
+   {
+   }
+
    void generate_dependencies(dependencies_t::const_iterator first, 
                               dependencies_t::const_iterator last) const;
    void write_project_section(ostream& os, const msvc_project& project) const;
@@ -98,7 +102,7 @@ void msvc_solution::impl_t::write_project_section(ostream& os, const msvc_projec
       << "EndProject\n";
 }
 
-msvc_solution::msvc_solution(engine& e) : impl_(new impl_t(this, e))
+msvc_solution::msvc_solution(engine& e, const location_t& output_path) : impl_(new impl_t(this, e, output_path))
 {
 }
 
@@ -115,7 +119,6 @@ void msvc_solution::add_target(boost::intrusive_ptr<const build_node> node)
    dependencies_t dependencies;
    p->add_variant(node);
    impl_->projects_.insert(&p->meta_target(), p_guarg);
-   impl_->output_location_ = p->meta_target().location();
    impl_->name_ = p->meta_target().name().to_string();
 }
 

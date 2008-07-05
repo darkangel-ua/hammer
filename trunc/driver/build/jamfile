@@ -1,0 +1,4 @@
+exe hammer : [ glob ../src/*.cpp ]
+             [ glob ../src/*.h ]
+             ../../build
+           ;

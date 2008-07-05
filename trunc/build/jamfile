@@ -1,0 +1,9 @@
+lib hammer.core 
+  : [ glob ../src/*.cpp ]
+    [ glob ../src/*.h ]
+    ../../libantlr3c-3.1b2/build
+  :
+    <include>../../../boost_1_34_1
+    <include>../../../boost.guid
+    <link>static
+  ;

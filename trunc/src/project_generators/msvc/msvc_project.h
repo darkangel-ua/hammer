@@ -114,6 +114,7 @@ namespace hammer
             location_t location_;
             
             const type* searched_lib_;
+            const type* obj_type_;
 
             void fill_filters() const;
             void write_header(std::ostream& s) const;

@@ -19,6 +19,7 @@
 #include "project_requirements_decl.h"
 #include "wildcard.hpp"
 #include <boost/filesystem/operations.hpp>
+#include "obj_meta_target.h"
 
 using namespace std;
 
@@ -55,6 +56,7 @@ engine::engine()
    resolver_.insert("project", boost::function<void (project*, vector<pstring>&, project_requirements_decl*, project_requirements_decl*)>(boost::bind(&engine::project_rule, this, _1, _2, _3, _4)));
    resolver_.insert("lib", boost::function<void (project*, vector<pstring>&, sources_decl*, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::lib_rule, this, _1, _2, _3, _4, _5, _6)));
    resolver_.insert("exe", boost::function<void (project*, vector<pstring>&, sources_decl&, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::exe_rule, this, _1, _2, _3, _4, _5, _6)));
+   resolver_.insert("obj", boost::function<void (project*, pstring&, sources_decl&, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::obj_rule, this, _1, _2, _3, _4, _5, _6)));
    resolver_.insert("alias", boost::function<void (project*, pstring&, sources_decl&, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::alias_rule, this, _1, _2, _3, _4, _5, _6)));
    resolver_.insert("import", boost::function<void (project*, vector<pstring>&)>(boost::bind(&engine::import_rule, this, _1, _2)));
    resolver_.insert("feature.feature", boost::function<void (project*, vector<pstring>&, vector<pstring>*, vector<pstring>&)>(boost::bind(&engine::feature_feature_rule, this, _1, _2, _3, _4)));
@@ -100,6 +102,11 @@ engine::engine()
    {
       feature_attributes ft = {0}; ft.free = ft.path = 1;
       fr->add_def(feature_def("file", vector<string>(), ft));
+   }
+
+   {
+      feature_attributes ft = {0}; ft.free = 1;
+      fr->add_def(feature_def("cxxflags", vector<string>(), ft));
    }
 
    feature_registry_ = fr.release();
@@ -238,6 +245,15 @@ void engine::exe_rule(project* p, std::vector<pstring>& name, sources_decl& sour
    auto_ptr<basic_meta_target> mt(new typed_meta_target(p, name.at(0), requirements ? *requirements : requirements_decl(), 
                                                         usage_requirements ? *usage_requirements : requirements_decl(), 
                                                         get_type_registry().resolve_from_name(types::EXE.name())));
+   mt->sources(sources);
+   p->add_target(mt);
+}
+
+void engine::obj_rule(project* p, pstring& name, sources_decl& sources, requirements_decl* requirements,
+                      feature_set* default_build, requirements_decl* usage_requirements)
+{
+   auto_ptr<basic_meta_target> mt(new obj_meta_target(p, name, requirements ? *requirements : requirements_decl(), 
+                                                      usage_requirements ? *usage_requirements : requirements_decl()));
    mt->sources(sources);
    p->add_target(mt);
 }

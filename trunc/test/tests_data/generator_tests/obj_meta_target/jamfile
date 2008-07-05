@@ -1,0 +1,2 @@
+obj c-files : test.c : <cxxflags>qwe ;
+exe test : main.cpp c-files ;

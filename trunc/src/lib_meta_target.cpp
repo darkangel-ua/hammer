@@ -53,14 +53,4 @@ main_target* lib_meta_target::construct_main_target(const feature_set* propertie
    return result;
 }
 
-/*
-void lib_meta_target::instantiate(const main_target* owner, 
-                                  const feature_set& build_request,
-                                  std::vector<basic_target*>* result, 
-                                  feature_set* usage_requirements) const
-{
-   meta_target::instantiate(owner, build_request, result, usage_requirements);
-}
-*/
-
 }

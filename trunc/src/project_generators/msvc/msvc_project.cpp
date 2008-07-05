@@ -19,6 +19,7 @@ msvc_project::msvc_project(engine& e, const boost::guid& uid)
    : engine_(&e), uid_(uid)
 {
    searched_lib_ = &engine_->get_type_registry().resolve_from_name(types::SEARCHED_LIB);
+   obj_type_ = &engine_->get_type_registry().resolve_from_name(types::OBJ);
 }
 
 static std::string make_variant_name(const feature_set& fs)
@@ -273,7 +274,8 @@ void msvc_project::gether_files_impl(const build_node& node, variant& v) const
    typedef build_node::targets_t::const_iterator iter;
    for(iter mi = node.sources_.begin(), mlast = node.sources_.end(); mi != mlast; ++mi)
    {
-      if ((**mi).mtarget()->meta_target() == meta_target_)
+      if ((**mi).mtarget()->meta_target() == meta_target_ ||
+          (**mi).mtarget()->type() == *obj_type_)
       {
          insert_into_files(*mi);
          

@@ -1,0 +1,8 @@
+test [ type = EXE; ]
+{
+   main.cpp [ type = CPP; ]{}
+   c-files [ type = OBJ; ]
+   {
+      test.c [ type = C; ] {}
+   }
+}

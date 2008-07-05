@@ -10,5 +10,6 @@ namespace hammer
                      const type& source_type, const type& target_type);
    pstring make_name(pool& p, const pstring& source_name, 
                      const type& target_type);
-
+   pstring cut_suffix(pool& p, const pstring& source_name,
+                      const type& source_type);
 }

@@ -55,7 +55,7 @@ exe_and_shared_lib_generator::construct(const type& target_type,
             i = modified_sources.erase(i);
          }
          else
-            ++i; // file target we pass pass to generator
+            ++i; // file target we pass to generator
       }
       else
          ++i;

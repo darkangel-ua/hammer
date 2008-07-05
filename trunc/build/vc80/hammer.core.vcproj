@@ -349,6 +349,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\obj_main_target.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\obj_meta_target.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\parser.cpp"
 				>
 				<FileConfiguration
@@ -557,6 +565,14 @@
 			</File>
 			<File
 				RelativePath="..\..\src\np_helpers.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\obj_main_target.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\obj_meta_target.h"
 				>
 			</File>
 			<File

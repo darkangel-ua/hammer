@@ -17,4 +17,10 @@ pstring make_name(pool& p, const pstring& source_name,
    return pstring(p, source_name.to_string() + target_type.suffix());
 }
 
+pstring cut_suffix(pool& p, const pstring& source_name,
+                   const type& source_type)
+{
+   return pstring(p, std::string(source_name.begin(), source_name.begin() + (source_name.size() - source_type.suffix().size())));
+}
+
 }

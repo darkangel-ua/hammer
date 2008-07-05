@@ -7,6 +7,8 @@
 #include "../../src/feature_registry.h"
 #include "../../src/type_registry.h"
 #include "../../src/basic_target.h"
+#include "../../src/main_target.h"
+#include "../../src/meta_target.h"
 #include "../../src/project_generators/msvc/msvc_solution.h"
 
 using namespace std;
@@ -97,6 +99,19 @@ namespace
 
       solution.write();
    }
+
+   void remove_propagated_targets(nodes_t& nodes, const project& project)
+   {
+      for(nodes_t::iterator i = nodes.begin(); i != nodes.end();)
+      {
+         if ((**i).products_.empty() ||
+             *(**i).products_[0]->mtarget()->meta_target()->project() != project)
+            i = nodes.erase(i);
+         else
+            ++i;
+      }
+   }
+
 }
 
 int main(int argc, char** argv)
@@ -127,6 +142,7 @@ int main(int argc, char** argv)
 
       vector<basic_target*> instantiated_targets(instantiate_targets(targets, project_to_build, *build_request));
       nodes_t nodes(generate_targets(instantiated_targets));
+      remove_propagated_targets(nodes, project_to_build);
 
       generate_msvc80_solution(nodes, engine, fs::current_path());
 

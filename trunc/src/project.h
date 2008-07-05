@@ -39,6 +39,8 @@ namespace hammer
          void instantiate(const std::string& target_name, 
                           const feature_set& build_request,
                           std::vector<basic_target*>* result) const;
+         bool operator == (const project& rhs) const;
+         bool operator != (const project& rhs) const { return !(*this == rhs); }
 
       private:
          location_t location_;

@@ -10,7 +10,7 @@
 			>
 			<DebugSettings
 				Command="$(TargetPath)"
-				WorkingDirectory="D:\Projects\C++\hammer-testing-field\libantlr3c-3.1b2\build"
+				WorkingDirectory="D:\Projects\C++\hammer-testing-field\hammer\driver\build"
 				CommandArguments=""
 				Attach="false"
 				DebuggerType="3"

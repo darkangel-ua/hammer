@@ -71,4 +71,9 @@ namespace hammer{
       assert(false && "not implemented.");
    }
 
+   bool project::operator == (const project& rhs) const
+   {
+      return this == &rhs;
+   }
+
 }

@@ -61,7 +61,7 @@ engine::engine()
    resolver_.insert("import", boost::function<void (project*, vector<pstring>&)>(boost::bind(&engine::import_rule, this, _1, _2)));
    resolver_.insert("feature.feature", boost::function<void (project*, vector<pstring>&, vector<pstring>*, vector<pstring>&)>(boost::bind(&engine::feature_feature_rule, this, _1, _2, _3, _4)));
    resolver_.insert("feature.compose", boost::function<void (project*, feature&, feature_set&)>(boost::bind(&engine::feature_compose_rule, this, _1, _2, _3)));
-   resolver_.insert("glob", boost::function<sources_decl (project*, std::vector<pstring>&)>(boost::bind(&engine::glob_rule, this, _1, _2)));
+   resolver_.insert("glob", boost::function<sources_decl (project*, std::vector<pstring>&, std::vector<pstring>*)>(boost::bind(&engine::glob_rule, this, _1, _2, _3)));
    resolver_.insert("explicit", boost::function<void (project*, const pstring&)>(boost::bind(&engine::explicit_rule, this, _1, _2)));
 
    {
@@ -337,7 +337,8 @@ void engine::alias_rule(project* p,
    p->add_target(mt);
 }
 
-sources_decl engine::glob_rule(project* p, std::vector<pstring>& patterns)
+sources_decl engine::glob_rule(project* p, std::vector<pstring>& patterns, 
+                               std::vector<pstring>* exceptions)
 {
    using namespace boost::filesystem;
    sources_decl result;
@@ -356,7 +357,8 @@ sources_decl engine::glob_rule(project* p, std::vector<pstring>& patterns)
       boost::dos_wildcard wildcard(string(pattern.begin() + mask_pos, pattern.end()));
       for(directory_iterator f(searching_path), l = directory_iterator(); f != l; ++f)
       {
-         if (!is_directory(*f) && wildcard.match(f->leaf()))
+         if (!is_directory(*f) && wildcard.match(f->leaf()) && 
+             !(exceptions != 0 && find(exceptions->begin(), exceptions->end(), f->leaf()) != exceptions->end()))
          {
             pstring v(pstring_pool(), (relative_path / f->leaf()).string());
             result.push_back(v);

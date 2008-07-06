@@ -1,2 +1,2 @@
-obj c-files : test.c : <cxxflags>qwe ;
+obj c-files : test.c : <cxxflags>/TP ;
 exe test : main.cpp c-files ;

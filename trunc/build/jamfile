@@ -1,9 +1,17 @@
 lib hammer.core 
-  : [ glob ../src/*.cpp ]
+  : hammer_parser
+    [ glob ../src/*.cpp ]
     [ glob ../src/*.h ]
+    [ glob ../src/project_generators/msvc/*.cpp ]
+    [ glob ../src/project_generators/msvc/*.h ]
+    [ glob ../src/build/*.c : hammerParser.c ]
     ../../libantlr3c-3.1b2/build
   :
     <include>../../../boost_1_34_1
     <include>../../../boost.guid
+    <include>../src/
     <link>static
   ;
+
+obj hammer_parser : ../src/build/hammerParser.c : <cxxflags>/TP ;
+explicit hammer_parser ;

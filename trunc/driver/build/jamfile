@@ -1,4 +1,7 @@
 exe hammer : [ glob ../src/*.cpp ]
              [ glob ../src/*.h ]
              ../../build
+           :
+             <include>../../../../boost_1_34_1
+             <include>../../../../boost.guid
            ;

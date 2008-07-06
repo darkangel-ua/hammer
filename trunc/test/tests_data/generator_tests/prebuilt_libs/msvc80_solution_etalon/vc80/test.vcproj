@@ -18,12 +18,8 @@
          ConfigurationType="1"
          CharacterSet="1">
          <Tool
-            Name="VCCLCompilerTool"
-            PreprocessorDefinitions=""
-         />
-         <Tool
             Name="VCLinkerTool"
-            AdditionalDependencies="../lib2/lib2.lib winsock.lib "
+            AdditionalDependencies="..\lib2\lib2.lib winsock.lib "
          />
       </Configuration>
    </Configurations>
@@ -33,8 +29,11 @@
             Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
             UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
          <File
-            RelativePath="..\main.cpp"
-         />
+            RelativePath="..\main.cpp">
+              <FileConfiguration
+                   Name="release">
+              </FileConfiguration>
+         </File>
          </Filter>
          <Filter
             Name="Header Files"

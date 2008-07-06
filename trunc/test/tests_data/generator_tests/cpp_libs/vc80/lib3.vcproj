@@ -3,7 +3,7 @@
    ProjectType="Visual C++"
    Version="8,00"
    Name="lib3"
-   ProjectGUID="{00000000-0000-0000-0000-000000000002}"
+   ProjectGUID="{00000000-0000-0000-0000-000000000003}"
    RootNamespace="lib3"
    Keyword="Win32Proj">
 	<Platforms>
@@ -18,10 +18,6 @@
          ConfigurationType="2"
          CharacterSet="1">
          <Tool
-            Name="VCCLCompilerTool"
-            PreprocessorDefinitions=""
-         />
-         <Tool
             Name="VCLinkerTool"
             AdditionalDependencies=""
          />
@@ -33,8 +29,8 @@
             Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
             UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
          <File
-            RelativePath="..\lib3.cpp"
-         />
+            RelativePath="..\lib3.cpp">
+         </File>
          </Filter>
          <Filter
             Name="Header Files"

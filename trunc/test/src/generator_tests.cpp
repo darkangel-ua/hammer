@@ -194,7 +194,6 @@ struct generator_tests
    std::string test_name_;
 };
 
-/*
 BOOST_FIXTURE_TEST_CASE(simple_exe, generator_tests)
 {
    test_name_ = "simple_exe";
@@ -248,7 +247,6 @@ BOOST_FIXTURE_TEST_CASE(prebuilt_libs, generator_tests)
    BOOST_REQUIRE_NO_THROW(run_generators());
    check();
 }
-*/
 
 BOOST_FIXTURE_TEST_CASE(obj_meta_target, generator_tests)
 {

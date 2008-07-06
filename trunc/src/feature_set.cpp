@@ -154,4 +154,8 @@ namespace hammer{
       }
    }
 
+   bool feature_set::operator == (const feature_set& rhs) const
+   {
+      return this == &rhs;
+   }
 }

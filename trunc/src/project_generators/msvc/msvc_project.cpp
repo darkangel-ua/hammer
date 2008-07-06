@@ -31,18 +31,20 @@ static std::string make_variant_name(const feature_set& fs)
 void msvc_project::add_variant(boost::intrusive_ptr<const build_node> node)
 {
    assert(!node->products_.empty());
-   variant v;
+   std::auto_ptr<variant> v(new variant);
+   variant* naked_variant = v.get();
    const basic_target* t = node->products_[0];
-   v.properties_ = &t->properties();
-   v.node_ = node;
-   v.target_ = node->products_[0]->mtarget();
-   v.name_ = make_variant_name(t->properties());
-   v.options_.reset(new options);
+   v->properties_ = &t->properties();
+   v->node_ = node;
+   v->target_ = node->products_[0]->mtarget();
+   v->name_ = make_variant_name(t->properties());
+   v->options_.reset(new options);
+   v->owner_ = this;
    variants_.push_back(v);
    if (id_.empty())
    {
-      id_ = v.target_->location().string();
-      meta_target_ = v.target_->meta_target();
+      id_ = naked_variant->target_->location().string();
+      meta_target_ = naked_variant->target_->meta_target();
       location_ = meta_target_->location() / "vc80";
       full_project_name_ = location_ / (name().to_string() + ".vcproj");
    }
@@ -107,13 +109,12 @@ void msvc_project::fill_options(const feature_set& props, options* opts, const m
    const feature_def& define_def = engine_->feature_registry().get_def("define");
    const feature_def& include_def = engine_->feature_registry().get_def("include");
    const feature_def& searched_lib = engine_->feature_registry().get_def("__searched_lib_name");
+   const feature_def& cxxflags = engine_->feature_registry().get_def("cxxflags");
    
    for(feature_set::const_iterator i = props.begin(), last = props.end(); i != last; ++i)
    {
       if ((**i).def() == define_def)
-      {
-         opts->defines_ << (**i).value() << ';';
-      }
+         opts->add_define((**i).value());
       else
          if ((**i).def() == include_def)
          {
@@ -122,26 +123,51 @@ void msvc_project::fill_options(const feature_set& props, options* opts, const m
             p1.normalize();
             location_t p2(mt.location() / "vc80");
             p2.normalize();
-            // ".." потому как мы пишем проекты в папку vc80, котора€ находитьс€ на уровень глубже чем 
-            // относительный путь двух проектов. ѕо уму это нужно вообще отсюда убрать 
+            // ѕо уму это нужно вообще отсюда убрать 
             // и передавать в эту функцию variant дл€ которого идет заполнение опций и уже у него брать путь
             // относительно которого будут путезависимые опции
             location_t p = relative_path(p1, p2) ;
             p.normalize();
 
-            opts->includes_ << p.native_file_string() << ';';
+            opts->add_include(p.native_file_string());
          }
          else
             if ((**i).def() == searched_lib)
-               opts->searched_libs_ << (**i).value() << ' ';
+               opts->add_searched_lib((**i).value().to_string());
+            else
+               if ((**i).def() == cxxflags)
+               {
+                  if ((**i).value() == "/TP" || (**i).value() == "/Tp")
+                     opts->compile_as_cpp(true);
+                  else
+                     opts->add_cxx_flag((**i).value());
+               }
    }
 }
 
-void msvc_project::write_includes(std::ostream& os, const options& opts) const
+static void write_includes(std::ostream& os, const msvc_project::options& opts)
 {
-   string s = opts.includes_.str();
+   string s = opts.includes().str();
    if (!s.empty())
-      os << "            AdditionalIncludeDirectories=\"" << opts.includes_.str() << "\"\n";
+      os << "            AdditionalIncludeDirectories=\"" << s << "\"\n";
+}
+
+static void write_defines(std::ostream& os, const msvc_project::options& opts)
+{
+   string s = opts.defines().str();
+   if (!s.empty())
+      os << "            PreprocessorDefinitions=\"" << s << "\"\n";
+}
+
+static void write_compiler_options(std::ostream& s, const msvc_project::options& opts)
+{
+   s << "         <Tool\n"
+        "            Name=\"VCCLCompilerTool\"\n";
+   write_defines(s, opts);
+   write_includes(s, opts);
+   if (opts.compile_as_cpp())
+      s << "          CompileAs=\"2\"\n";
+   s << "         />\n";
 }
 
 void msvc_project::write_configurations(std::ostream& s) const
@@ -160,12 +186,8 @@ void msvc_project::write_configurations(std::ostream& s) const
            "         ConfigurationType=\"" << cfg_type << "\"\n"
            "         CharacterSet=\"1\">\n";
 
-      s << "         <Tool\n"
-           "            Name=\"VCCLCompilerTool\"\n"
-           "            PreprocessorDefinitions=\"" << opts.defines_.str() << "\"\n";
-      write_includes(s, opts);
-        
-      s << "         />\n";
+      if (opts.has_compiler_options())
+         write_compiler_options(s, opts);
 
       switch(cfg_type)
       {
@@ -174,7 +196,7 @@ void msvc_project::write_configurations(std::ostream& s) const
          {
             s << "         <Tool\n"
                  "            Name=\"VCLinkerTool\"\n"
-                 "            AdditionalDependencies=\"" << opts.searched_libs_.str() << "\"\n"
+                 "            AdditionalDependencies=\"" << opts.searched_libs().str() << "\"\n"
                  "         />\n";
             break;
          }
@@ -183,16 +205,48 @@ void msvc_project::write_configurations(std::ostream& s) const
       s << "      </Configuration>\n";
    }
 
-   s << "   </Configurations>\n";
+   s << "   </Configurations>\n"; 
+}
+
+static feature_set* compute_file_conf_properties(const basic_target& target, const msvc_project::variant& v)
+{
+   feature_set* result = v.target_->meta_target()->project()->engine()->feature_registry().make_set();
+   for(feature_set::const_iterator i = target.properties().begin(), last = target.properties().end(); i != last; ++i)
+   {
+      feature_set::const_iterator f = v.properties_->find(**i);
+      if (f == v.properties_->end())
+         result->join(*i);
+   }
+
+   return result;
+}
+
+void msvc_project::file_configuration::write(std::ostream& s, const variant& v) const
+{
+   options opts;
+   feature_set* props = compute_file_conf_properties(*target_, v);
+   v.owner_->fill_options(*props, &opts, *v.target_);
+
+   s << "              <FileConfiguration\n"
+     << "                   Name=\"" << v.name_ << "\">\n";
+   
+   if (opts.has_compiler_options())
+      write_compiler_options(s, opts);
+
+   s << "              </FileConfiguration>\n";
 }
 
 void msvc_project::file_with_cfgs_t::write(std::ostream& s) const
 {
-   location_t p(target->name().to_string());
+   location_t p(file_name_.to_string());
    s << "         <File\n"
-        "            RelativePath=\"" << "..\\" << p.native_file_string() << "\"\n"
-        "         />\n";
+        "            RelativePath=\"" << "..\\" << p.native_file_string() << "\">\n";
 
+   for(file_config_t::const_iterator i = file_config.begin(), last = file_config.end(); i != last; ++i)
+      if (*i->first->properties_ != i->second.target_->properties())
+         i->second.write(s, *i->first);
+
+   s << "         </File>\n";
 }
 
 std::ostream& msvc_project::filter_t::write(std::ostream& s) const
@@ -248,22 +302,23 @@ bool msvc_project::filter_t::accept(const type* t) const
    return false;
 }
 
-void msvc_project::filter_t::insert(const basic_target* t)
+void msvc_project::filter_t::insert(const basic_target* t, const variant& v)
 {
    file_with_cfgs_t& fwc = files_[t];
-   fwc.target = t;
-   file_configuration& fc = fwc.file_config[&t->properties()];
+   fwc.file_name_ = t->name();
+   file_configuration& fc = fwc.file_config[&v];
    fc.exclude_from_build = false;
+   fc.target_ = t;
 }
 
-void msvc_project::insert_into_files(const basic_target* t) const
+void msvc_project::insert_into_files(const basic_target* t, const variant& v) const
 {
    const type* tp = &t->type();
    for(files_t::iterator fi = files_.begin(), flast = files_.end(); fi != flast; ++fi)
    {
       if (fi->accept(tp))
       {
-         fi->insert(t);
+         fi->insert(t, v);
          return;
       }
    }
@@ -277,7 +332,7 @@ void msvc_project::gether_files_impl(const build_node& node, variant& v) const
       if ((**mi).mtarget()->meta_target() == meta_target_ ||
           (**mi).mtarget()->type() == *obj_type_)
       {
-         insert_into_files(*mi);
+         insert_into_files(*mi, v);
          
          typedef build_node::nodes_t::const_iterator niter;
          for(niter i = node.down_.begin(), last = node.down_.end(); i != last; ++i)
@@ -293,7 +348,7 @@ void msvc_project::gether_files_impl(const build_node& node, variant& v) const
             const feature& file_name = (**mi).properties().get("file");
             location_t searched_file(relative_path((**mi).mtarget()->location(), location_) / file_name.value().to_string());
             searched_file.normalize();
-            v.options_->searched_libs_ << searched_file << ' ';
+            v.options_->add_searched_lib(searched_file.native_file_string());
          }
          else
             dependencies_.push_back((**mi).mtarget());

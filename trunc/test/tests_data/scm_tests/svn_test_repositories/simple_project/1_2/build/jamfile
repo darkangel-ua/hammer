@@ -1,0 +1,3 @@
+project simple-project ;
+
+lib simple-project : main.cpp ;

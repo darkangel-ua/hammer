@@ -19,7 +19,9 @@
 #include "project_requirements_decl.h"
 #include "wildcard.hpp"
 #include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/convenience.hpp>
 #include "obj_meta_target.h"
+#include "scm_manager.h"
 
 using namespace std;
 
@@ -63,6 +65,7 @@ engine::engine()
    resolver_.insert("feature.compose", boost::function<void (project*, feature&, feature_set&)>(boost::bind(&engine::feature_compose_rule, this, _1, _2, _3)));
    resolver_.insert("glob", boost::function<sources_decl (project*, std::vector<pstring>&, std::vector<pstring>*)>(boost::bind(&engine::glob_rule, this, _1, _2, _3)));
    resolver_.insert("explicit", boost::function<void (project*, const pstring&)>(boost::bind(&engine::explicit_rule, this, _1, _2)));
+   resolver_.insert("use-project", boost::function<void (project*, const pstring&, const pstring&, feature_set*)>(boost::bind(&engine::use_project_rule, this, _1, _2, _3, _4)));
 
    {
       feature_attributes ft = {0}; ft.free = 1;
@@ -109,6 +112,16 @@ engine::engine()
       fr->add_def(feature_def("cxxflags", vector<string>(), ft));
    }
 
+   {
+      feature_attributes ft = {0}; ft.propagated = ft.free = 1;
+      fr->add_def(feature_def("scm", vector<string>(), ft));
+   }
+
+   {
+      feature_attributes ft = {0}; ft.path = ft.propagated = ft.free;
+      fr->add_def(feature_def("scm.uri", vector<string>(), ft));
+   }
+
    feature_registry_ = fr.release();
 
    {
@@ -122,6 +135,8 @@ engine::engine()
 
    generators_.reset(new generator_registry);
    add_msvc_generators(*this, generators());
+
+   scm_manager_.reset(new scm_manager);
 }
 
 project* engine::get_upper_project(const location_t& project_path)
@@ -134,6 +149,74 @@ project* engine::get_upper_project(const location_t& project_path)
       return &load_project(upper_path);
    
    return 0;
+}
+
+location_t engine::resolve_project_alias(const location_t& loc, project_alias_data& alias_data) const
+{
+   // пропускаем начальный слеш
+   location_t::const_iterator i = ++loc.begin(), last = loc.end();
+   if (i->empty())
+      throw std::runtime_error("Bad project link '/'. Must be '/foo'.");
+   
+   location_t searched_loc = location_t("/") / *i;
+   
+   global_project_links_t::const_iterator g;
+   for(;;)
+   {
+      g = global_project_links_.find(searched_loc);
+      if (g == global_project_links_.end())
+      {
+         ++i;
+         if (i != last)
+            searched_loc /= *i;
+         else 
+            throw runtime_error("Can't resolve global project link '" + loc.string() + "'.");
+      }
+      else 
+         break;
+   }
+
+   location_t result(g->second.location_);
+   for(++i; i != last; ++i)
+      result /= *i;
+   
+   alias_data = g->second;
+
+   return result;
+}
+
+void engine::initial_materialization(const project_alias_data& alias_data) const
+{
+   feature_set::const_iterator scm_tag = alias_data.properties_->find("scm");
+   if (scm_tag == alias_data.properties_->end())
+      throw runtime_error("Can't materialize project because no scm feature specified.");
+   
+   feature_set::const_iterator scm_uri = alias_data.properties_->find("scm.uri");
+   if (scm_uri == alias_data.properties_->end())
+      throw runtime_error("Can't materialize project because no scm uri specified.");
+
+   const hammer::scm_client* scm_client = scm_manager_->find((**scm_tag).value().to_string());
+   if (!scm_client)
+      throw runtime_error("SCM client '" + (**scm_tag).value().to_string() + "' not supported.");
+   
+   boost::filesystem::create_directories(alias_data.location_);
+   scm_client->checkout(alias_data.location_, (**scm_uri).value().to_string());
+}
+
+project& engine::load_project(location_t project_path, const project& from_project)
+{
+   if (project_path.has_root_path())
+   {
+      project_alias_data alias_data;
+      project_path = resolve_project_alias(project_path, alias_data);
+      location_t absolute_path(from_project.location() / project_path);
+      if (!exists(absolute_path))
+         initial_materialization(alias_data);
+   }
+   else
+      project_path = from_project.location() / project_path;
+
+   return load_project(project_path);
 }
 
 project& engine::load_project(location_t project_path)
@@ -376,6 +459,25 @@ void engine::explicit_rule(project* p, const pstring& target_name)
    if (target == 0)
       throw std::runtime_error("target '" + target_name.to_string() + "' not found.");
    target->set_explicit(true);
+}
+
+void engine::use_project_rule(project* p, const pstring& project_id_alias, 
+                              const pstring& project_location, feature_set* props)
+{
+   location_t l(project_id_alias.to_string());
+   if (!l.has_root_path())
+      throw runtime_error("Project id alias must have leading '/'");
+
+   global_project_links_t::const_iterator i = global_project_links_.find(l);
+   if (i != global_project_links_.end())
+      throw runtime_error("Project id alias '" + project_id_alias.to_string() + 
+                          "' already mapped to location '" + i->second.location_.string() + "'.");
+   project_alias_data alias_data;
+   alias_data.location_ = p->location() / project_location.to_string();
+   alias_data.location_.normalize();
+   alias_data.properties_ = props;
+
+   global_project_links_.insert(make_pair(l, alias_data));
 }
 
 }

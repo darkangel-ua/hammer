@@ -103,9 +103,7 @@ void basic_meta_target::resolve_meta_target_source(const pstring& source,
       return;
    }
 
-   location_t target_path(project_->location()); 
-   target_path /= target_name;
-   const hammer::project& p = project_->engine()->load_project(target_path);
+   const hammer::project& p = project_->engine()->load_project(target_name, *project_);
    for(hammer::project::targets_t::const_iterator i = p.targets().begin(), last = p.targets().end(); i != last; ++i)
    {
       if (!i->second->is_explicit())

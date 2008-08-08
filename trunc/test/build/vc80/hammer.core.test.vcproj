@@ -20,7 +20,7 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
-			CharacterSet="1"
+			CharacterSet="2"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -261,6 +261,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\parser_and_cr_tests.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\scm_tests.cpp"
 				>
 			</File>
 			<File

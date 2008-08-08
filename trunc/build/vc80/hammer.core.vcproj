@@ -20,7 +20,7 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="4"
-			CharacterSet="1"
+			CharacterSet="2"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -39,9 +39,9 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/EHsc"
+				AdditionalOptions="/EHsc /MP"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\build;&quot;..\..\..\libantlr3c-3.1b2\include&quot;;..\..\..\boost_1_34_1;..\..\..\boost.guid"
+				AdditionalIncludeDirectories="..\..\src\build;&quot;..\..\..\libantlr3c-3.1b2\include&quot;;..\..\..\boost_1_34_1;..\..\..\boost.guid;..\..\..\boost.process"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB"
 				MinimalRebuild="true"
 				ExceptionHandling="0"
@@ -105,7 +105,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\..\src\build;&quot;..\..\..\libantlr3c-3.1b2\include&quot;;..\..\..\boost_1_34_1;..\..\..\boost.guid"
+				AdditionalIncludeDirectories="..\..\src\build;&quot;..\..\..\libantlr3c-3.1b2\include&quot;;..\..\..\boost_1_34_1;..\..\..\boost.guid;..\..\..\boost.process"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
@@ -390,6 +390,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\scm_manager.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\searched_lib_main_target.cpp"
 				>
 			</File>
@@ -424,6 +428,10 @@
 						UsePrecompiledHeader="1"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\src\subversion_scm_client.cpp"
+				>
 			</File>
 			<File
 				RelativePath="..\..\src\type.cpp"
@@ -600,6 +608,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\scm_client.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\scm_manager.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\searched_lib_main_target.h"
 				>
 			</File>
@@ -617,6 +633,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\stdafx.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\subversion_scm_client.h"
 				>
 			</File>
 			<File

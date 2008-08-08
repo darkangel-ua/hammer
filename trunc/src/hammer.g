@@ -54,10 +54,12 @@ string  : ID;
 sources_decl  : (string | rule_invoke)+ ;
 rule_invoke : '[' { on_nested_rule_enter(PARSER); } rule_impl { on_nested_rule_leave(PARSER); }']' -> rule_impl;
 
-ID  :   ('a'..'z' | 'A'..'Z' | '0'..'9' | '.' | '-' | '_'| '=' | '/' | '*')+  | STRING;
-COLON 	: ':';
+ID  :   ('a'..'z' | 'A'..'Z' | '0'..'9' | '.' | '-' | '_'| '=' | '/' | '*')+  | STRING { LEXSTATE->type = _type; {pANTLR3_COMMON_TOKEN t = LEXER->emit(LEXER); ++t->start, --t->stop; t->type = _type;} };
+COLON   : ':';
 fragment 
-STRING  : '"' ('\\"' | ~('"' | '\n' | '\r'))* '"' ;
+STRING  : '"' STRING_ID '"';
+fragment
+STRING_ID : ('\\"' | ~('"' | '\n' | '\r'))* ;
 
 COMMENT : '#' (~('\n' | '\r'))* ('\n' | '\r')?  { $channel = HIDDEN; };
 

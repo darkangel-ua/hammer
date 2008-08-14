@@ -118,8 +118,18 @@ engine::engine()
    }
 
    {
-      feature_attributes ft = {0}; ft.path = ft.propagated = ft.free;
+      feature_attributes ft = {0}; ft.propagated = ft.free;
       fr->add_def(feature_def("scm.uri", vector<string>(), ft));
+   }
+
+   {
+      feature_attributes ft = {0}; ft.path = ft.propagated = ft.free;
+      fr->add_def(feature_def("project-root", vector<string>(), ft));
+   }
+
+   {
+      feature_attributes ft = {0}; ft.propagated = 1;
+      fr->add_def(feature_def("version", vector<string>(), ft));
    }
 
    feature_registry_ = fr.release();
@@ -209,8 +219,7 @@ project& engine::load_project(location_t project_path, const project& from_proje
    {
       project_alias_data alias_data;
       project_path = resolve_project_alias(project_path, alias_data);
-      location_t absolute_path(from_project.location() / project_path);
-      if (!exists(absolute_path))
+      if (!exists(project_path))
          initial_materialization(alias_data);
    }
    else

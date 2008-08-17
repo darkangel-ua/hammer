@@ -21,6 +21,12 @@ SOURCES_DECL;
         using namespace hammer::details;
 }
 
+@lexer::preincludes
+{
+        #include "../non_buffered_token_stream.h"
+        using namespace hammer::details;
+}
+
 project : WS* rules -> rules;
 rules :  rule*;
 rule    : rule_impl ';' -> rule_impl;
@@ -49,12 +55,14 @@ conditional_features : { is_conditional_feature(PARSER) }?=> condition condition
 condition  : feature (',' feature)* -> ^(CONDITION feature+);
 // COLON needed for is_conditional_feature so we put it into token stream
 condition_result : COLON feature;
-feature  : '<' ID '>' ID -> ^(FEATURE ID ID);
-string  : ID;
+feature       : '<' ID '>' ID -> ^(FEATURE ID ID);
+string        : ID ;
 sources_decl  : (string | rule_invoke)+ ;
-rule_invoke : '[' { on_nested_rule_enter(PARSER); } rule_impl { on_nested_rule_leave(PARSER); }']' -> rule_impl;
+rule_invoke   : '[' { on_nested_rule_enter(PARSER); } rule_impl { on_nested_rule_leave(PARSER); }']' -> rule_impl;
 
-ID  :   ('a'..'z' | 'A'..'Z' | '0'..'9' | '.' | '-' | '_'| '=' | '/' | '*')+  | STRING { LEXSTATE->type = _type; {pANTLR3_COMMON_TOKEN t = LEXER->emit(LEXER); ++t->start, --t->stop; t->type = _type;} };
+SLASH : { is_lexing_sources_decl(LEXER) }?=> '/';
+ID            : ('a'..'z' | 'A'..'Z' | '0'..'9' | '.' | '-' | { !is_lexing_sources_decl(LEXER) }?=> '/' | '_'| '=' | '*')+  
+	      | STRING { LEXSTATE->type = _type; {pANTLR3_COMMON_TOKEN t = LEXER->emit(LEXER); ++t->start, --t->stop; t->type = _type;} };
 COLON   : ':';
 fragment 
 STRING  : '"' STRING_ID '"';

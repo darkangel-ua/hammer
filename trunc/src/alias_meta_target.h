@@ -17,6 +17,7 @@ namespace hammer
                                   feature_set* usage_requirements) const;
       private:
          virtual void transfer_sources(sources_decl* simple_targets, 
-                                       meta_targets_t* meta_targets) const;
+                                       meta_targets_t* meta_targets,
+                                       const feature_set& build_request) const;
    };
 }

@@ -71,7 +71,8 @@ void basic_meta_target::instantiate_meta_targets(const meta_targets_t& targets,
       (**i).instantiate(owner, build_request, result, usage_requirments);
 }
 
-void basic_meta_target::split_sources(sources_decl* simple_targets, meta_targets_t* meta_targets) const
+void basic_meta_target::split_sources(sources_decl* simple_targets, meta_targets_t* meta_targets,
+                                      const feature_set& build_request) const
 {
    const type_registry& tr = project_->engine()->get_type_registry();
    for(sources_decl::const_iterator i = sources_.begin(), last = sources_.end(); i != last; ++i)
@@ -79,7 +80,7 @@ void basic_meta_target::split_sources(sources_decl* simple_targets, meta_targets
       if (const type* t = tr.resolve_from_target_name(*i))
          simple_targets->push_back(*i); 
       else
-         resolve_meta_target_source(*i, simple_targets, meta_targets);
+         resolve_meta_target_source(*i, build_request, simple_targets, meta_targets);
   }
 }
 
@@ -88,6 +89,7 @@ void basic_meta_target::split_sources(sources_decl* simple_targets, meta_targets
 //    на этом этапе ибо другой возможности у нас уже не будет.
 static boost::regex project_splitter("(.+?)(?://(.+))?");
 void basic_meta_target::resolve_meta_target_source(const pstring& source,
+                                                   const feature_set& build_request,
                                                    sources_decl* simple_targets,
                                                    meta_targets_t* meta_targets) const
 {
@@ -96,9 +98,14 @@ void basic_meta_target::resolve_meta_target_source(const pstring& source,
       throw std::runtime_error("Can't parse meta target '" + source.to_string() + "'.");
    
    string target_name = m[1];
-   if (const basic_meta_target* m = project_->find_target(pstring(project_->engine()->pstring_pool(), target_name)))
+   pstring p_target_name(project_->engine()->pstring_pool(), target_name);
+   if (const basic_meta_target* m = project_->find_target(p_target_name))
    {
-      m->transfer_sources(simple_targets, meta_targets);
+//       m = project_->select_best_alternative(target_name, build_request);
+//       if (m == NULL)
+//          throw std::runtime_error("Can't select best alternative for target '" + target_name + "'.");
+
+      m->transfer_sources(simple_targets, meta_targets, build_request);
       meta_targets->push_back(m);
       return;
    }
@@ -108,14 +115,15 @@ void basic_meta_target::resolve_meta_target_source(const pstring& source,
    {
       if (!i->second->is_explicit())
       {
-         i->second->transfer_sources(simple_targets, meta_targets);
+         i->second->transfer_sources(simple_targets, meta_targets, build_request);
          meta_targets->push_back(i->second);
       }
    }
 }
 
 void basic_meta_target::transfer_sources(sources_decl* simple_targets, 
-                                         meta_targets_t* meta_targets) const
+                                         meta_targets_t* meta_targets,
+                                         const feature_set& build_request) const
 {
 
 }

@@ -86,6 +86,11 @@ engine::engine()
       feature_attributes ft = {0}; ft.propagated = 1;
       fr->add_def(feature_def("link", boost::assign::list_of<string>("shared")("static"), ft));
    }
+
+   {
+      feature_attributes ft = {0}; ft.propagated = 1;
+      fr->add_def(feature_def("threading", boost::assign::list_of<string>("single")("multi"), ft));
+   }
    
    {
       feature_attributes ft = {0}; ft.free = 1;

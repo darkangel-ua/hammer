@@ -11,6 +11,7 @@ namespace hammer
    namespace details
    {
       
+      class hammer_lexer_context;
       struct hammer_parser_context
       {
          struct rule_context
@@ -26,7 +27,7 @@ namespace hammer
          unsigned long error_count_;
          rule_context rule_context_;
          std::stack<rule_context> rule_contexts_;
-
+         hammer_lexer_context* lctx_;
          void (*base_displayRecognitionError)(pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_UINT8 * tokenNames);
       };
 

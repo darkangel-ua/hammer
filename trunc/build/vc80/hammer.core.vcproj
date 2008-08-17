@@ -286,7 +286,7 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
-						CompileAs="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -342,6 +342,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\project_generators\msvc\msvc_solution.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\non_buffered_token_stream.cpp"
 				>
 			</File>
 			<File
@@ -569,6 +573,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\project_generators\msvc\msvc_solution.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\non_buffered_token_stream.h"
 				>
 			</File>
 			<File

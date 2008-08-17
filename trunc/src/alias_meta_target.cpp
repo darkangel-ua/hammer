@@ -22,9 +22,10 @@ void alias_meta_target::instantiate(const main_target* owner,
 }
 
 void alias_meta_target::transfer_sources(sources_decl* simple_targets, 
-                                         meta_targets_t* meta_targets) const
+                                         meta_targets_t* meta_targets, 
+                                         const feature_set& build_request) const
 {
-   split_sources(simple_targets, meta_targets);
+   split_sources(simple_targets, meta_targets, build_request);
 }
 
 }

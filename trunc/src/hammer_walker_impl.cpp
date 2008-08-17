@@ -14,9 +14,11 @@
 #include "feature.h"
 #include "project_requirements_decl.h"
 #include "sources_decl.h"
+#include <antlr3commontoken.h>
 
 using namespace std;
 using namespace hammer;
+namespace fs = boost::filesystem;
 
 void* hammer_make_args_list(void* context)
 {
@@ -172,4 +174,21 @@ void hammer_add_rule_result_to_source_decl(void* rule_result, void* sources)
 {
    call_resolver_call_arg<sources_decl>* rr = static_cast<call_resolver_call_arg<sources_decl>*>(rule_result);
    static_cast<sources_decl*>(sources)->transfer_from(*rr->value());
+}
+
+void* hammer_make_path()
+{
+   return new fs::path();
+}
+
+void hammer_add_to_path(void* p, const char* token)
+{
+   fs::path* pd = static_cast<fs::path*>(p);
+   *pd /= token;
+}
+
+void* hammer_make_path_arg(void* p)
+{
+   call_resolver_call_arg<fs::path>* result = new call_resolver_call_arg<fs::path>(static_cast<fs::path*>(p), true);
+   return result;
 }

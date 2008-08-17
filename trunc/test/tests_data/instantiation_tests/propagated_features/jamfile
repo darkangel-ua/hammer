@@ -1,2 +1,2 @@
-lib a : a.cpp ;
+lib a : a.cpp ; 
 exe test : a main.cpp : <link>static ;

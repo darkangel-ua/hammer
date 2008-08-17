@@ -2,8 +2,10 @@
 #include "parser.h"
 #include "hammer_parser_context.h"
 #include <antlr3recognizersharedstate.h>
+#include "non_buffered_token_stream.h"
 
 using namespace std;
+
 
 namespace hammer{
 
@@ -43,11 +45,14 @@ namespace hammer{
 
       input_	= antlr3AsciiFileStreamNew((pANTLR3_UINT8)file_name);
       lexer_ = hammerLexerNew(input_);
-      tstream_ = antlr3CommonTokenStreamSourceNew(ANTLR3_SIZE_HINT, TOKENSOURCE(lexer_));
+//      tstream_ = antlr3CommonTokenStreamSourceNew(ANTLR3_SIZE_HINT, TOKENSOURCE(lexer_));
+      tstream_ = non_buffered_token_stream::create(ANTLR3_SIZE_HINT, TOKENSOURCE(lexer_));
       parser_ = hammerParserNew(tstream_);
       details::hammer_parser_context ctx;
       ctx.base_displayRecognitionError = parser_->pParser->rec->displayRecognitionError;
+      ctx.lctx_ = &static_cast<non_buffered_token_stream*>(tstream_->super)->ctx_;
       parser_->pParser->rec->displayRecognitionError = &displayRecognitionError;
+      lexer_->pLexer->super = &static_cast<non_buffered_token_stream*>(tstream_->super)->ctx_;
       ctx.engine_ = engine_;
       parser_->pParser->super = &ctx;
       langAST_ = parser_->rules(parser_);

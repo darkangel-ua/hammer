@@ -37,7 +37,7 @@ namespace hammer{
 
       sources_decl simple_targets;
       meta_targets_t meta_targets;
-      split_sources(&simple_targets, &meta_targets);
+      split_sources(&simple_targets, &meta_targets, build_request);
 
       feature_set* build_request_with_propagated = build_request.clone();
       build_request_with_propagated->copy_propagated(*mt_fs);

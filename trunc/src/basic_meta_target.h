@@ -54,13 +54,16 @@ namespace hammer
                                        std::vector<basic_target*>* result, 
                                        feature_set* usage_requirments) const;
          void split_sources(sources_decl* simple_targets, 
-                            meta_targets_t* meta_targets) const;
-         void resolve_meta_target_source(const pstring& source, 
+                            meta_targets_t* meta_targets,
+                            const feature_set& build_request) const;
+         void resolve_meta_target_source(const pstring& source,
+                                         const feature_set& build_request, 
                                          sources_decl* simple_targets,
                                          meta_targets_t* meta_targets) const;
          // исключительно для поддержки alias потому как я не понял как это можна сделать иначе
          virtual void transfer_sources(sources_decl* simple_targets, 
-                                       meta_targets_t* meta_targets) const;
+                                       meta_targets_t* meta_targets,
+                                       const feature_set& build_request) const;
 
       private:
          hammer::project* project_;

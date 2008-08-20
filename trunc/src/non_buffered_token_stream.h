@@ -12,6 +12,7 @@ namespace hammer
          static pANTLR3_COMMON_TOKEN_STREAM create(ANTLR3_UINT32 hint, pANTLR3_TOKEN_SOURCE source);
          
          void (*base_free) (struct ANTLR3_COMMON_TOKEN_STREAM_struct * tokenStream);
+         void relex_from_current();
          hammer_lexer_context ctx_;
       };
 

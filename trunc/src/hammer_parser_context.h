@@ -11,7 +11,7 @@ namespace hammer
    namespace details
    {
       
-      class hammer_lexer_context;
+      struct non_buffered_token_stream;
       struct hammer_parser_context
       {
          struct rule_context
@@ -27,7 +27,7 @@ namespace hammer
          unsigned long error_count_;
          rule_context rule_context_;
          std::stack<rule_context> rule_contexts_;
-         hammer_lexer_context* lctx_;
+         non_buffered_token_stream* token_stream_;
          void (*base_displayRecognitionError)(pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_UINT8 * tokenNames);
       };
 
@@ -42,5 +42,10 @@ namespace hammer
       bool argument_is_project_requirements(pANTLR3_PARSER parser);
       bool argument_is_sources(pANTLR3_PARSER parser);
       bool is_conditional_feature(pANTLR3_PARSER parser);
+
+      void enter_sources_decl(pANTLR3_PARSER parser);
+      void leave_sources_decl(pANTLR3_PARSER parser);
+      void enter_rule_invoke(pANTLR3_PARSER parser);
+      void leave_rule_invoke(pANTLR3_PARSER parser);
    }
 }

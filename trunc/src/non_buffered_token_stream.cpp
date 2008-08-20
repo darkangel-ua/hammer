@@ -114,6 +114,7 @@ static void fillBuffer(pANTLR3_COMMON_TOKEN_STREAM tokenStream, int k, bool with
    * and so if we store it anywhere, we don't set any pointers to auto free it.
    */
    tok	    = tokenStream->tstream->tokenSource->nextToken(tokenStream->tstream->tokenSource);
+   pANTLR3_STRING s = tok->getText(tok);
 
    while   (tok != NULL && tok->type != ANTLR3_TOKEN_EOF)
    {
@@ -164,6 +165,7 @@ static void fillBuffer(pANTLR3_COMMON_TOKEN_STREAM tokenStream, int k, bool with
       }
 
       tok = tokenStream->tstream->tokenSource->nextToken(tokenStream->tstream->tokenSource);
+      s = tok->getText(tok);
    }
 
    /* Set the consume pointer to the first token that is on our channel
@@ -240,7 +242,8 @@ pANTLR3_COMMON_TOKEN_STREAM non_buffered_token_stream::create(ANTLR3_UINT32 hint
    nbs->base_free = tstream_->free;
    tstream_->free = nbs_free;
    tstream_->tstream->_LT = nbs_tokLT;
-   
+   nbs->ctx_.tstream_ = tstream_;
+
    return tstream_;
 }
 
@@ -251,6 +254,20 @@ bool is_lexing_sources_decl(pANTLR3_LEXER lexer)
       return false;
    
    return ctx->source_lexing_.top();
+}
+
+void non_buffered_token_stream::relex_from_current()
+{
+   pANTLR3_COMMON_TOKEN tok = ctx_.tstream_->tstream->_LT(ctx_.tstream_->tstream, -1);
+   for(int last = ctx_.tstream_->tstream->istream->cachedSize - 1, i = ctx_.tstream_->p; i <= last; --last)
+      ctx_.tstream_->tokens->del(ctx_.tstream_->tokens, last);
+   ctx_.tstream_->tstream->istream->cachedSize = ctx_.tstream_->p;
+   pANTLR3_STRING s = tok->getText(tok);
+   ctx_.input_->istream->seek(ctx_.input_->istream, tok->getStopIndex(tok));
+   ctx_.input_->charPositionInLine	= tok->getCharPositionInLine(tok);
+   ctx_.input_->currentLine		= tok->lineStart;
+   ctx_.input_->line			= tok->getLine(tok);
+   ctx_.input_->nextChar		= reinterpret_cast<void*>(tok->getStopIndex(tok) + 1);
 }
 
 }}

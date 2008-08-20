@@ -69,7 +69,6 @@ BOOST_FIXTURE_TEST_CASE(lib1_project, instantiation_tests)
    check(tt);
 }
 
-
 BOOST_FIXTURE_TEST_CASE(propagated_features, instantiation_tests)
 {
    name_ = "propagated_features";

@@ -5,6 +5,7 @@
 #include "requirements_decl.h"
 #include "project_requirements_decl.h"
 #include "sources_decl.h"
+#include "non_buffered_token_stream.h"
 
 using namespace std;
 
@@ -87,6 +88,34 @@ bool is_conditional_feature(pANTLR3_PARSER parser)
    pANTLR3_COMMON_TOKEN t1 = parser->tstream->_LT(parser->tstream, 4);
    pANTLR3_COMMON_TOKEN t2 = parser->tstream->_LT(parser->tstream, 5);
    return t1->stop + 1 == t2->start;
+}
+
+void enter_sources_decl(pANTLR3_PARSER parser)
+{
+   MAKE_CTX();
+   ctx.token_stream_->ctx_.source_lexing_.push(true);
+   ctx.token_stream_->relex_from_current();
+}
+
+void leave_sources_decl(pANTLR3_PARSER parser)
+{
+   MAKE_CTX();
+   ctx.token_stream_->ctx_.source_lexing_.pop();
+   ctx.token_stream_->relex_from_current();
+}
+
+void enter_rule_invoke(pANTLR3_PARSER parser)
+{
+   MAKE_CTX();
+   ctx.token_stream_->ctx_.source_lexing_.push(false);
+   ctx.token_stream_->relex_from_current();
+}
+
+void leave_rule_invoke(pANTLR3_PARSER parser)
+{
+   MAKE_CTX();
+   ctx.token_stream_->ctx_.source_lexing_.pop();
+   ctx.token_stream_->relex_from_current();
 }
 
 }}

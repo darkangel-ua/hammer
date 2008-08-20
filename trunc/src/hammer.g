@@ -44,7 +44,7 @@ rule_posible_args
                   | { argument_is_feature(PARSER) }?=> feature_arg
                   | { argument_is_requirements(PARSER) }?=> requirements -> ^(REQUIREMENTS_DECL requirements)
                   | feature_list -> ^(FEATURE_LIST feature_list)
-                  | { argument_is_sources(PARSER) }?=> sources_decl -> ^(SOURCES_DECL sources_decl);
+                  | { argument_is_sources(PARSER) }?=> { enter_sources_decl(PARSER); } sources_decl { leave_sources_decl(PARSER); } -> ^(SOURCES_DECL sources_decl);
 string_list : string+ -> ^(STRING_LIST string+);
 feature_list : feature+;
 project_requirements : string requirements -> ^(PROJECT_REQUIREMENTS string ^(REQUIREMENTS_DECL requirements));
@@ -58,7 +58,7 @@ condition_result : COLON feature;
 feature       : '<' ID '>' ID -> ^(FEATURE ID ID);
 string        : ID ;
 sources_decl  : (string | rule_invoke)+ ;
-rule_invoke   : '[' { on_nested_rule_enter(PARSER); } rule_impl { on_nested_rule_leave(PARSER); }']' -> rule_impl;
+rule_invoke   : { enter_rule_invoke(PARSER); } '[' { on_nested_rule_enter(PARSER); } rule_impl { on_nested_rule_leave(PARSER); }']' { leave_rule_invoke(PARSER); } -> rule_impl;
 
 SLASH : { is_lexing_sources_decl(LEXER) }?=> '/';
 ID            : ('a'..'z' | 'A'..'Z' | '0'..'9' | '.' | '-' | { !is_lexing_sources_decl(LEXER) }?=> '/' | '_'| '=' | '*')+  

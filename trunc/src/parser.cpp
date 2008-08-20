@@ -50,7 +50,9 @@ namespace hammer{
       parser_ = hammerParserNew(tstream_);
       details::hammer_parser_context ctx;
       ctx.base_displayRecognitionError = parser_->pParser->rec->displayRecognitionError;
-      ctx.lctx_ = &static_cast<non_buffered_token_stream*>(tstream_->super)->ctx_;
+      ctx.token_stream_ = static_cast<non_buffered_token_stream*>(tstream_->super);
+      ctx.token_stream_->ctx_.input_ = input_;
+      ctx.token_stream_->ctx_.lexer_ = lexer_->pLexer;
       parser_->pParser->rec->displayRecognitionError = &displayRecognitionError;
       lexer_->pLexer->super = &static_cast<non_buffered_token_stream*>(tstream_->super)->ctx_;
       ctx.engine_ = engine_;

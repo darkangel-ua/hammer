@@ -15,6 +15,7 @@
 #include "project_requirements_decl.h"
 #include "sources_decl.h"
 #include <antlr3commontoken.h>
+#include <antlr3input.h>
 
 using namespace std;
 using namespace hammer;
@@ -159,10 +160,11 @@ void* hammer_make_sources_decl()
    return new sources_decl();
 }
 
-void hammer_add_source_to_sources_decl(void* context, const char* id, void* result)
+void hammer_add_source_to_sources_decl(void* result, void* sd)
 {
-   hammer_walker_context* ctx = static_cast<hammer_walker_context*>(context);
-   static_cast<sources_decl*>(result)->push_back(pstring(ctx->engine_->pstring_pool(), id));
+   sources_decl::source_decl* source_decl = static_cast<sources_decl::source_decl*>(sd);
+   static_cast<sources_decl*>(result)->push_back(*source_decl);
+   delete source_decl;
 }
 
 void* hammer_make_sources_decl_arg(void* s)
@@ -191,4 +193,52 @@ void* hammer_make_path_arg(void* p)
 {
    call_resolver_call_arg<fs::path>* result = new call_resolver_call_arg<fs::path>(static_cast<fs::path*>(p), true);
    return result;
+}
+
+void* hammer_make_source_decl()
+{
+   return new sources_decl::source_decl;
+}
+
+typedef std::pair<pANTLR3_COMMON_TOKEN, pANTLR3_COMMON_TOKEN> target_path_t;
+
+void hammer_source_decl_set_target_path(void* context, void* sd, void* tp)
+{
+   hammer_walker_context* ctx = static_cast<hammer_walker_context*>(context);
+   sources_decl::source_decl* source_decl = static_cast<sources_decl::source_decl*>(sd);
+   target_path_t* target_path = static_cast<target_path_t*>(tp);
+
+   if (target_path->second == NULL)
+      target_path->second = target_path->first;
+
+   pANTLR3_STRING s = target_path->first->input->substr(target_path->first->input, target_path->first->start, target_path->second->stop);
+   source_decl->target_path_ = pstring(ctx->engine_->pstring_pool(), reinterpret_cast<const char*>(s->chars));
+   
+   delete target_path;
+   s->factory->destroy(s->factory, s);
+}
+
+void hammer_source_decl_set_target_name(void* context, void* sd, const char* id)
+{
+   hammer_walker_context* ctx = static_cast<hammer_walker_context*>(context);
+   sources_decl::source_decl* source_decl = static_cast<sources_decl::source_decl*>(sd);
+
+   if (id != NULL)
+      source_decl->target_name_ = pstring(ctx->engine_->pstring_pool(), id);
+}
+
+void* hammer_make_target_path()
+{
+   return new target_path_t();
+}
+
+void hammer_add_to_target_path(void* context, void* tp, pANTLR3_BASE_TREE node)
+{
+   hammer_walker_context* ctx = static_cast<hammer_walker_context*>(context);
+   target_path_t* target_path = static_cast<target_path_t*>(tp);
+
+   if (target_path->first == NULL)
+      target_path->first = node->getToken(node);
+   else
+      target_path->second = node->getToken(node);
 }

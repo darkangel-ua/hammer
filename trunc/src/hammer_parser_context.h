@@ -42,6 +42,9 @@ namespace hammer
       bool argument_is_project_requirements(pANTLR3_PARSER parser);
       bool argument_is_sources(pANTLR3_PARSER parser);
       bool is_conditional_feature(pANTLR3_PARSER parser);
+      bool is_path_element(pANTLR3_PARSER parser);
+      bool is_path_slash(pANTLR3_PARSER parser);
+      bool is_trailing_slash(pANTLR3_PARSER parser);
 
       void enter_sources_decl(pANTLR3_PARSER parser);
       void leave_sources_decl(pANTLR3_PARSER parser);

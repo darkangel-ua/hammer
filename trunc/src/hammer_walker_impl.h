@@ -1,6 +1,8 @@
 #ifndef __HAMMER_WALKER_IMPL__
 #define __HAMMER_WALKER_IMPL__
 
+#include <antlr3basetree.h>
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -33,9 +35,15 @@ extern "C"
    void hammer_set_condition_result(void* condition, void* feature);
    void hammer_add_feature_to_condition(void* feature, void* condition);
    void* hammer_make_sources_decl();
-   void hammer_add_source_to_sources_decl(void* context, const char* id, void* result);
+   void hammer_add_source_to_sources_decl(void* result, void* sd);
    void* hammer_make_sources_decl_arg(void* s);
    void hammer_add_rule_result_to_source_decl(void* rule_result, void* sources);
+   void* hammer_make_source_decl();
+   void hammer_source_decl_set_target_path(void* context, void* sd, void* tp);
+   void hammer_source_decl_set_target_name(void* context, void* sd, const char* id);
+   void* hammer_make_target_path();
+   void hammer_add_to_target_path(void* context, void* tp, pANTLR3_BASE_TREE node);
+
 #ifdef __cplusplus
 };
 #endif

@@ -15,6 +15,7 @@ namespace hammer
          pstring(pool& p, const char* str);
          pstring(pool& p, const std::string& str);
          size_type size() const { return size_; }
+		 bool empty() const { return s_ == NULL || size_ == 0; }
          std::string to_string() const;
          const char* begin() const { return s_; }
          const char* end() const { return s_ + size_; }

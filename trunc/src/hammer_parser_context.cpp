@@ -118,4 +118,26 @@ void leave_rule_invoke(pANTLR3_PARSER parser)
    ctx.token_stream_->relex_from_current();
 }
 
+bool is_path_element(pANTLR3_PARSER parser)
+{
+	pANTLR3_COMMON_TOKEN t1 = parser->tstream->_LT(parser->tstream, 1);
+	pANTLR3_COMMON_TOKEN t2 = parser->tstream->_LT(parser->tstream, 2);
+	return t1->stop + 1 == t2->start;
+}
+
+bool is_path_slash(pANTLR3_PARSER parser)
+{
+	pANTLR3_COMMON_TOKEN t_1 = parser->tstream->_LT(parser->tstream, -1); // токен до слеша
+	pANTLR3_COMMON_TOKEN t1 = parser->tstream->_LT(parser->tstream, 1); // вот тут находиться проверяемый слеш
+	pANTLR3_COMMON_TOKEN t2 = parser->tstream->_LT(parser->tstream, 2); // токен после слеша
+	return t_1->stop + 1 == t1->start || t1->stop + 1 == t2->start;
+}
+
+bool is_trailing_slash(pANTLR3_PARSER parser)
+{
+   pANTLR3_COMMON_TOKEN t1 = parser->tstream->_LT(parser->tstream, 1); // вот тут находиться проверяемый слеш
+   pANTLR3_COMMON_TOKEN t2 = parser->tstream->_LT(parser->tstream, 2); // токен после слеша
+   return t1->stop + 1 != t2->start;
+}
+
 }}

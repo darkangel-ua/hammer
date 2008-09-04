@@ -66,6 +66,18 @@ sources_decl returns[void* sources]
 @init { sources = hammer_make_sources_decl(); } 
 //	: ^(SOURCES_DECL (ID { hammer_add_source_to_sources_decl(PARSER->super, $ID.text->chars, sources); } )+) 
 //	| ^(SOURCES_DECL rule) { hammer_add_rule_result_to_source_decl($rule.result, sources); hammer_delete_rule_result($rule.result); }
-	:  ^(SOURCES_DECL (ID { hammer_add_source_to_sources_decl(PARSER->super, $ID.text->chars, sources); } | sources_decl_rule_invoke[sources])+);
-	
+	:  ^(SOURCES_DECL (source_decl { hammer_add_source_to_sources_decl(sources, $source_decl.sd); } | sources_decl_rule_invoke[sources])+);
+
+source_decl returns[void* sd]
+@init { sd = hammer_make_source_decl(PARSER->super); }	
+	: ^(SOURCE_DECL target_path { hammer_source_decl_set_target_path(PARSER->super, sd, $target_path.tp); } 
+	                target_name[sd] 
+	                target_features);
+target_path returns[void* tp] 
+@init { tp = hammer_make_target_path(); }
+        : ^(TARGET_PATH (ID { hammer_add_to_target_path(PARSER->super, tp, $ID); } | SLASH { hammer_add_to_target_path(PARSER->super, tp, $SLASH); })+);
+target_name[void* sd] : ^(TARGET_NAME ID { hammer_source_decl_set_target_name(PARSER->super, sd, $ID.text->chars); } )
+                      | ^(TARGET_NAME NULL_ARG { hammer_source_decl_set_target_name(PARSER->super, sd, NULL); } );
+target_features : ^(TARGET_FEATURES NULL_ARG);
+
 sources_decl_rule_invoke[void* sources] : rule { hammer_add_rule_result_to_source_decl($rule.result, sources); hammer_delete_rule_result($rule.result); };

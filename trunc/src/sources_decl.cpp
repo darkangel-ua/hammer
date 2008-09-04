@@ -9,7 +9,7 @@ struct sources_decl::impl_t
    impl_t() : ref_counter_(1) {}
    impl_t* clone() const;
 
-   std::vector<pstring> values_;
+   std::vector<source_decl> values_;
    mutable unsigned int ref_counter_;
 };
 
@@ -58,13 +58,20 @@ void sources_decl::clone_if_needed()
 void sources_decl::push_back(const pstring& v)
 {
    clone_if_needed();
+   impl_->values_.push_back(source_decl(pstring(), v, NULL));
+}
+
+void sources_decl::push_back(const source_decl& v)
+{
+   clone_if_needed();
    impl_->values_.push_back(v);
 }
 
 void sources_decl::insert(const std::vector<pstring>& v)
 {
    clone_if_needed();
-   impl_->values_.insert(impl_->values_.begin(), v.begin(), v.end());
+   for(std::vector<pstring>::const_iterator i = v.begin(), last = v.end(); i != last; ++i)
+	   push_back(*i);
 }
 
 sources_decl::const_iterator::const_iterator(const sources_decl& s, bool last) 

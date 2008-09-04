@@ -13,6 +13,11 @@ CONDITIONAL_FEATURES;
 CONDITION;
 PROJECT_REQUIREMENTS;
 SOURCES_DECL;
+SOURCE_DECL;
+TARGET_PATH;
+TARGET_NAME;
+TARGET_FEATURES;
+SOURCE_DECL_EXPLICIT_TARGET;
 }
 
 @parser::preincludes
@@ -57,9 +62,19 @@ condition  : feature (',' feature)* -> ^(CONDITION feature+);
 condition_result : COLON feature;
 feature       : '<' ID '>' ID -> ^(FEATURE ID ID);
 string        : ID ;
-sources_decl  : (string | rule_invoke)+ ;
+sources_decl  : (source_decl_stub | rule_invoke)+ ;
 rule_invoke   : { enter_rule_invoke(PARSER); } '[' { on_nested_rule_enter(PARSER); } rule_impl { on_nested_rule_leave(PARSER); }']' { leave_rule_invoke(PARSER); } -> rule_impl;
 
+source_decl_stub : source_decl -> ^(SOURCE_DECL source_decl);
+source_decl : target_path target_name target_features -> ^(TARGET_PATH target_path) target_name target_features;
+target_path : path_slash? ID path_element* trail_slash?;
+target_name : path_slash path_slash ID -> ^(TARGET_NAME ID)
+            | -> ^(TARGET_NAME NULL_ARG);
+path_element : { is_path_element(PARSER) }?=> path_slash ID;
+target_features : path_slash feature (path_slash feature)* -> ^(TARGET_FEATURES feature+)
+                | -> ^(TARGET_FEATURES NULL_ARG);            
+path_slash : { is_path_slash(PARSER) }?=> SLASH ;
+trail_slash : { is_trailing_slash(PARSER) }?=> SLASH; 
 SLASH : { is_lexing_sources_decl(LEXER) }?=> '/';
 ID            : ('a'..'z' | 'A'..'Z' | '0'..'9' | '.' | '-' | { !is_lexing_sources_decl(LEXER) }?=> '/' | '_'| '=' | '*')+  
 	      | STRING { LEXSTATE->type = _type; {pANTLR3_COMMON_TOKEN t = LEXER->emit(LEXER); ++t->start, --t->stop; t->type = _type;} };

@@ -95,7 +95,7 @@ void basic_meta_target::resolve_meta_target_source(const sources_decl::source_de
 	if (source.target_name_.empty() && 
        !source.target_path_.empty())
 	{
-		if (const basic_meta_target* m = project_->find_target(source.target_name_))
+		if (const basic_meta_target* m = project_->find_target(source.target_path_))
 		{
 			m->transfer_sources(simple_targets, meta_targets, build_request);
 			meta_targets->push_back(m);

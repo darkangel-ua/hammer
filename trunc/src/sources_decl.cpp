@@ -58,7 +58,7 @@ void sources_decl::clone_if_needed()
 void sources_decl::push_back(const pstring& v)
 {
    clone_if_needed();
-   impl_->values_.push_back(source_decl(pstring(), v, NULL));
+   impl_->values_.push_back(source_decl(v, pstring(), NULL));
 }
 
 void sources_decl::push_back(const source_decl& v)

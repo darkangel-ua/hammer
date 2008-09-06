@@ -33,14 +33,13 @@ namespace hammer{
       requirements().eval(mt_fs, project()->engine()->feature_registry());
       project()->engine()->feature_registry().add_defaults(mt_fs);
 
-      vector<basic_target*> sources;
-
-      sources_decl simple_targets;
-      meta_targets_t meta_targets;
-      split_sources(&simple_targets, &meta_targets, build_request);
-
       feature_set* build_request_with_propagated = build_request.clone();
       build_request_with_propagated->copy_propagated(*mt_fs);
+
+      vector<basic_target*> sources;
+      sources_decl simple_targets;
+      meta_targets_t meta_targets;
+      split_sources(&simple_targets, &meta_targets, *build_request_with_propagated);
       
       main_target* mt = construct_main_target(mt_fs);
       instantiate_meta_targets(meta_targets, *build_request_with_propagated, mt, &sources, usage_requirements);

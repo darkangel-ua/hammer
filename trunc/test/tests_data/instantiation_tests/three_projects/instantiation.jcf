@@ -1,4 +1,4 @@
-test [ type = EXE; features = !<define>use_lib2_2 ]
+test [ type = EXE; features = !<define>use_lib2_1; ]
 {  
    lib1_1 [ type = SHARED_LIB; features = <define>lib1_1; ]
    {

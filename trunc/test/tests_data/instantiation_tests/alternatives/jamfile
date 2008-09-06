@@ -1,0 +1,4 @@
+lib local_lib : local_lib_single_thread.cpp : <threading>single ;
+lib local_lib : local_lib_multi_thread.cpp : <threading>multi ;
+
+exe test : main.cpp local_lib : <threading>multi ;

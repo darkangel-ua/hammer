@@ -2,6 +2,8 @@
 #include "project.h"
 #include "engine.h"
 #include "feature_registry.h"
+#include "feature_set.h"
+#include "feature.h"
 
 using namespace std;
 
@@ -37,20 +39,57 @@ namespace hammer{
          return i->second;
    }
 
-   const basic_meta_target*
-   project::select_best_alternative(const std::string& target_name, 
-                                    const feature_set& f) const
+   static bool is_alternative_suitable(const feature_set& target_properties, 
+                                       const feature_set& build_request)
+   {
+      for(feature_set::const_iterator i = target_properties.begin(), last = target_properties.end(); i != last; ++i)
+      {
+         if (!((**i).attributes().free ||
+               (**i).attributes().incidental))
+         {
+            feature_set::const_iterator f = build_request.find((**i).name());
+            if (f != build_request.end() && 
+                (**i).value() != (**f).value())
+            {
+               return false;
+            }
+         }
+      }
+
+      return true;
+   }
+
+   const basic_meta_target* 
+   project::select_best_alternative(const pstring& target_name, 
+                                    const feature_set& build_request) const
    {
       boost::iterator_range<targets_t::const_iterator> r = 
-         targets_.equal_range(pstring(engine_->pstring_pool(), target_name));
+         targets_.equal_range(target_name);
 
       if (empty(r))
-         throw std::runtime_error("Can't find target '" + target_name + "'");
+         throw std::runtime_error("Can't find target '" + target_name.to_string() + "'");
 
       if (size(r) != 1)
-         throw std::runtime_error("Can't select alternative yet :(");
+      {
+         const basic_meta_target* result = NULL;
+         
+         for(targets_t::const_iterator first = begin(r), last = end(r); first != last; ++first)
+         {
+            feature_set* fs = engine_->feature_registry().make_set();
+            first->second->requirements().eval(build_request, fs);
+            if (is_alternative_suitable(*fs, build_request))
+            {
+               if (result != NULL)
+                  throw std::runtime_error("Can't select alternative for target '" + target_name.to_string() + "'.");
 
-      return r.begin()->second;
+               result = first->second;
+            }
+         }
+
+         return result;
+      }
+      else
+         return begin(r)->second;
    }
 
    
@@ -58,7 +97,7 @@ namespace hammer{
                              const feature_set& build_request,
                              std::vector<basic_target*>* result) const
    {
-      const basic_meta_target* best_target = select_best_alternative(target_name, build_request);
+      const basic_meta_target* best_target = select_best_alternative(pstring(engine_->pstring_pool(), target_name), build_request);
       feature_set* usage_requirements = engine_->feature_registry().make_set();
       best_target->instantiate(0, build_request, result, usage_requirements);
    }
@@ -76,4 +115,31 @@ namespace hammer{
       return this == &rhs;
    }
 
+   const basic_meta_target* 
+   project::select(const pstring& target_name, const feature_set& build_request) const
+   {
+      return select_best_alternative(target_name, build_request);
+   }
+   
+   project::selected_targets_t 
+   project::select(const feature_set& build_request) const
+   {
+      selected_targets_t result;
+      
+      targets_t::const_iterator first = targets_.begin(), last = targets_.end();
+      while(first != last)
+      {
+         const basic_meta_target* t = select(first->second->name(), build_request);
+         result.push_back(t);
+         
+         // skip meta targets with equal names
+         targets_t::const_iterator next = first; std::advance(next, 1);
+         while(next != last && first->first == next->first)
+            ++first, ++next;
+         
+         first = next;
+      }
+
+      return result;
+   }
 }

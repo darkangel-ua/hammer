@@ -51,11 +51,11 @@ void basic_meta_target::instantiate_simple_targets(const sources_decl& targets,
 {
    for(sources_decl::const_iterator i = targets.begin(), last = targets.end(); i != last; ++i)
    {
-      const hammer::type* tp = project_->engine()->get_type_registry().resolve_from_target_name(i->target_name_);
+      const hammer::type* tp = project_->engine()->get_type_registry().resolve_from_target_name(i->target_path_);
       if (tp == 0)
-         throw std::runtime_error("Can't resolve type from source '" + i->target_name_.to_string() + "'.");
+         throw std::runtime_error("Can't resolve type from source '" + i->target_path_.to_string() + "'.");
 
-      source_target* st = new(project_->engine()) source_target(&owner, i->target_name_, tp, &owner.properties());
+      source_target* st = new(project_->engine()) source_target(&owner, i->target_path_, tp, &owner.properties());
       result->push_back(st);
    }
 }
@@ -86,32 +86,45 @@ void basic_meta_target::split_sources(sources_decl* simple_targets, meta_targets
 // TODO: 
 // 1. Если подаем только директорию проекта и там есть две альтернативы, то по идее нужно было бы выбрать одну из них уже 
 //    на этом этапе ибо другой возможности у нас уже не будет.
-//static boost::regex project_splitter("(.+?)(?://(.+))?");
 void basic_meta_target::resolve_meta_target_source(const sources_decl::source_decl& source,
                                                    const feature_set& build_request,
                                                    sources_decl* simple_targets,
                                                    meta_targets_t* meta_targets) const
 {
-	if (source.target_name_.empty() && 
+	// check that source is simple one ID. May be its source or may be target ID.
+   if (source.target_name_.empty() && 
        !source.target_path_.empty())
 	{
 		if (const basic_meta_target* m = project_->find_target(source.target_path_))
 		{
-			m->transfer_sources(simple_targets, meta_targets, build_request);
+			m = project_->select(source.target_path_, build_request);
+         m->transfer_sources(simple_targets, meta_targets, build_request);
 			meta_targets->push_back(m);
 			return;
 		}
    }
 
-	const hammer::project& p = project_->engine()->load_project(source.target_path_.to_string(), *project_);
-	for(hammer::project::targets_t::const_iterator i = p.targets().begin(), last = p.targets().end(); i != last; ++i)
-	{
-		if (!i->second->is_explicit())
-		{
-			i->second->transfer_sources(simple_targets, meta_targets, build_request);
-			meta_targets->push_back(i->second);
-		}
-	}
+	// source has target_name_ only when it was explicitly requested (./foo//bar) where target_name_ == "bar"
+   const hammer::project& target_project = project_->engine()->load_project(source.target_path_.to_string(), *project_);
+   if (source.target_name_.empty()) 
+   {
+      hammer::project::selected_targets_t selected_targets(target_project.select(build_request));
+      for(hammer::project::selected_targets_t::const_iterator i = selected_targets.begin(), last = selected_targets.end(); i != last; ++i)
+	   {
+		   if (!(**i).is_explicit())
+		   {
+			   (**i).transfer_sources(simple_targets, meta_targets, build_request);
+			   meta_targets->push_back(*i);
+		   }
+	   }
+   }
+   else
+   {
+      const basic_meta_target* m = target_project.select(source.target_name_, build_request);
+      m->transfer_sources(simple_targets, meta_targets, build_request);
+      meta_targets->push_back(m);
+      return;
+   }
 }
 
 void basic_meta_target::transfer_sources(sources_decl* simple_targets, 

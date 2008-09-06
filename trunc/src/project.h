@@ -16,7 +16,8 @@ namespace hammer
    class project : public basic_meta_target
    {
       public:
-         typedef boost::ptr_multimap<const pstring, basic_meta_target> targets_t;
+         typedef boost::ptr_multimap<const pstring /* target name */, basic_meta_target> targets_t;
+         typedef std::vector<const basic_meta_target*> selected_targets_t;
 
          project(engine* e, 
                  const pstring& name,
@@ -41,6 +42,12 @@ namespace hammer
                           std::vector<basic_target*>* result) const;
          bool operator == (const project& rhs) const;
          bool operator != (const project& rhs) const { return !(*this == rhs); }
+         
+         // select targets in project that satisfied build_request
+         selected_targets_t select(const feature_set& build_request) const;
+
+         // choose best alternative for target_name satisfied build_request
+         const basic_meta_target* select(const pstring& target_name, const feature_set& build_request) const;
 
       private:
          location_t location_;
@@ -49,8 +56,9 @@ namespace hammer
          pstring intermediate_dir_;
 
          const basic_meta_target* 
-         select_best_alternative(const std::string& target_name, 
-                                 const feature_set& f) const;
+         select_best_alternative(const pstring& target_name, 
+                                 const feature_set& build_request) const;
+
          virtual void instantiate(const main_target* owner, 
                                   const feature_set& build_request,
                                   std::vector<basic_target*>* result, 

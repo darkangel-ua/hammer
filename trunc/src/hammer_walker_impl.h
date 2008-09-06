@@ -41,8 +41,12 @@ extern "C"
    void* hammer_make_source_decl();
    void hammer_source_decl_set_target_path(void* context, void* sd, void* tp);
    void hammer_source_decl_set_target_name(void* context, void* sd, const char* id);
+   void hammer_source_decl_set_target_properties(void* sd, void* fs);
    void* hammer_make_target_path();
    void hammer_add_to_target_path(void* context, void* tp, pANTLR3_BASE_TREE node);
+
+   void* hammer_make_feature_set(void* context);
+   void hammer_add_feature_to_feature_set(void* feature_set, void* feature);
 
 #ifdef __cplusplus
 };

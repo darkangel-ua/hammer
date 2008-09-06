@@ -227,6 +227,12 @@ void hammer_source_decl_set_target_name(void* context, void* sd, const char* id)
       source_decl->target_name_ = pstring(ctx->engine_->pstring_pool(), id);
 }
 
+void hammer_source_decl_set_target_properties(void* sd, void* fs)
+{
+   sources_decl::source_decl* source_decl = static_cast<sources_decl::source_decl*>(sd);
+   source_decl->properties_ = static_cast<hammer::feature_set*>(fs);
+}
+
 void* hammer_make_target_path()
 {
    return new target_path_t();
@@ -241,4 +247,15 @@ void hammer_add_to_target_path(void* context, void* tp, pANTLR3_BASE_TREE node)
       target_path->first = node->getToken(node);
    else
       target_path->second = node->getToken(node);
+}
+
+void* hammer_make_feature_set(void* context)
+{
+   hammer_walker_context* ctx = static_cast<hammer_walker_context*>(context);
+   return ctx->engine_->feature_registry().make_set();
+}
+
+void hammer_add_feature_to_feature_set(void* feature_set, void* feature)
+{
+   static_cast<hammer::feature_set*>(feature_set)->join(static_cast<hammer::feature*>(feature));   
 }

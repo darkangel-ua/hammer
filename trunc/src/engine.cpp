@@ -133,7 +133,7 @@ engine::engine()
    }
 
    {
-      feature_attributes ft = {0}; ft.propagated = 1;
+      feature_attributes ft = {0}; ft.no_defaults = 1;
       fr->add_def(feature_def("version", vector<string>(), ft));
    }
 

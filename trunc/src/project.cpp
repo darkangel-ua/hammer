@@ -86,6 +86,9 @@ namespace hammer{
             }
          }
 
+         if (result == NULL)
+            throw std::runtime_error("Can't select alternative for target '" + target_name.to_string() + "'.");
+
          return result;
       }
       else
@@ -115,21 +118,15 @@ namespace hammer{
       return this == &rhs;
    }
 
-   const basic_meta_target* 
-   project::select(const pstring& target_name, const feature_set& build_request) const
-   {
-      return select_best_alternative(target_name, build_request);
-   }
-   
    project::selected_targets_t 
-   project::select(const feature_set& build_request) const
+   project::select_best_alternative(const feature_set& build_request) const
    {
       selected_targets_t result;
       
       targets_t::const_iterator first = targets_.begin(), last = targets_.end();
       while(first != last)
       {
-         const basic_meta_target* t = select(first->second->name(), build_request);
+         const basic_meta_target* t = select_best_alternative(first->second->name(), build_request);
          result.push_back(t);
          
          // skip meta targets with equal names

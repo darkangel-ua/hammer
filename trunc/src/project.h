@@ -44,20 +44,16 @@ namespace hammer
          bool operator != (const project& rhs) const { return !(*this == rhs); }
          
          // select targets in project that satisfied build_request
-         selected_targets_t select(const feature_set& build_request) const;
+         selected_targets_t select_best_alternative(const feature_set& build_request) const;
 
          // choose best alternative for target_name satisfied build_request
-         const basic_meta_target* select(const pstring& target_name, const feature_set& build_request) const;
+         const basic_meta_target* select_best_alternative(const pstring& target_name, const feature_set& build_request) const;
 
       private:
          location_t location_;
          targets_t targets_;
          hammer::engine* engine_;
          pstring intermediate_dir_;
-
-         const basic_meta_target* 
-         select_best_alternative(const pstring& target_name, 
-                                 const feature_set& build_request) const;
 
          virtual void instantiate(const main_target* owner, 
                                   const feature_set& build_request,

@@ -1,8 +1,14 @@
 test [ type = EXE; ]
 {
    main.cpp [ type = CPP; features = <threading>multi; ] {}
+   
    local_lib [ type = SHARED_LIB; ]
    {
       local_lib_multi_thread.cpp [ type = CPP; features = <threading>multi; ] {}
+   }
+   
+   foo [ type = SHARED_LIB; ]
+   {
+      foo_1.cpp [ type = CPP; ] {}
    }
 }

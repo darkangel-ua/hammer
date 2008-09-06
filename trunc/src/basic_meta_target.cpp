@@ -83,6 +83,17 @@ void basic_meta_target::split_sources(sources_decl* simple_targets, meta_targets
   }
 }
 
+static const basic_meta_target* select_best_alternative(const hammer::project& p, 
+                                                   const pstring& target_name,
+                                                   const feature_set& build_request,
+                                                   const feature_set* target_features)
+{
+   if (target_features == NULL)
+      return p.select_best_alternative(target_name, build_request);
+   else
+      return p.select_best_alternative(target_name, *build_request.join(*target_features));
+}
+
 // TODO: 
 // 1. Если подаем только директорию проекта и там есть две альтернативы, то по идее нужно было бы выбрать одну из них уже 
 //    на этом этапе ибо другой возможности у нас уже не будет.
@@ -97,7 +108,7 @@ void basic_meta_target::resolve_meta_target_source(const sources_decl::source_de
 	{
 		if (const basic_meta_target* m = project_->find_target(source.target_path_))
 		{
-			m = project_->select(source.target_path_, build_request);
+			m = select_best_alternative(*project_, source.target_path_, build_request, source.properties_);
          m->transfer_sources(simple_targets, meta_targets, build_request);
 			meta_targets->push_back(m);
 			return;
@@ -108,7 +119,7 @@ void basic_meta_target::resolve_meta_target_source(const sources_decl::source_de
    const hammer::project& target_project = project_->engine()->load_project(source.target_path_.to_string(), *project_);
    if (source.target_name_.empty()) 
    {
-      hammer::project::selected_targets_t selected_targets(target_project.select(build_request));
+      hammer::project::selected_targets_t selected_targets(target_project.select_best_alternative(source.properties_ == NULL ? build_request : *build_request.join(*source.properties_)));
       for(hammer::project::selected_targets_t::const_iterator i = selected_targets.begin(), last = selected_targets.end(); i != last; ++i)
 	   {
 		   if (!(**i).is_explicit())
@@ -120,7 +131,7 @@ void basic_meta_target::resolve_meta_target_source(const sources_decl::source_de
    }
    else
    {
-      const basic_meta_target* m = target_project.select(source.target_name_, build_request);
+      const basic_meta_target* m = select_best_alternative(target_project, source.target_name_, build_request, source.properties_);
       m->transfer_sources(simple_targets, meta_targets, build_request);
       meta_targets->push_back(m);
       return;

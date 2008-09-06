@@ -1,4 +1,7 @@
 lib local_lib : local_lib_single_thread.cpp : <threading>single ;
 lib local_lib : local_lib_multi_thread.cpp : <threading>multi ;
 
-exe test : main.cpp local_lib : <threading>multi ;
+lib foo : foo_1.cpp : <version>1.0 ;
+lib foo : foo_2.cpp : <version>2.0 ;
+
+exe test : main.cpp local_lib foo/<version>1.0 : <threading>multi ;

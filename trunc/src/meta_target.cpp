@@ -33,16 +33,17 @@ namespace hammer{
       requirements().eval(mt_fs, project()->engine()->feature_registry());
       project()->engine()->feature_registry().add_defaults(mt_fs);
 
-      feature_set* build_request_with_propagated = build_request.clone();
-      build_request_with_propagated->copy_propagated(*mt_fs);
+      feature_set* build_request_for_dependencies = project()->engine()->feature_registry().make_set();
+      build_request_for_dependencies->copy_propagated(build_request);
+      build_request_for_dependencies->copy_propagated(*mt_fs);
 
       vector<basic_target*> sources;
       sources_decl simple_targets;
       meta_targets_t meta_targets;
-      split_sources(&simple_targets, &meta_targets, *build_request_with_propagated);
+      split_sources(&simple_targets, &meta_targets, *build_request_for_dependencies);
       
       main_target* mt = construct_main_target(mt_fs);
-      instantiate_meta_targets(meta_targets, *build_request_with_propagated, mt, &sources, usage_requirements);
+      instantiate_meta_targets(meta_targets, *build_request_for_dependencies, mt, &sources, usage_requirements);
       mt_fs->join(*usage_requirements);
       mt->properties(mt_fs);
       instantiate_simple_targets(simple_targets, *mt_fs, *mt, &sources);

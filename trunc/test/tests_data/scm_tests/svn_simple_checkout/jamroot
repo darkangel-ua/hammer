@@ -3,7 +3,7 @@ use-project /simple-project
      simple-project 
    :
      <scm>svn
-     <scm.uri>"svn://localhost/hammer/trunc/test/tests_data/scm_tests/svn_test_repositories/simple_project" 
+     <scm.url>"svn://localhost/hammer/trunc/test/tests_data/scm_tests/svn_test_repositories/simple_project" 
    ;
 
 alias test : /simple-project/<version>1.0 ;

@@ -65,6 +65,14 @@ void requirements_decl::add(std::auto_ptr<requirement_base> r)
    impl_->requirements_.push_back(r);
 }
 
+// FIXME: это великий хак. Необходимо срочно переделать работу класса feature 
+// на COW вариант ибо невозможно нормально работать
+void requirements_decl::add(const feature& f)
+{
+   std::auto_ptr<requirement_base> r(new just_feature_requirement(const_cast<feature*>(&f)));
+   add(r);
+}
+
 requirements_decl::~requirements_decl()
 {
    if (--impl_->ref_counter_ == 0)

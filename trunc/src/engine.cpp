@@ -22,6 +22,7 @@
 #include <boost/filesystem/convenience.hpp>
 #include "obj_meta_target.h"
 #include "scm_manager.h"
+#include "fs_helpers.h"
 
 using namespace std;
 
@@ -118,13 +119,13 @@ engine::engine()
    }
 
    {
-      feature_attributes ft = {0}; ft.propagated = ft.free = 1;
+      feature_attributes ft = {0}; ft.free = 1;
       fr->add_def(feature_def("scm", vector<string>(), ft));
    }
 
    {
       feature_attributes ft = {0}; ft.propagated = ft.free;
-      fr->add_def(feature_def("scm.uri", vector<string>(), ft));
+      fr->add_def(feature_def("scm.url", vector<string>(), ft));
    }
 
    {
@@ -163,16 +164,16 @@ project* engine::get_upper_project(const location_t& project_path)
    if (exists(upper_path / "jamroot"))
       return &load_project(upper_path);
    
-   return 0;
+   if (upper_path.has_leaf())
+      return get_upper_project(upper_path);
+   else
+      return 0;
 }
 
 location_t engine::resolve_project_alias(const location_t& loc, project_alias_data& alias_data) const
 {
    // пропускаем начальный слеш
    location_t::const_iterator i = ++loc.begin(), last = loc.end();
-   if (i->empty())
-      throw std::runtime_error("Bad project link '/'. Must be '/foo'.");
-   
    location_t searched_loc = location_t("/") / *i;
    
    global_project_links_t::const_iterator g;
@@ -206,16 +207,16 @@ void engine::initial_materialization(const project_alias_data& alias_data) const
    if (scm_tag == alias_data.properties_->end())
       throw runtime_error("Can't materialize project because no scm feature specified.");
    
-   feature_set::const_iterator scm_uri = alias_data.properties_->find("scm.uri");
+   feature_set::const_iterator scm_uri = alias_data.properties_->find("scm.url");
    if (scm_uri == alias_data.properties_->end())
-      throw runtime_error("Can't materialize project because no scm uri specified.");
+      throw runtime_error("Can't materialize project because no scm url specified.");
 
    const hammer::scm_client* scm_client = scm_manager_->find((**scm_tag).value().to_string());
    if (!scm_client)
       throw runtime_error("SCM client '" + (**scm_tag).value().to_string() + "' not supported.");
    
    boost::filesystem::create_directories(alias_data.location_);
-   scm_client->checkout(alias_data.location_, (**scm_uri).value().to_string());
+   scm_client->checkout(alias_data.location_, (**scm_uri).value().to_string(), false);
 }
 
 project& engine::load_project(location_t project_path, const project& from_project)
@@ -226,11 +227,69 @@ project& engine::load_project(location_t project_path, const project& from_proje
       project_path = resolve_project_alias(project_path, alias_data);
       if (!exists(project_path))
          initial_materialization(alias_data);
+
+      project& p = load_project(project_path);
+      if (p.scm_info().scm_url_.empty())
+      {
+         // добавляем эти свойства в проект чтобы можна было ими воспользоваться при последующих 
+         // материализациях вложенных проектов
+         feature_set::const_iterator scm_client_name_feature = alias_data.properties_->find("scm");
+         if (scm_client_name_feature != alias_data.properties_->end())
+            p.scm_info().scm_client_name_ = (**scm_client_name_feature).value();
+
+         feature_set::const_iterator scm_url_feature = alias_data.properties_->find("scm.url");
+         if (scm_url_feature != alias_data.properties_->end())
+            p.scm_info().scm_url_ = (**scm_url_feature).value();
+      }
+      
+      return p;
    }
    else
       project_path = from_project.location() / project_path;
 
    return load_project(project_path);
+}
+
+const project* 
+engine::find_upper_materialized_project(const project& p)
+{
+   if (!p.scm_info().scm_url_.empty())
+      return &p;
+   else
+   {
+      const project* upper_project = get_upper_project(p.location());
+      if (upper_project != NULL)
+         return find_upper_materialized_project(*upper_project);
+      else
+         return NULL;
+   }
+}
+
+static void materialize_directory(const scm_client& scm_client, location_t dir)
+{
+   string what_up;
+   while(!exists(dir)) 
+   {
+      what_up = dir.leaf();
+      dir = dir.branch_path();
+   }
+
+   scm_client.up(dir, what_up);
+}
+
+void engine::materialize_project(const location_t& project_path, 
+                                 const project& upper_project)
+{
+   const project* upper_materialized_project = find_upper_materialized_project(upper_project);
+   if (upper_materialized_project == NULL)
+      throw std::runtime_error("Can't materialize project at location '" + project_path.string() + "'.");
+
+   std::string scm_client_name = upper_materialized_project->scm_info().scm_client_name_.to_string();
+   const hammer::scm_client* scm_client = scm_manager_->find(scm_client_name);
+   if (!scm_client)
+      throw runtime_error("SCM client '" + scm_client_name + "' not supported.");
+
+   materialize_directory(*scm_client, project_path);
 }
 
 project& engine::load_project(location_t project_path)
@@ -248,8 +307,18 @@ project& engine::load_project(location_t project_path)
       ctx.project_ = new project(this);
       ctx.project_->location(project_path);
       ctx.call_resolver_ = &resolver_;
+      project* upper_project = NULL;
 
       parser p(this);
+      if (!exists(project_path))
+      {
+         upper_project = get_upper_project(project_path);
+         if (upper_project == NULL)
+            throw  runtime_error("Can't load project at '"  + project_path.string() + ": no such path.");
+
+         materialize_project(project_path, *upper_project);
+      }
+
       location_t project_file = project_path / "jamfile";
       bool is_top_level = false;
       if (!exists(project_file))
@@ -265,11 +334,10 @@ project& engine::load_project(location_t project_path)
       // и выставить их для этого проекта
       if (!is_top_level)
       {
-         project* p = get_upper_project(project_path);
-         if (p)
+         if (upper_project)
          {
-            ctx.project_->requirements().insert_infront(p->requirements());
-            ctx.project_->usage_requirements().insert_infront(p->usage_requirements());
+            ctx.project_->requirements().insert_infront(upper_project->requirements());
+            ctx.project_->usage_requirements().insert_infront(upper_project->usage_requirements());
          }
       }
 

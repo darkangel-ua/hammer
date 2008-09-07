@@ -59,6 +59,7 @@ namespace hammer
          requirements_decl(const requirements_decl& rhs);
          requirements_decl& operator = (const requirements_decl& rhs);
          void add(std::auto_ptr<requirement_base> r);
+         void add(const feature& f);
          void eval(feature_set* result, 
                    feature_registry& fr) const;
          void eval(const feature_set& build_request, 

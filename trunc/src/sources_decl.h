@@ -89,6 +89,7 @@ namespace hammer
          const_iterator end() const { return const_iterator(*this, true); }
          void clear();
          void unique();
+         bool empty() const;
 
       private:
          struct impl_t;

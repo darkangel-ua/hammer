@@ -102,4 +102,9 @@ void sources_decl::unique()
    impl_->values_.erase(std::unique(impl_->values_.begin(), impl_->values_.end()), impl_->values_.end());
 }
 
+bool sources_decl::empty() const
+{
+   return impl_->values_.empty();
+}
+
 }

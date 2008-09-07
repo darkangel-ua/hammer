@@ -6,6 +6,7 @@
 #include <memory>
 #include <vector>
 #include "basic_meta_target.h"
+#include "scm_info.h"
 
 namespace hammer
 {
@@ -30,6 +31,9 @@ namespace hammer
          
          virtual const location_t& location() const { return location_; }
          void location(const location_t& l) { location_ = l; } 
+         void scm_info(const hammer::scm_info& info) { scm_info_ = info; }
+         const hammer::scm_info& scm_info() const { return scm_info_; }
+         hammer::scm_info& scm_info() { return scm_info_; }
          void add_target(std::auto_ptr<basic_meta_target> t);
          const targets_t& targets() const { return targets_; }
          const basic_meta_target* find_target(const pstring& name) const;
@@ -54,6 +58,7 @@ namespace hammer
          targets_t targets_;
          hammer::engine* engine_;
          pstring intermediate_dir_;
+         hammer::scm_info scm_info_;
 
          virtual void instantiate(const main_target* owner, 
                                   const feature_set& build_request,

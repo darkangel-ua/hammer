@@ -1,6 +1,11 @@
 #include "stdafx.h"
 #include "alias_meta_target.h"
 #include "main_target.h"
+#include "project.h"
+#include "engine.h"
+#include "feature_registry.h"
+
+using namespace std;
 
 namespace hammer{
 
@@ -18,7 +23,17 @@ void alias_meta_target::instantiate(const main_target* owner,
                                     std::vector<basic_target*>* result, 
                                     feature_set* usage_requirements) const
 {
-   this->usage_requirements().eval(owner->properties(), usage_requirements);
+   if (owner != NULL)
+      this->usage_requirements().eval(owner->properties(), usage_requirements);
+   else // top level alias instantiation
+   {
+      vector<basic_target*> sources;
+      sources_decl simple_targets;
+      meta_targets_t meta_targets;
+      split_sources(&simple_targets, &meta_targets, build_request);
+      instantiate_meta_targets(meta_targets, build_request, NULL, &sources, usage_requirements);
+      result->insert(result->end(), sources.begin(), sources.end());
+   }
 }
 
 void alias_meta_target::transfer_sources(sources_decl* simple_targets, 

@@ -60,6 +60,9 @@ namespace hammer
          location_t resolve_project_alias(const location_t& loc, 
                                           project_alias_data& alias_data) const;
          void initial_materialization(const project_alias_data& alias_data) const;
+         void materialize_project(const location_t& project_path, 
+                                  const project& upper_project);
+         const project* find_upper_materialized_project(const project& p);
 
          void project_rule(project* p, std::vector<pstring>& name, project_requirements_decl* req, project_requirements_decl* usage_req);
          void lib_rule(project* p, std::vector<pstring>& name, sources_decl* sources, 

@@ -1,0 +1,1 @@
+lib lib2 : ../src/main.cpp ;

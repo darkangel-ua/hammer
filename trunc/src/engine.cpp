@@ -245,7 +245,9 @@ project& engine::load_project(location_t project_path, const project& from_proje
       return p;
    }
    else
+   {
       project_path = from_project.location() / project_path;
+   }
 
    return load_project(project_path);
 }
@@ -548,18 +550,30 @@ void engine::use_project_rule(project* p, const pstring& project_id_alias,
 {
    location_t l(project_id_alias.to_string());
    if (!l.has_root_path())
-      throw runtime_error("Project id alias must have leading '/'");
+   {
+      use_project_data_t::iterator i = use_project_data_.find(p);
+      if (i != use_project_data_.end())
+      {
+         use_project_data_t::mapped_type::const_iterator j = i->second.find(project_location.to_string());
+         if (j != i->second.end())
+            throw std::runtime_error("alias '" + project_id_alias.to_string() + "' allready mapped to location '" + j->second + "'.");
+      }
+      
+      i->second.insert(make_pair(location_t(l), project_location.to_string()));
+   }
+   else
+   {
+      global_project_links_t::const_iterator i = global_project_links_.find(l);
+      if (i != global_project_links_.end())
+         throw runtime_error("Project id alias '" + project_id_alias.to_string() + 
+                             "' already mapped to location '" + i->second.location_.string() + "'.");
+      project_alias_data alias_data;
+      alias_data.location_ = p->location() / project_location.to_string();
+      alias_data.location_.normalize();
+      alias_data.properties_ = props;
 
-   global_project_links_t::const_iterator i = global_project_links_.find(l);
-   if (i != global_project_links_.end())
-      throw runtime_error("Project id alias '" + project_id_alias.to_string() + 
-                          "' already mapped to location '" + i->second.location_.string() + "'.");
-   project_alias_data alias_data;
-   alias_data.location_ = p->location() / project_location.to_string();
-   alias_data.location_.normalize();
-   alias_data.properties_ = props;
-
-   global_project_links_.insert(make_pair(l, alias_data));
+      global_project_links_.insert(make_pair(l, alias_data));
+   }
 }
 
 }

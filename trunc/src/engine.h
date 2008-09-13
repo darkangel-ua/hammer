@@ -43,8 +43,9 @@ namespace hammer
             location_t location_;
             const feature_set* properties_;
          };
-
+         
          typedef std::map<location_t, project_alias_data> global_project_links_t;
+         typedef std::map<project*, std::map<location_t /* alias */, std::string /* map to */> > use_project_data_t;
 
          projects_t projects_;
          global_project_links_t global_project_links_;
@@ -55,6 +56,7 @@ namespace hammer
          hammer::call_resolver resolver_;
          boost::shared_ptr<generator_registry> generators_;
          boost::shared_ptr<scm_manager> scm_manager_;
+         use_project_data_t use_project_data_;
 
          project* get_upper_project(const location_t& project_path);
          location_t resolve_project_alias(const location_t& loc, 

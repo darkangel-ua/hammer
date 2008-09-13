@@ -328,6 +328,9 @@ project& engine::load_project(location_t project_path)
          project_file = project_path / "jamroot";
          is_top_level = true;
       }
+      else 
+         if (upper_project == NULL)
+            upper_project = get_upper_project(project_path);
 
       if (!p.parse(project_file.native_file_string().c_str()))
          throw  runtime_error("Can't load project at '"  + project_path.string() + ": parser errors");

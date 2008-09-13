@@ -22,13 +22,15 @@ struct scm_tests
 void scm_tests::load_project(const string& name)
 {
    fs::path project_path(test_data_path / "scm_tests" / name);
-   BOOST_REQUIRE(exists(project_path / "jamroot"));
+   BOOST_REQUIRE(exists(project_path / "jamfile"));
    const project& p = engine_.load_project(project_path);
    std::vector<basic_target*> result;
    p.instantiate("test", *engine_.feature_registry().make_set(), &result);
 }
 
+/*
 BOOST_FIXTURE_TEST_CASE(svn_simple_checkout, scm_tests)
 {
    BOOST_REQUIRE_NO_THROW(load_project("svn_simple_checkout"));
 }
+*/

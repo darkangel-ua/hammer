@@ -1,0 +1,9 @@
+use-project /complex-project
+   :
+     complex-project 
+   :
+     <scm>svn
+     <scm.url>"svn://localhost/hammer/trunc/test/tests_data/scm_tests/svn_test_repositories/complex_project" 
+   ;
+
+alias test : /complex-project/lib1//lib1/<version>1.0 ;

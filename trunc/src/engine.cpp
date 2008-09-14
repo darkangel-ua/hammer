@@ -118,7 +118,7 @@ location_t engine::resolve_project_alias(const location_t& loc, project_alias_da
          break;
    }
 
-   location_t result(g->second.location_);
+   location_t result;
    for(++i; i != last; ++i)
       result /= *i;
    
@@ -150,7 +150,8 @@ project& engine::load_project(location_t project_path, const project& from_proje
    if (project_path.has_root_path())
    {
       project_alias_data alias_data;
-      project_path = resolve_project_alias(project_path, alias_data);
+      location_t tail_path = resolve_project_alias(project_path, alias_data);
+      project_path = alias_data.location_;
       if (!exists(project_path))
          initial_materialization(alias_data);
 
@@ -168,14 +169,59 @@ project& engine::load_project(location_t project_path, const project& from_proje
             p.scm_info().scm_url_ = (**scm_url_feature).value();
       }
       
-      return p;
+      if (!tail_path.empty())
+         return load_project(tail_path, p);
+      else
+         return p;
    }
    else
    {
-      project_path = from_project.location() / project_path;
+      location_t resolved_use_path, tail_path;
+      resolve_use_project(resolved_use_path, tail_path, 
+                          from_project, project_path);
+      if (tail_path.empty())
+         return load_project(from_project.location() / resolved_use_path);
+      else
+         return load_project(tail_path, load_project(from_project.location() / resolved_use_path));
+   }
+}
+
+static void materialize_directory(const scm_client& scm_client, location_t dir, bool recursive = true)
+{
+   string what_up;
+   while(!exists(dir)) 
+   {
+      what_up = dir.leaf();
+      dir = dir.branch_path();
    }
 
-   return load_project(project_path);
+   scm_client.up(dir, what_up, recursive);
+}
+
+void engine::resolve_use_project(location_t& resolved_use_path, location_t& tail_path,
+                                 const hammer::project& p, const location_t& path_to_resolve)
+{
+   use_project_data_t::const_iterator i = use_project_data_.find(&p);
+   if (i == use_project_data_.end())
+   {
+      resolved_use_path = path_to_resolve;
+      return;
+   }
+   
+   use_project_data_t::mapped_type::const_iterator j = i->second.find(*path_to_resolve.begin());
+   if (j == i->second.end())
+   {
+      resolved_use_path = path_to_resolve;
+      return;
+   }
+   
+   resolved_use_path = j->second;
+   if (!exists(p.location() / resolved_use_path))
+      materialize_directory(resolve_scm_client(p), p.location() / resolved_use_path, false);   
+
+   // FIXME: stupid boost::filesystem::path can't be constructed from two iterators
+   for(location_t::const_iterator i = ++path_to_resolve.begin(), last = path_to_resolve.end(); i != last; ++i)
+      tail_path /= *i;
 }
 
 const project* 
@@ -193,31 +239,24 @@ engine::find_upper_materialized_project(const project& p)
    }
 }
 
-static void materialize_directory(const scm_client& scm_client, location_t dir)
+const scm_client& engine::resolve_scm_client(const project& p)
 {
-   string what_up;
-   while(!exists(dir)) 
-   {
-      what_up = dir.leaf();
-      dir = dir.branch_path();
-   }
-
-   scm_client.up(dir, what_up);
-}
-
-void engine::materialize_project(const location_t& project_path, 
-                                 const project& upper_project)
-{
-   const project* upper_materialized_project = find_upper_materialized_project(upper_project);
+   const project* upper_materialized_project = find_upper_materialized_project(p);
    if (upper_materialized_project == NULL)
-      throw std::runtime_error("Can't materialize project at location '" + project_path.string() + "'.");
+      throw std::runtime_error("Can't find scm client for project at location '" + p.location().string() + "'.");
 
    std::string scm_client_name = upper_materialized_project->scm_info().scm_client_name_.to_string();
    const hammer::scm_client* scm_client = scm_manager_->find(scm_client_name);
    if (!scm_client)
       throw runtime_error("SCM client '" + scm_client_name + "' not supported.");
 
-   materialize_directory(*scm_client, project_path);
+   return *scm_client;
+}
+
+void engine::materialize_project(const location_t& project_path, 
+                                 const project& upper_project)
+{
+   materialize_directory(resolve_scm_client(upper_project), project_path);
 }
 
 project& engine::load_project(location_t project_path)
@@ -491,8 +530,8 @@ void engine::use_project_rule(project* p, const pstring& project_id_alias,
          if (j != i->second.end())
             throw std::runtime_error("alias '" + project_id_alias.to_string() + "' allready mapped to location '" + j->second + "'.");
       }
-      
-      i->second.insert(make_pair(location_t(l), project_location.to_string()));
+      else
+         use_project_data_[p].insert(make_pair(location_t(l), project_location.to_string()));
    }
    else
    {

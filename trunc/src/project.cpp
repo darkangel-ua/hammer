@@ -63,13 +63,12 @@ namespace hammer{
    project::select_best_alternative(const pstring& target_name, 
                                     const feature_set& build_request) const
    {
-      boost::iterator_range<targets_t::const_iterator> r = 
-         targets_.equal_range(target_name);
+      boost::iterator_range<targets_t::const_iterator> r = targets_.equal_range(target_name);
 
-      if (empty(r))
+      if (r.empty())
          throw std::runtime_error("Can't find target '" + target_name.to_string() + "'");
 
-      if (size(r) != 1)
+      if (r.size() != 1)
       {
          const basic_meta_target* result = NULL;
          

@@ -41,7 +41,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/EHsc /MP"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\build;&quot;..\..\..\libantlr3c-3.1b2\include&quot;;..\..\..\boost_1_34_1;..\..\..\boost.guid;..\..\..\boost.process"
+				AdditionalIncludeDirectories="..\..\src\build;&quot;..\..\..\libantlr3c-3.1b2\include&quot;;..\..\..\boost.guid;..\..\..\boost.process;..\..\..\boost_1_34_1"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB"
 				MinimalRebuild="true"
 				ExceptionHandling="0"
@@ -105,7 +105,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\..\src\build;&quot;..\..\..\libantlr3c-3.1b2\include&quot;;..\..\..\boost_1_34_1;..\..\..\boost.guid;..\..\..\boost.process"
+				AdditionalIncludeDirectories="..\..\src\build;&quot;..\..\..\libantlr3c-3.1b2\include&quot;;..\..\..\boost.guid;..\..\..\boost.process;..\..\..\boost_1_34_1"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"

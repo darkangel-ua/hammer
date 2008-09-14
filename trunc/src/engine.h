@@ -20,6 +20,7 @@ namespace hammer
    class feature;
    class project_requirements_decl;
    class scm_manager;
+   class scm_client;
 
    class engine : boost::noncopyable
    {
@@ -45,7 +46,7 @@ namespace hammer
          };
          
          typedef std::map<location_t, project_alias_data> global_project_links_t;
-         typedef std::map<project*, std::map<location_t /* alias */, std::string /* map to */> > use_project_data_t;
+         typedef std::map<const project*, std::map<location_t /* alias */, std::string /* map to */> > use_project_data_t;
 
          projects_t projects_;
          global_project_links_t global_project_links_;
@@ -61,6 +62,9 @@ namespace hammer
          project* get_upper_project(const location_t& project_path);
          location_t resolve_project_alias(const location_t& loc, 
                                           project_alias_data& alias_data) const;
+         void resolve_use_project(location_t& resolved_use_path, location_t& tail_path,
+                                  const hammer::project& project, const location_t& path_to_resolve);
+         const scm_client& resolve_scm_client(const project& p);
          void initial_materialization(const project_alias_data& alias_data) const;
          void materialize_project(const location_t& project_path, 
                                   const project& upper_project);

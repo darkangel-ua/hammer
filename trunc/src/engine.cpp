@@ -70,84 +70,10 @@ engine::engine()
 
    {
       feature_attributes ft = {0}; ft.free = 1;
-      fr->add_def(feature_def("define", vector<string>(), ft));
-   }
-
-   {
-      feature_attributes ft = {0}; ft.path = ft.free = 1;
-      fr->add_def(feature_def("include", vector<string>(), ft));
-   }
-
-   {
-      feature_attributes ft = {0}; ft.propagated = 1;
-      fr->add_def(feature_def("toolset", vector<string>(), ft));
-   }
-
-   {
-      feature_attributes ft = {0}; ft.propagated = 1;
-      fr->add_def(feature_def("link", boost::assign::list_of<string>("shared")("static"), ft));
-   }
-
-   {
-      feature_attributes ft = {0}; ft.propagated = 1;
-      fr->add_def(feature_def("threading", boost::assign::list_of<string>("single")("multi"), ft));
-   }
-   
-   {
-      feature_attributes ft = {0}; ft.free = 1;
-      fr->add_def(feature_def("name", vector<string>(), ft));
-   }
-
-   {
-      feature_attributes ft = {0}; ft.free = 1;
       fr->add_def(feature_def("__searched_lib_name", vector<string>(), ft));
    }
 
-   {
-      feature_attributes ft = {0}; ft.free = ft.path = 1;
-      fr->add_def(feature_def("search", vector<string>(), ft));
-   }
-
-   {
-      feature_attributes ft = {0}; ft.free = ft.path = 1;
-      fr->add_def(feature_def("file", vector<string>(), ft));
-   }
-
-   {
-      feature_attributes ft = {0}; ft.free = 1;
-      fr->add_def(feature_def("cxxflags", vector<string>(), ft));
-   }
-
-   {
-      feature_attributes ft = {0}; ft.free = 1;
-      fr->add_def(feature_def("scm", vector<string>(), ft));
-   }
-
-   {
-      feature_attributes ft = {0}; ft.propagated = ft.free;
-      fr->add_def(feature_def("scm.url", vector<string>(), ft));
-   }
-
-   {
-      feature_attributes ft = {0}; ft.path = ft.propagated = ft.free;
-      fr->add_def(feature_def("project-root", vector<string>(), ft));
-   }
-
-   {
-      feature_attributes ft = {0}; ft.no_defaults = 1;
-      fr->add_def(feature_def("version", vector<string>(), ft));
-   }
-
    feature_registry_ = fr.release();
-
-   {
-      using namespace boost::assign;
-      feature_attributes ft = {0};
-      ft.propagated = 1;
-      vector<string> v;
-      v += "debug", "release";
-      feature_registry_->add_def(feature_def("variant", v, ft));
-   }
 
    generators_.reset(new generator_registry);
    add_msvc_generators(*this, generators());
@@ -465,6 +391,10 @@ static feature_attributes resolve_attributes(std::vector<pstring>& attributes)
    i = find(attributes.begin(), attributes.end(), "symmetric");
    if (i != attributes.end())
       result.symmetric = true;
+
+   i = find(attributes.begin(), attributes.end(), "no-defaults");
+   if (i != attributes.end())
+      result.no_defaults = true;
 
    return result;
 }

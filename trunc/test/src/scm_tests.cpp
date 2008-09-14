@@ -28,9 +28,7 @@ void scm_tests::load_project(const string& name)
    p.instantiate("test", *engine_.feature_registry().make_set(), &result);
 }
 
-/*
 BOOST_FIXTURE_TEST_CASE(svn_simple_checkout, scm_tests)
 {
    BOOST_REQUIRE_NO_THROW(load_project("svn_simple_checkout"));
 }
-*/

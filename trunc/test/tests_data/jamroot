@@ -1,0 +1,14 @@
+feature.feature define : : free ;
+feature.feature include : : free path ; 
+feature.feature toolset : : propagated ;
+feature.feature link : shared static : propagated ;
+feature.feature threading : single multi : propagated ;
+feature.feature name : : free ;
+feature.feature search : : free path ;
+feature.feature file : : free path ;
+feature.feature cxxflags : : free ;
+feature.feature scm  : : free ;
+feature.feature scm.url : : free path ;
+feature.feature version : : no-defaults ;
+
+feature.feature variant : debug release : propagated ;

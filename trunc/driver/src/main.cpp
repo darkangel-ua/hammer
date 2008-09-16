@@ -127,9 +127,9 @@ int main(int argc, char** argv)
       vector<string> targets;
       feature_set* build_request = engine.feature_registry().make_set();
 
-      if (vm.count("help"))
+      if (vm.count("help") || argc < 2)
       {
-         cout << desc;
+         cout << "Usage: hammer.exe <options> <targets> <features>\n" << desc;
          return 0;
       }
       

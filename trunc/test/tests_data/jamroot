@@ -2,7 +2,7 @@ feature.feature define : : free ;
 feature.feature include : : free path ; 
 feature.feature toolset : : propagated ;
 feature.feature link : shared static : propagated ;
-feature.feature threading : single multi : propagated ;
+feature.feature threading : multi single : propagated ;
 feature.feature name : : free ;
 feature.feature search : : free path ;
 feature.feature file : : free path ;

@@ -1,0 +1,10 @@
+test [ type = EXE; ]
+{
+   main.cpp [ type = CPP; ] {}
+   b.cpp [ type = CPP; ] {}
+   c.cpp [ type = CPP; ] {}
+   a [ type = SHARED_LIB; ]
+   {
+      a.cpp [ type = CPP; ] {}      
+   }
+}

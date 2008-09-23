@@ -140,4 +140,9 @@ bool is_trailing_slash(pANTLR3_PARSER parser)
    return t1->stop + 1 != t2->start;
 }
 
+bool is_dependency_feature(pANTLR3_PARSER parser)
+{
+   return false;
+}
+
 }}

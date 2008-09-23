@@ -6,8 +6,10 @@ RULE_CALL;
 NULL_ARG;
 STRING_ARG;
 STRING_LIST;
-FEATURE_LIST;
+FEATURE_SET;
+FEATURE_SET_ARG;
 FEATURE;
+FEATURE_ARG;
 REQUIREMENTS_DECL;
 CONDITIONAL_FEATURES;
 CONDITION;
@@ -16,7 +18,6 @@ SOURCES_DECL;
 SOURCE_DECL;
 TARGET_PATH;
 TARGET_NAME;
-TARGET_FEATURES;
 SOURCE_DECL_EXPLICIT_TARGET;
 }
 
@@ -48,31 +49,34 @@ rule_posible_args
                   | { argument_is_string_list(PARSER) }?=> string_list
                   | { argument_is_feature(PARSER) }?=> feature_arg
                   | { argument_is_requirements(PARSER) }?=> requirements -> ^(REQUIREMENTS_DECL requirements)
-                  | feature_list -> ^(FEATURE_LIST feature_list)
-                  | { argument_is_sources(PARSER) }?=> { enter_sources_decl(PARSER); } sources_decl { leave_sources_decl(PARSER); } -> ^(SOURCES_DECL sources_decl);
+                  | feature_set_arg
+                  | { argument_is_sources(PARSER) }?=> sources_decl;
 string_list : string+ -> ^(STRING_LIST string+);
-feature_list : feature+;
+feature_set_arg : feature_set -> ^(FEATURE_SET_ARG feature_set);
+feature_set : feature+ -> ^(FEATURE_SET feature+);
 project_requirements : string requirements -> ^(PROJECT_REQUIREMENTS string ^(REQUIREMENTS_DECL requirements));
 requirements : (feature | conditional_features)+;
 string_arg  : string -> ^(STRING_ARG string);
-feature_arg : feature -> feature;
+feature_arg : feature -> ^(FEATURE_ARG feature);
 conditional_features : { is_conditional_feature(PARSER) }?=> condition condition_result -> ^(CONDITIONAL_FEATURES condition condition_result);
 condition  : feature (',' feature)* -> ^(CONDITION feature+);
 // COLON needed for is_conditional_feature so we put it into token stream
 condition_result : COLON feature;
-feature       : '<' ID '>' ID -> ^(FEATURE ID ID);
+feature       : { is_dependency_feature(PARSER) }?=> '<' ID '>' source_decl
+              | '<' ID '>' ID -> ^(FEATURE ID ID);
 string        : ID ;
-sources_decl  : (source_decl_stub | rule_invoke)+ ;
+sources_decl : { enter_sources_decl(PARSER); } sources_decl_impl { leave_sources_decl(PARSER); } -> ^(SOURCES_DECL sources_decl_impl) ;
+sources_decl_impl  : (source_decl | rule_invoke)+ ;
 rule_invoke   : { enter_rule_invoke(PARSER); } '[' { on_nested_rule_enter(PARSER); } rule_impl { on_nested_rule_leave(PARSER); }']' { leave_rule_invoke(PARSER); } -> rule_impl;
 
-source_decl_stub : source_decl -> ^(SOURCE_DECL source_decl);
-source_decl : target_path target_name target_features -> ^(TARGET_PATH target_path) target_name target_features;
+source_decl : source_decl_impl -> ^(SOURCE_DECL source_decl_impl);
+source_decl_impl : target_path target_name target_features -> ^(TARGET_PATH target_path) target_name target_features;
 target_path : path_slash? ID path_element* trail_slash?;
 target_name : path_slash path_slash ID -> ^(TARGET_NAME ID)
             | -> ^(TARGET_NAME NULL_ARG);
 path_element : { is_path_element(PARSER) }?=> path_slash ID;
-target_features : path_slash feature (path_slash feature)* -> ^(TARGET_FEATURES feature+)
-                | -> ^(TARGET_FEATURES NULL_ARG);            
+target_features : path_slash feature (path_slash feature)* -> ^(FEATURE_SET feature+)
+                | -> ^(FEATURE_SET NULL_ARG);            
 path_slash : { is_path_slash(PARSER) }?=> SLASH ;
 trail_slash : { is_trailing_slash(PARSER) }?=> SLASH; 
 SLASH : { is_lexing_sources_decl(LEXER) }?=> '/';

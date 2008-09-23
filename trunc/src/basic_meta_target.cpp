@@ -97,7 +97,7 @@ static const basic_meta_target* select_best_alternative(const hammer::project& p
 // TODO: 
 // 1. Если подаем только директорию проекта и там есть две альтернативы, то по идее нужно было бы выбрать одну из них уже 
 //    на этом этапе ибо другой возможности у нас уже не будет.
-void basic_meta_target::resolve_meta_target_source(const sources_decl::source_decl& source,
+void basic_meta_target::resolve_meta_target_source(const source_decl& source,
                                                    const feature_set& build_request,
                                                    sources_decl* simple_targets,
                                                    meta_targets_t* meta_targets) const

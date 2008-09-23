@@ -28,6 +28,8 @@ extern "C"
    void* hammer_make_project_requirements_decl_arg(void* pdecl);
    void* hammer_make_requirements_condition();
    void* hammer_make_path_arg(void* p);
+   void* hammer_make_feature_set_arg(void* fs);
+   void* hammer_make_feature_arg(void* f);
 
    void* hammer_create_feature(void* context, const char* feature_name, const char* feature_value);
    void hammer_add_conditional_to_rdecl(void* condition, void* rdecl);

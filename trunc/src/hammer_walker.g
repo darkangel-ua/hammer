@@ -20,14 +20,16 @@ rule returns[void* result]
 : ^(RULE_CALL ID args[args_list]*) { result = hammer_rule_call(PARSER->super, $ID.text->chars, args_list); }; 
 
 args[void* args_list] : string_list[args_list]  
-	              | feature_list[args_list] 
+	              | feature_set_arg[args_list]
 		      | null_arg[args_list] 
 		      | string_arg[args_list]
-		      | feature_arg[args_list] 
+		      | feature_arg[args_list]
 		      | requirements { hammer_add_arg_to_args_list(args_list, hammer_make_requirements_decl_arg($requirements.result)); }
 		      | project_requirements { hammer_add_arg_to_args_list(args_list, hammer_make_project_requirements_decl_arg($project_requirements.result)); } 
 		      | sources_decl { hammer_add_arg_to_args_list(args_list, hammer_make_sources_decl_arg($sources_decl.sources)); };
 
+feature_set_arg[void* args_list] : ^(FEATURE_SET_ARG feature_set) { hammer_add_arg_to_args_list(args_list, hammer_make_feature_set_arg($feature_set.fs)); };
+feature_arg[void* args_list] : ^(FEATURE_ARG feature) { hammer_add_arg_to_args_list(args_list, hammer_make_feature_arg($feature.feature)); };
 string_arg[void* args_list] : ^(STRING_ARG ID) { hammer_add_string_arg_to_args_list(PARSER->super, args_list, $ID.text->chars); };
 string_list[void* args_list]
 @init{ void* arg = hammer_make_string_list(); }
@@ -35,15 +37,6 @@ string_list[void* args_list]
                 
 string_list_id[void* list]
         : ID { hammer_add_id_to_string_list(PARSER->super, list, $ID.text->chars); };
-        
-feature_list[void* args_list]
-@init { void* arg = hammer_make_feature_list(PARSER->super); }
-        : ^(FEATURE_LIST feature[arg]+) { hammer_add_arg_to_args_list(args_list, arg); };
-        
-feature_arg[void* args_list] : ^(FEATURE feature_name=ID feature_value=ID) { hammer_add_feature_argument(PARSER->super, args_list, $feature_name.text->chars, $feature_value.text->chars); };
-
-feature[void* list] 
-        : ^(FEATURE feature_name=ID feature_value=ID) { hammer_add_feature_to_list(PARSER->super, list, $feature_name.text->chars, $feature_value.text->chars); };
         
 null_arg[void* args_list]
 @init { void* arg = hammer_make_null_arg(); }
@@ -53,14 +46,14 @@ project_requirements returns[void* result]
 requirements returns[void* result] 
 @init { result = hammer_make_requirements_decl(); }
 	: ^(REQUIREMENTS_DECL (conditional_features { hammer_add_conditional_to_rdecl($conditional_features.c, result); } | 
-	                       cfeature { hammer_add_feature_to_rdecl($cfeature.feature, result); })+
+	                       feature { hammer_add_feature_to_rdecl($feature.feature, result); })+
 	   );
 conditional_features returns[void* c] 
 @init { c = hammer_make_requirements_condition(); }
-	: ^(CONDITIONAL_FEATURES condition[c] COLON cfeature { hammer_set_condition_result(c, $cfeature.feature); });
+	: ^(CONDITIONAL_FEATURES condition[c] COLON feature { hammer_set_condition_result(c, $feature.feature); });
 condition[void* c]
-	: ^(CONDITION (cfeature { hammer_add_feature_to_condition($cfeature.feature, c); })+);
-cfeature returns[void* feature]
+	: ^(CONDITION (feature { hammer_add_feature_to_condition($feature.feature, c); })+);
+feature returns[void* feature]
 	: ^(FEATURE feature_name=ID feature_value=ID) { feature = hammer_create_feature(PARSER->super, $feature_name.text->chars, $feature_value.text->chars); };
 sources_decl returns[void* sources]
 @init { sources = hammer_make_sources_decl(); } 
@@ -79,9 +72,9 @@ target_path returns[void* tp]
 target_name[void* sd] : ^(TARGET_NAME ID { hammer_source_decl_set_target_name(PARSER->super, sd, $ID.text->chars); } )
                       | ^(TARGET_NAME NULL_ARG { hammer_source_decl_set_target_name(PARSER->super, sd, NULL); } );
 target_features[void* sd] : feature_set { hammer_source_decl_set_target_properties(sd, $feature_set.fs);} 
-            		  | ^(TARGET_FEATURES NULL_ARG);
+            		  | ^(FEATURE_SET NULL_ARG);
 feature_set returns[void* fs] 
 @init { fs = hammer_make_feature_set(PARSER->super); }
- 			: ^(TARGET_FEATURES (cfeature { hammer_add_feature_to_feature_set(fs, $cfeature.feature); } )+); 
+ 			: ^(FEATURE_SET (feature { hammer_add_feature_to_feature_set(fs, $feature.feature); } )+); 
  			
 sources_decl_rule_invoke[void* sources] : rule { hammer_add_rule_result_to_source_decl($rule.result, sources); hammer_delete_rule_result($rule.result); };

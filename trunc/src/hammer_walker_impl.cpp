@@ -162,7 +162,7 @@ void* hammer_make_sources_decl()
 
 void hammer_add_source_to_sources_decl(void* result, void* sd)
 {
-   sources_decl::source_decl* source_decl = static_cast<sources_decl::source_decl*>(sd);
+   source_decl* source_decl = static_cast<hammer::source_decl*>(sd);
    static_cast<sources_decl*>(result)->push_back(*source_decl);
    delete source_decl;
 }
@@ -195,9 +195,19 @@ void* hammer_make_path_arg(void* p)
    return result;
 }
 
+void* hammer_make_feature_set_arg(void* fs)
+{
+   return new call_resolver_call_arg<feature_set>(fs, false);
+}
+
+void* hammer_make_feature_arg(void* f)
+{
+   return new call_resolver_call_arg<feature>(f, false);
+}
+
 void* hammer_make_source_decl()
 {
-   return new sources_decl::source_decl;
+   return new source_decl;
 }
 
 typedef std::pair<pANTLR3_COMMON_TOKEN, pANTLR3_COMMON_TOKEN> target_path_t;
@@ -205,7 +215,7 @@ typedef std::pair<pANTLR3_COMMON_TOKEN, pANTLR3_COMMON_TOKEN> target_path_t;
 void hammer_source_decl_set_target_path(void* context, void* sd, void* tp)
 {
    hammer_walker_context* ctx = static_cast<hammer_walker_context*>(context);
-   sources_decl::source_decl* source_decl = static_cast<sources_decl::source_decl*>(sd);
+   source_decl* source_decl = static_cast<hammer::source_decl*>(sd);
    target_path_t* target_path = static_cast<target_path_t*>(tp);
 
    if (target_path->second == NULL)
@@ -221,7 +231,7 @@ void hammer_source_decl_set_target_path(void* context, void* sd, void* tp)
 void hammer_source_decl_set_target_name(void* context, void* sd, const char* id)
 {
    hammer_walker_context* ctx = static_cast<hammer_walker_context*>(context);
-   sources_decl::source_decl* source_decl = static_cast<sources_decl::source_decl*>(sd);
+   source_decl* source_decl = static_cast<hammer::source_decl*>(sd);
 
    if (id != NULL)
       source_decl->target_name_ = pstring(ctx->engine_->pstring_pool(), id);
@@ -229,7 +239,7 @@ void hammer_source_decl_set_target_name(void* context, void* sd, const char* id)
 
 void hammer_source_decl_set_target_properties(void* sd, void* fs)
 {
-   sources_decl::source_decl* source_decl = static_cast<sources_decl::source_decl*>(sd);
+   source_decl* source_decl = static_cast<hammer::source_decl*>(sd);
    source_decl->properties_ = static_cast<hammer::feature_set*>(fs);
 }
 

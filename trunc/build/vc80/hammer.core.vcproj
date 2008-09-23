@@ -628,6 +628,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\source_decl.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\source_target.h"
 				>
 			</File>

@@ -16,9 +16,17 @@ namespace hammer{
 
    pstring::pstring(pool& p, const char* str)
    {
-      size_ = strlen(str);
-      s_ = static_cast<char*>(p.malloc(size_ + 1));
-      std::copy(str, str + size_ + 1, s_);
+      if (str == NULL)
+      {
+         size_ = 0;
+         s_ = "";
+      }
+      else
+      {
+         size_ = strlen(str);
+         s_ = static_cast<char*>(p.malloc(size_ + 1));
+         std::copy(str, str + size_ + 1, s_);
+      }
    }
 
    pstring::pstring(pool& p, const std::string& str)

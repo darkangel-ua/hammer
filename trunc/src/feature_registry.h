@@ -23,6 +23,7 @@ namespace hammer
          }
 
          void add_defaults(feature_set* s) const;
+         const feature_def* find_def(const char* feature_name) const;
          ~feature_registry();
 
       private:

@@ -25,6 +25,7 @@ basic_meta_target::basic_meta_target(hammer::project* p,
                                      usage_requirements_(usage_req),
                                      is_explicit_(false)
 {
+   // FIXME: нужно вынести этот код куда-то в другое место, так как это не единственное место, когда нужно установить данные для фич
    requirements_.setup_path_data(this);
    usage_requirements_.setup_path_data(this);
 }
@@ -70,23 +71,30 @@ void basic_meta_target::instantiate_meta_targets(const meta_targets_t& targets,
       (**i).instantiate(owner, build_request, result, usage_requirments);
 }
 
-void basic_meta_target::split_sources(sources_decl* simple_targets, meta_targets_t* meta_targets,
-                                      const feature_set& build_request) const
+void basic_meta_target::split_one_source(sources_decl* simple_targets,
+                                         meta_targets_t* meta_targets,
+                                         const source_decl& source,
+                                         const feature_set& build_request,
+                                         const type_registry& tr) const
 {
-   const type_registry& tr = project_->engine()->get_type_registry();
-   for(sources_decl::const_iterator i = sources_.begin(), last = sources_.end(); i != last; ++i)
-   {
-      if (const type* t = tr.resolve_from_target_name(i->target_path_))
-         simple_targets->push_back(i->target_path_); 
-      else
-         resolve_meta_target_source(*i, build_request, simple_targets, meta_targets);
-  }
+   if (const type* t = tr.resolve_from_target_name(source.target_path_))
+      simple_targets->push_back(source.target_path_); 
+   else
+      resolve_meta_target_source(source, build_request, simple_targets, meta_targets);
 }
 
+void basic_meta_target::split_sources(sources_decl* simple_targets, meta_targets_t* meta_targets,
+                                      const sources_decl& sources, const feature_set& build_request) const
+{
+   const type_registry& tr = project_->engine()->get_type_registry();
+   for(sources_decl::const_iterator i = sources.begin(), last = sources.end(); i != last; ++i)
+      split_one_source(simple_targets, meta_targets, *i, build_request, tr);
+}      
+
 static const basic_meta_target* select_best_alternative(const hammer::project& p, 
-                                                   const pstring& target_name,
-                                                   const feature_set& build_request,
-                                                   const feature_set* target_features)
+                                                        const pstring& target_name,
+                                                        const feature_set& build_request,
+                                                        const feature_set* target_features)
 {
    if (target_features == NULL)
       return p.select_best_alternative(target_name, build_request);

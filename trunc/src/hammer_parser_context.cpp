@@ -6,6 +6,7 @@
 #include "project_requirements_decl.h"
 #include "sources_decl.h"
 #include "non_buffered_token_stream.h"
+#include "feature_registry.h"
 
 using namespace std;
 
@@ -142,7 +143,14 @@ bool is_trailing_slash(pANTLR3_PARSER parser)
 
 bool is_dependency_feature(pANTLR3_PARSER parser)
 {
-   return false;
+   MAKE_CTX();
+   pANTLR3_COMMON_TOKEN feature_name_token = parser->tstream->_LT(parser->tstream, 2);
+   pANTLR3_STRING feature_name = feature_name_token->getText(feature_name_token);
+   const feature_def* fd = ctx.engine_->feature_registry().find_def(reinterpret_cast<const char*>(feature_name->chars));
+   if (fd == NULL)
+      return false;
+   else
+      return fd->attributes().dependency;
 }
 
 }}

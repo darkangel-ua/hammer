@@ -431,6 +431,10 @@ static feature_attributes resolve_attributes(std::vector<pstring>& attributes)
    if (i != attributes.end())
       result.symmetric = true;
 
+   i = find(attributes.begin(), attributes.end(), "dependency");
+   if (i != attributes.end())
+      result.dependency = true;
+
    i = find(attributes.begin(), attributes.end(), "no-defaults");
    if (i != attributes.end())
       result.no_defaults = true;

@@ -3,6 +3,7 @@
 #include "feature_registry.h"
 #include "feature.h"
 #include <iterator>
+#include "sources_decl.h"
 
 using namespace std;
 
@@ -151,6 +152,24 @@ namespace hammer{
       {
          if ((**i).attributes().path)
             (**i).get_path_data().target_ = t;
+      }
+   }
+
+   void extract_sources(sources_decl& result, const feature_set& fs)
+   {
+      // FIXME: need refactor this two blocks
+      feature_set::const_iterator i = fs.find("source");
+      while(i != fs.end())
+      {
+         result.push_back((**i).get_dependency_data().source_);
+         i = fs.find(++i, "source");
+      }
+
+      i = fs.find("library");
+      while(i != fs.end())
+      {
+         result.push_back((**i).get_dependency_data().source_);
+         i = fs.find(++i, "library");
       }
    }
 

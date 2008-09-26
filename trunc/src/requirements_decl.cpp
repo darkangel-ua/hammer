@@ -118,7 +118,7 @@ void linear_and_condition::eval(const feature_set& build_request,
 
 void linear_and_condition::setup_path_data(const basic_meta_target* t)
 {
-   if (result_->attributes().path)
+   if (result_->attributes().path || result_->attributes().dependency)
       result_->get_path_data().target_ = t;
 }
 
@@ -136,7 +136,7 @@ void just_feature_requirement::eval(const feature_set& build_request,
 
 void just_feature_requirement::setup_path_data(const basic_meta_target* t)
 {
-   if (f_->attributes().path)
+   if (f_->attributes().path || f_->attributes().dependency)
       f_->get_path_data().target_ = t;
 }
 

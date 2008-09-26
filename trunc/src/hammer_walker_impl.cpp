@@ -269,3 +269,10 @@ void hammer_add_feature_to_feature_set(void* feature_set, void* feature)
 {
    static_cast<hammer::feature_set*>(feature_set)->join(static_cast<hammer::feature*>(feature));   
 }
+
+void hammer_feature_set_dependency_data(void* f, void* sd_)
+{
+   source_decl* sd = static_cast<source_decl*>(sd_);
+   static_cast<feature*>(f)->get_dependency_data().source_ = *sd;
+   delete sd;
+}

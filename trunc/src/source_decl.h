@@ -12,7 +12,7 @@ namespace hammer
          source_decl() : properties_(NULL) {};
          source_decl(const pstring& target_path,
 				         const pstring& target_name,
-			            const feature_set* props) 
+			            feature_set* props) 
                     :
 			            target_path_(target_path),
 						   target_name_(target_name),
@@ -41,6 +41,8 @@ namespace hammer
 
 			pstring target_path_;
 			pstring target_name_;
-			const feature_set* properties_;
+         // FIXME: это должно быть const, но так как нужно делать set_dependency_data приходиться от этого отказываться
+         // нужно перевести feature_set и feature на reference counted основу и тогда все будет зашибись
+			feature_set* properties_;
 	 };
 }

@@ -24,5 +24,13 @@ namespace hammer
 
       protected:
          virtual main_target* construct_main_target(const feature_set* properties) const = 0;
+      
+      private:
+         void instantiate_meta_targets(sources_decl& simple_targets,
+                                       feature_set& usage_requirments,
+                                       std::vector<basic_target*>& instantiated_targets,
+                                       const meta_targets_t& meta_targets,
+                                       const feature_set& build_request,
+                                       const main_target& owner_for_new_targets) const;
    };
 }

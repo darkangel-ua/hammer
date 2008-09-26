@@ -54,7 +54,9 @@ conditional_features returns[void* c]
 condition[void* c]
 	: ^(CONDITION (feature { hammer_add_feature_to_condition($feature.feature, c); })+);
 feature returns[void* feature]
-	: ^(FEATURE feature_name=ID feature_value=ID) { feature = hammer_create_feature(PARSER->super, $feature_name.text->chars, $feature_value.text->chars); };
+	: ^(FEATURE feature_name=ID feature_value=ID) { feature = hammer_create_feature(PARSER->super, $feature_name.text->chars, $feature_value.text->chars); }
+	| ^(FEATURE feature_name=ID source_decl) { feature = hammer_create_feature(PARSER->super, $feature_name.text->chars, NULL); hammer_feature_set_dependency_data(feature, $source_decl.sd); };
+	
 sources_decl returns[void* sources]
 @init { sources = hammer_make_sources_decl(); } 
 //	: ^(SOURCES_DECL (ID { hammer_add_source_to_sources_decl(PARSER->super, $ID.text->chars, sources); } )+) 

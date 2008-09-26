@@ -9,6 +9,7 @@ namespace hammer
    class feature_registry;
    class feature_def; 
    class basic_meta_target;
+   class sources_decl;
 
    class feature_set : public boost::noncopyable
    {
@@ -53,4 +54,5 @@ namespace hammer
    };
 
    void set_path_data(feature_set* f, const basic_meta_target* t);
+   void extract_sources(sources_decl& result, const feature_set& fs);
 }

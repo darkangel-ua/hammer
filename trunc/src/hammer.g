@@ -62,7 +62,7 @@ conditional_features : { is_conditional_feature(PARSER) }?=> condition condition
 condition  : feature (',' feature)* -> ^(CONDITION feature+);
 // COLON needed for is_conditional_feature so we put it into token stream
 condition_result : COLON feature;
-feature       : { is_dependency_feature(PARSER) }?=> '<' ID '>' source_decl
+feature       : { is_dependency_feature(PARSER) }?=> '<' ID '>' source_decl -> ^(FEATURE ID source_decl)
               | '<' ID '>' ID -> ^(FEATURE ID ID);
 string        : ID ;
 sources_decl : { enter_sources_decl(PARSER); } sources_decl_impl { leave_sources_decl(PARSER); } -> ^(SOURCES_DECL sources_decl_impl) ;

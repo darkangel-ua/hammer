@@ -97,4 +97,9 @@ namespace hammer{
    {
       return *impl_->find_def(name.c_str());
    }
+
+   const feature_def* feature_registry::find_def(const char* feature_name) const
+   {
+      return impl_->find_def(feature_name);
+   }
 }

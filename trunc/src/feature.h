@@ -20,7 +20,6 @@ namespace hammer
 
          struct dependency_data
          {
-            const basic_meta_target* target_;
             source_decl source_;
          };
 

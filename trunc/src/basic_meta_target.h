@@ -12,6 +12,7 @@ namespace hammer
    class project;
    class basic_target;
    class main_target;
+   class type_registry;
 
    class basic_meta_target
    {
@@ -26,6 +27,7 @@ namespace hammer
          const pstring& name() const { return name_; }
          void name(const pstring& v) { name_ = v; }
          void sources(const sources_decl& s);
+         const sources_decl& sources() const { return sources_; }
          void insert(const pstring& source);
          const requirements_decl& usage_requirements() const { return usage_requirements_; }
          const requirements_decl& requirements() const { return requirements_; }
@@ -55,11 +57,17 @@ namespace hammer
                                        feature_set* usage_requirments) const;
          void split_sources(sources_decl* simple_targets, 
                             meta_targets_t* meta_targets,
+                            const sources_decl& sources, 
                             const feature_set& build_request) const;
-		 void resolve_meta_target_source(const source_decl& source,
-                                       const feature_set& build_request, 
-                                       sources_decl* simple_targets,
-                                       meta_targets_t* meta_targets) const;
+         void split_one_source(sources_decl* simple_targets,
+                               meta_targets_t* meta_targets,
+                               const source_decl& source,
+                               const feature_set& build_request,
+                               const type_registry& tr) const;
+         void resolve_meta_target_source(const source_decl& source,
+                                         const feature_set& build_request, 
+                                         sources_decl* simple_targets,
+                                         meta_targets_t* meta_targets) const;
          // исключительно для поддержки alias потому как я не понял как это можна сделать иначе
          virtual void transfer_sources(sources_decl* simple_targets, 
                                        meta_targets_t* meta_targets,

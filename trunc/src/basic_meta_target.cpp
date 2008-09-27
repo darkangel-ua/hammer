@@ -67,6 +67,8 @@ void basic_meta_target::instantiate_meta_targets(const meta_targets_t& targets,
                                                  std::vector<basic_target*>* result, 
                                                  feature_set* usage_requirments) const
 {
+   // FIXME: если в result уже есть проинстанцированная цель то нужно проверить с какими параметрами это было сделанно
+   // Если они совпадают значит мы просто пропускаем инстанцирование, если нет, то кидаем исключение
    for(meta_targets_t::const_iterator i = targets.begin(), last = targets.end(); i != last; ++i)
       (**i).instantiate(owner, build_request, result, usage_requirments);
 }
@@ -102,15 +104,12 @@ static const basic_meta_target* select_best_alternative(const hammer::project& p
       return p.select_best_alternative(target_name, *build_request.join(*target_features));
 }
 
-// TODO: 
-// 1. Если подаем только директорию проекта и там есть две альтернативы, то по идее нужно было бы выбрать одну из них уже 
-//    на этом этапе ибо другой возможности у нас уже не будет.
 void basic_meta_target::resolve_meta_target_source(const source_decl& source,
                                                    const feature_set& build_request,
                                                    sources_decl* simple_targets,
                                                    meta_targets_t* meta_targets) const
 {
-	// check that source is simple one ID. May be its source or may be target ID.
+	// check that source is simple one ID. Maybe its source or maybe its target ID.
    if (source.target_name_.empty() && 
        !source.target_path_.empty())
 	{

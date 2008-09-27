@@ -173,6 +173,17 @@ namespace hammer{
       }
    }
 
+   void extract_uses(sources_decl& result, const feature_set& fs)
+   {
+      // FIXME: need refactor this block
+      feature_set::const_iterator i = fs.find("use");
+      while(i != fs.end())
+      {
+         result.push_back((**i).get_dependency_data().source_);
+         i = fs.find(++i, "use");
+      }
+   }
+
    bool feature_set::operator == (const feature_set& rhs) const
    {
       return this == &rhs;

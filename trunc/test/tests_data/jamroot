@@ -12,5 +12,6 @@ feature.feature scm.url : : free path ;
 feature.feature version : : no-defaults ;
 feature.feature library : : free dependency incidental ;
 feature.feature source : : free dependency incidental ;
+feature.feature use : : free dependency incidental ;
 
 feature.feature variant : debug release : propagated ;

@@ -55,4 +55,5 @@ namespace hammer
 
    void set_path_data(feature_set* f, const basic_meta_target* t);
    void extract_sources(sources_decl& result, const feature_set& fs);
+   void extract_uses(sources_decl& result, const feature_set& fs);
 }

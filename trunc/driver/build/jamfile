@@ -1,7 +1,6 @@
 exe hammer : [ glob ../src/*.cpp ]
              [ glob ../src/*.h ]
-             ../../build
-           :
-             <include>../../../../boost_1_34_1
-             <include>../../../../boost.guid
+             /boost/program_options/<link>static
+             /boost/filesystem/<link>static
+             /hammer/core/<link>static
            ;

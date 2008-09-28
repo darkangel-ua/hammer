@@ -1,17 +1,31 @@
-lib hammer.core 
-  : hammer_parser
+project hammer/core 
+       :
+        requirements <library>/boost/ptr_container
+                     <library>/boost/function_types
+ ;
+
+lib hammer_core 
+   : 
+    hammer_parser
+    hammer_lexer
     [ glob ../src/*.cpp ]
     [ glob ../src/*.h ]
     [ glob ../src/project_generators/msvc/*.cpp ]
     [ glob ../src/project_generators/msvc/*.h ]
-    [ glob ../src/build/*.c : hammerParser.c ]
-    ../../libantlr3c-3.1b2/build
+    ../src/build/hammer_walker.c
+    /libantlr3c
+    /boost/ptr_container
+    /boost/filesystem
+    /boost/guid
+    /boost/regex
+    /boost/assign
+    /boost/process
   :
-    <include>../../../boost_1_34_1
-    <include>../../../boost.guid
     <include>../src/
     <link>static
   ;
 
-obj hammer_parser : ../src/build/hammerParser.c : <cxxflags>/TP ;
+obj hammer_parser : ../src/build/hammerParser.c /libantlr3c : <cflags>/TP ;
+obj hammer_lexer : ../src/build/hammerLexer.c /libantlr3c : <cflags>/TP ;
 explicit hammer_parser ;
+explicit hammer_lexer ;

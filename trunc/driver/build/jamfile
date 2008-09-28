@@ -1,4 +1,5 @@
-exe hammer : [ glob ../src/*.cpp ]
+exe hammer : 
+             [ glob ../src/*.cpp ]
              [ glob ../src/*.h ]
              /boost/program_options/<link>static
              /boost/filesystem/<link>static

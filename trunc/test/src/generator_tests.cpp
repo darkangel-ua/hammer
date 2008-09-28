@@ -248,7 +248,6 @@ BOOST_FIXTURE_TEST_CASE(prebuilt_libs, generator_tests)
    BOOST_REQUIRE_NO_THROW(run_generators());
    check();
 }
-*/
 
 BOOST_FIXTURE_TEST_CASE(obj_meta_target, generator_tests)
 {
@@ -258,3 +257,4 @@ BOOST_FIXTURE_TEST_CASE(obj_meta_target, generator_tests)
    BOOST_REQUIRE_NO_THROW(run_generators());
    check();
 }
+*/

@@ -110,6 +110,7 @@ void msvc_project::fill_options(const feature_set& props, options* opts, const m
    const feature_def& include_def = engine_->feature_registry().get_def("include");
    const feature_def& searched_lib = engine_->feature_registry().get_def("__searched_lib_name");
    const feature_def& cxxflags = engine_->feature_registry().get_def("cxxflags");
+   const feature_def& cflags = engine_->feature_registry().get_def("cflags");
    
    for(feature_set::const_iterator i = props.begin(), last = props.end(); i != last; ++i)
    {
@@ -142,6 +143,14 @@ void msvc_project::fill_options(const feature_set& props, options* opts, const m
                   else
                      opts->add_cxx_flag((**i).value());
                }
+               else
+                  if ((**i).def() == cflags)
+                  {
+                     if ((**i).value() == "/TP" || (**i).value() == "/Tp")
+                        opts->compile_as_cpp(true);
+                     else
+                        opts->add_cxx_flag((**i).value());
+                  }
    }
 }
 

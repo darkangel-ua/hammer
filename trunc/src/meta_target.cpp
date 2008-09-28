@@ -64,6 +64,13 @@ namespace hammer{
       basic_meta_target::instantiate_meta_targets(ignored_meta_targets, build_request, &owner_for_new_targets, 
                                                   &ignored_instantiated_meta_targets, local_usage_requirements);
 
+      sources_decl sources_from_uses;
+      extract_uses(sources_from_uses, *local_usage_requirements);
+      if (!sources_from_uses.empty())
+         compute_addition_usage_requirements(simple_targets, instantiated_meta_targets, 
+                                             *local_usage_requirements, sources_from_uses, 
+                                             build_request, owner_for_new_targets);
+
       sources_decl sources_from_usage_requirements;
       extract_sources(sources_from_usage_requirements, *local_usage_requirements);
       if (!sources_from_usage_requirements.empty())

@@ -156,7 +156,8 @@ project& engine::load_project(location_t project_path, const project& from_proje
          initial_materialization(alias_data);
 
       project& p = load_project(project_path);
-      if (p.scm_info().scm_url_.empty())
+      if (p.scm_info().scm_url_.empty() && 
+          alias_data.properties_ != NULL) // alias_data.properties_ can be null if no features was specified in use-project rule
       {
          // добавляем эти свойства в проект чтобы можна было ими воспользоваться при последующих 
          // материализациях вложенных проектов

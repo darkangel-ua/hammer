@@ -33,9 +33,9 @@ BOOST_FIXTURE_TEST_CASE(svn_simple_checkout, scm_tests)
 {
    BOOST_REQUIRE_NO_THROW(load_project("svn_simple_checkout"));
 }
-*/
 
 BOOST_FIXTURE_TEST_CASE(svn_complex_project, scm_tests)
 {
    BOOST_REQUIRE_NO_THROW(load_project("svn_complex_project"));
 }
+*/

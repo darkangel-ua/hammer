@@ -121,9 +121,18 @@ void leave_rule_invoke(pANTLR3_PARSER parser)
 
 bool is_path_element(pANTLR3_PARSER parser)
 {
-	pANTLR3_COMMON_TOKEN t1 = parser->tstream->_LT(parser->tstream, 1);
+   pANTLR3_COMMON_TOKEN t_1 = parser->tstream->_LT(parser->tstream, -1); // токен до слеша
+   pANTLR3_STRING s_1 = t_1->getText(t_1);
+   pANTLR3_COMMON_TOKEN t1 = parser->tstream->_LT(parser->tstream, 1); // вот тут находиться проверяемый слеш
+   pANTLR3_STRING s1 = t1->getText(t1);
+   pANTLR3_COMMON_TOKEN t2 = parser->tstream->_LT(parser->tstream, 2); // токен после слеша
+   pANTLR3_STRING s2 = t2->getText(t2);
+   return t_1->stop + 1 == t1->start && t1->stop + 1 == t2->start;
+/*
+   pANTLR3_COMMON_TOKEN t1 = parser->tstream->_LT(parser->tstream, 1);
 	pANTLR3_COMMON_TOKEN t2 = parser->tstream->_LT(parser->tstream, 2);
 	return t1->stop + 1 == t2->start;
+*/
 }
 
 bool is_path_slash(pANTLR3_PARSER parser)

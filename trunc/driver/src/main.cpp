@@ -25,15 +25,24 @@ namespace
       vector<string> build_request_options_;
    };
 
-   po::options_description desc("General options");
    po::positional_options_description build_request_options;
    hammer_options opts;
 
-   void init_options()
+   po::options_description options_for_help()
    {
+      po::options_description desc("General options");
       desc.add_options()
          ("help", "produce this help message");
       build_request_options.add("build-request", -1);
+
+      return desc;
+   }
+
+   po::options_description options_for_work()
+   {
+      po::options_description desc(options_for_help());
+      desc.add_options()("build-request", po::value<vector<string> >());
+      return desc;
    }
 
    void resolve_arguments(const vector<string>& build_request_options, vector<string>& targets, 
@@ -118,7 +127,7 @@ int main(int argc, char** argv)
 {
    try
    {
-      init_options();
+      po::options_description desc(options_for_work());
       po::variables_map vm;
       po::parsed_options options = po::command_line_parser(argc, argv).options(desc).positional(build_request_options).run();
       po::store(options, vm);                 
@@ -129,7 +138,7 @@ int main(int argc, char** argv)
 
       if (vm.count("help") || argc < 2)
       {
-         cout << "Usage: hammer.exe <options> <targets> <features>\n" << desc;
+         cout << "Usage: hammer.exe <options> <targets> <features>\n" << options_for_help();
          return 0;
       }
       

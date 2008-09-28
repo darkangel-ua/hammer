@@ -23,6 +23,10 @@ lib hammer_core
   :
     <include>../src/
     <link>static
+  :
+  :
+    <use>/boost/ptr_container
+    <use>/boost/function_types
   ;
 
 obj hammer_parser : ../src/build/hammerParser.c : <cflags>/TP <use>/libantlr3c ;

@@ -1,7 +1,7 @@
 test [ type = EXE; ]
 {
     main.cpp [type = CPP; ] {}
-    lib1 [ type = SHARED_LIB; ]
+    lib1 [ type = STATIC_LIB; ]
     {
        lib1.cpp [ type = CPP; ] {}
     }

@@ -7,6 +7,7 @@ feature.feature name : : free ;
 feature.feature search : : free path ;
 feature.feature file : : free path ;
 feature.feature cxxflags : : free ;
+feature.feature cflags : : free ;
 feature.feature scm  : : free ;
 feature.feature scm.url : : free path ;
 feature.feature version : : no-defaults ;

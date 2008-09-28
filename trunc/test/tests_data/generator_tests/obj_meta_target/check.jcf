@@ -1,8 +1,12 @@
 test [ type = EXE; ]
 {
    main.cpp [ type = CPP; ]{}
-   c-files [ type = OBJ; ]
+   lib1 [ type = STATIC_LIB; ]
    {
-      test.c [ type = C; ] {}
+      lib1.cpp [ type = CPP; ] {}
+      c-files [ type = OBJ; ]
+      {
+         test.c [ type = C; ] {}
+      }
    }
 }

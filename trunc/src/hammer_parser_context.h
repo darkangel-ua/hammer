@@ -45,6 +45,7 @@ namespace hammer
       bool is_path_element(pANTLR3_PARSER parser);
       bool is_path_slash(pANTLR3_PARSER parser);
       bool is_trailing_slash(pANTLR3_PARSER parser);
+      bool is_head_slash(pANTLR3_PARSER parser);
       bool is_dependency_feature(pANTLR3_PARSER parser);
 
       void enter_sources_decl(pANTLR3_PARSER parser);

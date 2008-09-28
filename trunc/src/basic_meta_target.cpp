@@ -70,7 +70,8 @@ void basic_meta_target::instantiate_meta_targets(const meta_targets_t& targets,
    // FIXME: если в result уже есть проинстанцированная цель то нужно проверить с какими параметрами это было сделанно
    // Если они совпадают значит мы просто пропускаем инстанцирование, если нет, то кидаем исключение
    for(meta_targets_t::const_iterator i = targets.begin(), last = targets.end(); i != last; ++i)
-      (**i).instantiate(owner, build_request, result, usage_requirments);
+      i->first->instantiate(owner, i->second == NULL ? build_request : *build_request.join(*i->second), 
+                            result, usage_requirments);
 }
 
 void basic_meta_target::split_one_source(sources_decl* simple_targets,
@@ -117,7 +118,7 @@ void basic_meta_target::resolve_meta_target_source(const source_decl& source,
 		{
 			m = select_best_alternative(*project_, source.target_path_, build_request, source.properties_);
          m->transfer_sources(simple_targets, meta_targets, build_request);
-			meta_targets->push_back(m);
+			meta_targets->push_back(make_pair(m, source.properties_));
 			return;
 		}
    }
@@ -132,7 +133,7 @@ void basic_meta_target::resolve_meta_target_source(const source_decl& source,
 		   if (!(**i).is_explicit())
 		   {
 			   (**i).transfer_sources(simple_targets, meta_targets, build_request);
-			   meta_targets->push_back(*i);
+			   meta_targets->push_back(make_pair(*i, source.properties_));
 		   }
 	   }
    }
@@ -140,7 +141,7 @@ void basic_meta_target::resolve_meta_target_source(const source_decl& source,
    {
       const basic_meta_target* m = select_best_alternative(target_project, source.target_name_, build_request, source.properties_);
       m->transfer_sources(simple_targets, meta_targets, build_request);
-      meta_targets->push_back(m);
+      meta_targets->push_back(make_pair(m, source.properties_));
       return;
    }
 }

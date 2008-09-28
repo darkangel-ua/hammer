@@ -96,7 +96,8 @@ namespace hammer{
 
    void feature_set::join_impl(feature_set* lhs, const feature_set& rhs) const
    {
-      lhs->features_.insert(lhs->features_.end(), rhs.features_.begin(), rhs.features_.end());
+      for(const_iterator i = rhs.begin(), last = rhs.end(); i != last; ++i)
+         lhs->join(*i);
    }
 
    feature_set* feature_set::join(const feature_set& rhs) const

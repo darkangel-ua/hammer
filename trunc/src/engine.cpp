@@ -60,7 +60,7 @@ engine::engine()
    resolver_.insert("lib", boost::function<void (project*, vector<pstring>&, sources_decl*, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::lib_rule, this, _1, _2, _3, _4, _5, _6)));
    resolver_.insert("exe", boost::function<void (project*, vector<pstring>&, sources_decl&, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::exe_rule, this, _1, _2, _3, _4, _5, _6)));
    resolver_.insert("obj", boost::function<void (project*, pstring&, sources_decl&, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::obj_rule, this, _1, _2, _3, _4, _5, _6)));
-   resolver_.insert("alias", boost::function<void (project*, pstring&, sources_decl&, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::alias_rule, this, _1, _2, _3, _4, _5, _6)));
+   resolver_.insert("alias", boost::function<void (project*, pstring&, sources_decl*, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::alias_rule, this, _1, _2, _3, _4, _5, _6)));
    resolver_.insert("import", boost::function<void (project*, vector<pstring>&)>(boost::bind(&engine::import_rule, this, _1, _2)));
    resolver_.insert("feature.feature", boost::function<void (project*, vector<pstring>&, vector<pstring>*, vector<pstring>&)>(boost::bind(&engine::feature_feature_rule, this, _1, _2, _3, _4)));
    resolver_.insert("feature.compose", boost::function<void (project*, feature&, feature_set&)>(boost::bind(&engine::feature_compose_rule, this, _1, _2, _3)));
@@ -470,12 +470,13 @@ void engine::feature_compose_rule(project* p, feature& f, feature_set& component
 
 void engine::alias_rule(project* p, 
                         pstring& name, 
-                        sources_decl& sources, 
+                        sources_decl* sources, 
                         requirements_decl* requirements, 
                         feature_set* default_build, 
                         requirements_decl* usage_requirements)
 {
-   auto_ptr<basic_meta_target> mt(new alias_meta_target(p, name, sources, 
+   auto_ptr<basic_meta_target> mt(new alias_meta_target(p, name, 
+                                                        sources == NULL ? sources_decl() : *sources, 
                                                         requirements ? *requirements : requirements_decl(), 
                                                         usage_requirements ? *usage_requirements : requirements_decl()));
    p->add_target(mt);

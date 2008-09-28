@@ -71,14 +71,15 @@ rule_invoke   : { enter_rule_invoke(PARSER); } '[' { on_nested_rule_enter(PARSER
 
 source_decl : source_decl_impl -> ^(SOURCE_DECL source_decl_impl);
 source_decl_impl : target_path target_name target_features -> ^(TARGET_PATH target_path) target_name target_features;
-target_path : path_slash? ID path_element* trail_slash?;
+target_path : head_slash? ID path_element* trail_slash?;
 target_name : path_slash path_slash ID -> ^(TARGET_NAME ID)
             | -> ^(TARGET_NAME NULL_ARG);
 path_element : { is_path_element(PARSER) }?=> path_slash ID;
 target_features : path_slash feature (path_slash feature)* -> ^(FEATURE_SET feature+)
                 | -> ^(FEATURE_SET NULL_ARG);            
 path_slash : { is_path_slash(PARSER) }?=> SLASH ;
-trail_slash : { is_trailing_slash(PARSER) }?=> SLASH; 
+trail_slash : { is_trailing_slash(PARSER) }?=> SLASH;
+head_slash : { is_head_slash(PARSER) }?=> SLASH; 
 SLASH : { is_lexing_sources_decl(LEXER) }?=> '/';
 ID            : ('a'..'z' | 'A'..'Z' | '0'..'9' | '.' | '-' | { !is_lexing_sources_decl(LEXER) }?=> '/' | '_'| '=' | '*')+  
 	      | STRING { LEXSTATE->type = _type; {pANTLR3_COMMON_TOKEN t = LEXER->emit(LEXER); ++t->start, --t->stop; t->type = _type;} };

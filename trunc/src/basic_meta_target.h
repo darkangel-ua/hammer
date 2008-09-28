@@ -44,7 +44,8 @@ namespace hammer
          bool is_explicit() const { return is_explicit_; }
 
       protected:
-         typedef std::vector<const basic_meta_target*> meta_targets_t;
+         typedef std::vector<std::pair<const basic_meta_target* /* target */, 
+                                       const feature_set* /* requested build properties*/> > meta_targets_t;
 
          void instantiate_simple_targets(const sources_decl& targets, 
                                          const feature_set& build_request,

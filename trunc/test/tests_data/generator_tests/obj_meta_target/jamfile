@@ -1,2 +1,3 @@
 obj c-files : test.c : <cxxflags>/TP ;
-exe test : main.cpp c-files ;
+lib lib1 : lib1.cpp c-files ;
+exe test : main.cpp lib1/<link>static ;

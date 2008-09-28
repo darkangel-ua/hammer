@@ -25,7 +25,8 @@ static_lib_generator::construct(const type& target_type,
                                 const feature_set& props,
                                 const std::vector<boost::intrusive_ptr<build_node> >& sources,
                                 const basic_target* t,
-                                const pstring* name /* name for composite target*/) const
+                                const pstring* name,
+                                const main_target& owner) const
 {
    typedef std::vector<boost::intrusive_ptr<build_node> > build_sources_t;
    build_sources_t modified_sources(sources);
@@ -44,7 +45,7 @@ static_lib_generator::construct(const type& target_type,
          ++i;
    }
 
-   std::vector<boost::intrusive_ptr<build_node> > result(generator::construct(target_type, props, modified_sources, t, name));
+   std::vector<boost::intrusive_ptr<build_node> > result(generator::construct(target_type, props, modified_sources, t, name, owner));
    result.insert(result.end(), extracted_products.begin(), extracted_products.end());
    return result;
 }

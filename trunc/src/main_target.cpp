@@ -13,7 +13,7 @@ main_target::main_target(const hammer::meta_target* mt,
                          const hammer::type* t, 
                          const feature_set* props,
                          pool& p)
-                        : basic_target(this, name, t, props), mt_(mt)
+                        : basic_target(this, name, t, props), meta_target_(mt)
 {
 }
 
@@ -25,7 +25,7 @@ void main_target::sources(const std::vector<basic_target*>& srcs)
 std::vector<boost::intrusive_ptr<build_node> > 
 main_target::generate()
 {
-   std::vector<boost::intrusive_ptr<hammer::build_node> >  result(mt_->project()->engine()->generators().construct(this));
+   std::vector<boost::intrusive_ptr<hammer::build_node> >  result(meta_target_->project()->engine()->generators().construct(this));
    build_node_ = result.front();
    return result;
 }

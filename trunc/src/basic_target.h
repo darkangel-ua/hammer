@@ -16,7 +16,7 @@ namespace hammer
       public:
          basic_target(const main_target* mt, const pstring& name, 
                       const type* t, const feature_set* f) 
-                     : mtarget_(mt), name_(name), 
+                     : main_target_(mt), name_(name), 
                        type_(t), features_(f)
          {};
 
@@ -24,7 +24,7 @@ namespace hammer
          const hammer::type& type() const { return *type_; }
          const feature_set& properties() const { return *features_; }
          void properties(const feature_set* p) { features_ = p; }
-         const hammer::main_target* mtarget() const { return mtarget_; }
+         const hammer::main_target* mtarget() const { return main_target_; }
          
          virtual std::vector<boost::intrusive_ptr<build_node> > generate() = 0;
          void* operator new (size_t size, pool& p) { return p.malloc(size); }
@@ -32,7 +32,7 @@ namespace hammer
          virtual ~basic_target(){};
       
       private:
-         const main_target* mtarget_;
+         const main_target* main_target_;
          const hammer::type* type_;
          pstring name_;
          const feature_set* features_;

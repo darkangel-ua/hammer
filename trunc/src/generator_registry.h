@@ -23,12 +23,14 @@ namespace hammer
                                       const generator& current_generator,
                                       boost::intrusive_ptr<build_node> t, 
                                       std::vector<boost::intrusive_ptr<build_node> >* result,
-                                      const feature_set& props) const;
+                                      const feature_set& props,
+                                      const main_target& owner) const;
          bool transform(const generator& target_generator, 
                         const generator& current_generator, 
                         const basic_target* t,
                         boost::intrusive_ptr<build_node> target_owner, 
                         std::vector<boost::intrusive_ptr<build_node> >* result,
-                        const feature_set& props) const;
+                        const feature_set& props,
+                        const main_target& owner) const;
    };
 }

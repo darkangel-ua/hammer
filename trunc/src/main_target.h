@@ -25,13 +25,13 @@ namespace hammer
          virtual const location_t& location() const;
          void sources(const std::vector<basic_target*>& srcs);
          const sources_t& sources() const { return sources_; }
-         const hammer::meta_target* meta_target() const { return mt_; }
+         const hammer::meta_target* meta_target() const { return meta_target_; }
          virtual std::vector<boost::intrusive_ptr<build_node> > generate();
          const pstring& intermediate_dir() const;
          boost::intrusive_ptr<const hammer::build_node> build_node() const { return build_node_; }
 
       private:
-         const hammer::meta_target* mt_;
+         const hammer::meta_target* meta_target_;
          sources_t sources_;
          boost::intrusive_ptr<hammer::build_node> build_node_;
    };

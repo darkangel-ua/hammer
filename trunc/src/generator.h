@@ -11,6 +11,7 @@ namespace hammer
    class basic_target;
    class pstring;
    class engine;
+   class main_target;
 
    class generator
    {
@@ -53,7 +54,8 @@ namespace hammer
                       const feature_set& props,
                       const std::vector<boost::intrusive_ptr<build_node> >& sources,
                       const basic_target* t,
-                      const pstring* name /* name for composite target*/) const;
+                      const pstring* composite_target_name,
+                      const main_target& owner) const;
 
          bool is_consumable(const type& t) const;
          bool is_composite() const { return composite_; }

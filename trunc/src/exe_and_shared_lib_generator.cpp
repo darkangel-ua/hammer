@@ -27,7 +27,8 @@ exe_and_shared_lib_generator::construct(const type& target_type,
                                         const feature_set& props,
                                         const std::vector<boost::intrusive_ptr<build_node> >& sources,
                                         const basic_target* t,
-                                        const pstring* name) const
+                                        const pstring* name,
+                                        const main_target& owner) const
 {
    feature_set* new_props = 0;
    typedef std::vector<boost::intrusive_ptr<build_node> > build_sources_t;
@@ -61,7 +62,7 @@ exe_and_shared_lib_generator::construct(const type& target_type,
          ++i;
    }
 
-   return generator::construct(target_type, new_props ? *new_props : props, modified_sources, t, name);
+   return generator::construct(target_type, new_props ? *new_props : props, modified_sources, t, name, owner);
 }
 
 }

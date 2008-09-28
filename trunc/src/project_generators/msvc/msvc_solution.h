@@ -1,7 +1,11 @@
 #pragma once
 #include "../../build_node.h"
 #include "../../location.h"
-#include <boost/guid.hpp>
+
+namespace boost
+{
+   class guid; 
+}
 
 namespace hammer
 {

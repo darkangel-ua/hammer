@@ -25,7 +25,7 @@ lib hammer_core
     <link>static
   ;
 
-obj hammer_parser : ../src/build/hammerParser.c /libantlr3c : <cflags>/TP ;
-obj hammer_lexer : ../src/build/hammerLexer.c /libantlr3c : <cflags>/TP ;
+obj hammer_parser : ../src/build/hammerParser.c : <cflags>/TP <use>/libantlr3c ;
+obj hammer_lexer : ../src/build/hammerLexer.c : <cflags>/TP <use>/libantlr3c ;
 explicit hammer_parser ;
 explicit hammer_lexer ;

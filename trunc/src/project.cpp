@@ -68,30 +68,25 @@ namespace hammer{
       if (r.empty())
          throw std::runtime_error("Can't find target '" + target_name.to_string() + "'");
 
-      if (r.size() != 1)
+      const basic_meta_target* result = NULL;
+      
+      for(targets_t::const_iterator first = begin(r), last = end(r); first != last; ++first)
       {
-         const basic_meta_target* result = NULL;
-         
-         for(targets_t::const_iterator first = begin(r), last = end(r); first != last; ++first)
+         feature_set* fs = engine_->feature_registry().make_set();
+         first->second->requirements().eval(build_request, fs);
+         if (is_alternative_suitable(*fs, build_request))
          {
-            feature_set* fs = engine_->feature_registry().make_set();
-            first->second->requirements().eval(build_request, fs);
-            if (is_alternative_suitable(*fs, build_request))
-            {
-               if (result != NULL)
-                  throw std::runtime_error("Can't select alternative for target '" + target_name.to_string() + "'.");
+            if (result != NULL)
+               throw std::runtime_error("Can't select alternative for target '" + target_name.to_string() + "'.");
 
-               result = first->second;
-            }
+            result = first->second;
          }
-
-         if (result == NULL)
-            throw std::runtime_error("Can't select alternative for target '" + target_name.to_string() + "'.");
-
-         return result;
       }
-      else
-         return begin(r)->second;
+
+      if (result == NULL)
+         throw std::runtime_error("Can't select alternative for target '" + target_name.to_string() + "'.");
+
+      return result;
    }
 
    

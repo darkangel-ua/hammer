@@ -34,7 +34,6 @@ struct instantiation_tests
    jcf_parser checker_;
    string name_;
 };
-/*
 
 BOOST_FIXTURE_TEST_CASE(empty_project, instantiation_tests)
 {
@@ -210,20 +209,6 @@ BOOST_FIXTURE_TEST_CASE(explicit_, instantiation_tests)
    check(tt);
 }
 
-BOOST_FIXTURE_TEST_CASE(alternatives, instantiation_tests)
-{
-   name_ = "alternatives";
-   const project* p = 0;
-   BOOST_REQUIRE_NO_THROW(p = &load());
-   BOOST_REQUIRE(p);
-   feature_set* build_request = engine_.feature_registry().make_set();
-   build_request->join("variant", "debug");
-   vector<basic_target*> tt;
-   p->instantiate("test", *build_request, &tt);
-   BOOST_REQUIRE_EQUAL(tt.size(), size_t(1));
-   check(tt);
-}
-
 BOOST_FIXTURE_TEST_CASE(feature_source_and_library, instantiation_tests)
 {
    name_ = "feature_source_and_library";
@@ -251,11 +236,24 @@ BOOST_FIXTURE_TEST_CASE(use_project, instantiation_tests)
    BOOST_REQUIRE_EQUAL(tt.size(), size_t(1));
    check(tt);
 }
-*/
 
 BOOST_FIXTURE_TEST_CASE(feature_use, instantiation_tests)
 {
    name_ = "feature_use";
+   const project* p = 0;
+   BOOST_REQUIRE_NO_THROW(p = &load());
+   BOOST_REQUIRE(p);
+   feature_set* build_request = engine_.feature_registry().make_set();
+   build_request->join("variant", "debug");
+   vector<basic_target*> tt;
+   p->instantiate("test", *build_request, &tt);
+   BOOST_REQUIRE_EQUAL(tt.size(), size_t(1));
+   check(tt);
+}
+
+BOOST_FIXTURE_TEST_CASE(alternatives, instantiation_tests)
+{
+   name_ = "alternatives";
    const project* p = 0;
    BOOST_REQUIRE_NO_THROW(p = &load());
    BOOST_REQUIRE(p);

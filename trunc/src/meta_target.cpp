@@ -103,7 +103,6 @@ namespace hammer{
    {
       feature_set* mt_fs = build_request.clone();
       requirements().eval(mt_fs, project()->engine()->feature_registry());
-      project()->engine()->feature_registry().add_defaults(mt_fs);
 
       feature_set* local_usage_requirements = project()->engine()->feature_registry().make_set();
       feature_set* build_request_for_dependencies = project()->engine()->feature_registry().make_set();
@@ -119,7 +118,8 @@ namespace hammer{
 
       split_sources(&simple_targets, &meta_targets, sources(), *build_request_for_dependencies); 
       split_sources(&simple_targets, &meta_targets, sources_from_requirements, *build_request_for_dependencies);
-
+      
+      project()->engine()->feature_registry().add_defaults(mt_fs);
       main_target* mt = construct_main_target(mt_fs);
       if (!meta_targets.empty())
          instantiate_meta_targets(simple_targets, instantiated_meta_targets, 

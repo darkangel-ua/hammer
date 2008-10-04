@@ -3,7 +3,9 @@
 #include <antlr3parser.h>
 #include <string>
 #include <stack>
+#include <map>
 #include "call_resolver.h"
+#include "feature_def.h"
 
 namespace hammer
 {
@@ -16,11 +18,18 @@ namespace hammer
       {
          struct rule_context
          {
-            rule_context() : arg_(0) {}
+            rule_context() : arg_(0), 
+                             in_feature_feature_rule_(false),
+                             new_feature_(NULL)
+            {}
 
             int arg_;
             call_resolver::const_iterator rule_;
+            bool in_feature_feature_rule_;
+            feature_def* new_feature_;
          };
+         
+         typedef std::map<std::string, feature_def> new_features_t;
 
          hammer_parser_context() : error_count_(0) {}
          engine* engine_;
@@ -28,6 +37,8 @@ namespace hammer
          rule_context rule_context_;
          std::stack<rule_context> rule_contexts_;
          non_buffered_token_stream* token_stream_;
+         new_features_t new_features_;
+         
          void (*base_displayRecognitionError)(pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_UINT8 * tokenNames);
       };
 
@@ -35,6 +46,7 @@ namespace hammer
       void on_rule_argument(pANTLR3_PARSER parser);
       void on_nested_rule_enter(pANTLR3_PARSER parser);
       void on_nested_rule_leave(pANTLR3_PARSER parser);
+      void on_string_list_element(pANTLR3_PARSER parser, pANTLR3_UINT8 id_);
       bool argument_is_string(pANTLR3_PARSER parser);
       bool argument_is_string_list(pANTLR3_PARSER parser);
       bool argument_is_feature(pANTLR3_PARSER parser);

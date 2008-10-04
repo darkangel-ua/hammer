@@ -223,24 +223,6 @@ BOOST_FIXTURE_TEST_CASE(path_features, generator_tests)
    check();
 }
 
-BOOST_FIXTURE_TEST_CASE(composite_features, generator_tests)
-{
-   test_name_ = "composite_features";
-   load();
-   BOOST_REQUIRE_NO_THROW(instantiate("test"));
-   BOOST_REQUIRE_NO_THROW(run_generators());
-   check();
-}
-
-BOOST_FIXTURE_TEST_CASE(cpp_libs, generator_tests)
-{
-   test_name_ = "cpp_libs";
-   load();
-   BOOST_REQUIRE_NO_THROW(instantiate("test"));
-   BOOST_REQUIRE_NO_THROW(run_generators());
-   check();
-}
-
 BOOST_FIXTURE_TEST_CASE(prebuilt_libs, generator_tests)
 {
    test_name_ = "prebuilt_libs";
@@ -253,6 +235,25 @@ BOOST_FIXTURE_TEST_CASE(prebuilt_libs, generator_tests)
 BOOST_FIXTURE_TEST_CASE(obj_meta_target, generator_tests)
 {
    test_name_ = "obj_meta_target";
+   load();
+   BOOST_REQUIRE_NO_THROW(instantiate("test"));
+   BOOST_REQUIRE_NO_THROW(run_generators());
+   check();
+}
+
+
+BOOST_FIXTURE_TEST_CASE(composite_features, generator_tests)
+{
+   test_name_ = "composite_features";
+   load();
+   BOOST_REQUIRE_NO_THROW(instantiate("test"));
+   BOOST_REQUIRE_NO_THROW(run_generators());
+   check();
+}
+
+BOOST_FIXTURE_TEST_CASE(cpp_libs, generator_tests)
+{
+   test_name_ = "cpp_libs";
    load();
    BOOST_REQUIRE_NO_THROW(instantiate("test"));
    BOOST_REQUIRE_NO_THROW(run_generators());

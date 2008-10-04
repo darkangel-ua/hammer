@@ -30,9 +30,9 @@ namespace hammer{
    {
       defs_t::iterator i = defs_.find(string(name));
       if (i == defs_.end())
-         throw runtime_error("Unknown feature '" + string(name) + "'");
-
-      return &i->second;
+         return NULL;
+      else
+         return &i->second;
    }
 
    feature_registry::impl_t::~impl_t()
@@ -95,7 +95,11 @@ namespace hammer{
 
    feature_def& feature_registry::get_def(const std::string& name)
    {
-      return *impl_->find_def(name.c_str());
+      feature_def* result = impl_->find_def(name.c_str());
+      if (result == NULL)
+         throw runtime_error("Unknown feature '" + string(name) + "'");
+      else
+         return *result;
    }
 
    const feature_def* feature_registry::find_def(const char* feature_name) const

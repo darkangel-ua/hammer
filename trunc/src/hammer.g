@@ -51,12 +51,12 @@ rule_posible_args
                   | { argument_is_requirements(PARSER) }?=> requirements -> ^(REQUIREMENTS_DECL requirements)
                   | feature_set_arg
                   | { argument_is_sources(PARSER) }?=> sources_decl;
-string_list : string+ -> ^(STRING_LIST string+);
+string_list : (ID { on_string_list_element(PARSER, $ID.text->chars); })+ -> ^(STRING_LIST ID+);
 feature_set_arg : feature_set -> ^(FEATURE_SET_ARG feature_set);
 feature_set : feature+ -> ^(FEATURE_SET feature+);
-project_requirements : string requirements -> ^(PROJECT_REQUIREMENTS string ^(REQUIREMENTS_DECL requirements));
+project_requirements : ID requirements -> ^(PROJECT_REQUIREMENTS ID ^(REQUIREMENTS_DECL requirements));
 requirements : (feature | conditional_features)+;
-string_arg  : string -> ^(STRING_ARG string);
+string_arg  : ID -> ^(STRING_ARG ID);
 feature_arg : feature -> ^(FEATURE_ARG feature);
 conditional_features : { is_conditional_feature(PARSER) }?=> condition condition_result -> ^(CONDITIONAL_FEATURES condition condition_result);
 condition  : feature (',' feature)* -> ^(CONDITION feature+);
@@ -64,7 +64,6 @@ condition  : feature (',' feature)* -> ^(CONDITION feature+);
 condition_result : COLON feature;
 feature       : { is_dependency_feature(PARSER) }?=> '<' ID '>' source_decl -> ^(FEATURE ID source_decl)
               | '<' ID '>' ID -> ^(FEATURE ID ID);
-string        : ID ;
 sources_decl : { enter_sources_decl(PARSER); } sources_decl_impl { leave_sources_decl(PARSER); } -> ^(SOURCES_DECL sources_decl_impl) ;
 sources_decl_impl  : (source_decl | rule_invoke)+ ;
 rule_invoke   : { enter_rule_invoke(PARSER); } '[' { on_nested_rule_enter(PARSER); } rule_impl { on_nested_rule_leave(PARSER); }']' { leave_rule_invoke(PARSER); } -> rule_impl;

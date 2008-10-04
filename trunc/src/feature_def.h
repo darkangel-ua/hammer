@@ -11,13 +11,14 @@ namespace hammer
    {
       public:
          feature_def(const std::string& name, 
-                     const std::vector<std::string>& legal_values,
-                     feature_attributes fdtype);
+                     const std::vector<std::string>& legal_values = std::vector<std::string>(),
+                     feature_attributes fdtype = feature_attributes());
          
          const std::string& name() const { return name_; }
          void set_default(const std::string& v);
          const std::string& get_default() const { return default_; }
          feature_attributes attributes() const { return attributes_; }
+         feature_attributes& attributes() { return attributes_; }
          void compose(const std::string& value, feature_set* c); // take ownership of c
          void expand_composites(const std::string value, feature_set* fs) const;
          ~feature_def(); 

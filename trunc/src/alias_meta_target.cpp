@@ -38,9 +38,23 @@ void alias_meta_target::instantiate(const main_target* owner,
 
 void alias_meta_target::transfer_sources(sources_decl* simple_targets, 
                                          meta_targets_t* meta_targets, 
-                                         const feature_set& build_request) const
+                                         const feature_set& build_request,
+                                         const feature_set* additional_build_properties) const
 {
-   split_sources(simple_targets, meta_targets, sources(), build_request);
+   if (additional_build_properties == NULL)
+      split_sources(simple_targets, meta_targets, sources(), build_request);
+   else
+   {
+      sources_decl new_simple_targets;
+      meta_targets_t new_meta_targets;
+      split_sources(&new_simple_targets, &new_meta_targets, sources(), build_request);
+      
+      simple_targets->add_to_source_properties(*additional_build_properties);
+      
+      for(meta_targets_t::iterator i = new_meta_targets.begin(), last = new_meta_targets.end(); i != last; ++i)
+         i->second = additional_build_properties;
+      meta_targets->insert(meta_targets->end(), new_meta_targets.begin(), new_meta_targets.end());
+   }
 }
 
 }

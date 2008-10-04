@@ -72,7 +72,8 @@ namespace hammer
          // исключительно для поддержки alias потому как я не понял как это можна сделать иначе
          virtual void transfer_sources(sources_decl* simple_targets, 
                                        meta_targets_t* meta_targets,
-                                       const feature_set& build_request) const;
+                                       const feature_set& build_request,
+                                       const feature_set* additional_build_properties) const;
 
       private:
          hammer::project* project_;

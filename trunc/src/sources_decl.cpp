@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "sources_decl.h"
+#include "feature_set.h"
+
 #include <vector>
 
 namespace hammer{
@@ -9,7 +11,8 @@ struct sources_decl::impl_t
    impl_t() : ref_counter_(1) {}
    impl_t* clone() const;
 
-   std::vector<source_decl> values_;
+   typedef std::vector<source_decl> values_t;
+   values_t values_;
    mutable unsigned int ref_counter_;
 };
 
@@ -73,6 +76,18 @@ void sources_decl::insert(const std::vector<pstring>& v)
    for(std::vector<pstring>::const_iterator i = v.begin(), last = v.end(); i != last; ++i)
 	   push_back(*i);
 }
+
+void sources_decl::add_to_source_properties(const feature_set& props)
+{
+   clone_if_needed();
+   // FIXME: feature_set should be ref counted to not doing stupid cloning
+   for(impl_t::values_t::iterator i = impl_->values_.begin(), last = impl_->values_.end(); i != last; ++i)
+      if (i->properties_ == NULL)
+         i->properties_ = props.clone();
+      else 
+         i->properties_ = const_cast<const feature_set*>(i->properties_)->join(props); 
+}
+
 
 sources_decl::const_iterator::const_iterator(const sources_decl& s, bool last) 
 {

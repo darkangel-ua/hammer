@@ -47,7 +47,7 @@ namespace hammer
          // перебрасывает все что есть в s в конец данного инстанса
          // s после переброски пуст
          void transfer_from(sources_decl& s);
-         
+         void add_to_source_properties(const feature_set& props);
          const_iterator begin() const { return const_iterator(*this, false); }
          const_iterator end() const { return const_iterator(*this, true); }
          void clear();

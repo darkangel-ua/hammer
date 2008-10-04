@@ -6,4 +6,8 @@ test [ type = EXE; features = <define>alias_foo_usage; ]
    {
        lib1.cpp [ type = CPP; ] {}
    }
+   lib3 [ type = STATIC_LIB; ]
+   {
+      lib3.cpp [ type = CPP; ] {}
+   }
 }

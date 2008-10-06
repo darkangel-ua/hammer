@@ -116,6 +116,9 @@ std::vector<boost::intrusive_ptr<build_node> >
 generator_registry::construct(main_target* mt) const
 {
    vector<const generator*> viable_generators(find_viable_generators(mt->type(), true));
+   if (viable_generators.empty())
+      throw runtime_error("Can't find transformation to '" + mt->type().name() + "'.");
+
    vector<intrusive_ptr<build_node> > pre_sources;
    for(main_target::sources_t::const_iterator i = mt->sources().begin(), last = mt->sources().end(); i != last; ++i)
    {

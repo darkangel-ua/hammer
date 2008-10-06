@@ -1,0 +1,13 @@
+test [ type = EXE; features = <define>USE_LIB1 <define>USE_LIB2; ]
+{
+    main.cpp [ type = CPP; ] {}
+    lib1 [ type = HEADER_LIB; features = <define>USE_LIB2; ]
+    {
+       lib1.h [ type = H; ]{}
+       
+       lib2 [ type = SHARED_LIB; ]
+       {
+          lib2.cpp [ type = CPP; ] {}
+       }
+    }
+}

@@ -47,6 +47,10 @@ namespace hammer{
       string s_name(name.to_string());
       for(types_t::const_iterator i = types_.begin(), last = types_.end(); i != last; ++i)
       {
+         // skip types with empty suffix
+         if (i->second->suffix().empty())
+            continue;
+         
          string::size_type p = s_name.rfind(i->second->suffix().c_str());
          if (p != string::npos && 
              p + i->second->suffix().size() == s_name.size())
@@ -75,7 +79,9 @@ namespace hammer{
       pair<types_t::iterator, bool> i = types_.insert(t->name(), t.get());
       if (i.second)
       {
-         types_by_suffix_.insert(make_pair(t->suffix(), t.get()));
+         if (!t->suffix().empty())
+            types_by_suffix_.insert(make_pair(t->suffix(), t.get()));
+
          t.release();
          return;
       }

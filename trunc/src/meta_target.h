@@ -24,7 +24,11 @@ namespace hammer
 
       protected:
          virtual main_target* construct_main_target(const feature_set* properties) const = 0;
-      
+         // compute usage requirements from target usage requirements and 
+         // usage requirements that was calculated during instantiation meta targets from sources
+         virtual void compute_usage_requirements(feature_set& result, 
+                                                 const feature_set& full_build_request,
+                                                 const feature_set& computed_usage_requirements) const;
       private:
          void instantiate_meta_targets(sources_decl& simple_targets,
                                        std::vector<basic_target*>& instantiated_meta_targets,
@@ -35,11 +39,11 @@ namespace hammer
 
          // instantiate targets that we found in use feature and 
          // add additional usage requirements to main target usage requirements
-         void compute_addition_usage_requirements(sources_decl& simple_targets,
-                                                  std::vector<basic_target*>& instantiated_meta_targets,
-                                                  feature_set& usage_requirements,
-                                                  const sources_decl& sources_from_usage,
-                                                  const feature_set& build_request,
-                                                  const main_target& owner_for_new_targets) const;
+         void compute_additional_usage_requirements(sources_decl& simple_targets,
+                                                    std::vector<basic_target*>& instantiated_meta_targets,
+                                                    feature_set& usage_requirements,
+                                                    const sources_decl& sources_from_usage,
+                                                    const feature_set& build_request,
+                                                    const main_target& owner_for_new_targets) const;
    };
 }

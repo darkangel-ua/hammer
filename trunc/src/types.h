@@ -14,6 +14,7 @@ namespace hammer
       extern const type IMPORT_LIB;
       extern const type STATIC_LIB;
       extern const type SEARCHED_LIB;
+      extern const type HEADER_LIB;
       extern const type EXE;
       extern const type UNKNOWN;
    }

@@ -12,6 +12,7 @@ namespace hammer{ namespace types{
    const type STATIC_LIB("STATIC_LIB", ".lib");
    const type IMPORT_LIB("IMPORT_LIB", ".lib");
    const type SEARCHED_LIB("SEARCHED_LIB", ".lib");
+   const type HEADER_LIB("HEADER_LIB", "");
    const type EXE("EXE", ".exe");
    const type UNKNOWN("UNKNOWN_TYPE", "");
 }}

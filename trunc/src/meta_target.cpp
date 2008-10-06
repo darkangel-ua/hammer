@@ -49,12 +49,12 @@ namespace hammer{
          usage_requirements.join(local_usage_requirements);
    }
 
-   void meta_target::compute_addition_usage_requirements(sources_decl& simple_targets,
-                                                         std::vector<basic_target*>& instantiated_meta_targets,
-                                                         feature_set& usage_requirements,
-                                                         const sources_decl& sources_from_usage,
-                                                         const feature_set& build_request,
-                                                         const main_target& owner_for_new_targets) const
+   void meta_target::compute_additional_usage_requirements(sources_decl& simple_targets,
+                                                           std::vector<basic_target*>& instantiated_meta_targets,
+                                                           feature_set& usage_requirements,
+                                                           const sources_decl& sources_from_usage,
+                                                           const feature_set& build_request,
+                                                           const main_target& owner_for_new_targets) const
    {
       sources_decl ignored_simple_targets;
       meta_targets_t ignored_meta_targets;
@@ -67,9 +67,9 @@ namespace hammer{
       sources_decl sources_from_uses;
       extract_uses(sources_from_uses, *local_usage_requirements);
       if (!sources_from_uses.empty())
-         compute_addition_usage_requirements(simple_targets, instantiated_meta_targets, 
-                                             *local_usage_requirements, sources_from_uses, 
-                                             build_request, owner_for_new_targets);
+         compute_additional_usage_requirements(simple_targets, instantiated_meta_targets, 
+                                               *local_usage_requirements, sources_from_uses, 
+                                               build_request, owner_for_new_targets);
 
       sources_decl sources_from_usage_requirements;
       extract_sources(sources_from_usage_requirements, *local_usage_requirements);
@@ -86,9 +86,9 @@ namespace hammer{
             sources_decl sources_from_usage_requirements;
             extract_uses(sources_from_usage_requirements, *local_usage_requirements);
             if (!sources_from_usage_requirements.empty())
-               compute_addition_usage_requirements(simple_targets, instantiated_meta_targets, 
-                                                   *local_usage_requirements, sources_from_usage_requirements, 
-                                                   build_request, owner_for_new_targets);
+               compute_additional_usage_requirements(simple_targets, instantiated_meta_targets, 
+                                                     *local_usage_requirements, sources_from_usage_requirements, 
+                                                     build_request, owner_for_new_targets);
             usage_requirements.join(*local_usage_requirements);
          }
       }
@@ -130,16 +130,24 @@ namespace hammer{
       extract_uses(sources_from_uses, *mt_fs);
       extract_uses(sources_from_uses, *local_usage_requirements);
       if (!sources_from_uses.empty())
-         compute_addition_usage_requirements(simple_targets, instantiated_meta_targets, 
-                                             *local_usage_requirements, sources_from_uses, 
-                                             *build_request_for_dependencies, *mt);
+         compute_additional_usage_requirements(simple_targets, instantiated_meta_targets, 
+                                               *local_usage_requirements, sources_from_uses, 
+                                               *build_request_for_dependencies, *mt);
 
       mt_fs->join(*local_usage_requirements);
       mt->properties(mt_fs);
       instantiate_simple_targets(simple_targets, *mt_fs, *mt, &instantiated_meta_targets);
       mt->sources(instantiated_meta_targets);
-      this->usage_requirements().eval(*mt_fs, usage_requirements);
+      compute_usage_requirements(*usage_requirements, *mt_fs, *local_usage_requirements);
       
       result->push_back(mt);
    }
+
+   void meta_target::compute_usage_requirements(feature_set& result, 
+                                                const feature_set& full_build_request,
+                                                const feature_set& computed_usage_requirements) const
+   {
+      this->usage_requirements().eval(full_build_request, &result);
+   }
+
 }

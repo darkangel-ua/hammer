@@ -92,6 +92,7 @@ configuration_types::value msvc_project::resolve_configuration_type(const varian
    const type& exe_type = engine_->get_type_registry().resolve_from_name(types::EXE);
    const type& static_lib_type = engine_->get_type_registry().resolve_from_name(types::STATIC_LIB);
    const type& shared_lib_type = engine_->get_type_registry().resolve_from_name(types::SHARED_LIB);
+   const type& header_lib_type = engine_->get_type_registry().resolve_from_name(types::HEADER_LIB);
    if (v.target_->type() == exe_type)
       return configuration_types::exe;
    else
@@ -101,7 +102,10 @@ configuration_types::value msvc_project::resolve_configuration_type(const varian
          if (v.target_->type() == shared_lib_type)
             return configuration_types::shared_lib;
          else
-            throw std::runtime_error("[msvc_project] Can't resolve type '" + v.target_->type().name() + "'.");
+            if (v.target_->type() == header_lib_type)
+               return configuration_types::shared_lib;
+            else
+               throw std::runtime_error("[msvc_project] Can't resolve type '" + v.target_->type().name() + "'.");
 } 
 
 void msvc_project::fill_options(const feature_set& props, options* opts, const main_target& mt) const

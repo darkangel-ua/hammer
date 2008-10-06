@@ -260,3 +260,12 @@ BOOST_FIXTURE_TEST_CASE(cpp_libs, generator_tests)
    check();
 }
 */
+
+BOOST_FIXTURE_TEST_CASE(g_header_lib, generator_tests)
+{
+   test_name_ = "header_lib";
+   load();
+   BOOST_REQUIRE_NO_THROW(instantiate("test"));
+   BOOST_REQUIRE_NO_THROW(run_generators());
+   check();
+}

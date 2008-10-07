@@ -1,20 +1,24 @@
 #pragma once
 #include <string>
+#include <vector>
 
 namespace hammer
 {
    class type
    {
       public:
+         typedef std::vector<std::string> suffixes_t;
          type(const std::string& name, const std::string& suffix, type* base = 0);
-         const std::string name() const { return name_; }
-         const std::string suffix() const { return suffix_; }
+         type(const std::string& name, const suffixes_t& suffixes, type* base = 0);
+         const std::string& name() const { return name_; }
+         const suffixes_t& suffixes() const { return suffixes_; }
+         const std::string& suffix_for(const std::string& s) const;
          bool operator == (const type& rhs) const { return name() == rhs.name(); }
          bool operator != (const type& rhs) const { return !(*this == rhs); }
 
       private:
          std::string name_;
-         std::string suffix_;
+         suffixes_t suffixes_;
          type* base_;
    };
 }

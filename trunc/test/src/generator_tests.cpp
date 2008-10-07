@@ -259,7 +259,6 @@ BOOST_FIXTURE_TEST_CASE(cpp_libs, generator_tests)
    BOOST_REQUIRE_NO_THROW(run_generators());
    check();
 }
-*/
 
 BOOST_FIXTURE_TEST_CASE(g_header_lib, generator_tests)
 {
@@ -269,3 +268,5 @@ BOOST_FIXTURE_TEST_CASE(g_header_lib, generator_tests)
    BOOST_REQUIRE_NO_THROW(run_generators());
    check();
 }
+
+*/

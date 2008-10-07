@@ -18,10 +18,6 @@
          ConfigurationType="1"
          CharacterSet="1">
          <Tool
-            Name="VCCLCompilerTool"
-            PreprocessorDefinitions="USE_LIB1;USE_LIB2;"
-         />
-         <Tool
             Name="VCLinkerTool"
             AdditionalDependencies=""
          />

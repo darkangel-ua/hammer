@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include "main_target.h"
 #include "type.h"
+#include <boost/format.hpp>
 
 using namespace std;
 using namespace boost;
@@ -132,7 +133,7 @@ generator_registry::construct(main_target* mt) const
       intrusive_ptr<build_node> s(pre_sources.back());
       pre_sources.pop_back();
       if (!transform_to_consumable(*viable_generators[0], *viable_generators[0], s, &sources, mt->properties(), *mt))
-         throw runtime_error("Can't find transformation from '?' -> '" + mt->type().name() + "'.");
+         throw runtime_error((boost::format("Can't find transformation from '%s' -> '%s'.") % s->targeting_type_->name() % mt->type().name()).str());
    }
 
    typedef vector<const generator*>::const_iterator iter;

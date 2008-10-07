@@ -85,6 +85,7 @@ void add_msvc_generators(engine& e, generator_registry& gr)
       source.push_back(generator::consumable_type(e.get_type_registry().resolve_from_name(types::STATIC_LIB), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().resolve_from_name(types::IMPORT_LIB), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().resolve_from_name(types::SEARCHED_LIB), 0, 0));
+      source.push_back(generator::consumable_type(e.get_type_registry().resolve_from_name(types::HEADER_LIB), 0, 0));
       target.push_back(generator::produced_type(e.get_type_registry().resolve_from_name(types::HEADER_LIB), 1));
       auto_ptr<generator> g(new header_lib_generator(e, "header_lib.linker", source, target));
       e.generators().insert(g);

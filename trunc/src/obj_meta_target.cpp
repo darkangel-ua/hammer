@@ -6,6 +6,7 @@
 
 namespace hammer{
 
+// FIXME: in instantiate we must ensure that only simply targets is in sources.
 obj_meta_target::obj_meta_target(hammer::project* p, const pstring& name, 
                                  const requirements_decl& req, 
                                  const requirements_decl& usage_req)

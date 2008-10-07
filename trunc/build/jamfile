@@ -1,10 +1,4 @@
-project hammer/core 
-       :
-        requirements <library>/boost/ptr_container
-                     <library>/boost/function_types
- ;
-
-lib hammer_core 
+lib hammer.core 
    : 
     hammer_parser
     hammer_lexer
@@ -20,16 +14,31 @@ lib hammer_core
     /boost/regex
     /boost/assign
     /boost/process
-  :
+   :
     <include>../src/
     <link>static
-  :
-  :
+   :
+   :
     <use>/boost/ptr_container
     <use>/boost/function_types
-  ;
+   ;
 
-obj hammer_parser : ../src/build/hammerParser.c : <cflags>/TP <use>/libantlr3c ;
-obj hammer_lexer : ../src/build/hammerLexer.c : <cflags>/TP <use>/libantlr3c ;
+obj hammer_parser 
+   : 
+    ../src/build/hammerParser.c 
+   : 
+    <cflags>/TP 
+    <use>/libantlr3c 
+    <use>/boost/ptr_container 
+   ;
+
+obj hammer_lexer 
+   : 
+    ../src/build/hammerLexer.c 
+   : 
+    <cflags>/TP 
+    <use>/libantlr3c 
+   ;
+
 explicit hammer_parser ;
 explicit hammer_lexer ;

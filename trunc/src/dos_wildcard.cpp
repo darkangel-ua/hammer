@@ -66,17 +66,17 @@ dos_wildcard& dos_wildcard::assign(const std::string& wild, bool ignore_case)
 }
 
 // match:
-bool dos_wildcard::match(const char* text)
+bool dos_wildcard::match(const char* text) const
 {
    return do_match(text, text + std::strlen(text));
 }
 
-bool dos_wildcard::match(const std::string& text)
+bool dos_wildcard::match(const std::string& text) const
 {
    return do_match(text.data(), text.data() + text.size());
 }
 
-bool dos_wildcard::match(const filesystem::path& path)
+bool dos_wildcard::match(const filesystem::path& path) const
 {
    return match(path.string());
 }
@@ -107,7 +107,7 @@ void dos_wildcard::do_assign(const char* p1, const char* p2, bool ignore_case)
    m_pimpl->m_expression.assign(regex_replace(std::string(p1, p2), transformer, replace_string, boost::format_all), flags);
 }
 
-bool dos_wildcard::do_match(const char* p1, const char*p2)
+bool dos_wildcard::do_match(const char* p1, const char*p2) const
 {
    return regex_match(p1, p2, m_pimpl->m_expression);
 }

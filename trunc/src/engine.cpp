@@ -26,6 +26,7 @@
 #include "header_lib_meta_target.h"
 
 using namespace std;
+namespace fs = boost::filesystem;
 
 #undef LIB
 #undef EXE
@@ -68,7 +69,8 @@ engine::engine()
    resolver_.insert("import", boost::function<void (project*, vector<pstring>&)>(boost::bind(&engine::import_rule, this, _1, _2)));
    resolver_.insert("feature.feature", boost::function<void (project*, vector<pstring>&, vector<pstring>*, vector<pstring>&)>(boost::bind(&engine::feature_feature_rule, this, _1, _2, _3, _4)));
    resolver_.insert("feature.compose", boost::function<void (project*, feature&, feature_set&)>(boost::bind(&engine::feature_compose_rule, this, _1, _2, _3)));
-   resolver_.insert("glob", boost::function<sources_decl (project*, std::vector<pstring>&, std::vector<pstring>*)>(boost::bind(&engine::glob_rule, this, _1, _2, _3)));
+   resolver_.insert("glob", boost::function<sources_decl (project*, std::vector<pstring>&, std::vector<pstring>*)>(boost::bind(&engine::glob_rule, this, _1, _2, _3, false)));
+   resolver_.insert("rglob", boost::function<sources_decl (project*, std::vector<pstring>&, std::vector<pstring>*)>(boost::bind(&engine::glob_rule, this, _1, _2, _3, true)));
    resolver_.insert("explicit", boost::function<void (project*, const pstring&)>(boost::bind(&engine::explicit_rule, this, _1, _2)));
    resolver_.insert("use-project", boost::function<void (project*, const pstring&, const pstring&, feature_set*)>(boost::bind(&engine::use_project_rule, this, _1, _2, _3, _4)));
 
@@ -497,8 +499,58 @@ void engine::alias_rule(project* p,
    p->add_target(mt);
 }
 
+static void glob_impl(sources_decl& result,
+                      const fs::path& searching_path,
+                      const fs::path& relative_path,
+                      const boost::dos_wildcard& wildcard,             
+                      const std::vector<pstring>* exceptions,
+                      engine& e)
+{
+   for(fs::directory_iterator i(searching_path), last = fs::directory_iterator(); i != last; ++i)
+   {
+      if (!is_directory(*i) && wildcard.match(i->leaf()) && 
+          !(exceptions != 0 && find(exceptions->begin(), exceptions->end(), i->leaf()) != exceptions->end()))
+      {
+         pstring v(e.pstring_pool(), (relative_path / i->leaf()).string());
+         result.push_back(v);
+      }
+   }
+}
+
+static void rglob_impl(sources_decl& result,
+                       const fs::path& searching_path,
+                       fs::path relative_path,
+                       const boost::dos_wildcard& wildcard,             
+                       const std::vector<pstring>* exceptions,
+                       engine& e)
+{
+   int level = 0;
+   for(fs::recursive_directory_iterator i(searching_path), last = fs::recursive_directory_iterator(); i != last; ++i)
+   {
+      while(level > i.level())
+      {
+         --level;
+         relative_path = relative_path.branch_path();
+      }
+
+      if (is_directory(*i))
+      {
+         relative_path /= i->leaf();
+         ++level;
+      }
+      else
+         if (wildcard.match(i->leaf()) && 
+             !(exceptions != 0 && 
+               find(exceptions->begin(), exceptions->end(), i->leaf()) != exceptions->end()))
+         {
+            pstring v(e.pstring_pool(), (relative_path / i->leaf()).string());
+            result.push_back(v);
+         }
+   }
+}
+
 sources_decl engine::glob_rule(project* p, std::vector<pstring>& patterns, 
-                               std::vector<pstring>* exceptions)
+                               std::vector<pstring>* exceptions, bool recursive)
 {
    using namespace boost::filesystem;
    sources_decl result;
@@ -515,15 +567,10 @@ sources_decl engine::glob_rule(project* p, std::vector<pstring>& patterns,
                                                                        pattern.begin() + separator_pos));
       path searching_path(p->location() / relative_path);
       boost::dos_wildcard wildcard(string(pattern.begin() + mask_pos, pattern.end()));
-      for(directory_iterator f(searching_path), l = directory_iterator(); f != l; ++f)
-      {
-         if (!is_directory(*f) && wildcard.match(f->leaf()) && 
-             !(exceptions != 0 && find(exceptions->begin(), exceptions->end(), f->leaf()) != exceptions->end()))
-         {
-            pstring v(pstring_pool(), (relative_path / f->leaf()).string());
-            result.push_back(v);
-         }
-      }
+      if (recursive)
+         rglob_impl(result, searching_path, relative_path, wildcard, exceptions, *this);
+      else
+         glob_impl(result, searching_path, relative_path, wildcard, exceptions, *this);
    }
    
    result.unique();

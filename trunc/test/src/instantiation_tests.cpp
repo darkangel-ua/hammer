@@ -265,11 +265,25 @@ BOOST_FIXTURE_TEST_CASE(alias, instantiation_tests)
    BOOST_REQUIRE_EQUAL(tt.size(), size_t(1));
    check(tt);
 }
-*/
 
 BOOST_FIXTURE_TEST_CASE(header_lib, instantiation_tests)
 {
    name_ = "header_lib";
+   const project* p = 0;
+   BOOST_REQUIRE_NO_THROW(p = &load());
+   BOOST_REQUIRE(p);
+   feature_set* build_request = engine_.feature_registry().make_set();
+   build_request->join("variant", "debug");
+   vector<basic_target*> tt;
+   p->instantiate("test", *build_request, &tt);
+   BOOST_REQUIRE_EQUAL(tt.size(), size_t(1));
+   check(tt);
+}
+*/
+
+BOOST_FIXTURE_TEST_CASE(glob, instantiation_tests)
+{
+   name_ = "glob";
    const project* p = 0;
    BOOST_REQUIRE_NO_THROW(p = &load());
    BOOST_REQUIRE(p);

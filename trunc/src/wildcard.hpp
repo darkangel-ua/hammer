@@ -27,9 +27,9 @@ public:
    dos_wildcard& assign(const std::string& wild, bool ignore_case = true);
 
    // match:
-   bool match(const char* text);
-   bool match(const std::string& text);
-   bool match(const filesystem::path& path);
+   bool match(const char* text) const;
+   bool match(const std::string& text) const;
+   bool match(const filesystem::path& path) const;
 
    // predicates:
    bool operator()(const char* text);
@@ -38,7 +38,7 @@ public:
 
 private:
    void do_assign(const char* p1, const char* p2, bool ignore_case);
-   bool do_match(const char* p1, const char*p2);
+   bool do_match(const char* p1, const char*p2) const;
    void cow();
 
    boost::shared_ptr<dos_wildcard_implementation> m_pimpl;

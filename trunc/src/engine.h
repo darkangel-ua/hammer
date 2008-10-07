@@ -89,7 +89,8 @@ namespace hammer
          void feature_feature_rule(project* p, std::vector<pstring>& name, std::vector<pstring>* values,
                                    std::vector<pstring>& attributes);
          void feature_compose_rule(project* p, feature& f, feature_set& components);
-         sources_decl glob_rule(project* p, std::vector<pstring>& patterns, std::vector<pstring>* exceptions);
+         sources_decl glob_rule(project* p, std::vector<pstring>& patterns, 
+                                std::vector<pstring>* exceptions, bool recursive);
          void explicit_rule(project* p, const pstring& target_name);
          void use_project_rule(project* p, const pstring& project_id_alias, 
                                const pstring& project_location, feature_set* props);

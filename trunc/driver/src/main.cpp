@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include <boost/program_options.hpp>
 #include <boost/filesystem/convenience.hpp>
+#include <boost/format.hpp>
 #include <iostream>
 #include "../../src/engine.h"
 #include "../../src/feature_set.h"
@@ -72,6 +73,11 @@ namespace
       }
    }
 
+   bool is_looks_like_project(const string& s)
+   {
+      return s.find('/') != string::npos;
+   }
+
    vector<basic_target*> 
    instantiate_targets(const vector<string>& targets, const hammer::project& project,
                        const feature_set& build_request)
@@ -80,8 +86,27 @@ namespace
       feature_set* usage_requirements = project.engine()->feature_registry().make_set();
       for(vector<string>::const_iterator i = targets.begin(), last = targets.end(); i != last; ++i)
       {
-         pstring name(project.engine()->pstring_pool(), *i);
-         project.find_target(name)->instantiate(0, build_request, &result, usage_requirements);
+         if (is_looks_like_project(*i))
+         {
+            const hammer::project& p = project.engine()->load_project(*i, project);
+            typedef hammer::project::selected_targets_t selected_targets_t;
+            selected_targets_t st = p.select_best_alternative(build_request);
+            feature_set* usage_requirements = project.engine()->feature_registry().make_set();
+            for(selected_targets_t::const_iterator t = st.begin(), t_last = st.end(); t != t_last; ++t)
+            {
+               (**t).instantiate(NULL, build_request, &result, usage_requirements);
+               usage_requirements->clear();
+            }
+         }
+         else
+         {
+            pstring name(project.engine()->pstring_pool(), *i);
+            const basic_meta_target* t = project.find_target(name);
+            if (t == NULL)
+               throw runtime_error((boost::format("Can't find target '%s'.") % *i).str());
+            
+            t->instantiate(0, build_request, &result, usage_requirements);
+         }
       }
       
       return result;
@@ -121,7 +146,6 @@ namespace
             ++i;
       }
    }
-
 }
 
 int main(int argc, char** argv)

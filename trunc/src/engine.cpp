@@ -105,8 +105,8 @@ project* engine::get_upper_project(const location_t& project_path)
 location_t engine::resolve_project_alias(const location_t& loc, project_alias_data& alias_data) const
 {
    // пропускаем начальный слеш
-   location_t::const_iterator i = ++loc.begin(), last = loc.end();
-   location_t searched_loc = location_t("/") / *i;
+   location_t::const_iterator i = loc.begin(), last = loc.end();
+   location_t searched_loc = *i;
    
    global_project_links_t::const_iterator g;
    for(;;)

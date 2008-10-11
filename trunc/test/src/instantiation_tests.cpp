@@ -279,7 +279,6 @@ BOOST_FIXTURE_TEST_CASE(header_lib, instantiation_tests)
    BOOST_REQUIRE_EQUAL(tt.size(), size_t(1));
    check(tt);
 }
-*/
 
 BOOST_FIXTURE_TEST_CASE(glob, instantiation_tests)
 {
@@ -294,3 +293,4 @@ BOOST_FIXTURE_TEST_CASE(glob, instantiation_tests)
    BOOST_REQUIRE_EQUAL(tt.size(), size_t(1));
    check(tt);
 }
+*/

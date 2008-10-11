@@ -189,4 +189,10 @@ namespace hammer{
    {
       return this == &rhs;
    }
+   
+   void feature_set::clear()
+   {
+      features_.clear();
+   }
+
 }

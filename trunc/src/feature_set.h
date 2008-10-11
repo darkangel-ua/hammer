@@ -40,6 +40,7 @@ namespace hammer
          feature_set* clone() const;
          void copy_propagated(const feature_set& rhs);
          size_t size() const { return features_.size(); }
+         void clear();
 
          bool operator == (const feature_set& rhs) const;
          bool operator != (const feature_set& rhs) const { return !(*this == rhs); }

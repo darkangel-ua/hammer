@@ -32,8 +32,8 @@ namespace
    {
       po::options_description desc("General options");
       desc.add_options()
-         ("help", "produce this help message");
-      build_request_options.add("build-request", -1);
+         ("help", "produce this help message")
+         ("instantiate,i", "instantiate/materialize targets only");
 
       return desc;
    }
@@ -42,6 +42,7 @@ namespace
    {
       po::options_description desc(options_for_help());
       desc.add_options()("build-request", po::value<vector<string> >());
+      build_request_options.add("build-request", -1);
       return desc;
    }
 
@@ -150,6 +151,9 @@ int main(int argc, char** argv)
          add_all_targets(targets, project_to_build);
 
       vector<basic_target*> instantiated_targets(instantiate_targets(targets, project_to_build, *build_request));
+      if (vm.count("instantiate"))
+         return 0;
+
       nodes_t nodes(generate_targets(instantiated_targets));
       remove_propagated_targets(nodes, project_to_build);
 

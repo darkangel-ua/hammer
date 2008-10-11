@@ -348,14 +348,6 @@ void msvc_project::gether_files_impl(const build_node& node, variant& v) const
          insert_into_files(mi->source_target_, v);
          if (mi->source_node_)
             gether_files_impl(*mi->source_node_, v);
-/*
-         typedef build_node::nodes_t::const_iterator niter;
-         for(niter i = node.down_.begin(), last = node.down_.end(); i != last; ++i)
-         {
-            if ((**i).find_product(*mi))
-               gether_files_impl(**i, v);
-         }
-*/
       }
       else
       {

@@ -53,7 +53,7 @@ generator::construct(const type& target_type,
          {
             if (is_consumable((**p_i).type()))
             {
-               result->sources_.push_back(*p_i);
+               result->sources_.push_back(build_node::source_t(*p_i, *i));
                if (!node_added)
                {
                   result->down_.push_back(*i);
@@ -80,7 +80,7 @@ generator::construct(const type& target_type,
      assert(sources.size() == 1);
       
       boost::intrusive_ptr<build_node> result(new build_node);
-      result->sources_.push_back(t);
+      result->sources_.push_back(build_node::source_t(t, sources.front()));
       result->down_.push_back(sources.front());
       result->products_.push_back(new(engine_->targets_pool()) generated_target(&owner, new_name, producable_types().front().type_, &props));
       result->targeting_type_ = &target_type;

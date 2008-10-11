@@ -339,32 +339,35 @@ void msvc_project::insert_into_files(const basic_target* t, const variant& v) co
 
 void msvc_project::gether_files_impl(const build_node& node, variant& v) const
 {
-   typedef build_node::targets_t::const_iterator iter;
+   typedef build_node::sources_t::const_iterator iter;
    for(iter mi = node.sources_.begin(), mlast = node.sources_.end(); mi != mlast; ++mi)
    {
-      if ((**mi).mtarget()->meta_target() == meta_target_ ||
-          (**mi).mtarget()->type() == *obj_type_)
+      if (mi->source_target_->mtarget()->meta_target() == meta_target_ ||
+          mi->source_target_->mtarget()->type() == *obj_type_)
       {
-         insert_into_files(*mi, v);
-         
+         insert_into_files(mi->source_target_, v);
+         if (mi->source_node_)
+            gether_files_impl(*mi->source_node_, v);
+/*
          typedef build_node::nodes_t::const_iterator niter;
          for(niter i = node.down_.begin(), last = node.down_.end(); i != last; ++i)
          {
             if ((**i).find_product(*mi))
                gether_files_impl(**i, v);
          }
+*/
       }
       else
       {
-         if ((**mi).mtarget()->type() == *searched_lib_)
+         if (mi->source_target_->mtarget()->type() == *searched_lib_)
          { // this target is searched lib product
-            const feature& file_name = (**mi).properties().get("file");
-            location_t searched_file(relative_path((**mi).mtarget()->location(), location_) / file_name.value().to_string());
+            const feature& file_name = mi->source_target_->properties().get("file");
+            location_t searched_file(relative_path(mi->source_target_->mtarget()->location(), location_) / file_name.value().to_string());
             searched_file.normalize();
             v.options_->add_searched_lib(searched_file.native_file_string());
          }
          else
-            dependencies_.push_back((**mi).mtarget());
+            dependencies_.push_back(mi->source_target_->mtarget());
       }
    }
 }

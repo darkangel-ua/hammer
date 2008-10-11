@@ -11,6 +11,20 @@ namespace hammer
    class build_node
    {
       public:
+         struct source_t
+         {
+            source_t(const basic_target* source_target, 
+                     boost::intrusive_ptr<build_node> source_node) 
+                   :
+                    source_target_(source_target),
+                    source_node_(source_node)
+            {}
+
+            const basic_target* source_target_;
+            boost::intrusive_ptr<build_node> source_node_;
+         };
+         
+         typedef std::vector<source_t> sources_t;
          typedef std::vector<const basic_target*> targets_t;
          typedef std::vector<boost::intrusive_ptr<build_node> > nodes_t;
          build_node() : up_(0), targeting_type_(0), ref_counter_(0) {}
@@ -18,7 +32,7 @@ namespace hammer
          const basic_target* find_product(const basic_target* t) const;
          boost::intrusive_ptr<build_node> up_;
          nodes_t down_;
-         targets_t sources_;
+         sources_t sources_;
          targets_t products_;
          const hammer::type* targeting_type_;
          mutable unsigned long ref_counter_;

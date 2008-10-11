@@ -1,0 +1,13 @@
+repository rep1 
+   : 
+    <scm>svn 
+    <scm.url>"svn://localhost/hammer/trunc/test/tests_data/scm_tests/svn_test_repositories/rep1" 
+   ;
+
+repository rep2 
+   : 
+    <scm>svn 
+    <scm.url>"svn://localhost/hammer/trunc/test/tests_data/scm_tests/svn_test_repositories/rep2" 
+   ;
+
+alias test : /lib_from_rep2 ;

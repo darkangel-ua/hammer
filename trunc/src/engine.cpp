@@ -14,6 +14,7 @@
 #include "alias_meta_target.h"
 #include <boost/assign/list_of.hpp>
 #include <boost/assign/std/vector.hpp>
+#include <boost/format.hpp>
 #include "generator_registry.h"
 #include "msvc_generator.h"
 #include "project_requirements_decl.h"
@@ -73,6 +74,7 @@ engine::engine()
    resolver_.insert("rglob", boost::function<sources_decl (project*, std::vector<pstring>&, std::vector<pstring>*)>(boost::bind(&engine::glob_rule, this, _1, _2, _3, true)));
    resolver_.insert("explicit", boost::function<void (project*, const pstring&)>(boost::bind(&engine::explicit_rule, this, _1, _2)));
    resolver_.insert("use-project", boost::function<void (project*, const pstring&, const pstring&, feature_set*)>(boost::bind(&engine::use_project_rule, this, _1, _2, _3, _4)));
+   resolver_.insert("repository", boost::function<void (project*, const pstring&, feature_set*)>(boost::bind(&engine::repository_rule, this, _1, _2, _3)));
 
    {
       feature_attributes ft = {0}; ft.free = 1;
@@ -102,11 +104,54 @@ project* engine::get_upper_project(const location_t& project_path)
       return 0;
 }
 
-location_t engine::resolve_project_alias(const location_t& loc, project_alias_data& alias_data) const
+void engine::update_project_scm_info(project& p, const project_alias_data& alias_data) const
+{
+   if (p.scm_info().scm_url_.empty() && 
+       alias_data.properties_ != NULL) // alias_data.properties_ can be null if no features was specified in use-project rule
+   {
+      // добавляем эти свойства в проект чтобы можна было ими воспользоваться при последующих 
+      // материализациях вложенных проектов
+      feature_set::const_iterator scm_client_name_feature = alias_data.properties_->find("scm");
+      if (scm_client_name_feature != alias_data.properties_->end())
+         p.scm_info().scm_client_name_ = (**scm_client_name_feature).value();
+
+      feature_set::const_iterator scm_url_feature = alias_data.properties_->find("scm.url");
+      if (scm_url_feature != alias_data.properties_->end())
+         p.scm_info().scm_url_ = (**scm_url_feature).value();
+   }
+}
+
+bool engine::materialize_or_load_next_repository(project_alias_data& alias_data)
+{
+   if (repositories_.empty())
+      return false;
+
+   repository_data& rep_data = repositories_.front();
+   if (repositories_.front().materialized_)
+      return false;
+
+   location_t repository_full_location(rep_data.defined_in_project_->location() / rep_data.location_);
+   alias_data.location_ = repository_full_location;
+   alias_data.properties_ = rep_data.properties_;
+   if (!exists(repository_full_location))
+      initial_materialization(alias_data);
+
+   project& loaded_project = load_project(repository_full_location);
+   update_project_scm_info(loaded_project, alias_data);
+
+   // rotating left repositories
+   rep_data.materialized_ = true;
+   repositories_.push_back(rep_data);
+   repositories_.pop_front();
+   
+   return true;
+}
+
+location_t engine::resolve_project_alias(project_alias_data& alias_data, const location_t& loc)
 {
    // пропускаем начальный слеш
-   location_t::const_iterator i = loc.begin(), last = loc.end();
-   location_t searched_loc = *i;
+   location_t::const_iterator i = ++loc.begin(), last = loc.end();
+   location_t searched_loc = location_t("/") / *i;
    
    global_project_links_t::const_iterator g;
    for(;;)
@@ -118,7 +163,17 @@ location_t engine::resolve_project_alias(const location_t& loc, project_alias_da
          if (i != last)
             searched_loc /= *i;
          else 
-            throw runtime_error("Can't resolve global project link '" + loc.string() + "'.");
+         {
+            if (!materialize_or_load_next_repository(alias_data))
+               throw runtime_error("Can't resolve global project link '" + loc.string() + "'.");
+            else // Restart searching from the beginning
+            {
+               i = ++loc.begin();
+               last = loc.end();
+               searched_loc = location_t("/") / *i;
+               continue;
+            }
+         }
       }
       else 
          break;
@@ -132,6 +187,7 @@ location_t engine::resolve_project_alias(const location_t& loc, project_alias_da
 
    return result;
 }
+
 
 void engine::initial_materialization(const project_alias_data& alias_data) const
 {
@@ -156,26 +212,17 @@ project& engine::load_project(location_t project_path, const project& from_proje
    if (project_path.has_root_path())
    {
       project_alias_data alias_data;
-      location_t tail_path = resolve_project_alias(project_path, alias_data);
+      location_t tail_path = resolve_project_alias(alias_data, project_path);
       project_path = alias_data.location_;
-      if (!exists(project_path))
+      if (!exists(project_path) && 
+          find_upper_materialized_project(project_path) == NULL)
+      {
          initial_materialization(alias_data);
+      }
 
       project& p = load_project(project_path);
-      if (p.scm_info().scm_url_.empty() && 
-          alias_data.properties_ != NULL) // alias_data.properties_ can be null if no features was specified in use-project rule
-      {
-         // добавляем эти свойства в проект чтобы можна было ими воспользоваться при последующих 
-         // материализациях вложенных проектов
-         feature_set::const_iterator scm_client_name_feature = alias_data.properties_->find("scm");
-         if (scm_client_name_feature != alias_data.properties_->end())
-            p.scm_info().scm_client_name_ = (**scm_client_name_feature).value();
-
-         feature_set::const_iterator scm_url_feature = alias_data.properties_->find("scm.url");
-         if (scm_url_feature != alias_data.properties_->end())
-            p.scm_info().scm_url_ = (**scm_url_feature).value();
-      }
-      
+      update_project_scm_info(p, alias_data);
+     
       if (!tail_path.empty())
          return load_project(tail_path, p);
       else
@@ -244,6 +291,12 @@ engine::find_upper_materialized_project(const project& p)
       else
          return NULL;
    }
+}
+
+const project* engine::find_upper_materialized_project(const location_t& location)
+{
+   project* p = get_upper_project(location);
+   return p == NULL ? NULL : find_upper_materialized_project(*p);
 }
 
 const scm_client& engine::resolve_scm_client(const project& p)
@@ -596,7 +649,7 @@ void engine::use_project_rule(project* p, const pstring& project_id_alias,
       {
          use_project_data_t::mapped_type::const_iterator j = i->second.find(project_location.to_string());
          if (j != i->second.end())
-            throw std::runtime_error("alias '" + project_id_alias.to_string() + "' allready mapped to location '" + j->second + "'.");
+            throw std::runtime_error("alias '" + project_id_alias.to_string() + "' already mapped to location '" + j->second + "'.");
       }
       else
          use_project_data_[p].insert(make_pair(location_t(l), project_location.to_string()));
@@ -614,6 +667,17 @@ void engine::use_project_rule(project* p, const pstring& project_id_alias,
 
       global_project_links_.insert(make_pair(l, alias_data));
    }
+}
+
+void engine::repository_rule(project* p, const pstring& a_project_location, feature_set* props)
+{
+   location_t project_location(a_project_location.to_string());
+   repositories_t::const_iterator i = find_if(repositories_.begin(), repositories_.end(), 
+                                              boost::bind(&repository_data::location_, _1) == boost::ref(project_location));
+   if (i != repositories_.end())
+      throw runtime_error((boost::format("Repository with placement at '%s' already defined.") % project_location.string()).str());
+
+   repositories_.push_back(repository_data(p, project_location, props));
 }
 
 }

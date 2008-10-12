@@ -2,10 +2,8 @@ lib hammer.core
    : 
     hammer_parser
     hammer_lexer
-    [ glob ../src/*.cpp ]
-    [ glob ../src/*.h ]
-    [ glob ../src/project_generators/msvc/*.cpp ]
-    [ glob ../src/project_generators/msvc/*.h ]
+    [ rglob ../src/*.cpp ]
+    [ rglob ../src/*.h ]
     ../src/build/hammer_walker.c
     /libantlr3c
     /boost/function_types

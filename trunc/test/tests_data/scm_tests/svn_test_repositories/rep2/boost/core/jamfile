@@ -1,1 +1,1 @@
-alias core : 1.0/build ;
+alias core : 1.0/build : <version>1.0 ;

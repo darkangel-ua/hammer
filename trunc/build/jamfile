@@ -13,6 +13,7 @@ lib hammer.core
     /boost/regex
     /boost/assign
     /boost/process
+    /boost/format
    :
     <include>../src/
     <link>static

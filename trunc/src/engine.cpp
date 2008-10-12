@@ -651,8 +651,8 @@ void engine::use_project_rule(project* p, const pstring& project_id_alias,
          if (j != i->second.end())
             throw std::runtime_error("alias '" + project_id_alias.to_string() + "' already mapped to location '" + j->second + "'.");
       }
-      else
-         use_project_data_[p].insert(make_pair(location_t(l), project_location.to_string()));
+
+      use_project_data_[p].insert(make_pair(location_t(l), project_location.to_string()));
    }
    else
    {

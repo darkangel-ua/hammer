@@ -1,3 +1,5 @@
 use-project /lib1 : lib1 ;
 use-project /lib2 : lib2 ;
-exe test : main.cpp /lib1/<link>static /lib2 ;
+use-project lib3 : lib3 ;
+use-project lib4 : lib4/1.0/build ;
+exe test : main.cpp /lib1/<link>static /lib2 lib4 ;

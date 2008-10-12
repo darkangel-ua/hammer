@@ -1,1 +1,1 @@
-use-project /lib_from_rep2 : lib_from_rep2/build ;
+use-project /boost : boost ;

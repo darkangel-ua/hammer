@@ -10,4 +10,4 @@ repository rep2
     <scm.url>"svn://localhost/hammer/trunc/test/tests_data/scm_tests/svn_test_repositories/rep2" 
    ;
 
-alias test : /lib_from_rep2 ;
+alias test : /boost/core ;

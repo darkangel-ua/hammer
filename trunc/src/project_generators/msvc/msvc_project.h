@@ -25,7 +25,7 @@ namespace hammer
    {
       namespace configuration_types
       {
-         enum value {exe = 1, static_lib = 4, shared_lib = 2};
+         enum value {exe = 1, static_lib = 4, shared_lib = 2, utility = 10};
       }
 
       class msvc_project

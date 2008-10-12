@@ -103,7 +103,7 @@ configuration_types::value msvc_project::resolve_configuration_type(const varian
             return configuration_types::shared_lib;
          else
             if (v.target_->type() == header_lib_type)
-               return configuration_types::shared_lib;
+               return configuration_types::utility;
             else
                throw std::runtime_error("[msvc_project] Can't resolve type '" + v.target_->type().name() + "'.");
 } 

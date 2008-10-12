@@ -1,8 +1,13 @@
-test [ type = EXE; ]
+test [ type = EXE; features = !<define>B_SHARED; ]
 {
    main.cpp [ type = CPP; features = <define>STATIC_UP <define>WIN32; ] {}
    a [ type = STATIC_LIB; ]
    {
       a.cpp [ type = CPP; features = <define>STATIC_HERE; ] {}
+   }
+
+   b [ type = STATIC_LIB; ]
+   {
+      b.cpp [ type = CPP; features = !<define>B_SHARED; ] {}
    }
 }

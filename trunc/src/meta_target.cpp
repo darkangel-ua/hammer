@@ -102,7 +102,7 @@ namespace hammer{
                                  feature_set* usage_requirements) const
    {
       feature_set* mt_fs = build_request.clone();
-      requirements().eval(mt_fs, project()->engine()->feature_registry());
+      requirements().eval(build_request, mt_fs);
 
       feature_set* local_usage_requirements = project()->engine()->feature_registry().make_set();
       feature_set* build_request_for_dependencies = project()->engine()->feature_registry().make_set();

@@ -1,4 +1,4 @@
-test [ type = EXE; features = <define>USE_LIB_A <define>USE_LIB_B <define>USE_LIB_C; ]
+test [ type = EXE; features = <define>USE_LIB_A <define>USE_LIB_B <define>USE_LIB_C <define>USE_LIB_D; ]
 {
    main.cpp [ type = CPP; features = <define>USE_LIB_A <define>USE_LIB_B <define>USE_LIB_C; ] {}
    b [ type = SHARED_LIB; ] 

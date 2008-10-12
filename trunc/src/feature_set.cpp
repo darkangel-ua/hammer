@@ -40,7 +40,10 @@ namespace hammer{
          }
       }
       else
-         features_.push_back(f);
+      {
+         if (find(*f) == end())
+            features_.push_back(f);
+      }
       
       return *this;
    }
@@ -132,18 +135,18 @@ namespace hammer{
 
    feature_set::const_iterator feature_set::find(const feature& f) const
    {
-      if (f.attributes().free)
+      for(const_iterator i = find(f.name()), last = end(); i != last;)
       {
-         for(const_iterator i = find(f.name()), last = end(); i != last;)
-            if ((**i).value() == f.value())
-               return i;
-            else
-               i = find(++i, f.name());
-         
-         return end();
+         if (**i == f)
+            return i;
+
+         if (f.attributes().free)
+            i = find(++i, f.name());
+         else
+            break;
       }
-      else
-         return find(f.name());
+
+      return end();
    }
 
    void set_path_data(feature_set* f, const basic_meta_target* t)

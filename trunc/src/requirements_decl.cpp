@@ -98,8 +98,12 @@ void linear_and_condition::eval(feature_set* result,
 {
    bool satisfy = true;
    for(features_t::const_iterator i = features_.begin(), last = features_.end(); i != last; ++i)
-      satisfy = satisfy && (result->find(**i) != result->end() ||
-                            fr.get_def((**i).name()).get_default() == (**i).value());
+   {
+      feature_set::const_iterator f = result->find(**i);
+      satisfy = satisfy && (f != result->end() ||
+                            (f == result->end() && 
+                             fr.get_def((**i).name()).get_default() == (**i).value()));
+   }
 
    if (satisfy)
       result->join(result_);
@@ -110,7 +114,8 @@ void linear_and_condition::eval(const feature_set& build_request,
 {
    bool satisfy = true;
    for(features_t::const_iterator i = features_.begin(), last = features_.end(); i != last; ++i)
-      satisfy = satisfy && (build_request.find(**i) != build_request.end());
+      satisfy = satisfy && (build_request.find(**i) != build_request.end() || 
+                            result->find(**i) != result->end());
 
    if (satisfy)
       result->join(result_);

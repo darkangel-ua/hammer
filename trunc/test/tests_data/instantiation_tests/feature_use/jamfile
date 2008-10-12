@@ -1,4 +1,5 @@
 lib a : a.cpp : : : <define>USE_LIB_A <source>b <use>c ;
 lib b : b.cpp : : : <define>USE_LIB_B ;
 lib c : c.cpp : : : <define>USE_LIB_C ;
-exe test : main.cpp : <use>a ;
+lib d : d.cpp : : : <define>USE_LIB_D ;
+exe test : main.cpp : <use>a <use>d ;

@@ -32,6 +32,7 @@ namespace hammer
          path_data& get_path_data() { return path_data_; }
          const dependency_data& get_dependency_data() const { return dependency_data_; }
          dependency_data& get_dependency_data() { return dependency_data_; }
+         bool operator == (const feature& rhs) const;
 
       private:
          const feature_def* def_;

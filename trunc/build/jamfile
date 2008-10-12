@@ -8,6 +8,7 @@ lib hammer.core
     [ glob ../src/project_generators/msvc/*.h ]
     ../src/build/hammer_walker.c
     /libantlr3c
+    /boost/function_types
     /boost/ptr_container
     /boost/filesystem
     /boost/guid

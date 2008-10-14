@@ -207,6 +207,18 @@ void engine::initial_materialization(const project_alias_data& alias_data) const
    scm_client->checkout(alias_data.location_, (**scm_uri).value().to_string(), false);
 }
 
+static void materialize_directory(const scm_client& scm_client, location_t dir, bool recursive = true)
+{
+   string what_up;
+   while(!exists(dir)) 
+   {
+      what_up = dir.leaf();
+      dir = dir.branch_path();
+   }
+
+   scm_client.up(dir, what_up, recursive);
+}
+
 project& engine::load_project(location_t project_path, const project& from_project)
 {
    if (project_path.has_root_path())
@@ -214,10 +226,13 @@ project& engine::load_project(location_t project_path, const project& from_proje
       project_alias_data alias_data;
       location_t tail_path = resolve_project_alias(alias_data, project_path);
       project_path = alias_data.location_;
-      if (!exists(project_path) && 
-          find_upper_materialized_project(project_path) == NULL)
+      if (!exists(project_path))
       {
-         initial_materialization(alias_data);
+         const project* upper_materialized_project = find_upper_materialized_project(project_path);
+         if (upper_materialized_project == NULL)
+            initial_materialization(alias_data);
+         else
+            materialize_directory(resolve_scm_client(*upper_materialized_project), project_path, false);
       }
 
       project& p = load_project(project_path);
@@ -238,18 +253,6 @@ project& engine::load_project(location_t project_path, const project& from_proje
       else
          return load_project(tail_path, load_project(from_project.location() / resolved_use_path));
    }
-}
-
-static void materialize_directory(const scm_client& scm_client, location_t dir, bool recursive = true)
-{
-   string what_up;
-   while(!exists(dir)) 
-   {
-      what_up = dir.leaf();
-      dir = dir.branch_path();
-   }
-
-   scm_client.up(dir, what_up, recursive);
 }
 
 void engine::resolve_use_project(location_t& resolved_use_path, location_t& tail_path,

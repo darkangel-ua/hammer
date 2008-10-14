@@ -4,5 +4,5 @@ exe hammer :
              /boost/program_options/<link>static
              /boost/filesystem/<link>static
              /boost/format
-             /hammer/core/<link>static
+             /hammer//core/<link>static
            ;

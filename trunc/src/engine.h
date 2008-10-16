@@ -1,4 +1,5 @@
-#pragma once
+#if !defined(h_4b62efd8_cafb_41d3_a747_e981804129e5)
+#define h_4b62efd8_cafb_41d3_a747_e981804129e5
 
 #include <boost/filesystem/path.hpp>
 #include <boost/noncopyable.hpp>
@@ -122,3 +123,5 @@ namespace hammer
 
    boost::filesystem::path find_root(const boost::filesystem::path& initial_path);
 }
+
+#endif //h_4b62efd8_cafb_41d3_a747_e981804129e5

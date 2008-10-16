@@ -1,4 +1,6 @@
-#pragma once
+#if !defined(h_db895abe_fa99_475c_a70c_3e9fdd978a51)
+#define h_db895abe_fa99_475c_a70c_3e9fdd978a51
+
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
@@ -284,3 +286,5 @@ namespace hammer
 
 	};
 }
+
+#endif //h_db895abe_fa99_475c_a70c_3e9fdd978a51

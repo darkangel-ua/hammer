@@ -1,4 +1,5 @@
-#pragma once
+#if !defined(h_bd7a680f_5464_4a47_b274_185a105a6da0)
+#define h_bd7a680f_5464_4a47_b274_185a105a6da0
 
 namespace hammer
 {
@@ -74,3 +75,5 @@ namespace hammer
          impl_t* impl_;
 };
 }
+
+#endif //h_bd7a680f_5464_4a47_b274_185a105a6da0

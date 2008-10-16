@@ -1,4 +1,5 @@
-#pragma once
+#if !defined(h_8a1631c9_fa60_41d1_9cb8_283ab6090d1b)
+#define h_8a1631c9_fa60_41d1_9cb8_283ab6090d1b
 
 #include <iosfwd>
 #include <string>
@@ -36,3 +37,5 @@ namespace hammer
    inline bool operator == (const std::string& lhs, const pstring& rhs) { return rhs == lhs.c_str(); }
    inline bool operator == (const pstring& lhs, const std::string& rhs) { return lhs == rhs.c_str(); }
 }
+
+#endif //h_8a1631c9_fa60_41d1_9cb8_283ab6090d1b

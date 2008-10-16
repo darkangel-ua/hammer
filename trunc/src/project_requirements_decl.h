@@ -1,4 +1,5 @@
-#pragma once
+#if !defined(h_47f09334_e5bd_48ac_a256_1b8d0efd8506)
+#define h_47f09334_e5bd_48ac_a256_1b8d0efd8506
 
 #include <string>
 #include "requirements_decl.h"
@@ -18,3 +19,5 @@ namespace hammer
          requirements_decl requirements_;
    };
 }
+
+#endif //h_47f09334_e5bd_48ac_a256_1b8d0efd8506

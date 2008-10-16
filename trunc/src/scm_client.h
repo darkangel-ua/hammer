@@ -1,4 +1,6 @@
-#pragma once
+#if !defined(h_df3294ec_17ab_4253_9f63_e0cd5eaf4a41)
+#define h_df3294ec_17ab_4253_9f63_e0cd5eaf4a41
+
 #include "location.h"
 
 namespace hammer
@@ -11,3 +13,5 @@ namespace hammer
          virtual ~scm_client() {};
    };
 }
+
+#endif //h_df3294ec_17ab_4253_9f63_e0cd5eaf4a41

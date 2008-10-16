@@ -78,7 +78,7 @@ struct generator_tests
    void check_msvc_solution()
    {
       fs::path etalon_files_path(test_data_path / "generator_tests" / test_name_ / "msvc80_solution_etalon");
-      fs::path generated_files_path(test_data_path / "generator_tests" / test_name_);
+      fs::path generated_files_path(test_data_path / "generator_tests" / test_name_ / "vc80");
       fs::recursive_directory_iterator i_etalon_files(etalon_files_path);
       fs::recursive_directory_iterator i_generated_files(generated_files_path);
       set<fs::path> etalon_files, generated_files;
@@ -196,15 +196,6 @@ struct generator_tests
 };
 
 /*
-BOOST_FIXTURE_TEST_CASE(simple_exe, generator_tests)
-{
-   test_name_ = "simple_exe";
-   load();
-   BOOST_REQUIRE_NO_THROW(instantiate("test"));
-   BOOST_REQUIRE_NO_THROW(run_generators());
-   check();
-}
-
 BOOST_FIXTURE_TEST_CASE(exe_and_static_lib, generator_tests)
 {
    test_name_ = "exe_and_static_lib";
@@ -263,6 +254,15 @@ BOOST_FIXTURE_TEST_CASE(cpp_libs, generator_tests)
 BOOST_FIXTURE_TEST_CASE(g_header_lib, generator_tests)
 {
    test_name_ = "header_lib";
+   load();
+   BOOST_REQUIRE_NO_THROW(instantiate("test"));
+   BOOST_REQUIRE_NO_THROW(run_generators());
+   check();
+}
+
+BOOST_FIXTURE_TEST_CASE(simple_exe, generator_tests)
+{
+   test_name_ = "simple_exe";
    load();
    BOOST_REQUIRE_NO_THROW(instantiate("test"));
    BOOST_REQUIRE_NO_THROW(run_generators());

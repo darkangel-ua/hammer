@@ -26,9 +26,10 @@ struct msvc_solution::impl_t
 {
    typedef msvc_project::dependencies_t dependencies_t;
    typedef boost::ptr_map<const meta_target*, msvc_project> projects_t;
+   typedef vector<msvc_project*> sorted_projects_t;
 
    impl_t(msvc_solution* owner, engine& e, const location_t& output_path) 
-      : owner_(owner), engine_(e), output_location_(output_path)
+      : owner_(owner), engine_(e), output_location_(output_path / "vc80")
    {
    }
 
@@ -36,6 +37,8 @@ struct msvc_solution::impl_t
                               dependencies_t::const_iterator last) const;
    void write_project_section(ostream& os, const msvc_project& project) const;
    boost::guid generate_id() const { return boost::guid::create(); }
+   void rename_if_duplicate(sorted_projects_t& projects) const;\
+
    msvc_solution* owner_;
    engine& engine_;
    location_t output_location_;
@@ -58,7 +61,7 @@ void impl_t::generate_dependencies(impl_t::dependencies_t::const_iterator first,
           !i->second->has_variant(*first)))
       {
          
-         auto_ptr<msvc_project> p_guard(new msvc_project(engine_, owner_->generate_id()));
+         auto_ptr<msvc_project> p_guard(new msvc_project(engine_, output_location_, owner_->generate_id()));
          msvc_project* p = p_guard.get();
          p->add_variant((**first).build_node());
          p->generate();
@@ -113,7 +116,7 @@ msvc_solution::~msvc_solution()
 
 void msvc_solution::add_target(boost::intrusive_ptr<const build_node> node)
 {
-   std::auto_ptr<msvc_project> p_guarg(new msvc_project(impl_->engine_, generate_id()));
+   std::auto_ptr<msvc_project> p_guarg(new msvc_project(impl_->engine_, impl_->output_location_, generate_id()));
    msvc_project* p = p_guarg.get();
    typedef vector<const main_target*> dependencies_t;
    dependencies_t dependencies;
@@ -128,16 +131,40 @@ static bool less_by_name(const msvc_project* lhs,
    return lhs->name() < rhs->name();
 }
 
+void msvc_solution::impl_t::rename_if_duplicate(sorted_projects_t& projects) const
+{
+   sorted_projects_t checked;
+   sorted_projects_t need_unique_names;
+   
+   if (projects.size() < 2)
+      return;
+
+   for(sorted_projects_t::iterator i = projects.begin(), last = projects.end(); i != last; ++i)
+   {
+      if (binary_search(checked.begin(), checked.end(), *i, less_by_name))
+         need_unique_names.push_back(*i);
+      
+      checked.push_back(*i);
+   }
+
+   for(sorted_projects_t::iterator i = need_unique_names.begin(), last = need_unique_names.end(); i != last; ++i)
+      (**i).should_generate_unique_dir();
+}
+
 void msvc_solution::write() const
 {
    boost::filesystem::ofstream f;
+   
+   if (!exists(impl_->output_location_))
+      create_directory(impl_->output_location_);
+   
    location_t filename = impl_->output_location_ / (impl_->name_ + ".sln");
    f.open(filename, std::ios::trunc);
    //throw std::runtime_error("Can't write '" + filename.string() + "'.";
    f << "Microsoft Visual Studio Solution File, Format Version 9.00\n"
         "# Visual Studio 2005\n";
    msvc_project::dependencies_t dependencies;
-   typedef impl_t::projects_t::const_iterator iter;
+   typedef impl_t::projects_t::iterator iter;
    for(iter i = impl_->projects_.begin(), last = impl_->projects_.end(); i != last; ++i)
    {
       i->second->generate();
@@ -149,16 +176,19 @@ void msvc_solution::write() const
    impl_->generate_dependencies(dependencies.begin(), dependencies.end());
 
    // стабилизируем порядок проектов с солюшине, а то он все время меняется и 
-   // невозможно нормально это тестировать
-   typedef vector<const msvc_project*> sorted_projects_t;
-   sorted_projects_t sorted_projects;
+   // невозможно нормально это тестировать 
+   impl_t::sorted_projects_t sorted_projects;
    for(iter i = impl_->projects_.begin(), last = impl_->projects_.end(); i != last; ++i)
       sorted_projects.push_back(i->second);
 
+   // writing project files(.vcproj) and project sections in solution
    sort(sorted_projects.begin(), sorted_projects.end(), less_by_name);
+   impl_->rename_if_duplicate(sorted_projects);
+
    set<string> variant_names;
-   for(sorted_projects_t::const_iterator i = sorted_projects.begin(), last = sorted_projects.end(); i != last; ++i)
+   for(impl_t::sorted_projects_t::const_iterator i = sorted_projects.begin(), last = sorted_projects.end(); i != last; ++i)
    {
+      (**i).write();
       impl_->write_project_section(f, **i);
       typedef msvc_project::variants_t::const_iterator viter;
       for(viter v = (*i)->variants().begin(), vlast = (*i)->variants().end(); v != vlast; ++v)

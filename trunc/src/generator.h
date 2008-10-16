@@ -1,4 +1,6 @@
-#pragma once
+#if !defined(h_9b0699bd_cc04_4e19_874b_45c95b909551)
+#define h_9b0699bd_cc04_4e19_874b_45c95b909551
+
 #include <string>
 #include <vector>
 #include <utility>
@@ -69,3 +71,5 @@ namespace hammer
          const feature_set* constraints_;
    };
 }
+
+#endif //h_9b0699bd_cc04_4e19_874b_45c95b909551

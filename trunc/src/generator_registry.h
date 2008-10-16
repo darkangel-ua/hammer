@@ -1,4 +1,6 @@
-#pragma once
+#if !defined(h_fd9d533e_506e_440b_b081_a3cf5544771d)
+#define h_fd9d533e_506e_440b_b081_a3cf5544771d
+
 #include "generator.h"
 #include <boost/ptr_container/ptr_map.hpp>
 
@@ -34,3 +36,5 @@ namespace hammer
                         const main_target& owner) const;
    };
 }
+
+#endif //h_fd9d533e_506e_440b_b081_a3cf5544771d

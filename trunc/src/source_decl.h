@@ -1,4 +1,5 @@
-#pragma once
+#if !defined(h_1fa42706_d348_48de_9e78_83103be8476d)
+#define h_1fa42706_d348_48de_9e78_83103be8476d
 
 #include "pstring.h"
 
@@ -46,3 +47,5 @@ namespace hammer
 			feature_set* properties_;
 	 };
 }
+
+#endif //h_1fa42706_d348_48de_9e78_83103be8476d

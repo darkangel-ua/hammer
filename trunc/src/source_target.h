@@ -1,4 +1,6 @@
-#pragma once
+#if !defined(h_000faec0_e1c4_47aa_911a_31a1d9761f31)
+#define h_000faec0_e1c4_47aa_911a_31a1d9761f31
+
 #include "pstring.h"
 #include "basic_target.h"
 
@@ -19,3 +21,5 @@ namespace hammer
          virtual std::vector<boost::intrusive_ptr<build_node> > generate();
    };
 }
+
+#endif //h_000faec0_e1c4_47aa_911a_31a1d9761f31

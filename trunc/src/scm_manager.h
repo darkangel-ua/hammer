@@ -1,4 +1,6 @@
-#pragma once 
+#if !defined(h_10c35936_31ea_44e7_930d_8e93ae4e66b8)
+#define h_10c35936_31ea_44e7_930d_8e93ae4e66b8
+
 #include <string>
 #include "scm_client.h"
 #include <boost/ptr_container/ptr_map.hpp>
@@ -17,3 +19,5 @@ namespace hammer
          scm_clients scm_clients_;
    };
 }
+
+#endif //h_10c35936_31ea_44e7_930d_8e93ae4e66b8

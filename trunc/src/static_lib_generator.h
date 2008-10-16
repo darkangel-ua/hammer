@@ -1,4 +1,6 @@
-#pragma once
+#if !defined(h_ccd954c3_67fa_4c80_b653_1ad973399437)
+#define h_ccd954c3_67fa_4c80_b653_1ad973399437
+
 #include "generator.h"
 
 namespace hammer
@@ -25,3 +27,5 @@ namespace hammer
          const type* searched_lib_;
    };
 }
+
+#endif //h_ccd954c3_67fa_4c80_b653_1ad973399437

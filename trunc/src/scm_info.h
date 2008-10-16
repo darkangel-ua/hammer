@@ -1,4 +1,6 @@
-#pragma once
+#if !defined(h_90141c4b_aabf_463c_be8c_02153fdbd614)
+#define h_90141c4b_aabf_463c_be8c_02153fdbd614
+
 #include "pstring.h"
 
 namespace hammer
@@ -18,3 +20,5 @@ namespace hammer
          pstring scm_client_name_;
    };
 }
+
+#endif //h_90141c4b_aabf_463c_be8c_02153fdbd614

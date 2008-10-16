@@ -1,4 +1,6 @@
-#pragma once
+#if !defined(h_29741f53_09ff_4880_b28d_86010263122e)
+#define h_29741f53_09ff_4880_b28d_86010263122e
+
 #include "pstring.h"
 #include <boost/iterator/iterator_facade.hpp>
 #include "source_decl.h"
@@ -61,3 +63,5 @@ namespace hammer
          void clone_if_needed();
    };
 }
+
+#endif //h_29741f53_09ff_4880_b28d_86010263122e

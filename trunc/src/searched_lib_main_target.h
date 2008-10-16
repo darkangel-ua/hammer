@@ -1,4 +1,6 @@
-#pragma once
+#if !defined(h_0a9ee961_c72c_4beb_a22a_b562db749dfd)
+#define h_0a9ee961_c72c_4beb_a22a_b562db749dfd
+
 #include "main_target.h"
 
 namespace hammer
@@ -14,3 +16,5 @@ namespace hammer
 
    };
 }
+
+#endif //h_0a9ee961_c72c_4beb_a22a_b562db749dfd

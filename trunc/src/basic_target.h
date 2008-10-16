@@ -1,4 +1,5 @@
-#pragma once
+#if !defined(h_5c00dc03_f874_4599_a716_cf9f475192d0)
+#define h_5c00dc03_f874_4599_a716_cf9f475192d0
 
 #include <boost/noncopyable.hpp>
 #include "pool.h"
@@ -39,3 +40,5 @@ namespace hammer
          std::vector<basic_target*> dependencies_;
    };
 }
+
+#endif //h_5c00dc03_f874_4599_a716_cf9f475192d0

@@ -1,4 +1,6 @@
-#pragma once
+#if !defined(h_34db5037_4bfd_4178_8169_9c21d59b821e)
+#define h_34db5037_4bfd_4178_8169_9c21d59b821e
+
 #include <vector>
 #include <boost/intrusive_ptr.hpp>
 #include <algorithm>
@@ -57,3 +59,5 @@ namespace hammer
          return 0;
    }
 }
+
+#endif //h_34db5037_4bfd_4178_8169_9c21d59b821e

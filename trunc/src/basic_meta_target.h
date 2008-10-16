@@ -1,4 +1,5 @@
-#pragma once
+#if !defined(h_28ffa573_8792_4330_8c82_27921827e424)
+#define h_28ffa573_8792_4330_8c82_27921827e424
 
 #include <vector>
 #include "pstring.h"
@@ -84,3 +85,5 @@ namespace hammer
          bool is_explicit_;
    };
 }
+
+#endif //h_28ffa573_8792_4330_8c82_27921827e424

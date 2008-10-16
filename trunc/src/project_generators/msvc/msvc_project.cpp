@@ -49,7 +49,7 @@ void msvc_project::add_variant(boost::intrusive_ptr<const build_node> node)
    }
 }
 
-location_t msvc_project::location() const 
+const location_t& msvc_project::location() const 
 { 
    assert(!id_.empty() && "You must add some variants to project before.");
    if(location_.empty())
@@ -146,12 +146,10 @@ void msvc_project::fill_options(const feature_set& props, options* opts, const m
             const basic_meta_target* bmt = (**i).get_path_data().target_;
             location_t p1(bmt->location() / (**i).value().to_string());
             p1.normalize();
-            location_t p2(mt.location());
-            p2.normalize();
             // По уму это нужно вообще отсюда убрать 
             // и передавать в эту функцию variant для которого идет заполнение опций и уже у него брать путь
             // относительно которого будут путезависимые опции
-            location_t p = relative_path(p1, p2) ;
+            location_t p = relative_path(p1, location()) ;
             p.normalize();
 
             opts->add_include(p.native_file_string());

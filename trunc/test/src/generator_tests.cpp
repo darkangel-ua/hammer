@@ -205,15 +205,6 @@ BOOST_FIXTURE_TEST_CASE(exe_and_static_lib, generator_tests)
    check();
 }
 
-BOOST_FIXTURE_TEST_CASE(path_features, generator_tests)
-{
-   test_name_ = "path_features";
-   load();
-   BOOST_REQUIRE_NO_THROW(instantiate("test"));
-   BOOST_REQUIRE_NO_THROW(run_generators());
-   check();
-}
-
 BOOST_FIXTURE_TEST_CASE(prebuilt_libs, generator_tests)
 {
    test_name_ = "prebuilt_libs";
@@ -269,3 +260,12 @@ BOOST_FIXTURE_TEST_CASE(simple_exe, generator_tests)
    check();
 }
 */
+
+BOOST_FIXTURE_TEST_CASE(path_features, generator_tests)
+{
+   test_name_ = "path_features";
+   load();
+   BOOST_REQUIRE_NO_THROW(instantiate("test"));
+   BOOST_REQUIRE_NO_THROW(run_generators());
+   check();
+}

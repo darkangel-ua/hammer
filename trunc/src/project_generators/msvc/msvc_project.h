@@ -92,7 +92,7 @@ namespace hammer
             const hammer::meta_target& meta_target() const { return *meta_target_; }
             const dependencies_t& dependencies() const { return dependencies_;}
             location_t full_project_name() const; // путь относительно meta_target проекта и имя файла проекта
-            location_t location() const;
+            const location_t& location() const;
             const std::string& name() const;
             const variants_t& variants() const { return variants_; }
             void should_generate_unique_dir(bool v = true);

@@ -1,4 +1,5 @@
-#pragma once
+#if !defined(h_36226b9c_f805_440f_95a4_692de7558875)
+#define h_36226b9c_f805_440f_95a4_692de7558875
 
 #include "meta_target.h"
 
@@ -22,3 +23,5 @@ namespace hammer
                                        const feature_set* additional_build_properties) const;
    };
 }
+
+#endif //h_36226b9c_f805_440f_95a4_692de7558875

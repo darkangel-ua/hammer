@@ -1,4 +1,6 @@
-#pragma once
+#if !defined(h_61fc88e9_fff4_4c7a_a2b2_b69f7f92b327)
+#define h_61fc88e9_fff4_4c7a_a2b2_b69f7f92b327
+
 #include <boost/filesystem/path.hpp>
 
 namespace hammer
@@ -17,3 +19,5 @@ namespace hammer
       project* project_;
    };
 }
+
+#endif //h_61fc88e9_fff4_4c7a_a2b2_b69f7f92b327

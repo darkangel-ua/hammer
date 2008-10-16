@@ -1,5 +1,5 @@
-#ifndef __HAMMER_WALKER_IMPL__
-#define __HAMMER_WALKER_IMPL__
+#if !defined(h_260de696_83c3_4919_8fd2_1f928a4da80d)
+#define h_260de696_83c3_4919_8fd2_1f928a4da80d
 
 #include <antlr3basetree.h>
 
@@ -54,4 +54,4 @@ extern "C"
 };
 #endif
 
-#endif
+#endif //h_260de696_83c3_4919_8fd2_1f928a4da80d

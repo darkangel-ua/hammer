@@ -1,4 +1,6 @@
-#pragma once
+#if !defined(h_5dfc9743_f59c_458d_9f35_b8d36006bf2e)
+#define h_5dfc9743_f59c_458d_9f35_b8d36006bf2e
+
 #include "typed_meta_target.h"
 
 namespace hammer
@@ -15,3 +17,5 @@ namespace hammer
                                                  const feature_set& computed_usage_requirements) const;
    };
 }
+
+#endif //h_5dfc9743_f59c_458d_9f35_b8d36006bf2e

@@ -1,4 +1,5 @@
-#pragma once
+#if !defined(h_0cb5b3c6_38b2_4139_bccb_93ae6eefc038)
+#define h_0cb5b3c6_38b2_4139_bccb_93ae6eefc038
 
 #include <antlr3parser.h>
 #include <string>
@@ -66,3 +67,5 @@ namespace hammer
       void leave_rule_invoke(pANTLR3_PARSER parser);
    }
 }
+
+#endif //h_0cb5b3c6_38b2_4139_bccb_93ae6eefc038

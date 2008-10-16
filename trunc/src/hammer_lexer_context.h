@@ -1,4 +1,6 @@
-#pragma once
+#if !defined(h_cd463ca6_6e55_4919_85e7_ac7dad08bda4)
+#define h_cd463ca6_6e55_4919_85e7_ac7dad08bda4
+
 #include <stack>
 #include <antlr3lexer.h>
 
@@ -18,3 +20,5 @@ namespace hammer
       bool is_source_lexing(pANTLR3_LEXER lexer);
    }
 }
+
+#endif //h_cd463ca6_6e55_4919_85e7_ac7dad08bda4

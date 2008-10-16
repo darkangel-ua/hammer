@@ -1,4 +1,6 @@
-#pragma once
+#if !defined(h_911b15ef_ec54_4217_bee8_b61c7584f9f5)
+#define h_911b15ef_ec54_4217_bee8_b61c7584f9f5
+
 #include <string>
 #include <vector>
 
@@ -22,3 +24,5 @@ namespace hammer
          type* base_;
    };
 }
+
+#endif //h_911b15ef_ec54_4217_bee8_b61c7584f9f5

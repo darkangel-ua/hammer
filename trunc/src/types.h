@@ -1,4 +1,6 @@
-#pragma once
+#if !defined(h_883d3846_ffd7_4a31_840e_13148216c79b)
+#define h_883d3846_ffd7_4a31_840e_13148216c79b
+
 #include "type.h"
 
 namespace hammer
@@ -19,3 +21,5 @@ namespace hammer
       extern const type UNKNOWN;
    }
 }
+
+#endif //h_883d3846_ffd7_4a31_840e_13148216c79b

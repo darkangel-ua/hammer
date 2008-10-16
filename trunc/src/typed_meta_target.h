@@ -1,4 +1,5 @@
-#pragma once
+#if !defined(h_0ff2ca9d_f8b6_492a_ba59_edacea125380)
+#define h_0ff2ca9d_f8b6_492a_ba59_edacea125380
 
 #include "meta_target.h"
 
@@ -26,3 +27,5 @@ namespace hammer
         const hammer::type* type_;
    };
 }
+
+#endif //h_0ff2ca9d_f8b6_492a_ba59_edacea125380

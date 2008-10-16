@@ -1,9 +1,5 @@
-// stdafx.h : include file for standard system include files,
-// or project specific include files that are used frequently, but
-// are changed infrequently
-//
-
-#pragma once
+#if !defined(h_f71a8e70_7a12_4435_b9cc_ced1d1f88ee7)
+#define h_f71a8e70_7a12_4435_b9cc_ced1d1f88ee7
 
 #pragma warning(disable : 4996)
 #include <boost/filesystem/path.hpp>
@@ -14,3 +10,5 @@
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/guid.hpp>
+
+#endif //h_f71a8e70_7a12_4435_b9cc_ced1d1f88ee7

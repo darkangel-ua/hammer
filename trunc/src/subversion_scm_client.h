@@ -1,4 +1,5 @@
-#pragma once
+#if !defined(h_1f93485c_0d49_4e95_bc15_b005fe658fb0)
+#define h_1f93485c_0d49_4e95_bc15_b005fe658fb0
 
 #include "scm_client.h"
 
@@ -11,3 +12,5 @@ namespace hammer
          virtual void up(const location_t& where_up, const std::string& what_up, bool recursive = true) const;
    };
 }
+
+#endif //h_1f93485c_0d49_4e95_bc15_b005fe658fb0

@@ -1,4 +1,6 @@
-#pragma once
+#if !defined(h_4e29de28_5a4c_4974_bd81_60d334da12f7)
+#define h_4e29de28_5a4c_4974_bd81_60d334da12f7
+
 #include <boost/ptr_container/ptr_map.hpp>
 #include <boost/noncopyable.hpp>
 #include <memory>
@@ -32,3 +34,5 @@ namespace hammer
 
    };
 }
+
+#endif //h_4e29de28_5a4c_4974_bd81_60d334da12f7

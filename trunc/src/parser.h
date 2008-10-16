@@ -1,4 +1,5 @@
-#pragma once
+#if !defined(h_6a5596c3_c168_4cc4_b600_a5f897e32e89)
+#define h_6a5596c3_c168_4cc4_b600_a5f897e32e89
 
 #include <boost/noncopyable.hpp>
 #include <boost/filesystem/path.hpp>
@@ -31,3 +32,5 @@ namespace hammer
          void reset();
    };
 }
+
+#endif //h_6a5596c3_c168_4cc4_b600_a5f897e32e89

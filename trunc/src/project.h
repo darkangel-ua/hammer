@@ -1,4 +1,5 @@
-#pragma once 
+#if !defined(h_939859ef_4910_49e0_b2b8_fac2a43ebd18)
+#define h_939859ef_4910_49e0_b2b8_fac2a43ebd18
 
 #include "location.h"
 #include <boost/noncopyable.hpp>
@@ -66,3 +67,5 @@ namespace hammer
                                   feature_set* usage_requirements) const;
    };
 }
+
+#endif //h_939859ef_4910_49e0_b2b8_fac2a43ebd18

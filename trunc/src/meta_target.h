@@ -1,4 +1,5 @@
-#pragma once
+#if !defined(h_f089a0da_32ba_4ee0_ad36_f3e366a47018)
+#define h_f089a0da_32ba_4ee0_ad36_f3e366a47018
 
 #include "basic_meta_target.h"
 
@@ -47,3 +48,5 @@ namespace hammer
                                                     const main_target& owner_for_new_targets) const;
    };
 }
+
+#endif //h_f089a0da_32ba_4ee0_ad36_f3e366a47018

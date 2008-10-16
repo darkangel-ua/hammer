@@ -1,4 +1,6 @@
-#pragma once
+#if !defined(h_4280f83e_47fb_4cac_b083_0d1583288878)
+#define h_4280f83e_47fb_4cac_b083_0d1583288878
+
 #include "meta_target.h"
 
 namespace hammer
@@ -13,3 +15,5 @@ namespace hammer
          virtual main_target* construct_main_target(const feature_set* properties) const;
    };
 }
+
+#endif //h_4280f83e_47fb_4cac_b083_0d1583288878

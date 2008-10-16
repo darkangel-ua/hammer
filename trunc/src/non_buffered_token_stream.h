@@ -1,4 +1,5 @@
-#pragma once
+#if !defined(h_af5b30a3_6bf2_450f_aa88_956f943127ba)
+#define h_af5b30a3_6bf2_450f_aa88_956f943127ba
 
 #include <antlr3tokenstream.h>
 #include "hammer_lexer_context.h"
@@ -19,3 +20,5 @@ namespace hammer
       bool is_lexing_sources_decl(pANTLR3_LEXER lexer);
    }
 }
+
+#endif //h_af5b30a3_6bf2_450f_aa88_956f943127ba

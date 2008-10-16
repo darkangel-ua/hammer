@@ -1,4 +1,5 @@
-#pragma once
+#if !defined(h_38a1b5fc_c4b5_443f_9fe8_8099d3855f65)
+#define h_38a1b5fc_c4b5_443f_9fe8_8099d3855f65
 
 #include <boost/noncopyable.hpp>
 #include <boost/filesystem/path.hpp>
@@ -25,3 +26,5 @@ class jcf_parser : public boost::noncopyable
 
       void reset();
 };
+
+#endif //h_38a1b5fc_c4b5_443f_9fe8_8099d3855f65

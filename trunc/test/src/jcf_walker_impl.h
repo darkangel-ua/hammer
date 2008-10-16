@@ -1,4 +1,5 @@
-#pragma once
+#if !defined(h_82225d39_86ef_4560_a63e_08466d9599bc)
+#define h_82225d39_86ef_4560_a63e_08466d9599bc
 
 #ifdef __cplusplus
 extern "C"
@@ -14,3 +15,5 @@ extern "C"
 #ifdef __cplusplus
 };
 #endif
+
+#endif //h_82225d39_86ef_4560_a63e_08466d9599bc

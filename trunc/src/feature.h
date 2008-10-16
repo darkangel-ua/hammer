@@ -1,4 +1,6 @@
-#pragma once
+#if !defined(h_655d0ae9_850d_4f01_a912_19b32eaf223e)
+#define h_655d0ae9_850d_4f01_a912_19b32eaf223e
+
 #include "pstring.h"
 #include <boost/noncopyable.hpp>
 #include "feature_def.h"
@@ -41,3 +43,5 @@ namespace hammer
          dependency_data dependency_data_;
    };
 }
+
+#endif //h_655d0ae9_850d_4f01_a912_19b32eaf223e

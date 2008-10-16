@@ -1,4 +1,5 @@
-#pragma once
+#if !defined(h_2f2882b2_0d61_431a_ac19_94de8add9953)
+#define h_2f2882b2_0d61_431a_ac19_94de8add9953
 
 #include "feature_def.h"
 #include <map>
@@ -30,3 +31,5 @@ namespace hammer
          mutable impl_t* impl_;
    };
 }
+
+#endif //h_2f2882b2_0d61_431a_ac19_94de8add9953

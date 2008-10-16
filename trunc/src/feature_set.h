@@ -1,4 +1,5 @@
-#pragma once
+#if !defined(h_9689707e_e6c1_4154_9276_3693b32bc777)
+#define h_9689707e_e6c1_4154_9276_3693b32bc777
 
 #include <vector>
 #include <boost/noncopyable.hpp>
@@ -58,3 +59,5 @@ namespace hammer
    void extract_sources(sources_decl& result, const feature_set& fs);
    void extract_uses(sources_decl& result, const feature_set& fs);
 }
+
+#endif //h_9689707e_e6c1_4154_9276_3693b32bc777

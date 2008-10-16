@@ -1,4 +1,5 @@
-#pragma once
+#if !defined(h_ec3dfa36_40f1_45e9_a457_788faf7eaf27)
+#define h_ec3dfa36_40f1_45e9_a457_788faf7eaf27
 
 #include "basic_target.h"
 
@@ -17,3 +18,5 @@ namespace hammer
          virtual std::vector<boost::intrusive_ptr<build_node> > generate();
    };
 }
+
+#endif //h_ec3dfa36_40f1_45e9_a457_788faf7eaf27

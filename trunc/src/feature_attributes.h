@@ -1,4 +1,5 @@
-#pragma once
+#if !defined(h_e0d3cb3d_1a96_4efb_a415_3b459c439151)
+#define h_e0d3cb3d_1a96_4efb_a415_3b459c439151
 
 namespace hammer
 {
@@ -16,3 +17,5 @@ namespace hammer
       unsigned no_defaults : 1;
    };
 }
+
+#endif //h_e0d3cb3d_1a96_4efb_a415_3b459c439151

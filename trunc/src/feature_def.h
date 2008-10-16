@@ -1,4 +1,6 @@
-#pragma once
+#if !defined(h_87310eb0_8b93_49c6_9804_55a01ca2f7a0)
+#define h_87310eb0_8b93_49c6_9804_55a01ca2f7a0
+
 #include <vector>
 #include <string>
 #include <map>
@@ -42,3 +44,5 @@ namespace hammer
          components_t components_;
    };
 }
+
+#endif //h_87310eb0_8b93_49c6_9804_55a01ca2f7a0

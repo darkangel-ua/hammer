@@ -82,20 +82,18 @@ namespace hammer
 
             typedef boost::ptr_vector<variant> variants_t;
 
-            msvc_project(engine& e, const location_t& solution_dir, const boost::guid& uid = boost::guid::create());
+            msvc_project(engine& e, const boost::guid& uid = boost::guid::create());
             void add_variant(boost::intrusive_ptr<const build_node> node);
             bool has_variant(const main_target* v) const;
-            void generate();
-            void write() const;
+            void generate() const;
             const std::string& id() const { return id_; }
             const boost::guid& guid() const { return uid_; }
             const hammer::meta_target& meta_target() const { return *meta_target_; }
             const dependencies_t& dependencies() const { return dependencies_;}
-            location_t full_project_name() const; // путь относительно meta_target проекта и имя файла проекта
-            const location_t& location() const;
-            const std::string& name() const;
+            location_t full_project_name() const { return full_project_name_; } // путь относительно meta_target проекта и имя файла проекта
+            const location_t& location() const { return location_; }
+            const pstring& name() const;
             const variants_t& variants() const { return variants_; }
-            void should_generate_unique_dir(bool v = true);
             
          private:
             struct file_configuration
@@ -113,7 +111,7 @@ namespace hammer
 
                void write(std::ostream& s) const;
                
-               location_t file_name_; // Это файл который будет в секции File в vcproj
+               pstring file_name_; // Это файл который будет в секции File в vcproj
                file_config_t file_config;  // для каждого варианта своя basic_target со своими свойствами
             };
 
@@ -130,7 +128,7 @@ namespace hammer
                            const std::string& uid) : types_(t), name(name), uid(uid) {}
                   std::ostream& write(std::ostream& s) const;
                   bool accept(const type* t) const;
-                  void insert(const basic_target* t, const variant& v, const location_t& project_location);
+                  void insert(const basic_target* t, const variant& v);
 
                private:
                   types_t types_;
@@ -145,11 +143,9 @@ namespace hammer
             std::string id_;
             const hammer::meta_target* meta_target_;
             mutable dependencies_t dependencies_;
-            location_t solution_dir_;
-            std::string name_;
-            bool should_generate_unique_dir_;
-            mutable location_t location_; // cash calculated location
-
+            location_t full_project_name_;
+            location_t location_;
+            
             const type* searched_lib_;
             const type* obj_type_;
 

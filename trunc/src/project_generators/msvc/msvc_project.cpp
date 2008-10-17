@@ -15,8 +15,8 @@ using namespace std;
    
 namespace hammer{ namespace project_generators{
 
-msvc_project::msvc_project(engine& e, const location_t& solution_dir, const boost::guid& uid) 
-   : engine_(&e), uid_(uid), solution_dir_(solution_dir), should_generate_unique_dir_(false)
+msvc_project::msvc_project(engine& e, const boost::guid& uid) 
+   : engine_(&e), uid_(uid)
 {
    searched_lib_ = &engine_->get_type_registry().resolve_from_name(types::SEARCHED_LIB);
    obj_type_ = &engine_->get_type_registry().resolve_from_name(types::OBJ);
@@ -43,31 +43,11 @@ void msvc_project::add_variant(boost::intrusive_ptr<const build_node> node)
    variants_.push_back(v);
    if (id_.empty())
    {
-      name_ = variants_.front().target_->meta_target()->name().to_string();
       id_ = naked_variant->target_->location().string();
       meta_target_ = naked_variant->target_->meta_target();
+      location_ = meta_target_->location() / "vc80";
+      full_project_name_ = location_ / (name().to_string() + ".vcproj");
    }
-}
-
-const location_t& msvc_project::location() const 
-{ 
-   assert(!id_.empty() && "You must add some variants to project before.");
-   if(location_.empty())
-   {
-      if (should_generate_unique_dir_)
-         location_ = solution_dir_ / (name() + "-" + boost::guid::create().to_string());
-      else
-         location_= solution_dir_ / name();
-      location_.normalize();
-   }
-
-   return location_;
-}
-
-location_t msvc_project::full_project_name() const 
-{ 
-   assert(!id_.empty() && "You must add some variants to project before.");
-   return location() / (name() + ".vcproj");
 }
 
 void msvc_project::fill_filters() const
@@ -81,9 +61,9 @@ void msvc_project::fill_filters() const
    files_.push_back(filter_t(header_types, "Header Files", "{93995380-89BD-4b04-88EB-625FBE52EBFB}"));
 }
 
-const string& msvc_project::name() const
+const pstring& msvc_project::name() const
 {
-   return name_;
+   return variants_.front().target_->meta_target()->name();
 }
 
 void msvc_project::write_header(ostream& s) const
@@ -146,10 +126,12 @@ void msvc_project::fill_options(const feature_set& props, options* opts, const m
             const basic_meta_target* bmt = (**i).get_path_data().target_;
             location_t p1(bmt->location() / (**i).value().to_string());
             p1.normalize();
+            location_t p2(mt.location() / "vc80");
+            p2.normalize();
             // По уму это нужно вообще отсюда убрать 
             // и передавать в эту функцию variant для которого идет заполнение опций и уже у него брать путь
             // относительно которого будут путезависимые опции
-            location_t p = relative_path(p1, location()) ;
+            location_t p = relative_path(p1, p2) ;
             p.normalize();
 
             opts->add_include(p.native_file_string());
@@ -269,8 +251,9 @@ void msvc_project::file_configuration::write(std::ostream& s, const variant& v) 
 
 void msvc_project::file_with_cfgs_t::write(std::ostream& s) const
 {
+   location_t p(file_name_.to_string());
    s << "         <File\n"
-        "            RelativePath=\"" << file_name_.native_file_string() << "\">\n";
+        "            RelativePath=\"" << "..\\" << p.native_file_string() << "\">\n";
 
    for(file_config_t::const_iterator i = file_config.begin(), last = file_config.end(); i != last; ++i)
       if (*i->first->properties_ != i->second.target_->properties())
@@ -302,7 +285,7 @@ void msvc_project::write_files(std::ostream& s) const
    s << "      </Files>\n";
 }
 
-void msvc_project::generate()
+void msvc_project::generate() const
 {
    if (variants_.empty())
       throw runtime_error("Can't generate empty msvc project");
@@ -311,17 +294,15 @@ void msvc_project::generate()
    gether_files();
 
    const main_target& mt = *variants_.front().target_;
-}
-
-void msvc_project::write() const
-{
-   create_directories(full_project_name().branch_path());
-   boost::filesystem::ofstream f(full_project_name(), std::ios_base::trunc);
+   
+   create_directories(full_project_name_.branch_path());
+   boost::filesystem::ofstream f(full_project_name_, std::ios_base::trunc);
    write_header(f);
    write_configurations(f);
    write_files(f);
    write_bottom(f);
 }
+
 
 bool msvc_project::filter_t::accept(const type* t) const
 {
@@ -334,12 +315,10 @@ bool msvc_project::filter_t::accept(const type* t) const
    return false;
 }
 
-void msvc_project::filter_t::insert(const basic_target* t, const variant& v, 
-                                    const location_t& project_location)
+void msvc_project::filter_t::insert(const basic_target* t, const variant& v)
 {
    file_with_cfgs_t& fwc = files_[t];
-   
-   fwc.file_name_ = relative_path(t->mtarget()->location() / t->name().to_string(), project_location);
+   fwc.file_name_ = t->name();
    file_configuration& fc = fwc.file_config[&v];
    fc.exclude_from_build = false;
    fc.target_ = t;
@@ -352,7 +331,7 @@ void msvc_project::insert_into_files(const basic_target* t, const variant& v) co
    {
       if (fi->accept(tp))
       {
-         fi->insert(t, v, location());
+         fi->insert(t, v);
          return;
       }
    }
@@ -375,7 +354,7 @@ void msvc_project::gether_files_impl(const build_node& node, variant& v) const
          if (mi->source_target_->mtarget()->type() == *searched_lib_)
          { // this target is searched lib product
             const feature& file_name = mi->source_target_->properties().get("file");
-            location_t searched_file(relative_path(mi->source_target_->mtarget()->location(), location()) / file_name.value().to_string());
+            location_t searched_file(relative_path(mi->source_target_->mtarget()->location(), location_) / file_name.value().to_string());
             searched_file.normalize();
             v.options_->add_searched_lib(searched_file.native_file_string());
          }
@@ -403,12 +382,6 @@ bool msvc_project::has_variant(const main_target* v) const
    }
 
    return false;
-}
-
-void msvc_project::should_generate_unique_dir(bool v)
-{
-   should_generate_unique_dir_ = v;
-   location_ = location_t();
 }
 
 }}

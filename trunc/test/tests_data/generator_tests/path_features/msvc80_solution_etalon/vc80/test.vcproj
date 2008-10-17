@@ -2,9 +2,9 @@
 <VisualStudioProject
    ProjectType="Visual C++"
    Version="8,00"
-   Name="lib1"
-   ProjectGUID="{00000000-0000-0000-0000-000000000002}"
-   RootNamespace="lib1"
+   Name="test"
+   ProjectGUID="{00000000-0000-0000-0000-000000000001}"
+   RootNamespace="test"
    Keyword="Win32Proj">
 	<Platforms>
        <Platform Name="Win32"/>
@@ -15,11 +15,15 @@
          Name="release|Win32"
          OutputDirectory="$(SolutionDir)$(ConfigurationName)"
          IntermediateDirectory="$(ConfigurationName)"
-         ConfigurationType="4"
+         ConfigurationType="1"
          CharacterSet="1">
          <Tool
             Name="VCCLCompilerTool"
-            AdditionalIncludeDirectories="..\..\lib1;"
+            AdditionalIncludeDirectories="..\lib1;"
+         />
+         <Tool
+            Name="VCLinkerTool"
+            AdditionalDependencies=""
          />
       </Configuration>
    </Configurations>
@@ -29,7 +33,7 @@
             Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
             UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
          <File
-            RelativePath="..\..\.\lib1\a.cpp">
+            RelativePath="..\main.cpp">
          </File>
          </Filter>
          <Filter

@@ -136,21 +136,30 @@ void msvc_solution::write() const
    //throw std::runtime_error("Can't write '" + filename.string() + "'.";
    f << "Microsoft Visual Studio Solution File, Format Version 9.00\n"
         "# Visual Studio 2005\n";
-   msvc_project::dependencies_t dependencies;
+   
+   typedef vector<const msvc_project*> sorted_projects_t;
+
+   // стабилизируем порядок проектов с солюшине, а то он все время меняется и 
+   // невозможно нормально это тестировать
+   sorted_projects_t sorted_initial_projects;
    typedef impl_t::projects_t::const_iterator iter;
    for(iter i = impl_->projects_.begin(), last = impl_->projects_.end(); i != last; ++i)
+      sorted_initial_projects.push_back(i->second);
+   sort(sorted_initial_projects.begin(), sorted_initial_projects.end(), less_by_name);
+
+   msvc_project::dependencies_t dependencies;
+   for(sorted_projects_t::const_iterator i = sorted_initial_projects.begin(), last = sorted_initial_projects.end(); i != last; ++i)
    {
-      i->second->generate();
+      (**i).generate();
       dependencies.insert(dependencies.begin(), 
-                          i->second->dependencies().begin(), 
-                          i->second->dependencies().end());
+                          (**i).dependencies().begin(), 
+                          (**i).dependencies().end());
    }
 
    impl_->generate_dependencies(dependencies.begin(), dependencies.end());
 
    // стабилизируем порядок проектов с солюшине, а то он все время меняется и 
    // невозможно нормально это тестировать
-   typedef vector<const msvc_project*> sorted_projects_t;
    sorted_projects_t sorted_projects;
    for(iter i = impl_->projects_.begin(), last = impl_->projects_.end(); i != last; ++i)
       sorted_projects.push_back(i->second);

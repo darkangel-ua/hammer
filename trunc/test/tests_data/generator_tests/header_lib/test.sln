@@ -1,10 +1,10 @@
 Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual Studio 2005
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lib1", "D:/Projects/C++/hammer/test/tests_data/generator_tests/header_lib/lib1/vc80/lib1.vcproj", "{00000000-0000-0000-0000-000000000002}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lib1", "D:/Projects/C++/hammer/test/tests_data/generator_tests/header_lib/lib1/vc80/lib1.vcproj", "{00000000-0000-0000-0000-000000000003}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lib2", "D:/Projects/C++/hammer/test/tests_data/generator_tests/header_lib/lib2/vc80/lib2.vcproj", "{00000000-0000-0000-0000-000000000003}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lib2", "D:/Projects/C++/hammer/test/tests_data/generator_tests/header_lib/lib2/vc80/lib2.vcproj", "{00000000-0000-0000-0000-000000000002}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject

@@ -3,7 +3,7 @@
    ProjectType="Visual C++"
    Version="8,00"
    Name="lib1"
-   ProjectGUID="{00000000-0000-0000-0000-000000000002}"
+   ProjectGUID="{00000000-0000-0000-0000-000000000003}"
    RootNamespace="lib1"
    Keyword="Win32Proj">
 	<Platforms>
@@ -15,15 +15,11 @@
          Name="release|Win32"
          OutputDirectory="$(SolutionDir)$(ConfigurationName)"
          IntermediateDirectory="$(ConfigurationName)"
-         ConfigurationType="2"
+         ConfigurationType="10"
          CharacterSet="1">
          <Tool
             Name="VCCLCompilerTool"
             PreprocessorDefinitions="USE_LIB2;"
-         />
-         <Tool
-            Name="VCLinkerTool"
-            AdditionalDependencies=""
          />
       </Configuration>
    </Configurations>

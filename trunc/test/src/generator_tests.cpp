@@ -15,6 +15,7 @@
 #include <set>
 
 using namespace hammer;
+using namespace hammer::project_generators;
 using namespace std;
 namespace fs = boost::filesystem;
 
@@ -45,7 +46,8 @@ namespace
    class test_msvc_solution : public hammer::project_generators::msvc_solution
    {
       public:
-         test_msvc_solution(engine& e, const location_t& output_location) : msvc_solution(e, output_location)
+         test_msvc_solution(const project& source_project, const location_t& output_location, 
+                            generation_mode::value mode) : msvc_solution(source_project, output_location, mode)
          {
             fill(id_, id_ + 16, 0);
          }
@@ -177,9 +179,9 @@ struct generator_tests
       }
    }
       
-   void run_generators()
+   void run_generators(msvc_solution::generation_mode::value mode = msvc_solution::generation_mode::NON_LOCAL)
    {
-      msvc_solution_.reset(new test_msvc_solution(engine_, test_data_path / "generator_tests" / test_name_ / generators_output_dir_name_));
+      msvc_solution_.reset(new test_msvc_solution(*p_, test_data_path / "generator_tests" / test_name_ / generators_output_dir_name_, mode));
       for(vector<basic_target*>::iterator i = itargets_.begin(), last = itargets_.end(); i != last; ++i)
       {
          std::vector<boost::intrusive_ptr<build_node> > r((**i).generate());
@@ -273,7 +275,6 @@ BOOST_FIXTURE_TEST_CASE(g_header_lib, generator_tests)
    BOOST_REQUIRE_NO_THROW(run_generators());
    check();
 }
-*/
 
 BOOST_FIXTURE_TEST_CASE(user_dir_generation, generator_tests)
 {
@@ -282,5 +283,25 @@ BOOST_FIXTURE_TEST_CASE(user_dir_generation, generator_tests)
    load();
    BOOST_REQUIRE_NO_THROW(instantiate("test"));
    BOOST_REQUIRE_NO_THROW(run_generators());
+   check();
+}
+
+*/
+
+BOOST_FIXTURE_TEST_CASE(local_generation, generator_tests)
+{
+   test_name_ = "local_generation";
+   load();
+   BOOST_REQUIRE_NO_THROW(instantiate("test"));
+   BOOST_REQUIRE_NO_THROW(run_generators(msvc_solution::generation_mode::LOCAL));
+   check();
+}
+
+BOOST_FIXTURE_TEST_CASE(non_local_generation, generator_tests)
+{
+   test_name_ = "non_local_generation";
+   load();
+   BOOST_REQUIRE_NO_THROW(instantiate("test"));
+   BOOST_REQUIRE_NO_THROW(run_generators(msvc_solution::generation_mode::NON_LOCAL));
    check();
 }

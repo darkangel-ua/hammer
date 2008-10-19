@@ -7,6 +7,7 @@
 #include "../../main_target.h"
 #include "../../engine.h"
 #include "../../meta_target.h"
+#include "../../fs_helpers.h"
 #include <boost/filesystem/fstream.hpp>
 #include <set>
 
@@ -27,8 +28,14 @@ struct msvc_solution::impl_t
    typedef msvc_project::dependencies_t dependencies_t;
    typedef boost::ptr_map<const meta_target*, msvc_project> projects_t;
 
-   impl_t(msvc_solution* owner, engine& e, const location_t& output_path) 
-      : owner_(owner), engine_(e), output_location_(output_path)
+   impl_t(msvc_solution* owner, const project& source_project, 
+          const location_t& output_path,
+          generation_mode::value mode) 
+      : owner_(owner), 
+        source_project_(source_project),
+        engine_(*source_project.engine()), 
+        output_location_(output_path),
+        generation_mode_(mode)
    {
       output_location_.normalize();
    }
@@ -37,10 +44,14 @@ struct msvc_solution::impl_t
                               dependencies_t::const_iterator last) const;
    void write_project_section(ostream& os, const msvc_project& project) const;
    boost::guid generate_id() const { return boost::guid::create(); }
+   location_t project_output_dir(const build_node& node) const;
+
    msvc_solution* owner_;
+   const project& source_project_;
    engine& engine_;
    location_t output_location_;
    std::string name_; // solution name;
+   generation_mode::value generation_mode_;
 
    mutable projects_t projects_;
 };
@@ -59,7 +70,7 @@ void impl_t::generate_dependencies(impl_t::dependencies_t::const_iterator first,
           !i->second->has_variant(*first)))
       {
          
-         auto_ptr<msvc_project> p_guard(new msvc_project(engine_, output_location_, owner_->generate_id()));
+         auto_ptr<msvc_project> p_guard(new msvc_project(engine_, project_output_dir(*(**first).build_node()), owner_->generate_id()));
          msvc_project* p = p_guard.get();
          p->add_variant((**first).build_node());
          p->generate();
@@ -103,7 +114,29 @@ void msvc_solution::impl_t::write_project_section(ostream& os, const msvc_projec
       << "EndProject\n";
 }
 
-msvc_solution::msvc_solution(engine& e, const location_t& output_path) : impl_(new impl_t(this, e, output_path / "vc80"))
+location_t msvc_solution::impl_t::project_output_dir(const build_node& node) const
+{
+   switch(generation_mode_)
+   {
+      case generation_mode::LOCAL:
+         return output_location_;
+
+      case generation_mode::NON_LOCAL:
+      {
+         location_t suffix = relative_path(output_location_, source_project_.location());
+         location_t result = node.products_[0]->mtarget()->location() / suffix;
+         result.normalize();
+         return result;
+      }
+
+      default:
+         throw std::runtime_error("[msvc-solution] Unknown generation mode.");
+   }
+}
+
+msvc_solution::msvc_solution(const project& source_project, const location_t& output_path,
+                             generation_mode::value mode) 
+  : impl_(new impl_t(this, source_project, output_path / "vc80", mode))
 {
 }
 
@@ -114,7 +147,7 @@ msvc_solution::~msvc_solution()
 
 void msvc_solution::add_target(boost::intrusive_ptr<const build_node> node)
 {
-   std::auto_ptr<msvc_project> p_guarg(new msvc_project(impl_->engine_, impl_->output_location_, generate_id()));
+   std::auto_ptr<msvc_project> p_guarg(new msvc_project(impl_->engine_, impl_->project_output_dir(*node), generate_id()));
    msvc_project* p = p_guarg.get();
    typedef vector<const main_target*> dependencies_t;
    dependencies_t dependencies;

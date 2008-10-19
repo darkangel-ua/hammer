@@ -41,7 +41,7 @@ namespace
          ("help", "produce this help message")
          ("instantiate,i", "instantiate/materialize targets only")
          ("generate-projects-locally,l", "when generating build script makes them in one place")
-         ("hammer-dir", "specify where hammer will place all its generated output");
+         ("hammer-dir", po::value<std::string>(&opts.hammer_dir_), "specify where hammer will place all its generated output");
 
       return desc;
    }
@@ -177,6 +177,9 @@ int main(int argc, char** argv)
          return 0;
       }
       
+      if (vm.count("generate-projects-locally"))
+         opts.generate_projects_localy_ = true;
+
       if (vm.count("build-request"))
          resolve_arguments(vm["build-request"].as<vector<string> >(), targets, build_request);
 

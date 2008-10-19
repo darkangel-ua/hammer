@@ -278,6 +278,7 @@ BOOST_FIXTURE_TEST_CASE(g_header_lib, generator_tests)
 BOOST_FIXTURE_TEST_CASE(user_dir_generation, generator_tests)
 {
    test_name_ = "user_dir_generation";
+   generators_output_dir_name_ = "user_dir";
    load();
    BOOST_REQUIRE_NO_THROW(instantiate("test"));
    BOOST_REQUIRE_NO_THROW(run_generators());

@@ -82,7 +82,7 @@ namespace hammer
 
             typedef boost::ptr_vector<variant> variants_t;
 
-            msvc_project(engine& e, const boost::guid& uid = boost::guid::create());
+            msvc_project(engine& e, const location_t& output_dir, const boost::guid& uid = boost::guid::create());
             void add_variant(boost::intrusive_ptr<const build_node> node);
             bool has_variant(const main_target* v) const;
             void generate() const;
@@ -91,7 +91,8 @@ namespace hammer
             const hammer::meta_target& meta_target() const { return *meta_target_; }
             const dependencies_t& dependencies() const { return dependencies_;}
             location_t full_project_name() const { return full_project_name_; } // путь относительно meta_target проекта и имя файла проекта
-            const location_t& location() const { return location_; }
+            const location_t& output_dir() const { return output_dir_; }
+            const location_t& project_output_dir() const { return project_output_dir_; }
             const pstring& name() const;
             const variants_t& variants() const { return variants_; }
             
@@ -111,7 +112,7 @@ namespace hammer
 
                void write(std::ostream& s) const;
                
-               pstring file_name_; // Это файл который будет в секции File в vcproj
+               location_t file_name_; // Это файл который будет в секции File в vcproj
                file_config_t file_config;  // для каждого варианта своя basic_target со своими свойствами
             };
 
@@ -128,7 +129,8 @@ namespace hammer
                            const std::string& uid) : types_(t), name(name), uid(uid) {}
                   std::ostream& write(std::ostream& s) const;
                   bool accept(const type* t) const;
-                  void insert(const basic_target* t, const variant& v);
+                  void insert(const basic_target* t, const variant& v,
+                              const location_t& project_output_dir);
 
                private:
                   types_t types_;
@@ -144,7 +146,8 @@ namespace hammer
             const hammer::meta_target* meta_target_;
             mutable dependencies_t dependencies_;
             location_t full_project_name_;
-            location_t location_;
+            location_t output_dir_;
+            location_t project_output_dir_;
             
             const type* searched_lib_;
             const type* obj_type_;

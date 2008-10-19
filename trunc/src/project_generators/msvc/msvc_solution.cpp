@@ -30,6 +30,7 @@ struct msvc_solution::impl_t
    impl_t(msvc_solution* owner, engine& e, const location_t& output_path) 
       : owner_(owner), engine_(e), output_location_(output_path)
    {
+      output_location_.normalize();
    }
 
    void generate_dependencies(dependencies_t::const_iterator first, 
@@ -58,7 +59,7 @@ void impl_t::generate_dependencies(impl_t::dependencies_t::const_iterator first,
           !i->second->has_variant(*first)))
       {
          
-         auto_ptr<msvc_project> p_guard(new msvc_project(engine_, owner_->generate_id()));
+         auto_ptr<msvc_project> p_guard(new msvc_project(engine_, output_location_, owner_->generate_id()));
          msvc_project* p = p_guard.get();
          p->add_variant((**first).build_node());
          p->generate();
@@ -102,7 +103,7 @@ void msvc_solution::impl_t::write_project_section(ostream& os, const msvc_projec
       << "EndProject\n";
 }
 
-msvc_solution::msvc_solution(engine& e, const location_t& output_path) : impl_(new impl_t(this, e, output_path))
+msvc_solution::msvc_solution(engine& e, const location_t& output_path) : impl_(new impl_t(this, e, output_path / "vc80"))
 {
 }
 
@@ -113,7 +114,7 @@ msvc_solution::~msvc_solution()
 
 void msvc_solution::add_target(boost::intrusive_ptr<const build_node> node)
 {
-   std::auto_ptr<msvc_project> p_guarg(new msvc_project(impl_->engine_, generate_id()));
+   std::auto_ptr<msvc_project> p_guarg(new msvc_project(impl_->engine_, impl_->output_location_, generate_id()));
    msvc_project* p = p_guarg.get();
    typedef vector<const main_target*> dependencies_t;
    dependencies_t dependencies;
@@ -132,6 +133,7 @@ void msvc_solution::write() const
 {
    boost::filesystem::ofstream f;
    location_t filename = impl_->output_location_ / (impl_->name_ + ".sln");
+   create_directories(filename.branch_path());
    f.open(filename, std::ios::trunc);
    //throw std::runtime_error("Can't write '" + filename.string() + "'.";
    f << "Microsoft Visual Studio Solution File, Format Version 9.00\n"
@@ -139,8 +141,7 @@ void msvc_solution::write() const
    
    typedef vector<const msvc_project*> sorted_projects_t;
 
-   // стабилизируем порядок проектов с солюшине, а то он все время меняется и 
-   // невозможно нормально это тестировать
+   // стабилизируем порядок проектов с солюшине, чтобы порядок сгенерированных гуидов не менялся
    sorted_projects_t sorted_initial_projects;
    typedef impl_t::projects_t::const_iterator iter;
    for(iter i = impl_->projects_.begin(), last = impl_->projects_.end(); i != last; ++i)

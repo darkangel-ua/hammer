@@ -15,8 +15,14 @@ using namespace std;
    
 namespace hammer{ namespace project_generators{
 
-msvc_project::msvc_project(engine& e, const boost::guid& uid) 
-   : engine_(&e), uid_(uid)
+msvc_project::msvc_project(engine& e, 
+                           const location_t& output_dir, 
+                           const boost::guid& uid) 
+   : 
+    engine_(&e), 
+    uid_(uid),
+    output_dir_(output_dir),
+    project_output_dir_(output_dir_)
 {
    searched_lib_ = &engine_->get_type_registry().resolve_from_name(types::SEARCHED_LIB);
    obj_type_ = &engine_->get_type_registry().resolve_from_name(types::OBJ);
@@ -43,10 +49,10 @@ void msvc_project::add_variant(boost::intrusive_ptr<const build_node> node)
    variants_.push_back(v);
    if (id_.empty())
    {
-      id_ = naked_variant->target_->location().string();
       meta_target_ = naked_variant->target_->meta_target();
-      location_ = meta_target_->location() / "vc80";
-      full_project_name_ = location_ / (name().to_string() + ".vcproj");
+      project_output_dir_ = output_dir() / name().to_string();
+      id_ = project_output_dir().string();
+      full_project_name_ = project_output_dir() / (name().to_string() + ".vcproj");
    }
 }
 
@@ -123,15 +129,13 @@ void msvc_project::fill_options(const feature_set& props, options* opts, const m
       else
          if ((**i).def() == include_def)
          {
-            const basic_meta_target* bmt = (**i).get_path_data().target_;
-            location_t p1(bmt->location() / (**i).value().to_string());
-            p1.normalize();
-            location_t p2(mt.location() / "vc80");
-            p2.normalize();
             // По уму это нужно вообще отсюда убрать 
             // и передавать в эту функцию variant для которого идет заполнение опций и уже у него брать путь
             // относительно которого будут путезависимые опции
-            location_t p = relative_path(p1, p2) ;
+            const basic_meta_target* bmt = (**i).get_path_data().target_;
+            location_t p1(bmt->location() / (**i).value().to_string());
+            p1.normalize();
+            location_t p = relative_path(p1, project_output_dir_) ;
             p.normalize();
 
             opts->add_include(p.native_file_string());
@@ -251,9 +255,8 @@ void msvc_project::file_configuration::write(std::ostream& s, const variant& v) 
 
 void msvc_project::file_with_cfgs_t::write(std::ostream& s) const
 {
-   location_t p(file_name_.to_string());
    s << "         <File\n"
-        "            RelativePath=\"" << "..\\" << p.native_file_string() << "\">\n";
+        "            RelativePath=\"" << file_name_.native_file_string() << "\">\n";
 
    for(file_config_t::const_iterator i = file_config.begin(), last = file_config.end(); i != last; ++i)
       if (*i->first->properties_ != i->second.target_->properties())
@@ -315,10 +318,12 @@ bool msvc_project::filter_t::accept(const type* t) const
    return false;
 }
 
-void msvc_project::filter_t::insert(const basic_target* t, const variant& v)
+void msvc_project::filter_t::insert(const basic_target* t, const variant& v, 
+                                    const location_t& project_output_dir)
 {
    file_with_cfgs_t& fwc = files_[t];
-   fwc.file_name_ = t->name();
+   fwc.file_name_ = relative_path(t->mtarget()->location(), project_output_dir) / t->name().to_string();
+   fwc.file_name_.normalize();
    file_configuration& fc = fwc.file_config[&v];
    fc.exclude_from_build = false;
    fc.target_ = t;
@@ -331,7 +336,7 @@ void msvc_project::insert_into_files(const basic_target* t, const variant& v) co
    {
       if (fi->accept(tp))
       {
-         fi->insert(t, v);
+         fi->insert(t, v, project_output_dir_);
          return;
       }
    }
@@ -354,7 +359,7 @@ void msvc_project::gether_files_impl(const build_node& node, variant& v) const
          if (mi->source_target_->mtarget()->type() == *searched_lib_)
          { // this target is searched lib product
             const feature& file_name = mi->source_target_->properties().get("file");
-            location_t searched_file(relative_path(mi->source_target_->mtarget()->location(), location_) / file_name.value().to_string());
+            location_t searched_file(relative_path(mi->source_target_->mtarget()->location(), project_output_dir_) / file_name.value().to_string());
             searched_file.normalize();
             v.options_->add_searched_lib(searched_file.native_file_string());
          }

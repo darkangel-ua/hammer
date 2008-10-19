@@ -64,7 +64,7 @@ namespace
 
 struct generator_tests
 {
-   generator_tests() : p_(0)
+   generator_tests() : p_(0), generators_output_dir_name_(".hammer")
    {
 
    }
@@ -77,8 +77,8 @@ struct generator_tests
  
    void check_msvc_solution()
    {
-      fs::path etalon_files_path(test_data_path / "generator_tests" / test_name_ / "msvc80_solution_etalon");
-      fs::path generated_files_path(test_data_path / "generator_tests" / test_name_);
+      fs::path etalon_files_path(test_data_path / "generator_tests" / test_name_ / "hammer_etalon");
+      fs::path generated_files_path(test_data_path / "generator_tests" / test_name_/ generators_output_dir_name_);
       fs::recursive_directory_iterator i_etalon_files(etalon_files_path);
       fs::recursive_directory_iterator i_generated_files(generated_files_path);
       set<fs::path> etalon_files, generated_files;
@@ -100,7 +100,7 @@ struct generator_tests
       for(fs::recursive_directory_iterator last_generated_files; i_generated_files != last_generated_files; ++i_generated_files)
       {
          if (is_directory(*i_generated_files) &&
-             i_generated_files->leaf() == "msvc80_solution_etalon")
+             i_generated_files->leaf() == "hammer_etalon")
          {
             i_generated_files.no_push();
             continue;
@@ -169,13 +169,17 @@ struct generator_tests
       build_request->join("variant", "release");
       build_request->join("toolset", "msvc");
       p_->instantiate(target_name, *build_request, &itargets_);
-      BOOST_REQUIRE(checker_.parse(test_data_path / "generator_tests" / test_name_ / "check.jcf"));
-      BOOST_CHECK(checker_.walk(itargets_, &engine_));
+
+      if (exists(test_data_path / "generator_tests" / test_name_ / "check.jcf"))
+      {
+         BOOST_REQUIRE(checker_.parse(test_data_path / "generator_tests" / test_name_ / "check.jcf"));
+         BOOST_CHECK(checker_.walk(itargets_, &engine_));
+      }
    }
       
    void run_generators()
    {
-      msvc_solution_.reset(new test_msvc_solution(engine_, test_data_path / "generator_tests" / test_name_));
+      msvc_solution_.reset(new test_msvc_solution(engine_, test_data_path / "generator_tests" / test_name_ / generators_output_dir_name_));
       for(vector<basic_target*>::iterator i = itargets_.begin(), last = itargets_.end(); i != last; ++i)
       {
          std::vector<boost::intrusive_ptr<build_node> > r((**i).generate());
@@ -193,7 +197,9 @@ struct generator_tests
    vector<basic_target*> itargets_;
    vector<boost::intrusive_ptr<build_node> > nodes_;
    std::string test_name_;
+   location_t generators_output_dir_name_;
 };
+/*
 
 BOOST_FIXTURE_TEST_CASE(simple_exe, generator_tests)
 {
@@ -262,6 +268,16 @@ BOOST_FIXTURE_TEST_CASE(cpp_libs, generator_tests)
 BOOST_FIXTURE_TEST_CASE(g_header_lib, generator_tests)
 {
    test_name_ = "header_lib";
+   load();
+   BOOST_REQUIRE_NO_THROW(instantiate("test"));
+   BOOST_REQUIRE_NO_THROW(run_generators());
+   check();
+}
+*/
+
+BOOST_FIXTURE_TEST_CASE(user_dir_generation, generator_tests)
+{
+   test_name_ = "user_dir_generation";
    load();
    BOOST_REQUIRE_NO_THROW(instantiate("test"));
    BOOST_REQUIRE_NO_THROW(run_generators());

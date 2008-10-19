@@ -14,6 +14,7 @@
 
 using namespace std;
 using namespace hammer;
+using namespace hammer::project_generators;
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 
@@ -23,7 +24,11 @@ namespace
 {
    struct hammer_options
    {
+      hammer_options() : generate_projects_localy_(false), hammer_dir_(".hammer") {}
+
       vector<string> build_request_options_;
+      bool generate_projects_localy_;
+      std::string hammer_dir_;
    };
 
    po::positional_options_description build_request_options;
@@ -34,7 +39,9 @@ namespace
       po::options_description desc("General options");
       desc.add_options()
          ("help", "produce this help message")
-         ("instantiate,i", "instantiate/materialize targets only");
+         ("instantiate,i", "instantiate/materialize targets only")
+         ("generate-projects-locally,l", "when generating build script makes them in one place")
+         ("hammer-dir", "specify where hammer will place all its generated output");
 
       return desc;
    }
@@ -125,10 +132,13 @@ namespace
       return result;
    }
 
-   void generate_msvc80_solution(const nodes_t& nodes, hammer::engine& engine,
-                                 const location_t& output_location)
+   void generate_msvc80_solution(const nodes_t& nodes, const hammer::project& project_to_build)
    {
-      project_generators::msvc_solution solution(engine, output_location);
+      project_generators::msvc_solution solution(project_to_build, 
+                                                 project_to_build.location() / opts.hammer_dir_, 
+                                                 opts.generate_projects_localy_ ? msvc_solution::generation_mode::LOCAL 
+                                                                                : msvc_solution::generation_mode::NON_LOCAL);
+
       for(nodes_t::const_iterator i = nodes.begin(), last = nodes.end(); i != last; ++i)
          solution.add_target(*i);
 
@@ -181,7 +191,7 @@ int main(int argc, char** argv)
       nodes_t nodes(generate_targets(instantiated_targets));
       remove_propagated_targets(nodes, project_to_build);
 
-      generate_msvc80_solution(nodes, engine, fs::current_path());
+      generate_msvc80_solution(nodes, project_to_build);
 
       return 0;
    }

@@ -1,6 +1,11 @@
 grammar jcf;
 
-options { language = C; output = AST; }
+options { 
+          language = C; 
+          output = AST; 
+          ASTLabelType = pANTLR3_BASE_TREE;
+        }
+
 tokens{ TARGET; ATTRIBUTES; TARGETS; TYPE_ATTR; FEATURES_ATTR; FEATURE; NOT_FEATURE; LOCATION; }
 
 jsf_file : targets ;

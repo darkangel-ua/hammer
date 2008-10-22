@@ -80,7 +80,7 @@ struct generator_tests
    void check_msvc_solution()
    {
       fs::path etalon_files_path(test_data_path / "generator_tests" / test_name_ / "hammer_etalon");
-      fs::path generated_files_path(test_data_path / "generator_tests" / test_name_/ generators_output_dir_name_);
+      fs::path generated_files_path(test_data_path / "generator_tests" / test_name_);
       fs::recursive_directory_iterator i_etalon_files(etalon_files_path);
       fs::recursive_directory_iterator i_generated_files(generated_files_path);
       set<fs::path> etalon_files, generated_files;

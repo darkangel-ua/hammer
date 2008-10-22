@@ -1,6 +1,11 @@
 grammar hammer;
 
-options { language = C; output = AST; }
+options{ 
+   language = C; 
+   output = AST;
+   ASTLabelType = pANTLR3_BASE_TREE;
+}
+
 tokens {
 RULE_CALL;
 NULL_ARG;

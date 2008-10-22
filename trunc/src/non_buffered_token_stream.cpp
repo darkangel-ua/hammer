@@ -114,8 +114,6 @@ static void fillBuffer(pANTLR3_COMMON_TOKEN_STREAM tokenStream, int k, bool with
    * and so if we store it anywhere, we don't set any pointers to auto free it.
    */
    tok	    = tokenStream->tstream->tokenSource->nextToken(tokenStream->tstream->tokenSource);
-   pANTLR3_STRING s = tok->getText(tok);
-
    while   (tok != NULL && tok->type != ANTLR3_TOKEN_EOF)
    {
       discard	    = ANTLR3_FALSE;	/* Assume we are not discarding	*/
@@ -165,7 +163,6 @@ static void fillBuffer(pANTLR3_COMMON_TOKEN_STREAM tokenStream, int k, bool with
       }
 
       tok = tokenStream->tstream->tokenSource->nextToken(tokenStream->tstream->tokenSource);
-      s = tok->getText(tok);
    }
 
    /* Set the consume pointer to the first token that is on our channel

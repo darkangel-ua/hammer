@@ -2,4 +2,6 @@ lib a : a.cpp : : : <define>USE_LIB_A <source>b <use>c ;
 lib b : b.cpp : : : <define>USE_LIB_B ;
 lib c : c.cpp : : : <define>USE_LIB_C ;
 lib d : d.cpp : : : <define>USE_LIB_D ;
-exe test : main.cpp : <use>a <use>d ;
+lib e : e1.cpp : <version>1 : : <define>USE_LIB_E_1 ;
+lib e : e2.cpp : <version>2 : : <define>USE_LIB_E_2 ;
+exe test : main.cpp : <use>a <use>d <use>e/<version>2 ;

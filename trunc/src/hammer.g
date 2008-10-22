@@ -63,7 +63,9 @@ project_requirements : ID requirements -> ^(PROJECT_REQUIREMENTS ID ^(REQUIREMEN
 requirements : (feature | conditional_features)+;
 string_arg  : ID -> ^(STRING_ARG ID);
 feature_arg : feature -> ^(FEATURE_ARG feature);
-conditional_features : { is_conditional_feature(PARSER) }?=> condition condition_result -> ^(CONDITIONAL_FEATURES condition condition_result);
+// FIXME: wrong implementation of conditional features because its cannot work with dependency features
+// FIXME: is_conditional_feature only check that LT(4) follow LT(5), but this is wrong for dependency featues because the length of source_decl is unknown
+conditional_features : { is_conditional_feature(PARSER) && !is_dependency_feature(PARSER) }?=> condition condition_result -> ^(CONDITIONAL_FEATURES condition condition_result);
 condition  : feature (',' feature)* -> ^(CONDITION feature+);
 // COLON needed for is_conditional_feature so we put it into token stream
 condition_result : COLON feature;
@@ -73,7 +75,7 @@ sources_decl : { enter_sources_decl(PARSER); } sources_decl_impl { leave_sources
 sources_decl_impl  : (source_decl | rule_invoke)+ ;
 rule_invoke   : { enter_rule_invoke(PARSER); } '[' { on_nested_rule_enter(PARSER); } rule_impl { on_nested_rule_leave(PARSER); }']' { leave_rule_invoke(PARSER); } -> rule_impl;
 
-source_decl : source_decl_impl -> ^(SOURCE_DECL source_decl_impl);
+source_decl : { enter_sources_decl(PARSER); } source_decl_impl { leave_sources_decl(PARSER); } -> ^(SOURCE_DECL source_decl_impl);
 source_decl_impl : target_path target_name target_features -> ^(TARGET_PATH target_path) target_name target_features;
 target_path : head_slash? ID path_element* trail_slash?;
 target_name : path_slash path_slash ID -> ^(TARGET_NAME ID)

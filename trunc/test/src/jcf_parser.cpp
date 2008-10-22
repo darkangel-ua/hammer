@@ -80,9 +80,9 @@ bool jcf_parser::parse(const char* file_name)
 
 void jcf_parser::reset()
 {
-   if (impl_->langAST_.tree)
-      impl_->langAST_.tree->free(impl_->langAST_.tree);
-   impl_->langAST_.tree = 0;
+//    if (impl_->langAST_.tree)
+//       impl_->langAST_.tree->free(impl_->langAST_.tree);
+//    impl_->langAST_.tree = 0;
 
    if (impl_->parser_)
       impl_->parser_->free(impl_->parser_);

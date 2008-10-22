@@ -1,4 +1,5 @@
-test [ type = EXE; features = <define>USE_LIB_A <define>USE_LIB_B <define>USE_LIB_C <define>USE_LIB_D; ]
+test [ type = EXE; features = <define>USE_LIB_A <define>USE_LIB_B <define>USE_LIB_C 
+                              <define>USE_LIB_D !<define>USE_LIB_E_1 <define>USE_LIB_E_2; ]
 {
    main.cpp [ type = CPP; features = <define>USE_LIB_A <define>USE_LIB_B <define>USE_LIB_C; ] {}
    b [ type = SHARED_LIB; ] 

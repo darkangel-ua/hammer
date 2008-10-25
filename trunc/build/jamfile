@@ -1,3 +1,5 @@
+project : requirements <character-set>multi-byte ;
+
 lib hammer.core 
    : 
     hammer_parser

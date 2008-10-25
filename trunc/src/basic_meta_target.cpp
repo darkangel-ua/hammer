@@ -50,9 +50,10 @@ void basic_meta_target::instantiate_simple_targets(const sources_decl& targets,
                                                    const main_target& owner, 
                                                    std::vector<basic_target*>* result) const
 {
+   const type_registry& tr = project_->engine()->get_type_registry();
    for(sources_decl::const_iterator i = targets.begin(), last = targets.end(); i != last; ++i)
    {
-      const hammer::type* tp = project_->engine()->get_type_registry().resolve_from_target_name(i->target_path_);
+      const hammer::type* tp = i->type(tr);
       if (tp == 0)
          throw std::runtime_error("Can't resolve type from source '" + i->target_path_.to_string() + "'.");
 
@@ -80,7 +81,7 @@ void basic_meta_target::split_one_source(sources_decl* simple_targets,
                                          const feature_set& build_request,
                                          const type_registry& tr) const
 {
-   if (const type* t = tr.resolve_from_target_name(source.target_path_))
+   if (const type* t = source.type(tr))
       simple_targets->push_back(source.target_path_); 
    else
       resolve_meta_target_source(source, build_request, simple_targets, meta_targets);

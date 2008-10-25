@@ -16,3 +16,4 @@ feature.feature source : : free dependency incidental ;
 feature.feature use : : free dependency incidental ;
 
 feature.feature variant : debug release : propagated ;
+feature.feature character-set : unicode multi-byte : optional no-defaults ; # toolset.msvc

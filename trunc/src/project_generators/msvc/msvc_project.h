@@ -36,10 +36,12 @@ namespace hammer
             class options
             {
                public:
+                  struct character_set { enum value {unknown, unicode, multi_byte}; };
                   options() : has_compiler_options_(false), 
                               has_linker_options_(false),
                               has_librarian_options_(false),
-                              compile_as_cpp_(false)
+                              compile_as_cpp_(false),
+                              character_set_(character_set::unknown)
                   {}
                   
                   void add_include(const std::string& v) { includes_ << v << ';'; has_compiler_options_ = true; }
@@ -47,12 +49,14 @@ namespace hammer
                   void add_searched_lib(const std::string& v) { searched_libs_ << v << ' '; has_linker_options_ = true; }
                   void add_cxx_flag(const pstring& v) { cxxflags_ << v << ' '; has_compiler_options_ = true; } 
                   void compile_as_cpp(bool v) { compile_as_cpp_ = true; has_compiler_options_ = true; }
+                  void character_set(character_set::value v) { character_set_ = v; }
 
                   const std::ostringstream& includes() const { return includes_; }
                   const std::ostringstream& defines() const { return defines_; }
                   const std::ostringstream& searched_libs() const { return searched_libs_; }
                   const std::ostringstream& cxxflags() const { return cxxflags_; }
                   bool compile_as_cpp() const { return compile_as_cpp_; }
+                  character_set::value character_set() const { return character_set_; }
 
                   bool has_compiler_options() const { return has_compiler_options_; }
                   bool has_linker_options() const { return has_linker_options_; }
@@ -68,6 +72,7 @@ namespace hammer
                   bool has_linker_options_ : 1;
                   bool has_librarian_options_ : 1;
                   bool compile_as_cpp_ : 1;
+                  character_set::value character_set_;
             };
 
             struct variant

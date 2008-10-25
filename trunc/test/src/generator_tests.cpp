@@ -25,7 +25,7 @@ static void compare_files(const fs::path& lhs, const fs::path& rhs, const fs::pa
    fs::ifstream rhs_f(rhs, std::ios::binary);
    if (file_size(lhs) != file_size(rhs))
    {
-      BOOST_CHECK_EQUAL(file_size(lhs), file_size(rhs));
+      BOOST_CHECK_MESSAGE(file_size(lhs) == file_size(rhs), lhs.native_file_string() + " != " + rhs.native_file_string());
       return;
    }
    
@@ -285,6 +285,7 @@ BOOST_FIXTURE_TEST_CASE(user_dir_generation, generator_tests)
    BOOST_REQUIRE_NO_THROW(run_generators());
    check();
 }
+*/
 
 BOOST_FIXTURE_TEST_CASE(local_generation, generator_tests)
 {
@@ -303,4 +304,3 @@ BOOST_FIXTURE_TEST_CASE(non_local_generation, generator_tests)
    BOOST_REQUIRE_NO_THROW(run_generators(msvc_solution::generation_mode::NON_LOCAL));
    check();
 }
-*/

@@ -123,6 +123,7 @@ void msvc_project::fill_options(const feature_set& props, options* opts, const m
    const feature_def& searched_lib = engine_->feature_registry().get_def("__searched_lib_name");
    const feature_def& cxxflags = engine_->feature_registry().get_def("cxxflags");
    const feature_def& cflags = engine_->feature_registry().get_def("cflags");
+   const feature_def& character_set = engine_->feature_registry().get_def("character-set");
    
    for(feature_set::const_iterator i = props.begin(), last = props.end(); i != last; ++i)
    {
@@ -161,6 +162,15 @@ void msvc_project::fill_options(const feature_set& props, options* opts, const m
                      else
                         opts->add_cxx_flag((**i).value());
                   }
+                  else
+                     if ((**i).def() == character_set)
+                     {
+                        if ((**i).value() == "unicode")
+                           opts->character_set(options::character_set::unicode);
+                        else
+                           if ((**i).value() == "multi-byte")
+                              opts->character_set(options::character_set::multi_byte);
+                     }
    }
 }
 
@@ -203,7 +213,7 @@ void msvc_project::write_configurations(std::ostream& s) const
            "         OutputDirectory=\"$(SolutionDir)$(ConfigurationName)\"\n"
            "         IntermediateDirectory=\"$(ConfigurationName)\"\n"
            "         ConfigurationType=\"" << cfg_type << "\"\n"
-           "         CharacterSet=\"1\">\n";
+           "         CharacterSet=\"" << opts.character_set() << "\">\n";
 
       if (opts.has_compiler_options())
          write_compiler_options(s, opts);

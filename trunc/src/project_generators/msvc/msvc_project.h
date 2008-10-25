@@ -41,7 +41,7 @@ namespace hammer
                               has_linker_options_(false),
                               has_librarian_options_(false),
                               compile_as_cpp_(false),
-                              character_set_(character_set::unknown)
+                              character_set_(character_set::unicode)
                   {}
                   
                   void add_include(const std::string& v) { includes_ << v << ';'; has_compiler_options_ = true; }

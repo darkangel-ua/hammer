@@ -110,9 +110,9 @@ namespace hammer
             {
                typedef std::map<const variant*, file_configuration> file_config_t;
 
-               void write(std::ostream& s) const;
+               void write(std::ostream& s, const std::string& path_prefix) const;
                
-               location_t file_name_; // Это файл который будет в секции File в vcproj
+               pstring file_name_; // Это файл который будет в секции File в vcproj
                file_config_t file_config;  // для каждого варианта своя basic_target со своими свойствами
             };
 
@@ -127,10 +127,9 @@ namespace hammer
                   filter_t(const types_t& t, 
                            const std::string& name,
                            const std::string& uid) : types_(t), name(name), uid(uid) {}
-                  std::ostream& write(std::ostream& s) const;
+                  std::ostream& write(std::ostream& s, const std::string& path_prefix) const;
                   bool accept(const type* t) const;
-                  void insert(const basic_target* t, const variant& v,
-                              const location_t& project_output_dir);
+                  void insert(const basic_target* t, const variant& v);
 
                private:
                   types_t types_;
@@ -148,6 +147,7 @@ namespace hammer
             location_t full_project_name_;
             location_t output_dir_;
             location_t project_output_dir_;
+            location_t meta_target_relative_to_output_;
             
             const type* searched_lib_;
             const type* obj_type_;

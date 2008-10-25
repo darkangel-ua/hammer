@@ -31,9 +31,33 @@ namespace hammer{
       return resolve_from_name(t.name());
    }
 
+   std::string::size_type rfind(const pstring& where, const std::string& what)
+   {
+      if (where.empty() || what.empty())
+         return std::string::npos;
+
+      const char* where_first = where.begin();
+      const char* where_last = where.end() - 1;
+      const char* what_first = what.c_str();
+      const char* what_last = what.c_str() + what.size() - 1;
+      
+      while(where_first <= where_last && 
+            what_first <= what_last)
+      {
+         if (*where_last != *what_last)
+            break;
+
+         --where_last;
+         --what_last;
+      }
+
+      return where_first <= where_last ? where_last - where_first + 1
+                                       : std::string::npos;
+   }
+
+   // FIXME: need totally rewrite this logic in very efficiently way because it calls many times
    const type* type_registry::resolve_from_target_name(const pstring& name) const
    {
-      string s_name(name.to_string());
       for(types_t::const_iterator i = types_.begin(), last = types_.end(); i != last; ++i)
       {
          // skip types with empty suffix
@@ -42,9 +66,9 @@ namespace hammer{
          
          for(type::suffixes_t::const_iterator j = i->second->suffixes().begin(), j_last = i->second->suffixes().end(); j != j_last; ++j)
          {
-            string::size_type p = s_name.rfind(j->c_str());
+            string::size_type p = rfind(name, *j);//s_name.rfind(j->c_str());
             if (p != string::npos && 
-                p + j->size() == s_name.size())
+                p + j->size() == name.size())
                return i->second;
          }
       }

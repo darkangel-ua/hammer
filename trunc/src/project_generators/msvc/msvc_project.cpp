@@ -53,6 +53,8 @@ void msvc_project::add_variant(boost::intrusive_ptr<const build_node> node)
       project_output_dir_ = output_dir() / name().to_string();
       id_ = project_output_dir().string();
       full_project_name_ = project_output_dir() / (name().to_string() + ".vcproj");
+      meta_target_relative_to_output_ = relative_path(meta_target_->location(), project_output_dir());
+      meta_target_relative_to_output_.normalize();
    }
 }
 
@@ -253,10 +255,10 @@ void msvc_project::file_configuration::write(std::ostream& s, const variant& v) 
    s << "              </FileConfiguration>\n";
 }
 
-void msvc_project::file_with_cfgs_t::write(std::ostream& s) const
+void msvc_project::file_with_cfgs_t::write(std::ostream& s, const std::string& path_prefix) const
 {
    s << "         <File\n"
-        "            RelativePath=\"" << file_name_.native_file_string() << "\">\n";
+        "            RelativePath=\"" << path_prefix << '\\'<< file_name_ << "\">\n";
 
    for(file_config_t::const_iterator i = file_config.begin(), last = file_config.end(); i != last; ++i)
       if (*i->first->properties_ != i->second.target_->properties())
@@ -265,7 +267,7 @@ void msvc_project::file_with_cfgs_t::write(std::ostream& s) const
    s << "         </File>\n";
 }
 
-std::ostream& msvc_project::filter_t::write(std::ostream& s) const
+std::ostream& msvc_project::filter_t::write(std::ostream& s, const std::string& path_prefix) const
 {
    s << "         <Filter\n"
         "            Name=\"" << name << "\"\n"
@@ -273,7 +275,7 @@ std::ostream& msvc_project::filter_t::write(std::ostream& s) const
         "            UniqueIdentifier=\"" << uid << "\">\n";
 
    for(map<const basic_target*, file_with_cfgs_t>::const_iterator i = files_.begin(), last = files_.end(); i != last; ++i)
-      i->second.write(s);
+      i->second.write(s, path_prefix);
 
    s << "         </Filter>\n";
    return s;
@@ -282,8 +284,9 @@ std::ostream& msvc_project::filter_t::write(std::ostream& s) const
 void msvc_project::write_files(std::ostream& s) const
 {
    s << "      <Files>\n";
+   string path_prefix = meta_target_relative_to_output_.native_file_string();
    for(files_t::const_iterator i = files_.begin(), last = files_.end(); i != last; ++i)
-      i->write(s);
+      i->write(s, path_prefix);
 
    s << "      </Files>\n";
 }
@@ -318,12 +321,10 @@ bool msvc_project::filter_t::accept(const type* t) const
    return false;
 }
 
-void msvc_project::filter_t::insert(const basic_target* t, const variant& v, 
-                                    const location_t& project_output_dir)
+void msvc_project::filter_t::insert(const basic_target* t, const variant& v)
 {
    file_with_cfgs_t& fwc = files_[t];
-   fwc.file_name_ = relative_path(t->mtarget()->location(), project_output_dir) / t->name().to_string();
-   fwc.file_name_.normalize();
+   fwc.file_name_ = t->name();
    file_configuration& fc = fwc.file_config[&v];
    fc.exclude_from_build = false;
    fc.target_ = t;
@@ -336,7 +337,7 @@ void msvc_project::insert_into_files(const basic_target* t, const variant& v) co
    {
       if (fi->accept(tp))
       {
-         fi->insert(t, v, project_output_dir_);
+         fi->insert(t, v);
          return;
       }
    }

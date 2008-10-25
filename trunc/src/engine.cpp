@@ -589,7 +589,7 @@ static void rglob_impl(sources_decl& result,
          relative_path = relative_path.branch_path();
       }
 
-      if (is_directory(*i))
+      if (is_directory(i.status()))
       {
          relative_path /= i->leaf();
          ++level;

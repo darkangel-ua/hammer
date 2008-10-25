@@ -7,7 +7,7 @@ lib hammer.core
     [ rglob ../src/*.cpp ]
     [ rglob ../src/*.h ]
     ../src/build/hammer_walker.c
-    /libantlr3c
+    /libantlr3c/<version>3.1.1
     /boost/function_types
     /boost/ptr_container
     /boost/filesystem
@@ -30,7 +30,7 @@ obj hammer_parser
     ../src/build/hammerParser.c 
    : 
     <cflags>/TP 
-    <use>/libantlr3c 
+    <use>/libantlr3c/<version>3.1.1 
     <use>/boost/ptr_container 
    ;
 
@@ -39,7 +39,7 @@ obj hammer_lexer
     ../src/build/hammerLexer.c 
    : 
     <cflags>/TP 
-    <use>/libantlr3c 
+    <use>/libantlr3c/<version>3.1.1 
    ;
 
 explicit hammer_parser ;

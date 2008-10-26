@@ -102,11 +102,20 @@ namespace hammer
             const variants_t& variants() const { return variants_; }
             
          private:
+            struct write_context
+            {
+               write_context(std::ostream& s,
+                             const type& h_type) : output_(s), h_type_(h_type) {}   
+
+               const type& h_type_;
+               std::ostream& output_;
+            };
+
             struct file_configuration
             {
                file_configuration() : exclude_from_build(true) {}
                
-               void write(std::ostream& s, const variant& v) const;
+               void write(write_context& ctx, const variant& v) const;
                const basic_target* target_;
                bool exclude_from_build;
             };
@@ -115,7 +124,7 @@ namespace hammer
             {
                typedef std::map<const variant*, file_configuration> file_config_t;
 
-               void write(std::ostream& s, const std::string& path_prefix) const;
+               void write(write_context& ctx, const std::string& path_prefix) const;
                
                pstring file_name_; // Это файл который будет в секции File в vcproj
                file_config_t file_config;  // для каждого варианта своя basic_target со своими свойствами
@@ -132,7 +141,7 @@ namespace hammer
                   filter_t(const types_t& t, 
                            const std::string& name,
                            const std::string& uid) : types_(t), name(name), uid(uid) {}
-                  std::ostream& write(std::ostream& s, const std::string& path_prefix) const;
+                  void write(write_context& ctx, const std::string& path_prefix) const;
                   bool accept(const type* t) const;
                   void insert(const basic_target* t, const variant& v);
 
@@ -161,7 +170,7 @@ namespace hammer
             void fill_filters() const;
             void write_header(std::ostream& s) const;
             void write_configurations(std::ostream& s) const;
-            void write_files(std::ostream& s) const;
+            void write_files(write_context& ctx) const;
             void gether_files_impl(const build_node& node, variant& v) const;
             void gether_files() const;
             void insert_into_files(const basic_target* t, const variant& v) const;

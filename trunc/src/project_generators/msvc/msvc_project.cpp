@@ -251,55 +251,57 @@ static feature_set* compute_file_conf_properties(const basic_target& target, con
    return result;
 }
 
-void msvc_project::file_configuration::write(std::ostream& s, const variant& v) const
+void msvc_project::file_configuration::write(write_context& ctx, const variant& v) const
 {
    options opts;
    feature_set* props = compute_file_conf_properties(*target_, v);
    v.owner_->fill_options(*props, &opts, *v.target_);
 
-   s << "              <FileConfiguration\n"
-     << "                   Name=\"" << v.name_ << "\">\n";
+   ctx.output_ << "              <FileConfiguration\n"
+               << "                   Name=\"" << v.name_ << "\">\n";
    
    if (opts.has_compiler_options())
-      write_compiler_options(s, opts);
+      write_compiler_options(ctx.output_, opts);
 
-   s << "              </FileConfiguration>\n";
+   ctx.output_ << "              </FileConfiguration>\n";
 }
 
-void msvc_project::file_with_cfgs_t::write(std::ostream& s, const std::string& path_prefix) const
+void msvc_project::file_with_cfgs_t::write(write_context& ctx, const std::string& path_prefix) const
 {
-   s << "         <File\n"
-        "            RelativePath=\"" << path_prefix << '\\'<< file_name_ << "\">\n";
+   ctx.output_ << "         <File\n"
+                  "            RelativePath=\"" << path_prefix << '\\'<< file_name_ << "\">\n";
 
    for(file_config_t::const_iterator i = file_config.begin(), last = file_config.end(); i != last; ++i)
-      if (*i->first->properties_ != i->second.target_->properties())
-         i->second.write(s, *i->first);
+      if (*i->first->properties_ != i->second.target_->properties() &&
+          &i->second.target_->type() != &ctx.h_type_) // discard any differences for H targets. Done for PCH. May be FIXME:
+      {
+         i->second.write(ctx, *i->first);
+      }
 
-   s << "         </File>\n";
+   ctx.output_ << "         </File>\n";
 }
 
-std::ostream& msvc_project::filter_t::write(std::ostream& s, const std::string& path_prefix) const
+void msvc_project::filter_t::write(write_context& ctx, const std::string& path_prefix) const
 {
-   s << "         <Filter\n"
-        "            Name=\"" << name << "\"\n"
-        "            Filter=\"cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx\"\n"
-        "            UniqueIdentifier=\"" << uid << "\">\n";
+   ctx.output_ << "         <Filter\n"
+                  "            Name=\"" << name << "\"\n"
+                  "            Filter=\"cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx\"\n"
+                  "            UniqueIdentifier=\"" << uid << "\">\n";
 
    for(map<const basic_target*, file_with_cfgs_t>::const_iterator i = files_.begin(), last = files_.end(); i != last; ++i)
-      i->second.write(s, path_prefix);
+      i->second.write(ctx, path_prefix);
 
-   s << "         </Filter>\n";
-   return s;
+   ctx.output_ << "         </Filter>\n";
 }
 
-void msvc_project::write_files(std::ostream& s) const
+void msvc_project::write_files(write_context& ctx) const
 {
-   s << "      <Files>\n";
+   ctx.output_ << "      <Files>\n";
    string path_prefix = meta_target_relative_to_output_.native_file_string();
    for(files_t::const_iterator i = files_.begin(), last = files_.end(); i != last; ++i)
-      i->write(s, path_prefix);
+      i->write(ctx, path_prefix);
 
-   s << "      </Files>\n";
+   ctx.output_ << "      </Files>\n";
 }
 
 void msvc_project::generate() const
@@ -316,7 +318,10 @@ void msvc_project::generate() const
    boost::filesystem::ofstream f(full_project_name_, std::ios_base::trunc);
    write_header(f);
    write_configurations(f);
-   write_files(f);
+   
+   write_context ctx(f, engine_->get_type_registry().resolve_from_name(types::H));
+   write_files(ctx);
+
    write_bottom(f);
 }
 

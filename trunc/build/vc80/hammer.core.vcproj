@@ -383,6 +383,14 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\src\pch_main_target.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\pch_meta_target.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\pool.cpp"
 				>
 			</File>
@@ -610,6 +618,14 @@
 			</File>
 			<File
 				RelativePath="..\..\src\parser.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\pch_main_target.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\pch_meta_target.h"
 				>
 			</File>
 			<File

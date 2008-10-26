@@ -18,9 +18,14 @@ namespace hammer
          std::vector<boost::intrusive_ptr<build_node> > construct(main_target* mt) const;
 
       private:
+         typedef std::vector<const generator*> viable_generators_t;
          generators_t generators_;
 
-         std::vector<const generator*> find_viable_generators(const type& t, bool allow_composite) const;
+         viable_generators_t 
+            find_viable_generators(const type& t, 
+                                   bool allow_composite,
+                                   const feature_set& build_properties) const;
+
          bool transform_to_consumable(const generator& target_generator, 
                                       const generator& current_generator,
                                       boost::intrusive_ptr<build_node> t, 

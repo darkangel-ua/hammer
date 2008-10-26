@@ -12,6 +12,7 @@ namespace hammer
 //      extern const type LIB;
       extern const type H;
       extern const type OBJ;
+      extern const type PCH;
       extern const type SHARED_LIB;
       extern const type IMPORT_LIB;
       extern const type STATIC_LIB;

@@ -156,6 +156,7 @@ namespace hammer
             
             const type* searched_lib_;
             const type* obj_type_;
+            const type* pch_type_;
 
             void fill_filters() const;
             void write_header(std::ostream& s) const;

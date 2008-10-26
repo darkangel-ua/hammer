@@ -15,6 +15,7 @@ namespace hammer
       unsigned dependency  : 1;
       unsigned composite   : 1;
       unsigned no_defaults : 1;
+      unsigned generated   : 1; // if feature has some generated target info
    };
 }
 

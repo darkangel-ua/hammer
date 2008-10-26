@@ -45,6 +45,7 @@ namespace hammer
 
          bool operator == (const feature_set& rhs) const;
          bool operator != (const feature_set& rhs) const { return !(*this == rhs); }
+         bool contains(const feature_set& rhs) const;
 
       private:
          feature_registry* fr_;

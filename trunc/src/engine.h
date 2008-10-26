@@ -103,6 +103,8 @@ namespace hammer
                        feature_set* default_build, requirements_decl* usage_requirements);
          void obj_rule(project* p, pstring& name, sources_decl& sources, requirements_decl* fs,
                        feature_set* default_build, requirements_decl* usage_requirements);
+         void pch_rule(project* p, pstring& name, sources_decl& sources, requirements_decl* fs,
+                       feature_set* default_build, requirements_decl* usage_requirements);
          void alias_rule(project* p, 
                          pstring& name, 
                          sources_decl* sources, 

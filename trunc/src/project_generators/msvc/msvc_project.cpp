@@ -26,6 +26,7 @@ msvc_project::msvc_project(engine& e,
 {
    searched_lib_ = &engine_->get_type_registry().resolve_from_name(types::SEARCHED_LIB);
    obj_type_ = &engine_->get_type_registry().resolve_from_name(types::OBJ);
+   pch_type_ = &engine_->get_type_registry().resolve_from_name(types::PCH);
 }
 
 static std::string make_variant_name(const feature_set& fs)
@@ -65,7 +66,7 @@ void msvc_project::fill_filters() const
    source_types.push_back(&engine_->get_type_registry().resolve_from_name(types::C));
    files_.push_back(filter_t(source_types, "Source Files", "{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"));
    filter_t::types_t header_types;
-   header_types.push_back(engine_->get_type_registry().resolve_from_suffix(".h"));
+   header_types.push_back(&engine_->get_type_registry().resolve_from_name(types::H));
    files_.push_back(filter_t(header_types, "Header Files", "{93995380-89BD-4b04-88EB-625FBE52EBFB}"));
 }
 
@@ -359,7 +360,8 @@ void msvc_project::gether_files_impl(const build_node& node, variant& v) const
    for(iter mi = node.sources_.begin(), mlast = node.sources_.end(); mi != mlast; ++mi)
    {
       if (mi->source_target_->mtarget()->meta_target() == meta_target_ ||
-          mi->source_target_->mtarget()->type() == *obj_type_)
+          mi->source_target_->mtarget()->type() == *obj_type_ ||
+          mi->source_target_->mtarget()->type() == *pch_type_)
       {
          insert_into_files(mi->source_target_, v);
          if (mi->source_node_)

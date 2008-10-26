@@ -4,6 +4,7 @@
 #include "main_target.h"
 #include "type.h"
 #include <boost/format.hpp>
+#include "feature_set.h"
 
 using namespace std;
 using namespace boost;
@@ -17,10 +18,23 @@ void generator_registry::insert(std::auto_ptr<generator> g)
       throw std::runtime_error("Generator '" + g->name() + "' already registered.");
 }
 
-vector<const generator*> 
-generator_registry::find_viable_generators(const type& t, bool allow_composite) const
+static int compute_rank(const feature_set& lhs, const feature_set& rhs)
 {
-   vector<const generator*> result;
+   int rank = 0;
+   for(feature_set::const_iterator i = rhs.begin(), last = rhs.end(); i != last; ++i)
+      if (lhs.find(**i) != lhs.end())
+         ++rank;
+
+   return rank;
+}
+
+generator_registry::viable_generators_t 
+generator_registry::find_viable_generators(const type& t, 
+                                           bool allow_composite,
+                                           const feature_set& build_properties) const
+{
+   viable_generators_t result;
+   int rank = 0; // rank show as the weight of generator (the more rank the more generator suitable for generation this type of targets)
    for(generators_t::const_iterator i = generators_.begin(), last = generators_.end(); i != last; ++i)
    {
       if (i->second->is_composite() && !allow_composite)
@@ -29,13 +43,20 @@ generator_registry::find_viable_generators(const type& t, bool allow_composite) 
       for(generator::producable_types_t::const_iterator j = i->second->producable_types().begin(), j_last = i->second->producable_types().end(); j != j_last; ++j)
       {
          if (*j->type_ == t)
-            result.push_back(i->second);
+         {
+            int generator_rank = i->second->constraints() != NULL ? compute_rank(build_properties, *i->second->constraints())
+                                                                  : 0;
+            if (rank > generator_rank)
+            {
+               rank = generator_rank;
+               result.clear();
+            }
+            
+            if (rank == generator_rank)
+               result.push_back(i->second);  
+         }
       }
    }
-
-//   disable this check until more complicated algorithm will be introduced
-//   if (result.size() > 1)
-//      throw std::runtime_error("More than one generator found");
 
    return result;
 }
@@ -51,7 +72,7 @@ generator_registry::transform(const generator& target_generator,
 {
    for(generator::consumable_types_t::const_iterator i = current_generator.consumable_types().begin(), last = current_generator.consumable_types().end(); i != last; ++i)
    {
-      vector<const generator*> vg(find_viable_generators(*i->type_, false));
+      vector<const generator*> vg(find_viable_generators(*i->type_, false, props));
       if (vg.empty())
          return false;
 
@@ -113,37 +134,70 @@ bool generator_registry::transform_to_consumable(const generator& target_generat
    return some_was_consumed;
 }
 
+namespace
+{
+   struct generator_data
+   {
+      generator_data(const generator* g) : generator_(g), all_consumed_(true) {} 
+
+      const generator* generator_;
+      vector<intrusive_ptr<build_node> > transformed_sources_;
+      bool all_consumed_;
+   };
+}
 std::vector<boost::intrusive_ptr<build_node> >
 generator_registry::construct(main_target* mt) const
 {
-   vector<const generator*> viable_generators(find_viable_generators(mt->type(), true));
-   if (viable_generators.empty())
+   typedef std::vector<generator_data> main_viable_generators_t;
+   viable_generators_t viable_generators(find_viable_generators(mt->type(), true, mt->properties()));
+   main_viable_generators_t main_viable_generators(viable_generators.begin(), viable_generators.end());
+
+   if (main_viable_generators.empty())
       throw runtime_error("Can't find transformation to '" + mt->type().name() + "'.");
 
-   vector<intrusive_ptr<build_node> > pre_sources;
+   // generate target sources
+   vector<intrusive_ptr<build_node> > generated_sources;
    for(main_target::sources_t::const_iterator i = mt->sources().begin(), last = mt->sources().end(); i != last; ++i)
    {
       std::vector<boost::intrusive_ptr<build_node> > r((**i).generate());
-      pre_sources.insert(pre_sources.end(), r.begin(), r.end());
+      generated_sources.insert(generated_sources.end(), r.begin(), r.end());
    }
 
-   vector<intrusive_ptr<build_node> > sources;
-   while(!pre_sources.empty())
+   // transform all sources using all viable generators
+   while(!generated_sources.empty())
    {
-      intrusive_ptr<build_node> s(pre_sources.back());
-      pre_sources.pop_back();
-      if (!transform_to_consumable(*viable_generators[0], *viable_generators[0], s, &sources, mt->properties(), *mt))
-         throw runtime_error((boost::format("Can't find transformation from '%s' -> '%s'.") % s->targeting_type_->name() % mt->type().name()).str());
+      intrusive_ptr<build_node> s(generated_sources.back());
+      generated_sources.pop_back();
+      for(main_viable_generators_t::iterator i = main_viable_generators.begin(), last = main_viable_generators.end(); i != last; ++i)
+         i->all_consumed_= i->all_consumed_ && transform_to_consumable(*i->generator_, *i->generator_, s, &i->transformed_sources_, mt->properties(), *mt);
    }
 
-   typedef vector<const generator*>::const_iterator iter;
-   for(iter i = viable_generators.begin(), last = viable_generators.end(); i != last; ++i)
+   // search for ONE good generator that consume all sources
+   bool has_choosed_generator = false;
+   main_viable_generators_t::const_iterator choosed_generator;
+   for(main_viable_generators_t::const_iterator i = main_viable_generators.begin(), last = main_viable_generators.end(); i != last; ++i)
    {
-      std::vector<boost::intrusive_ptr<build_node> > r((*i)->construct(mt->type(), mt->properties(), sources, 0, &mt->name(), *mt));
-      if (!r.empty())
-         return r;
+      // FIXME: error messages
+      if (has_choosed_generator && i->all_consumed_)
+         throw runtime_error("Found more than one transformations from sources to target.");
+      
+      if (i->all_consumed_)
+      {
+         choosed_generator = i;
+         has_choosed_generator = true;
+      }
    }
 
+   // FIXME: error messages
+   if (!has_choosed_generator)
+      throw runtime_error((boost::format("Can't find transformation 'sources' -> '%s'.") 
+                              % mt->type().name()).str());
+
+   std::vector<boost::intrusive_ptr<build_node> > r(choosed_generator->generator_->construct(mt->type(), mt->properties(), choosed_generator->transformed_sources_, 0, &mt->name(), *mt));
+   if (!r.empty())
+      return r;
+
+   // FIXME: error messages
    throw std::runtime_error("No viable generator found.");
 }
 

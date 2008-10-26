@@ -49,7 +49,7 @@ namespace hammer
          const std::string& name() const { return name_; }
          const consumable_types_t& consumable_types() const { return source_types_; }
          const producable_types_t& producable_types() const { return target_types_; }
-         const feature_set& constraints() const { return *constraints_; }
+         const feature_set* constraints() const { return constraints_; }
  
          virtual std::vector<boost::intrusive_ptr<build_node> >
             construct(const type& target_type, 
@@ -68,7 +68,7 @@ namespace hammer
          consumable_types_t source_types_;
          producable_types_t target_types_;
          bool composite_;
-         const feature_set* constraints_;
+         const feature_set* constraints_; // == null if no constraints specified
    };
 }
 

@@ -22,6 +22,9 @@ bool feature::operator == (const feature& rhs) const
    if (attributes().path)
       return value() == rhs.value() &&
              get_path_data().target_ == rhs.get_path_data().target_;
+   if (attributes().generated)
+      return value() == rhs.value() &&
+             get_generated_data().target_ == rhs.get_generated_data().target_;
 
    return value() == rhs.value();
 }

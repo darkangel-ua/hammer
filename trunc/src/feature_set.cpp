@@ -198,4 +198,13 @@ namespace hammer{
       features_.clear();
    }
 
+   bool feature_set::contains(const feature_set& rhs) const
+   {
+      for(const_iterator i = rhs.begin(), last = rhs.end(); i != last; ++i)
+         if (find(**i) == end())
+            return false;
+
+      return true;
+   }
+
 }

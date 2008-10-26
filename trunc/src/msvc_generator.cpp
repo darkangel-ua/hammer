@@ -38,11 +38,7 @@ void add_msvc_generators(engine& e, generator_registry& gr)
       source.push_back(generator::consumable_type(e.get_type_registry().resolve_from_name(types::CPP), 1, 0));
       target.push_back(generator::produced_type(e.get_type_registry().resolve_from_name(types::OBJ), 1));
       target.push_back(generator::produced_type(e.get_type_registry().resolve_from_name(types::PCH), 1));
-      
-      feature_set* constraints = e.feature_registry().make_set();
-      constraints->join("__pch_target", NULL);
-      
-      auto_ptr<generator> g(new pch_generator(e, "msvc.cpp-pch.compiler", source, target, true, constraints));
+      auto_ptr<generator> g(new pch_generator(e, "msvc.cpp-pch.compiler", source, target, true));
       
       e.generators().insert(g);
    }
@@ -65,11 +61,7 @@ void add_msvc_generators(engine& e, generator_registry& gr)
       source.push_back(generator::consumable_type(e.get_type_registry().resolve_from_name(types::C), 1, 0));
       target.push_back(generator::produced_type(e.get_type_registry().resolve_from_name(types::PCH), 1));
       target.push_back(generator::produced_type(e.get_type_registry().resolve_from_name(types::OBJ), 1));
-      
-      feature_set* constraints = e.feature_registry().make_set();
-      constraints->join("__pch_target", NULL);
-      
-      auto_ptr<generator> g(new pch_generator(e, "msvc.c-pch.compiler", source, target, true, constraints));
+      auto_ptr<generator> g(new pch_generator(e, "msvc.c-pch.compiler", source, target, true));
       
       e.generators().insert(g);
    }

@@ -87,7 +87,12 @@ engine::engine()
 
    {
       feature_attributes ft = {0}; ft.generated = ft.free = 1;
-      fr->add_def(feature_def("__pch_target", vector<string>(), ft));
+      fr->add_def(feature_def("__use_pch", vector<string>(), ft));
+   }
+
+   {
+      feature_attributes ft = {0}; ft.generated = ft.free = 1;
+      fr->add_def(feature_def("__create_pch", vector<string>(), ft));
    }
 
    feature_registry_ = fr.release();

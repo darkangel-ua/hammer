@@ -383,6 +383,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\src\pch_generator.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\pch_main_target.cpp"
 				>
 			</File>
@@ -618,6 +622,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\parser.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\pch_generator.h"
 				>
 			</File>
 			<File

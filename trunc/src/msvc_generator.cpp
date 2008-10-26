@@ -11,6 +11,7 @@
 #include "header_lib_generator.h"
 #include "feature_set.h"
 #include "feature_registry.h"
+#include "pch_generator.h"
 
 using namespace boost::assign;
 using namespace std;
@@ -41,7 +42,7 @@ void add_msvc_generators(engine& e, generator_registry& gr)
       feature_set* constraints = e.feature_registry().make_set();
       constraints->join("__pch_target", NULL);
       
-      auto_ptr<generator> g(new generator(e, "msvc.cpp-pch.compiler", source, target, true, constraints));
+      auto_ptr<generator> g(new pch_generator(e, "msvc.cpp-pch.compiler", source, target, true, constraints));
       
       e.generators().insert(g);
    }
@@ -68,7 +69,7 @@ void add_msvc_generators(engine& e, generator_registry& gr)
       feature_set* constraints = e.feature_registry().make_set();
       constraints->join("__pch_target", NULL);
       
-      auto_ptr<generator> g(new generator(e, "msvc.c-pch.compiler", source, target, true, constraints));
+      auto_ptr<generator> g(new pch_generator(e, "msvc.c-pch.compiler", source, target, true, constraints));
       
       e.generators().insert(g);
    }

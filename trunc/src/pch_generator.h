@@ -6,7 +6,7 @@ namespace hammer
    class pch_generator : public generator
    {
       public:
-         pch_generator(engine& e,
+         pch_generator(hammer::engine& e,
                        const std::string& name,
                        const consumable_types_t& source_types,
                        const producable_types_t& target_types,
@@ -20,5 +20,9 @@ namespace hammer
                       const basic_target* t,
                       const pstring* composite_target_name,
                       const main_target& owner) const;
+      private:
+         const type* c_type_;
+         const type* cpp_type_;
+         const type* h_type_;
    };
 }

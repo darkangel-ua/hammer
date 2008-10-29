@@ -1,6 +1,7 @@
-project : requirements <character-set>multi-byte ;
+project hammer.core : requirements <character-set>multi-byte ;
 
 pch stdafx : ../src/stdafx.cpp ../src/stdafx.h ;
+explicit stdafx ;
 
 lib hammer.core 
    : 

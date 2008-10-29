@@ -26,6 +26,7 @@ pch_main_target::pch_main_target(const hammer::meta_target* mt,
    feature* create_pch_feature = meta_target()->project()->engine()->feature_registry().create_feature("__create_pch", NULL);
    create_pch_feature->get_generated_data().target_ = this;
    modified_properties->join(create_pch_feature);
+   modified_properties->join("__pch", NULL);
    properties(modified_properties);
 }
    

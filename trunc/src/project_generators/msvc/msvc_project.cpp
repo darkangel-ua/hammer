@@ -128,6 +128,7 @@ void msvc_project::fill_options(const feature_set& props, options* opts, const m
    const feature_def& character_set = engine_->feature_registry().get_def("character-set");
    const feature_def& use_pch = engine_->feature_registry().get_def("__use_pch");
    const feature_def& create_pch = engine_->feature_registry().get_def("__create_pch");
+   const feature_def& pch = engine_->feature_registry().get_def("__pch");
    
    for(feature_set::const_iterator i = props.begin(), last = props.end(); i != last; ++i)
    {
@@ -175,11 +176,17 @@ void msvc_project::fill_options(const feature_set& props, options* opts, const m
                            if ((**i).value() == "multi-byte")
                               opts->character_set(options::character_set::multi_byte);
                      }
+
       if ((**i).def() == use_pch)
       {
-         const pch_main_target* pch_target = static_cast<const pch_main_target*>((**i).get_generated_data().target_);
-         opts->pch_target(pch_target);
-         opts->pch_usage(options::pch_usage_t::use);
+         if ((**i).value() == "on")
+         {
+            const pch_main_target* pch_target = static_cast<const pch_main_target*>((**i).get_generated_data().target_);
+            opts->pch_target(pch_target);
+            opts->pch_usage(options::pch_usage_t::use);
+         }
+         else
+            opts->pch_usage(options::pch_usage_t::not_use);
       }
       else
          if ((**i).def() == create_pch)
@@ -210,6 +217,12 @@ static void write_pch_options(std::ostream& os, const msvc_project::options& opt
 {
    switch (opts.pch_usage())
    {
+      case msvc_project::options::pch_usage_t::not_use:
+      {
+         os << "            UsePrecompiledHeader=\"0\"\n";
+
+         break;
+      }
       case msvc_project::options::pch_usage_t::use:
       {
          location_t pch_header(opts.pch_target().pch_header().name().to_string());
@@ -318,8 +331,10 @@ void msvc_project::file_configuration::write(write_context& ctx, const variant& 
 
 void msvc_project::file_with_cfgs_t::write(write_context& ctx, const std::string& path_prefix) const
 {
+   location_t file_name(location_t(path_prefix) / file_name_.to_string());
+   file_name.normalize();
    ctx.output_ << "         <File\n"
-                  "            RelativePath=\"" << path_prefix << '\\'<< file_name_ << "\">\n";
+                  "            RelativePath=\"" << file_name.native_file_string() << "\">\n";
 
    for(file_config_t::const_iterator i = file_config.begin(), last = file_config.end(); i != last; ++i)
       if (*i->first->properties_ != i->second.target_->properties() &&

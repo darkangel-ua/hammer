@@ -1,2 +1,3 @@
 pch pch : stdafx.cpp stdafx.h ;
-exe test : main.cpp pch ;
+obj obj : obj.cpp ;
+exe test : obj main.cpp pch ;

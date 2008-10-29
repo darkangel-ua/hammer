@@ -18,12 +18,14 @@ void generator_registry::insert(std::auto_ptr<generator> g)
       throw std::runtime_error("Generator '" + g->name() + "' already registered.");
 }
 
-static int compute_rank(const feature_set& lhs, const feature_set& rhs)
+static int compute_rank(const feature_set& build_properties, const feature_set& constraints)
 {
    int rank = 0;
-   for(feature_set::const_iterator i = rhs.begin(), last = rhs.end(); i != last; ++i)
-      if (lhs.find(**i) != lhs.end())
+   for(feature_set::const_iterator i = constraints.begin(), last = constraints.end(); i != last; ++i)
+      if (build_properties.find(**i) != build_properties.end())
          ++rank;
+      else 
+         return -1;
 
    return rank;
 }
@@ -46,7 +48,10 @@ generator_registry::find_viable_generators(const type& t,
          {
             int generator_rank = i->second->constraints() != NULL ? compute_rank(build_properties, *i->second->constraints())
                                                                   : 0;
-            if (rank > generator_rank)
+            if (generator_rank == -1) // build properties not satisfied generator constraints
+               continue;
+
+            if (generator_rank > rank)
             {
                rank = generator_rank;
                result.clear();
@@ -145,6 +150,7 @@ namespace
       bool all_consumed_;
    };
 }
+
 std::vector<boost::intrusive_ptr<build_node> >
 generator_registry::construct(main_target* mt) const
 {

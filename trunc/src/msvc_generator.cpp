@@ -30,7 +30,7 @@ void add_msvc_generators(engine& e, generator_registry& gr)
       e.generators().insert(g);
    }
 
-   // CPP -> PCH + OBJ
+   // CPP + H -> PCH + OBJ
    {
       generator::consumable_types_t source;
       generator::producable_types_t target;
@@ -38,7 +38,10 @@ void add_msvc_generators(engine& e, generator_registry& gr)
       source.push_back(generator::consumable_type(e.get_type_registry().resolve_from_name(types::CPP), 1, 0));
       target.push_back(generator::produced_type(e.get_type_registry().resolve_from_name(types::OBJ), 1));
       target.push_back(generator::produced_type(e.get_type_registry().resolve_from_name(types::PCH), 1));
-      auto_ptr<generator> g(new pch_generator(e, "msvc.cpp-pch.compiler", source, target, true));
+
+      feature_set* constraints = e.feature_registry().make_set();
+      constraints->join("__pch", NULL);
+      auto_ptr<generator> g(new pch_generator(e, "msvc.cpp-pch.compiler", source, target, true, constraints));
       
       e.generators().insert(g);
    }
@@ -53,7 +56,7 @@ void add_msvc_generators(engine& e, generator_registry& gr)
       e.generators().insert(g);
    }
 
-   // C -> PCH + OBJ
+   // C + H -> PCH + OBJ
    {
       generator::consumable_types_t source;
       generator::producable_types_t target;
@@ -61,7 +64,10 @@ void add_msvc_generators(engine& e, generator_registry& gr)
       source.push_back(generator::consumable_type(e.get_type_registry().resolve_from_name(types::C), 1, 0));
       target.push_back(generator::produced_type(e.get_type_registry().resolve_from_name(types::PCH), 1));
       target.push_back(generator::produced_type(e.get_type_registry().resolve_from_name(types::OBJ), 1));
-      auto_ptr<generator> g(new pch_generator(e, "msvc.c-pch.compiler", source, target, true));
+
+      feature_set* constraints = e.feature_registry().make_set();
+      constraints->join("__pch", NULL);
+      auto_ptr<generator> g(new pch_generator(e, "msvc.c-pch.compiler", source, target, true, constraints));
       
       e.generators().insert(g);
    }

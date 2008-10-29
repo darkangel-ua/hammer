@@ -47,6 +47,16 @@
          />
               </FileConfiguration>
          </File>
+         <File
+            RelativePath="..\..\..\obj.cpp">
+              <FileConfiguration
+                   Name="release">
+         <Tool
+            Name="VCCLCompilerTool"
+            UsePrecompiledHeader="0"
+         />
+              </FileConfiguration>
+         </File>
          </Filter>
          <Filter
             Name="Header Files"

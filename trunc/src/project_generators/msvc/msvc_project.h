@@ -38,7 +38,7 @@ namespace hammer
             {
                public:
                   struct character_set { enum value {unknown, unicode, multi_byte}; };
-                  struct pch_usage_t { enum value {not_use, use, create}; };
+                  struct pch_usage_t { enum value {not_set, not_use, use, create}; };
 
                   options() : has_compiler_options_(false), 
                               has_linker_options_(false),
@@ -46,7 +46,7 @@ namespace hammer
                               compile_as_cpp_(false),
                               character_set_(character_set::unicode),
                               pch_target_(NULL),
-                              pch_usage_(pch_usage_t::not_use)
+                              pch_usage_(pch_usage_t::not_set)
                   {}
                   
                   void add_include(const std::string& v) { includes_ << v << ';'; has_compiler_options_ = true; }
@@ -68,7 +68,7 @@ namespace hammer
                   pch_usage_t::value pch_usage() const { return pch_usage_; }
 
                   bool has_compiler_options() const { return has_compiler_options_ || 
-                                                             pch_usage_ != pch_usage_t::not_use; }
+                                                             pch_usage_ != pch_usage_t::not_set; }
                   bool has_linker_options() const { return has_linker_options_; }
                   bool has_librarian_options() const { return has_librarian_options_; }
 

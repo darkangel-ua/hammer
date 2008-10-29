@@ -37,7 +37,7 @@ void pch_meta_target::compute_usage_requirements(feature_set& result,
 {
    // adding __pch_target feature to usage requirements to mark dependent targets as built with pch
    this->usage_requirements().eval(full_build_request, &result);
-   feature* pch_feature = project()->engine()->feature_registry().create_feature("__use_pch", NULL);
+   feature* pch_feature = project()->engine()->feature_registry().create_feature("__use_pch", "on");
    pch_feature->get_generated_data().target_ = last_constructed_main_target_;
    result.join(pch_feature);
 }

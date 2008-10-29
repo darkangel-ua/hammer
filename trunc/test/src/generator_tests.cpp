@@ -285,7 +285,6 @@ BOOST_FIXTURE_TEST_CASE(user_dir_generation, generator_tests)
    BOOST_REQUIRE_NO_THROW(run_generators());
    check();
 }
-*/
 
 BOOST_FIXTURE_TEST_CASE(local_generation, generator_tests)
 {
@@ -304,6 +303,7 @@ BOOST_FIXTURE_TEST_CASE(non_local_generation, generator_tests)
    BOOST_REQUIRE_NO_THROW(run_generators(msvc_solution::generation_mode::NON_LOCAL));
    check();
 }
+*/
 
 BOOST_FIXTURE_TEST_CASE(pch, generator_tests)
 {

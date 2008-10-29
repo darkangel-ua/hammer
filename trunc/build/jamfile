@@ -1,11 +1,13 @@
 project : requirements <character-set>multi-byte ;
 
+pch stdafx : ../src/stdafx.cpp ../src/stdafx.h ;
+
 lib hammer.core 
    : 
     hammer_parser
     hammer_lexer
-    [ rglob ../src/*.cpp ]
-    [ rglob ../src/*.h ]
+    [ rglob ../src/*.cpp : stdafx.cpp ]
+    [ rglob ../src/*.h : stdafx.h ]
     ../src/build/hammer_walker.c
     /libantlr3c/<version>3.1.1
     /boost/function_types
@@ -16,6 +18,7 @@ lib hammer.core
     /boost/assign
     /boost/process
     /boost/format
+    stdafx
    :
     <include>../src/
     <link>static

@@ -5,11 +5,14 @@ explicit stdafx ;
 
 lib hammer.core 
    : 
+    stdafx
     hammer_parser
     hammer_lexer
-    [ rglob ../src/*.cpp : stdafx.cpp ]
+    hammer_walker
+    dos_wildcard
+    [ glob ../src/*.cpp : stdafx.cpp dos_wildcard.cpp ]
     [ rglob ../src/*.h : stdafx.h ]
-    ../src/build/hammer_walker.c
+    [ rglob ../src/project_generators/*.cpp ]
     /libantlr3c/<version>3.1.1
     /boost/function_types
     /boost/ptr_container
@@ -19,7 +22,6 @@ lib hammer.core
     /boost/assign
     /boost/process
     /boost/format
-    stdafx
    :
     <include>../src/
     <link>static
@@ -27,6 +29,21 @@ lib hammer.core
    :
     <use>/boost/ptr_container
     <use>/boost/function_types
+   ;
+
+obj dos_wildcard 
+   :
+    ../src/dos_wildcard.cpp
+   :
+    <use>/boost/regex
+   ;
+
+obj hammer_walker 
+   : 
+    ../src/build/hammer_walker.c
+   :
+    <use>/libantlr3c/<version>3.1.1 
+    <use>/boost/ptr_container 
    ;
 
 obj hammer_parser 
@@ -48,3 +65,5 @@ obj hammer_lexer
 
 explicit hammer_parser ;
 explicit hammer_lexer ;
+explicit hammer_walker ;
+explicit dos_wildcard ;

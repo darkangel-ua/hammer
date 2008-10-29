@@ -112,10 +112,10 @@ engine::engine()
 project* engine::get_upper_project(const location_t& project_path)
 {
    location_t upper_path = project_path.branch_path();
-   if (exists(upper_path / "jamfile"))
+   if (exists(upper_path / "hamfile"))
       return &load_project(upper_path);
    
-   if (exists(upper_path / "jamroot"))
+   if (exists(upper_path / "hamroot"))
       return &load_project(upper_path);
    
    if (upper_path.has_leaf())
@@ -369,11 +369,11 @@ project& engine::load_project(location_t project_path)
          materialize_project(project_path, *upper_project);
       }
 
-      location_t project_file = project_path / "jamfile";
+      location_t project_file = project_path / "hamfile";
       bool is_top_level = false;
       if (!exists(project_file))
       {
-         project_file = project_path / "jamroot";
+         project_file = project_path / "hamroot";
          is_top_level = true;
       }
       else 

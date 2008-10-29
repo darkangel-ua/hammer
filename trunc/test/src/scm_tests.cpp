@@ -22,7 +22,7 @@ struct scm_tests
 void scm_tests::load_project(const string& name)
 {
    fs::path project_path(test_data_path / "scm_tests" / name);
-   BOOST_REQUIRE(exists(project_path / "jamfile"));
+   BOOST_REQUIRE(exists(project_path / "hamfile"));
    const project& p = engine_.load_project(project_path);
    std::vector<basic_target*> result;
    p.instantiate("test", *engine_.feature_registry().make_set(), &result);

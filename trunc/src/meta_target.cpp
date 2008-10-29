@@ -120,7 +120,9 @@ namespace hammer{
       split_sources(&simple_targets, &meta_targets, sources_from_requirements, *build_request_for_dependencies);
       
       project()->engine()->feature_registry().add_defaults(mt_fs);
-      main_target* mt = construct_main_target(mt_fs);
+      main_target* mt = construct_main_target(mt_fs); // construct_main_target may construct main_target with different properties PCH is exapmle
+      mt_fs = mt->properties().clone(); // FIXME ref semantic required
+
       if (!meta_targets.empty())
          instantiate_meta_targets(simple_targets, instantiated_meta_targets, 
                                  *local_usage_requirements, meta_targets, 

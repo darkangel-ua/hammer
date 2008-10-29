@@ -10,6 +10,7 @@
 #include "../../feature_def.h"
 #include "../../feature_registry.h"
 #include "../../fs_helpers.h"
+#include "../../pch_main_target.h"
 
 using namespace std;
    
@@ -125,6 +126,8 @@ void msvc_project::fill_options(const feature_set& props, options* opts, const m
    const feature_def& cxxflags = engine_->feature_registry().get_def("cxxflags");
    const feature_def& cflags = engine_->feature_registry().get_def("cflags");
    const feature_def& character_set = engine_->feature_registry().get_def("character-set");
+   const feature_def& use_pch = engine_->feature_registry().get_def("__use_pch");
+   const feature_def& create_pch = engine_->feature_registry().get_def("__create_pch");
    
    for(feature_set::const_iterator i = props.begin(), last = props.end(); i != last; ++i)
    {
@@ -172,6 +175,20 @@ void msvc_project::fill_options(const feature_set& props, options* opts, const m
                            if ((**i).value() == "multi-byte")
                               opts->character_set(options::character_set::multi_byte);
                      }
+      if ((**i).def() == use_pch)
+      {
+         const pch_main_target* pch_target = static_cast<const pch_main_target*>((**i).get_generated_data().target_);
+         opts->pch_target(pch_target);
+         opts->pch_usage(options::pch_usage_t::use);
+      }
+      else
+         if ((**i).def() == create_pch)
+         {
+            const pch_main_target* pch_target = static_cast<const pch_main_target*>((**i).get_generated_data().target_);
+            opts->pch_target(pch_target);
+            opts->pch_usage(options::pch_usage_t::create);
+         }
+
    }
 }
 
@@ -189,14 +206,47 @@ static void write_defines(std::ostream& os, const msvc_project::options& opts)
       os << "            PreprocessorDefinitions=\"" << s << "\"\n";
 }
 
+static void write_pch_options(std::ostream& os, const msvc_project::options& opts)
+{
+   switch (opts.pch_usage())
+   {
+      case msvc_project::options::pch_usage_t::use:
+      {
+         location_t pch_header(opts.pch_target().pch_header().name().to_string());
+         
+         os << "            UsePrecompiledHeader=\"2\"\n";
+         os << "            PrecompiledHeaderThrough=\"" << pch_header.leaf() << "\"\n";
+
+         break;
+      }
+
+      case msvc_project::options::pch_usage_t::create:
+      {
+         location_t pch_header(opts.pch_target().pch_header().name().to_string());
+
+         os << "            UsePrecompiledHeader=\"1\"\n";
+         os << "            PrecompiledHeaderThrough=\"" << pch_header.leaf() << "\"\n";
+
+         break;
+      }
+      
+      default:
+         break;
+   }
+}
+
 static void write_compiler_options(std::ostream& s, const msvc_project::options& opts)
 {
    s << "         <Tool\n"
         "            Name=\"VCCLCompilerTool\"\n";
    write_defines(s, opts);
    write_includes(s, opts);
+   
    if (opts.compile_as_cpp())
       s << "          CompileAs=\"2\"\n";
+   
+   write_pch_options(s, opts);
+
    s << "         />\n";
 }
 
@@ -215,7 +265,7 @@ void msvc_project::write_configurations(std::ostream& s) const
            "         IntermediateDirectory=\"$(ConfigurationName)\"\n"
            "         ConfigurationType=\"" << cfg_type << "\"\n"
            "         CharacterSet=\"" << opts.character_set() << "\">\n";
-
+      
       if (opts.has_compiler_options())
          write_compiler_options(s, opts);
 

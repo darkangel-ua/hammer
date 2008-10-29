@@ -15,7 +15,6 @@ namespace hammer
          virtual void compute_usage_requirements(feature_set& result, 
                                                  const feature_set& full_build_request,
                                                  const feature_set& computed_usage_requirements) const;
-      
       private:
          mutable main_target* last_constructed_main_target_;
    };

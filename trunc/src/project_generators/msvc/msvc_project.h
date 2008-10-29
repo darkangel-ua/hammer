@@ -20,6 +20,7 @@ namespace hammer
    class engine;
    class meta_target;
    class main_target;
+   class pch_main_target;
 
    namespace project_generators
    {
@@ -37,11 +38,15 @@ namespace hammer
             {
                public:
                   struct character_set { enum value {unknown, unicode, multi_byte}; };
+                  struct pch_usage_t { enum value {not_use, use, create}; };
+
                   options() : has_compiler_options_(false), 
                               has_linker_options_(false),
                               has_librarian_options_(false),
                               compile_as_cpp_(false),
-                              character_set_(character_set::unicode)
+                              character_set_(character_set::unicode),
+                              pch_target_(NULL),
+                              pch_usage_(pch_usage_t::not_use)
                   {}
                   
                   void add_include(const std::string& v) { includes_ << v << ';'; has_compiler_options_ = true; }
@@ -50,6 +55,8 @@ namespace hammer
                   void add_cxx_flag(const pstring& v) { cxxflags_ << v << ' '; has_compiler_options_ = true; } 
                   void compile_as_cpp(bool v) { compile_as_cpp_ = true; has_compiler_options_ = true; }
                   void character_set(character_set::value v) { character_set_ = v; }
+                  void pch_target(const pch_main_target* t) { pch_target_ = t; }
+                  void pch_usage(pch_usage_t::value v) { pch_usage_ = v; }
 
                   const std::ostringstream& includes() const { return includes_; }
                   const std::ostringstream& defines() const { return defines_; }
@@ -57,8 +64,11 @@ namespace hammer
                   const std::ostringstream& cxxflags() const { return cxxflags_; }
                   bool compile_as_cpp() const { return compile_as_cpp_; }
                   character_set::value character_set() const { return character_set_; }
+                  const pch_main_target& pch_target() const { return *pch_target_; }
+                  pch_usage_t::value pch_usage() const { return pch_usage_; }
 
-                  bool has_compiler_options() const { return has_compiler_options_; }
+                  bool has_compiler_options() const { return has_compiler_options_ || 
+                                                             pch_usage_ != pch_usage_t::not_use; }
                   bool has_linker_options() const { return has_linker_options_; }
                   bool has_librarian_options() const { return has_librarian_options_; }
 
@@ -73,6 +83,8 @@ namespace hammer
                   bool has_librarian_options_ : 1;
                   bool compile_as_cpp_ : 1;
                   character_set::value character_set_;
+                  const pch_main_target* pch_target_;
+                  pch_usage_t::value pch_usage_;
             };
 
             struct variant

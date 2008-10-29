@@ -11,11 +11,14 @@ namespace hammer
                          const pstring& name, 
                          const hammer::type* t, 
                          const feature_set* props,
-                         pool& p)
-                        : 
-                         main_target(mt, name, t, props, p)
-         {}
+                         pool& p);
 
+         const basic_target& pch_header() const { return *pch_header_; }
+         const basic_target& pch_source() const { return *pch_source_; }
          virtual std::vector<boost::intrusive_ptr<hammer::build_node> > generate();
+      
+      private:
+         const basic_target* pch_header_;
+         const basic_target* pch_source_;
    };
 }

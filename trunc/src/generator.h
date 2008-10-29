@@ -46,6 +46,7 @@ namespace hammer
                    const feature_set* c = 0);
       
          hammer::engine& engine() { return *engine_; }
+         hammer::engine& engine() const { return *engine_; }
          const std::string& name() const { return name_; }
          const consumable_types_t& consumable_types() const { return source_types_; }
          const producable_types_t& producable_types() const { return target_types_; }

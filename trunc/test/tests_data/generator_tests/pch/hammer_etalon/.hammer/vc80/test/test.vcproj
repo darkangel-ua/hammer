@@ -18,6 +18,11 @@
          ConfigurationType="1"
          CharacterSet="1">
          <Tool
+            Name="VCCLCompilerTool"
+            UsePrecompiledHeader="2"
+            PrecompiledHeaderThrough="stdafx.h"
+         />
+         <Tool
             Name="VCLinkerTool"
             AdditionalDependencies=""
          />
@@ -35,6 +40,11 @@
             RelativePath="..\..\..\stdafx.cpp">
               <FileConfiguration
                    Name="release">
+         <Tool
+            Name="VCCLCompilerTool"
+            UsePrecompiledHeader="1"
+            PrecompiledHeaderThrough="stdafx.h"
+         />
               </FileConfiguration>
          </File>
          </Filter>
@@ -44,9 +54,6 @@
             UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
          <File
             RelativePath="..\..\..\stdafx.h">
-              <FileConfiguration
-                   Name="release">
-              </FileConfiguration>
          </File>
          </Filter>
       </Files>

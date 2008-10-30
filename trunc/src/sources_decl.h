@@ -42,11 +42,11 @@ namespace hammer
          sources_decl(const sources_decl& rhs);
          sources_decl& operator = (const sources_decl& rhs);
 
-         void push_back(const pstring& v);
+         void push_back(const pstring& v, const type_registry& tr);
          void push_back(const source_decl& v);
          
          // добавляет в конец
-         void insert(const std::vector<pstring>& v);
+         void insert(const std::vector<pstring>& v, const type_registry& tr);
          
          // перебрасывает все что есть в s в конец данного инстанса
          // s после переброски пуст

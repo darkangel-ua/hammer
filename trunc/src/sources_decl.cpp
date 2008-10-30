@@ -58,10 +58,10 @@ void sources_decl::clone_if_needed()
    }
 }
 
-void sources_decl::push_back(const pstring& v)
+void sources_decl::push_back(const pstring& v, const type_registry& tr)
 {
    clone_if_needed();
-   impl_->values_.push_back(source_decl(v, pstring(), NULL));
+   impl_->values_.push_back(source_decl(v, pstring(), tr.resolve_from_target_name(v), NULL));
 }
 
 void sources_decl::push_back(const source_decl& v)
@@ -70,11 +70,11 @@ void sources_decl::push_back(const source_decl& v)
    impl_->values_.push_back(v);
 }
 
-void sources_decl::insert(const std::vector<pstring>& v)
+void sources_decl::insert(const std::vector<pstring>& v, const type_registry& tr)
 {
    clone_if_needed();
    for(std::vector<pstring>::const_iterator i = v.begin(), last = v.end(); i != last; ++i)
-	   push_back(*i);
+	   push_back(*i, tr);
 }
 
 void sources_decl::add_to_source_properties(const feature_set& props)
@@ -82,10 +82,10 @@ void sources_decl::add_to_source_properties(const feature_set& props)
    clone_if_needed();
    // FIXME: feature_set should be ref counted to not doing stupid cloning
    for(impl_t::values_t::iterator i = impl_->values_.begin(), last = impl_->values_.end(); i != last; ++i)
-      if (i->properties_ == NULL)
-         i->properties_ = props.clone();
+      if (i->properties() == NULL)
+         i->properties(props.clone());
       else 
-         i->properties_ = const_cast<const feature_set*>(i->properties_)->join(props); 
+         i->properties(const_cast<const feature_set*>(i->properties())->join(props)); 
 }
 
 

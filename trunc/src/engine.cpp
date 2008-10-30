@@ -594,7 +594,7 @@ static void glob_impl(sources_decl& result,
           !(exceptions != 0 && find(exceptions->begin(), exceptions->end(), i->leaf()) != exceptions->end()))
       {
          pstring v(e.pstring_pool(), (relative_path / i->leaf()).string());
-         result.push_back(v);
+         result.push_back(v, e.get_type_registry());
       }
    }
 }
@@ -626,7 +626,7 @@ static void rglob_impl(sources_decl& result,
                find(exceptions->begin(), exceptions->end(), i->leaf()) != exceptions->end()))
          {
             pstring v(e.pstring_pool(), (relative_path / i->leaf()).string());
-            result.push_back(v);
+            result.push_back(v, e.get_type_registry());
          }
    }
 }

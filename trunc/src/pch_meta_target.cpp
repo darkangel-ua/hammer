@@ -47,7 +47,7 @@ sources_decl pch_meta_target::compute_additional_sources(const main_target& owne
    sources_decl result;
    const type_registry& tr = this->project()->engine()->get_type_registry();
    for(sources_decl::const_iterator i = owner.meta_target()->sources().begin(), last =  owner.meta_target()->sources().end(); i!= last; ++i)
-      if (i->type(tr) == NULL) // that meta target
+      if (i->type() == NULL) // that meta target
          result.push_back(*i);
 
    return result;

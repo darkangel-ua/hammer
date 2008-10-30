@@ -12,18 +12,31 @@ namespace hammer
    class source_decl
 	{
 		public:
-         source_decl() : properties_(NULL), is_type_resolved_(false) {};
+         source_decl() : properties_(NULL) {};
          source_decl(const pstring& target_path,
 				         const pstring& target_name,
-			            feature_set* props) 
+                     const type* t, 
+                     feature_set* props)
                     :
 			            target_path_(target_path),
 						   target_name_(target_name),
-                     properties_(props),
-                     is_type_resolved_(false)
+                     type_(t),
+                     properties_(props)
              {}
 			
-			bool operator < (const source_decl& rhs) const
+         void target_path(const pstring& v, const type* t) { target_path_ = v; type_ = t; }
+         void target_name(const pstring& v) { target_name_ = v; }
+
+         // FIXME. feature_set should be ref counted
+         void properties(feature_set* v) { properties_ = v; }
+
+         const pstring& target_path() const { return target_path_; }
+         const pstring& target_name() const { return target_name_; }
+         const hammer::type* type() const { return type_; }
+         // FIXME. feature_set should be ref counted
+         feature_set* properties() const { return properties_; }
+
+         bool operator < (const source_decl& rhs) const
 			{
 				if (target_path_ < rhs.target_path_)
 					return true;
@@ -43,29 +56,14 @@ namespace hammer
 					   target_name_ == rhs.target_name_;
 			}
          
-         // FIXME: bad interface. Need better concept of caching type resolving
-         const hammer::type* type(const type_registry& tr) const
-         {
-            if (!is_type_resolved_)
-            {
-               type_ = tr.resolve_from_target_name(target_path_);
-               is_type_resolved_ = true;
-            }
-         
-            return type_;
-         }
-         
-         // FIXME: this members must be in private part with access methods
-			pstring target_path_;
+      private:
+         pstring target_path_;
          pstring target_name_;
-
+         const hammer::type* type_;
+         
          // FIXME: это должно быть const, но так как нужно делать set_dependency_data приходиться от этого отказываться
          // нужно перевести feature_set и feature на reference counted основу и тогда все будет зашибись
-			feature_set* properties_;
-      
-      private:
-         mutable const hammer::type* type_; // cached value;
-         mutable bool is_type_resolved_;
+         feature_set* properties_;
 	 };
 }
 

@@ -216,15 +216,18 @@ void hammer_source_decl_set_target_path(void* context, void* sd, void* tp)
 {
    hammer_walker_context* ctx = static_cast<hammer_walker_context*>(context);
    source_decl* source_decl = static_cast<hammer::source_decl*>(sd);
-   target_path_t* target_path = static_cast<target_path_t*>(tp);
+   target_path_t* target_path_tokens = static_cast<target_path_t*>(tp);
 
-   if (target_path->second == NULL)
-      target_path->second = target_path->first;
+   if (target_path_tokens->second == NULL)
+      target_path_tokens->second = target_path_tokens->first;
 
-   pANTLR3_STRING s = target_path->first->input->substr(target_path->first->input, target_path->first->start, target_path->second->stop);
-   source_decl->target_path_ = pstring(ctx->engine_->pstring_pool(), reinterpret_cast<const char*>(s->chars));
+   pANTLR3_STRING s = target_path_tokens->first->input->substr(target_path_tokens->first->input, 
+                                                               target_path_tokens->first->start, 
+                                                               target_path_tokens->second->stop);
+   pstring target_path(ctx->engine_->pstring_pool(), reinterpret_cast<const char*>(s->chars));
+   source_decl->target_path(target_path, ctx->engine_->get_type_registry().resolve_from_target_name(target_path));
    
-   delete target_path;
+   delete target_path_tokens;
    s->factory->destroy(s->factory, s);
 }
 
@@ -234,13 +237,13 @@ void hammer_source_decl_set_target_name(void* context, void* sd, const char* id)
    source_decl* source_decl = static_cast<hammer::source_decl*>(sd);
 
    if (id != NULL)
-      source_decl->target_name_ = pstring(ctx->engine_->pstring_pool(), id);
+      source_decl->target_name(pstring(ctx->engine_->pstring_pool(), id));
 }
 
 void hammer_source_decl_set_target_properties(void* sd, void* fs)
 {
    source_decl* source_decl = static_cast<hammer::source_decl*>(sd);
-   source_decl->properties_ = static_cast<hammer::feature_set*>(fs);
+   source_decl->properties(static_cast<hammer::feature_set*>(fs));
 }
 
 void* hammer_make_target_path()

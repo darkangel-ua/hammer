@@ -29,7 +29,6 @@ namespace hammer
          void name(const pstring& v) { name_ = v; }
          void sources(const sources_decl& s);
          const sources_decl& sources() const { return sources_; }
-         void insert(const pstring& source);
          const requirements_decl& usage_requirements() const { return usage_requirements_; }
          const requirements_decl& requirements() const { return requirements_; }
          requirements_decl& usage_requirements() { return usage_requirements_; }

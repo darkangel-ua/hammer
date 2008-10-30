@@ -16,6 +16,7 @@ namespace hammer
    {
       public:
          type_registry();
+         // FIXME: resolve_from_name should have other name
          const type& resolve_from_name(const std::string& name) const;
          const type& resolve_from_name(const type& t) const;
          const type* resolve_from_suffix(const char* first, const char* last) const;

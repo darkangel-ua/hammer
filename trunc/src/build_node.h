@@ -29,14 +29,15 @@ namespace hammer
          typedef std::vector<source_t> sources_t;
          typedef std::vector<const basic_target*> targets_t;
          typedef std::vector<boost::intrusive_ptr<build_node> > nodes_t;
+
          build_node() : up_(0), targeting_type_(0), ref_counter_(0) {}
-         
          const basic_target* find_product(const basic_target* t) const;
-         boost::intrusive_ptr<build_node> up_;
-         nodes_t down_;
-         sources_t sources_;
-         targets_t products_;
-         const hammer::type* targeting_type_;
+         
+         boost::intrusive_ptr<build_node> up_; // owner of that node. Not used yet
+         nodes_t down_;                        // all sources that came into node
+         sources_t sources_;                   // sources that was consumed 
+         targets_t products_;                  // targets that was produced
+         const hammer::type* targeting_type_;  // target type that was requested for building
          mutable unsigned long ref_counter_;
    };
 

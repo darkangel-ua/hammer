@@ -362,6 +362,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\obj_generator.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\obj_main_target.cpp"
 				>
 			</File>
@@ -610,6 +614,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\np_helpers.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\obj_generator.h"
 				>
 			</File>
 			<File

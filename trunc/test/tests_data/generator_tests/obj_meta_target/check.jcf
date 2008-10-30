@@ -6,7 +6,7 @@ test [ type = EXE; ]
       lib1.cpp [ type = CPP; ] {}
       c-files [ type = OBJ; ]
       {
-         test.c [ type = C; ] {}
+         test.c [ type = C; features = <define>USE_A_LIB; ] {}
       }
    }
 }

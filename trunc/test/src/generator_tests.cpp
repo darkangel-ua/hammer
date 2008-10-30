@@ -239,16 +239,6 @@ BOOST_FIXTURE_TEST_CASE(prebuilt_libs, generator_tests)
    check();
 }
 
-BOOST_FIXTURE_TEST_CASE(obj_meta_target, generator_tests)
-{
-   test_name_ = "obj_meta_target";
-   load();
-   BOOST_REQUIRE_NO_THROW(instantiate("test"));
-   BOOST_REQUIRE_NO_THROW(run_generators());
-   check();
-}
-
-
 BOOST_FIXTURE_TEST_CASE(composite_features, generator_tests)
 {
    test_name_ = "composite_features";
@@ -303,7 +293,6 @@ BOOST_FIXTURE_TEST_CASE(non_local_generation, generator_tests)
    BOOST_REQUIRE_NO_THROW(run_generators(msvc_solution::generation_mode::NON_LOCAL));
    check();
 }
-*/
 
 BOOST_FIXTURE_TEST_CASE(pch, generator_tests)
 {
@@ -311,5 +300,15 @@ BOOST_FIXTURE_TEST_CASE(pch, generator_tests)
    load();
    BOOST_REQUIRE_NO_THROW(instantiate("test"));
    BOOST_REQUIRE_NO_THROW(run_generators(msvc_solution::generation_mode::NON_LOCAL));
+   check();
+}
+*/
+
+BOOST_FIXTURE_TEST_CASE(obj_meta_target, generator_tests)
+{
+   test_name_ = "obj_meta_target";
+   load();
+   BOOST_REQUIRE_NO_THROW(instantiate("test"));
+   BOOST_REQUIRE_NO_THROW(run_generators());
    check();
 }

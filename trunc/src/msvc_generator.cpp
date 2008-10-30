@@ -36,6 +36,11 @@ void add_msvc_generators(engine& e, generator_registry& gr)
       generator::producable_types_t target;
       source.push_back(generator::consumable_type(e.get_type_registry().resolve_from_name(types::H), 1, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().resolve_from_name(types::CPP), 1, 0));
+      source.push_back(generator::consumable_type(e.get_type_registry().resolve_from_name(types::OBJ), 0, 0));
+      source.push_back(generator::consumable_type(e.get_type_registry().resolve_from_name(types::STATIC_LIB), 0, 0));
+      source.push_back(generator::consumable_type(e.get_type_registry().resolve_from_name(types::IMPORT_LIB), 0, 0));
+      source.push_back(generator::consumable_type(e.get_type_registry().resolve_from_name(types::SEARCHED_LIB), 0, 0));
+      source.push_back(generator::consumable_type(e.get_type_registry().resolve_from_name(types::HEADER_LIB), 0, 0));
       target.push_back(generator::produced_type(e.get_type_registry().resolve_from_name(types::OBJ), 1));
       target.push_back(generator::produced_type(e.get_type_registry().resolve_from_name(types::PCH), 1));
 
@@ -62,6 +67,11 @@ void add_msvc_generators(engine& e, generator_registry& gr)
       generator::producable_types_t target;
       source.push_back(generator::consumable_type(e.get_type_registry().resolve_from_name(types::H), 1, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().resolve_from_name(types::C), 1, 0));
+      source.push_back(generator::consumable_type(e.get_type_registry().resolve_from_name(types::OBJ), 0, 0));
+      source.push_back(generator::consumable_type(e.get_type_registry().resolve_from_name(types::STATIC_LIB), 0, 0));
+      source.push_back(generator::consumable_type(e.get_type_registry().resolve_from_name(types::IMPORT_LIB), 0, 0));
+      source.push_back(generator::consumable_type(e.get_type_registry().resolve_from_name(types::SEARCHED_LIB), 0, 0));
+      source.push_back(generator::consumable_type(e.get_type_registry().resolve_from_name(types::HEADER_LIB), 0, 0));
       target.push_back(generator::produced_type(e.get_type_registry().resolve_from_name(types::PCH), 1));
       target.push_back(generator::produced_type(e.get_type_registry().resolve_from_name(types::OBJ), 1));
 

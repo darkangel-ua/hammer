@@ -113,14 +113,16 @@ namespace hammer{
       sources_decl simple_targets;
       meta_targets_t meta_targets;
 
+      sources_decl additional_sources(owner == NULL ? sources_decl() : compute_additional_sources(*owner));
       sources_decl sources_from_requirements;
       extract_sources(sources_from_requirements, *mt_fs);
 
       split_sources(&simple_targets, &meta_targets, sources(), *build_request_for_dependencies); 
       split_sources(&simple_targets, &meta_targets, sources_from_requirements, *build_request_for_dependencies);
+      split_sources(&simple_targets, &meta_targets, additional_sources, *build_request_for_dependencies);
       
       project()->engine()->feature_registry().add_defaults(mt_fs);
-      main_target* mt = construct_main_target(mt_fs); // construct_main_target may construct main_target with different properties PCH is exapmle
+      main_target* mt = construct_main_target(mt_fs); // construct_main_target may construct main_target with different properties PCH is example
       mt_fs = mt->properties().clone(); // FIXME ref semantic required
 
       if (!meta_targets.empty())
@@ -152,4 +154,8 @@ namespace hammer{
       this->usage_requirements().eval(full_build_request, &result);
    }
 
+   sources_decl meta_target::compute_additional_sources(const main_target& owner) const
+   {
+      return sources_decl();
+   }
 }

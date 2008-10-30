@@ -2,9 +2,9 @@
 <VisualStudioProject
    ProjectType="Visual C++"
    Version="8,00"
-   Name="test"
-   ProjectGUID="{00000000-0000-0000-0000-000000000001}"
-   RootNamespace="test"
+   Name="a"
+   ProjectGUID="{00000000-0000-0000-0000-000000000002}"
+   RootNamespace="a"
    Keyword="Win32Proj">
 	<Platforms>
        <Platform Name="Win32"/>
@@ -15,13 +15,11 @@
          Name="release|Win32"
          OutputDirectory="$(SolutionDir)$(ConfigurationName)"
          IntermediateDirectory="$(ConfigurationName)"
-         ConfigurationType="1"
+         ConfigurationType="2"
          CharacterSet="1">
          <Tool
             Name="VCCLCompilerTool"
-            PreprocessorDefinitions="USE_A_LIB;"
-            UsePrecompiledHeader="2"
-            PrecompiledHeaderThrough="stdafx.h"
+            UsePrecompiledHeader="0"
          />
          <Tool
             Name="VCLinkerTool"
@@ -35,37 +33,13 @@
             Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
             UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
          <File
-            RelativePath="..\..\..\main.cpp">
-         </File>
-         <File
-            RelativePath="..\..\..\obj.cpp">
-              <FileConfiguration
-                   Name="release">
-         <Tool
-            Name="VCCLCompilerTool"
-            UsePrecompiledHeader="0"
-         />
-              </FileConfiguration>
-         </File>
-         <File
-            RelativePath="..\..\..\stdafx.cpp">
-              <FileConfiguration
-                   Name="release">
-         <Tool
-            Name="VCCLCompilerTool"
-            UsePrecompiledHeader="1"
-            PrecompiledHeaderThrough="stdafx.h"
-         />
-              </FileConfiguration>
+            RelativePath="..\..\..\a.cpp">
          </File>
          </Filter>
          <Filter
             Name="Header Files"
             Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
             UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
-         <File
-            RelativePath="..\..\..\stdafx.h">
-         </File>
          </Filter>
       </Files>
 </VisualStudioProject>

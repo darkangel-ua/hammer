@@ -43,6 +43,7 @@ namespace hammer
 					   target_name_ == rhs.target_name_;
 			}
          
+         // FIXME: bad interface. Need better concept of caching type resolving
          const hammer::type* type(const type_registry& tr) const
          {
             if (!is_type_resolved_)

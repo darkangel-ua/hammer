@@ -24,6 +24,11 @@ namespace hammer
          virtual ~meta_target(){}
 
       protected:
+         // Now used for PCH support. PCH meta target import meta target sources from owner to reduce typing for msvc pch support
+         // pch stdafx : stdafx.cpp stdafx.h ;
+         // test a : main.cpp stdafx /boost/regex ;
+         // To build stdafx target we need specify /boost/regex in stdafx sources too. But this is stupid double typing.
+         virtual sources_decl compute_additional_sources(const main_target& owner) const;
          virtual main_target* construct_main_target(const feature_set* properties) const = 0;
          // compute usage requirements from target usage requirements and 
          // usage requirements that was calculated during instantiation meta targets from sources

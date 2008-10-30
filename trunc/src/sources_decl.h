@@ -9,7 +9,9 @@ namespace hammer
 {
    
 	class feature_set;
-	class sources_decl
+	
+   // @Semantic(Reference)
+   class sources_decl
     {
       public:
          class const_iterator;

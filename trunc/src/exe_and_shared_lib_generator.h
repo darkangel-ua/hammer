@@ -23,7 +23,7 @@ namespace hammer
                       const pstring* name,
                       const main_target& owner) const;
       private:
-         const type* searched_lib_;
+         const type& searched_lib_;
    };
 
 }

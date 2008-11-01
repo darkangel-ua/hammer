@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "header_lib_generator.h"
 #include "types.h"
+#include "type.h"
 #include "engine.h"
 #include "type_registry.h"
 
@@ -14,7 +15,7 @@ header_lib_generator::header_lib_generator(hammer::engine& e,
    :
     generator(e, name, source_types, 
               target_types, true, c),
-    header_type_(e.get_type_registry().resolve_from_name(types::H))
+    header_type_(e.get_type_registry().get(types::H))
 {
 
 }
@@ -32,7 +33,7 @@ header_lib_generator::construct(const type& target_type,
    build_sources_t extracted_products;
    for(build_sources_t::iterator i = modified_sources.begin(); i != modified_sources.end();)
    {
-      if (*(**i).targeting_type_ != header_type_)
+      if (!(**i).targeting_type_->equal_or_derived_from(header_type_))
       {
          extracted_products.push_back(*i);
          

@@ -2,6 +2,7 @@
 #include "pch_generator.h"
 #include "types.h"
 #include "engine.h"
+#include "type.h"
 
 namespace hammer
 {
@@ -13,9 +14,9 @@ namespace hammer
                              bool composite,
                              const feature_set* c)
    : generator(e, name, source_types, target_types, composite, c),
-     c_type_(&e.get_type_registry().resolve_from_name(types::C)),
-     cpp_type_(&e.get_type_registry().resolve_from_name(types::CPP)),
-     h_type_(&e.get_type_registry().resolve_from_name(types::H))
+     c_type_(e.get_type_registry().get(types::C)),
+     cpp_type_(e.get_type_registry().get(types::CPP)),
+     h_type_(e.get_type_registry().get(types::H))
 {
 }
 
@@ -33,9 +34,9 @@ pch_generator::construct(const type& target_type,
    for(sources_t::const_iterator i = sources.begin(), last = sources.end(); i != last; ++i)
    {
       const type* t = (**i).targeting_type_;
-      if (t == c_type_ ||
-          t == cpp_type_ ||
-          t == h_type_)
+      if (t->equal_or_derived_from(c_type_) ||
+          t->equal_or_derived_from(cpp_type_) ||
+          t->equal_or_derived_from(h_type_))
       {
          modified_sources.push_back(*i);
       }

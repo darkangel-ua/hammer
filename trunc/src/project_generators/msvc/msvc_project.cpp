@@ -6,6 +6,7 @@
 #include "../../engine.h"
 #include "../../type_registry.h"
 #include "../../types.h"
+#include "../../type.h"
 #include "../../feature.h"
 #include "../../feature_def.h"
 #include "../../feature_registry.h"
@@ -23,11 +24,12 @@ msvc_project::msvc_project(engine& e,
     engine_(&e), 
     uid_(uid),
     output_dir_(output_dir),
-    project_output_dir_(output_dir_)
+    project_output_dir_(output_dir_),
+    searched_lib_(engine_->get_type_registry().get(types::SEARCHED_LIB)),
+    obj_type_(engine_->get_type_registry().get(types::OBJ)),
+    pch_type_(engine_->get_type_registry().get(types::PCH))
+
 {
-   searched_lib_ = &engine_->get_type_registry().resolve_from_name(types::SEARCHED_LIB);
-   obj_type_ = &engine_->get_type_registry().resolve_from_name(types::OBJ);
-   pch_type_ = &engine_->get_type_registry().resolve_from_name(types::PCH);
 }
 
 static std::string make_variant_name(const feature_set& fs)
@@ -63,11 +65,11 @@ void msvc_project::add_variant(boost::intrusive_ptr<const build_node> node)
 void msvc_project::fill_filters() const
 {
    filter_t::types_t source_types;
-   source_types.push_back(&engine_->get_type_registry().resolve_from_name(types::CPP));
-   source_types.push_back(&engine_->get_type_registry().resolve_from_name(types::C));
+   source_types.push_back(&engine_->get_type_registry().get(types::CPP));
+   source_types.push_back(&engine_->get_type_registry().get(types::C));
    files_.push_back(filter_t(source_types, "Source Files", "{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"));
    filter_t::types_t header_types;
-   header_types.push_back(&engine_->get_type_registry().resolve_from_name(types::H));
+   header_types.push_back(&engine_->get_type_registry().get(types::H));
    files_.push_back(filter_t(header_types, "Header Files", "{93995380-89BD-4b04-88EB-625FBE52EBFB}"));
 }
 
@@ -99,23 +101,23 @@ static void write_bottom(std::ostream& s)
 
 configuration_types::value msvc_project::resolve_configuration_type(const variant& v) const
 {
-   const type& exe_type = engine_->get_type_registry().resolve_from_name(types::EXE);
-   const type& static_lib_type = engine_->get_type_registry().resolve_from_name(types::STATIC_LIB);
-   const type& shared_lib_type = engine_->get_type_registry().resolve_from_name(types::SHARED_LIB);
-   const type& header_lib_type = engine_->get_type_registry().resolve_from_name(types::HEADER_LIB);
-   if (v.target_->type() == exe_type)
+   const type& exe_type = engine_->get_type_registry().get(types::EXE);
+   const type& static_lib_type = engine_->get_type_registry().get(types::STATIC_LIB);
+   const type& shared_lib_type = engine_->get_type_registry().get(types::SHARED_LIB);
+   const type& header_lib_type = engine_->get_type_registry().get(types::HEADER_LIB);
+   if (v.target_->type().equal_or_derived_from(exe_type))
       return configuration_types::exe;
    else
-      if (v.target_->type() == static_lib_type)
+      if (v.target_->type().equal_or_derived_from(static_lib_type))
          return configuration_types::static_lib;
       else
-         if (v.target_->type() == shared_lib_type)
+         if (v.target_->type().equal_or_derived_from(shared_lib_type))
             return configuration_types::shared_lib;
          else
-            if (v.target_->type() == header_lib_type)
+            if (v.target_->type().equal_or_derived_from(header_lib_type))
                return configuration_types::utility;
             else
-               throw std::runtime_error("[msvc_project] Can't resolve type '" + v.target_->type().name() + "'.");
+               throw std::runtime_error("[msvc_project] Can't resolve type '" + v.target_->type().tag().name() + "'.");
 } 
 
 void msvc_project::fill_options(const feature_set& props, options* opts, const main_target& mt) const
@@ -384,7 +386,7 @@ void msvc_project::generate() const
    write_header(f);
    write_configurations(f);
    
-   write_context ctx(f, engine_->get_type_registry().resolve_from_name(types::H));
+   write_context ctx(f, engine_->get_type_registry().get(types::H));
    write_files(ctx);
 
    write_bottom(f);
@@ -430,8 +432,8 @@ void msvc_project::gether_files_impl(const build_node& node, variant& v) const
    for(iter mi = node.sources_.begin(), mlast = node.sources_.end(); mi != mlast; ++mi)
    {
       if (mi->source_target_->mtarget()->meta_target() == meta_target_ ||
-          mi->source_target_->mtarget()->type() == *obj_type_ ||
-          mi->source_target_->mtarget()->type() == *pch_type_)
+          mi->source_target_->mtarget()->type().equal_or_derived_from(obj_type_) ||
+          mi->source_target_->mtarget()->type().equal_or_derived_from(pch_type_))
       {
          insert_into_files(mi->source_target_, v);
          if (mi->source_node_)
@@ -439,7 +441,7 @@ void msvc_project::gether_files_impl(const build_node& node, variant& v) const
       }
       else
       {
-         if (mi->source_target_->mtarget()->type() == *searched_lib_)
+         if (mi->source_target_->mtarget()->type().equal_or_derived_from(searched_lib_))
          { // this target is searched lib product
             const feature& file_name = mi->source_target_->properties().get("file");
             location_t searched_file(relative_path(mi->source_target_->mtarget()->location(), project_output_dir_) / file_name.value().to_string());

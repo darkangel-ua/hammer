@@ -6,6 +6,7 @@
 #include <memory>
 #include <string>
 #include "pstring.h"
+#include "type_tag.h"
 
 namespace hammer
 {
@@ -17,17 +18,16 @@ namespace hammer
       public:
          type_registry();
          // FIXME: resolve_from_name should have other name
-         const type& resolve_from_name(const std::string& name) const;
-         const type& resolve_from_name(const type& t) const;
          const type* resolve_from_suffix(const char* first, const char* last) const;
          const type* resolve_from_suffix(const std::string& suffix) const;
          const type* resolve_from_target_name(const pstring& name) const;
-//         const type* resolve(const type* t, const feature_set& fs) const;
-         void insert(std::auto_ptr<type>& t);
+         const type& get(const type_tag& tag) const;
+         const type* find(const type_tag& tag) const;
+         void insert(const type& t);
          ~type_registry();
 
       private:
-         typedef boost::ptr_map<const std::string/*name*/, type> types_t;
+         typedef boost::ptr_map<type_tag, type> types_t;
          typedef std::multimap<std::string, type*> types_by_suffix_t;
 
          types_t types_;

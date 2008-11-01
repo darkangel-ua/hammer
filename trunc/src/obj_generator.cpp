@@ -4,6 +4,7 @@
 #include "engine.h"
 #include "type_registry.h"
 #include "basic_target.h"
+#include "type.h"
 
 namespace hammer
 {
@@ -14,7 +15,7 @@ obj_generator::obj_generator(hammer::engine& e,
                              bool composite,
                              const feature_set* c)
    : generator(e, name, source_types, target_types, composite, c),
-     obj_type_(e.get_type_registry().resolve_from_name(types::OBJ))
+     obj_type_(e.get_type_registry().get(types::OBJ))
 {
 
 }
@@ -39,7 +40,7 @@ obj_generator::construct(const type& target_type,
       bool node_added = false;
       for(build_node::targets_t::const_iterator p_i = (**i).products_.begin(), p_last = (**i).products_.end(); p_i != p_last; ++p_i)
       {
-         if ((**p_i).type() == obj_type_)
+         if ((**p_i).type().equal_or_derived_from(obj_type_))
          {
             result->sources_.push_back(build_node::source_t(*p_i, *i));
             if (!node_added)

@@ -302,7 +302,6 @@ BOOST_FIXTURE_TEST_CASE(obj_meta_target, generator_tests)
    BOOST_REQUIRE_NO_THROW(run_generators());
    check();
 }
-*/
 
 BOOST_FIXTURE_TEST_CASE(pch, generator_tests)
 {
@@ -312,3 +311,4 @@ BOOST_FIXTURE_TEST_CASE(pch, generator_tests)
    BOOST_REQUIRE_NO_THROW(run_generators(msvc_solution::generation_mode::NON_LOCAL));
    check();
 }
+*/

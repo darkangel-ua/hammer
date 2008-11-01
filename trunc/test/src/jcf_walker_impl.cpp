@@ -63,15 +63,15 @@ void check_type(void* e, void *t, const char* type_id)
    engine* eng = static_cast<engine*>(e);
    const type* et = 0;
    
-   et = &eng->get_type_registry().resolve_from_name(type_id);
+   et = eng->get_type_registry().find(type_tag(type_id));
    if (et == 0)
    {
       cout << "checker(0): error : Type '" << type_id << "' is unknown.\n";
       return;
    }
 
-   if (bt->type() != *et)
-      cout << "checker(0): error: Expected type '" << type_id << "' but got '" << bt->type().name() << "'.\n";
+   if (!bt->type().equal_or_derived_from(*et))
+      cout << "checker(0): error: Expected type '" << type_id << "' but got '" << bt->type().tag().name() << "'.\n";
 }
 
 void* get_features(void* t)

@@ -38,9 +38,9 @@ main_target* lib_meta_target::construct_main_target(const feature_set* propertie
       const feature& link = properties->get("link");
       const type* target_type = 0;
       if (link.value() == "static")
-         target_type = &this->project()->engine()->get_type_registry().resolve_from_name(types::STATIC_LIB);
+         target_type = &this->project()->engine()->get_type_registry().get(types::STATIC_LIB);
       else
-         target_type = &this->project()->engine()->get_type_registry().resolve_from_name(types::SHARED_LIB);
+         target_type = &this->project()->engine()->get_type_registry().get(types::SHARED_LIB);
 
       result = new(project()->engine()->targets_pool()) 
                    main_target(this, 

@@ -3,6 +3,7 @@
 #include "engine.h"
 #include "type_registry.h"
 #include "types.h"
+#include "type.h"
 #include "feature_set.h"
 #include "feature.h"
 #include "basic_target.h"
@@ -15,11 +16,11 @@ exe_and_shared_lib_generator::exe_and_shared_lib_generator(hammer::engine& e,
                                                            const producable_types_t& target_types,
                                                            bool composite,
                                                            const feature_set* c)
-                                                          : generator(e, name, source_types, 
-                                                                      target_types, composite, c)
+   : generator(e, name, source_types, 
+               target_types, composite, c),
+     searched_lib_(e.get_type_registry().get(types::SEARCHED_LIB))
 
 {
-   searched_lib_ = &e.get_type_registry().resolve_from_name(types::SEARCHED_LIB);
 }
 
 std::vector<boost::intrusive_ptr<build_node> >
@@ -35,13 +36,13 @@ exe_and_shared_lib_generator::construct(const type& target_type,
    build_sources_t modified_sources(sources);
    for(build_sources_t::iterator i = modified_sources.begin(); i != modified_sources.end();)
    {
-      if (*(**i).targeting_type_ == *searched_lib_)
+      if ((**i).targeting_type_->equal_or_derived_from(searched_lib_))
       {
         
          // searched_lib produce only one products - self or file target.
          const basic_target& lib_target = *(**i).products_.front();
 
-         if (lib_target.type() == *searched_lib_)
+         if (lib_target.type().equal_or_derived_from(searched_lib_))
          {
             if (!new_props)
                new_props = props.clone();

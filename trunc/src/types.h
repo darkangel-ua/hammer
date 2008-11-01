@@ -1,25 +1,27 @@
 #if !defined(h_883d3846_ffd7_4a31_840e_13148216c79b)
 #define h_883d3846_ffd7_4a31_840e_13148216c79b
 
-#include "type.h"
-
 namespace hammer
 {
+   class type_registry;
+   class type_tag;
+
    namespace types
    {
-      extern const type CPP;
-      extern const type C;
-//      extern const type LIB;
-      extern const type H;
-      extern const type OBJ;
-      extern const type PCH;
-      extern const type SHARED_LIB;
-      extern const type IMPORT_LIB;
-      extern const type STATIC_LIB;
-      extern const type SEARCHED_LIB;
-      extern const type HEADER_LIB;
-      extern const type EXE;
-      extern const type UNKNOWN;
+      extern const type_tag CPP;
+      extern const type_tag C;
+      extern const type_tag H;
+      extern const type_tag OBJ;
+      extern const type_tag PCH;
+      extern const type_tag SHARED_LIB;
+      extern const type_tag IMPORT_LIB;
+      extern const type_tag STATIC_LIB;
+      extern const type_tag SEARCHED_LIB;
+      extern const type_tag HEADER_LIB;
+      extern const type_tag EXE;
+      extern const type_tag UNKNOWN;
+
+      void register_standart_types(type_registry& tr);
    }
 }
 

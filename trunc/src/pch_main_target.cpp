@@ -8,6 +8,7 @@
 #include "feature_set.h"
 #include "feature_registry.h"
 #include "feature.h"
+#include "type.h"
 
 namespace hammer
 {
@@ -33,9 +34,9 @@ pch_main_target::pch_main_target(const hammer::meta_target* mt,
 std::vector<boost::intrusive_ptr<build_node> > 
 pch_main_target::generate()
 {
-   const hammer::type& cpp_type = meta_target()->project()->engine()->get_type_registry().resolve_from_name(types::CPP);
-   const hammer::type& c_type = meta_target()->project()->engine()->get_type_registry().resolve_from_name(types::C);
-   const hammer::type& h_type = meta_target()->project()->engine()->get_type_registry().resolve_from_name(types::H);
+   const hammer::type& cpp_type = meta_target()->project()->engine()->get_type_registry().get(types::CPP);
+   const hammer::type& c_type = meta_target()->project()->engine()->get_type_registry().get(types::C);
+   const hammer::type& h_type = meta_target()->project()->engine()->get_type_registry().get(types::H);
    
    typedef std::vector<boost::intrusive_ptr<hammer::build_node> > result_t; 
 
@@ -44,13 +45,13 @@ pch_main_target::generate()
 
    for(build_node::sources_t::const_iterator i = result.front()->sources_.begin(), last = result.front()->sources_.end(); i != last; ++i)
    {
-      if (c_type == i->source_target_->type() ||
-          cpp_type == i->source_target_->type())
+      if (i->source_target_->type().equal_or_derived_from(c_type) ||
+          i->source_target_->type().equal_or_derived_from(cpp_type))
       {
          pch_source_ = i->source_target_;
       }
       else
-         if (h_type == i->source_target_->type())
+         if (i->source_target_->type().equal_or_derived_from(h_type))
             pch_header_ = i->source_target_;
    }
 

@@ -13,7 +13,7 @@ header_lib_meta_target::header_lib_meta_target(hammer::project* p, const pstring
                                                const requirements_decl& usage_requirements)
    : typed_meta_target(p, name, requirements, 
                        usage_requirements, 
-                       p->engine()->get_type_registry().resolve_from_name(types::HEADER_LIB))
+                       p->engine()->get_type_registry().get(types::HEADER_LIB))
 {
 
 }

@@ -16,7 +16,7 @@ searched_lib_main_target::searched_lib_main_target(const hammer::meta_target* mt
                                                    const pstring& name, 
                                                    const feature_set* props,
                                                    pool& p)
-     : main_target(mt, name, &mt->project()->engine()->get_type_registry().resolve_from_name(types::SEARCHED_LIB), props, p)
+     : main_target(mt, name, &mt->project()->engine()->get_type_registry().get(types::SEARCHED_LIB), props, p)
 {
 
 }

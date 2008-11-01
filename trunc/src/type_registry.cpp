@@ -17,20 +17,6 @@ namespace hammer{
 
    }
 
-   const type& type_registry::resolve_from_name(const std::string& name) const
-   {
-      types_t::const_iterator i = types_.find(name);
-      if (i != types_.end())
-         return *i->second;
-      else
-         throw runtime_error("Can't find type with name '" + name + "'");
-   }
-
-   const type& type_registry::resolve_from_name(const type& t) const
-   {
-      return resolve_from_name(t.name());
-   }
-
    std::string::size_type rfind(const pstring& where, const std::string& what)
    {
       if (where.empty() || what.empty())
@@ -90,9 +76,30 @@ namespace hammer{
          throw runtime_error("Can't find type with suffix '" + suffix + "'");
    }
 
-   void type_registry::insert(std::auto_ptr<type>& t)
+   const type* type_registry::find(const type_tag& tag) const
    {
-      pair<types_t::iterator, bool> i = types_.insert(t->name(), t.get());
+      types_t::const_iterator i = types_.find(tag);
+      if (i != types_.end())
+         return i->second;
+      else
+         return NULL;
+   }
+
+   const type& type_registry::get(const type_tag& tag) const
+   {
+      const type* result = find(tag);
+      if (result != NULL)
+         return *result;
+      else
+         throw runtime_error("Can't find type with tag '" + tag.name() + "'");
+   }
+
+   void type_registry::insert(const type& a_t)
+   {
+      std::auto_ptr<type> t(a_t.clone(*this));
+      // FIXME: This is due bug in ptr_container insert method
+      type_tag tag(t->tag());
+      pair<types_t::iterator, bool> i = types_.insert(tag, t.get());
       if (i.second)
       {
          if (!t->suffixes().empty())
@@ -105,6 +112,6 @@ namespace hammer{
          return;
       }
       else
-         throw std::runtime_error("[type_registry] Can't add type '" + t->name() + "' twice");
+         throw std::runtime_error("[type_registry] Can't add type '" + t->tag().name() + "' twice");
    }
 }

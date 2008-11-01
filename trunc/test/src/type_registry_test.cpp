@@ -2,6 +2,7 @@
 #include <boost/test/auto_unit_test.hpp>
 #include <hammer/src/type_registry.h>
 #include <hammer/src/types.h>
+#include <hammer/src/type.h>
 #include <hammer/src/feature_registry.h>
 #include <hammer/src/pool.h>
 
@@ -12,7 +13,7 @@ struct type_registry_tests
 {
    type_registry_tests() : fr_(&p_)
    {
-      tr_.insert(auto_ptr<type>(new type(types::STATIC_LIB)));   
+      tr_.insert(type(types::STATIC_LIB, ".lib"));   
    }
 
    type_registry tr_;

@@ -175,9 +175,9 @@ namespace hammer
             location_t project_output_dir_;
             location_t meta_target_relative_to_output_;
             
-            const type* searched_lib_;
-            const type* obj_type_;
-            const type* pch_type_;
+            const type& searched_lib_;
+            const type& obj_type_;
+            const type& pch_type_;
 
             void fill_filters() const;
             void write_header(std::ostream& s) const;

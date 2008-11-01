@@ -47,7 +47,7 @@ generator_registry::find_viable_generators(const type& t,
 
       for(generator::producable_types_t::const_iterator j = i->second->producable_types().begin(), j_last = i->second->producable_types().end(); j != j_last; ++j)
       {
-         if (*j->type_ == t)
+         if (j->type_->equal_or_derived_from(t))
          {
             int generator_rank = i->second->constraints() != NULL ? compute_rank(build_properties, *i->second->constraints())
                                                                   : 0;
@@ -162,7 +162,7 @@ generator_registry::construct(main_target* mt) const
    main_viable_generators_t main_viable_generators(viable_generators.begin(), viable_generators.end());
 
    if (main_viable_generators.empty())
-      throw runtime_error("Can't find transformation to '" + mt->type().name() + "'.");
+      throw runtime_error("Can't find transformation to '" + mt->type().tag().name() + "'.");
 
    // generate target sources
    vector<intrusive_ptr<build_node> > generated_sources;
@@ -200,7 +200,7 @@ generator_registry::construct(main_target* mt) const
    // FIXME: error messages
    if (!has_choosed_generator)
       throw runtime_error((boost::format("Can't find transformation 'sources' -> '%s'.") 
-                              % mt->type().name()).str());
+                              % mt->type().tag().name()).str());
 
    std::vector<boost::intrusive_ptr<build_node> > r(choosed_generator->generator_->construct(mt->type(), mt->properties(), choosed_generator->transformed_sources_, 0, &mt->name(), *mt));
    if (!r.empty())

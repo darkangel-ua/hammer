@@ -27,7 +27,7 @@ generator::generator(hammer::engine& e,
 bool generator::is_consumable(const type& t) const
 {
    for(generator::consumable_types_t::const_iterator i = consumable_types().begin(), last = consumable_types().end(); i != last; ++i)
-      if (*i->type_ == t)
+      if (i->type_->equal_or_derived_from(t))
          return true;
 
    return false;

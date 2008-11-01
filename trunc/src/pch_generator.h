@@ -21,8 +21,8 @@ namespace hammer
                       const pstring* composite_target_name,
                       const main_target& owner) const;
       private:
-         const type* c_type_;
-         const type* cpp_type_;
-         const type* h_type_;
+         const type& c_type_;
+         const type& cpp_type_;
+         const type& h_type_;
    };
 }

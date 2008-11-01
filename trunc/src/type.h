@@ -3,25 +3,33 @@
 
 #include <string>
 #include <vector>
+#include <memory>
+#include "type_tag.h"
 
 namespace hammer
 {
+   class type_registry;
    class type
    {
       public:
          typedef std::vector<std::string> suffixes_t;
-         type(const std::string& name, const std::string& suffix, type* base = 0);
-         type(const std::string& name, const suffixes_t& suffixes, type* base = 0);
-         const std::string& name() const { return name_; }
+
+         type(const type_tag& tag, const std::string& suffix);
+         type(const type_tag& tag, const suffixes_t& suffixes);
+         
+         const type_tag& tag() const { return tag_; }
          const suffixes_t& suffixes() const { return suffixes_; }
          const std::string& suffix_for(const std::string& s) const;
-         bool operator == (const type& rhs) const { return name() == rhs.name(); }
-         bool operator != (const type& rhs) const { return !(*this == rhs); }
+         
+         bool equal_or_derived_from(const type& rhs) const;
+         std::auto_ptr<type> clone(const type_registry& tr) const;
 
       private:
-         std::string name_;
+         type_tag tag_;
          suffixes_t suffixes_;
-         type* base_;
+         const type_registry* owner_;
+
+         bool equal(const type& rhs) const;
    };
 }
 

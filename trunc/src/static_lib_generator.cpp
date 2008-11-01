@@ -3,6 +3,7 @@
 #include "engine.h"
 #include "type_registry.h"
 #include "types.h"
+#include "type.h"
 #include "basic_target.h"
 
 namespace hammer{
@@ -13,11 +14,11 @@ static_lib_generator::static_lib_generator(hammer::engine& e,
                                            const producable_types_t& target_types,
                                            bool composite,
                                            const feature_set* c) 
-                                           : generator(e, name, source_types, target_types, composite, c)
+   : generator(e, name, source_types, target_types, composite, c),
+     static_lib_(e.get_type_registry().get(types::STATIC_LIB)),
+     shared_lib_(e.get_type_registry().get(types::SHARED_LIB)),
+     searched_lib_(e.get_type_registry().get(types::SEARCHED_LIB))
 {
-   static_lib_ = &e.get_type_registry().resolve_from_name(types::STATIC_LIB);
-   shared_lib_ = &e.get_type_registry().resolve_from_name(types::SHARED_LIB);
-   searched_lib_ = &e.get_type_registry().resolve_from_name(types::SEARCHED_LIB);
 }
 
 std::vector<boost::intrusive_ptr<build_node> >
@@ -33,9 +34,9 @@ static_lib_generator::construct(const type& target_type,
    build_sources_t extracted_products;
    for(build_sources_t::iterator i = modified_sources.begin(); i != modified_sources.end();)
    {
-      if (*(**i).targeting_type_ == *shared_lib_ || 
-          *(**i).targeting_type_ == *static_lib_ ||
-          *(**i).targeting_type_ == *searched_lib_)
+      if ((**i).targeting_type_->equal_or_derived_from(shared_lib_) || 
+          (**i).targeting_type_->equal_or_derived_from(static_lib_) ||
+          (**i).targeting_type_->equal_or_derived_from(searched_lib_))
       {
          extracted_products.push_back(*i);
          

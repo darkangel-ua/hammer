@@ -24,7 +24,7 @@ main_target* pch_meta_target::construct_main_target(const feature_set* propertie
   last_constructed_main_target_ = new(project()->engine()->targets_pool()) 
                                      pch_main_target(this, 
                                                      name(), 
-                                                     &project()->engine()->get_type_registry().resolve_from_name(types::PCH), 
+                                                     &project()->engine()->get_type_registry().get(types::PCH), 
                                                      properties,
                                                      project()->engine()->targets_pool());
 

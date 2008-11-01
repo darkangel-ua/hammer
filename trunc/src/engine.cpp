@@ -35,28 +35,7 @@ engine::engine()
    :  feature_registry_(0)
 {
    type_registry_.reset(new type_registry);
-   auto_ptr<type> cpp(new type(types::CPP));
-   type_registry_->insert(cpp);
-   auto_ptr<type> c(new type(types::C));
-   type_registry_->insert(c);
-   auto_ptr<type> h(new type(types::H));
-   type_registry_->insert(h);
-   auto_ptr<type> static_lib(new type(types::STATIC_LIB));
-   type_registry_->insert(static_lib);
-   auto_ptr<type> shared_lib(new type(types::SHARED_LIB));
-   type_registry_->insert(shared_lib);
-   auto_ptr<type> import_lib(new type(types::IMPORT_LIB));
-   type_registry_->insert(import_lib);
-   auto_ptr<type> searched_lib(new type(types::SEARCHED_LIB));
-   type_registry_->insert(searched_lib);
-   auto_ptr<type> header_lib(new type(types::HEADER_LIB));
-   type_registry_->insert(header_lib);
-   auto_ptr<type> exe(new type(types::EXE));
-   type_registry_->insert(exe);
-   auto_ptr<type> obj(new type(types::OBJ));
-   type_registry_->insert(obj);
-   auto_ptr<type> pch(new type(types::PCH));
-   type_registry_->insert(pch);
+   types::register_standart_types(*type_registry_);
 
    auto_ptr<hammer::feature_registry> fr(new hammer::feature_registry(&pstring_pool()));
 
@@ -469,7 +448,7 @@ void engine::exe_rule(project* p, std::vector<pstring>& name, sources_decl& sour
 {
    auto_ptr<basic_meta_target> mt(new typed_meta_target(p, name.at(0), requirements ? *requirements : requirements_decl(), 
                                                         usage_requirements ? *usage_requirements : requirements_decl(), 
-                                                        get_type_registry().resolve_from_name(types::EXE.name())));
+                                                        get_type_registry().get(types::EXE)));
    mt->sources(sources);
    p->add_target(mt);
 }
@@ -479,7 +458,7 @@ void engine::obj_rule(project* p, pstring& name, sources_decl& sources, requirem
 {
    auto_ptr<basic_meta_target> mt(new typed_meta_target(p, name, requirements ? *requirements : requirements_decl(), 
                                                         usage_requirements ? *usage_requirements : requirements_decl(), 
-                                                        get_type_registry().resolve_from_name(types::OBJ.name())));
+                                                        get_type_registry().get(types::OBJ)));
    mt->sources(sources);
    p->add_target(mt);
 }

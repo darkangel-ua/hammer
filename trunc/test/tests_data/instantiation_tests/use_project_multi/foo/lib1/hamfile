@@ -1,0 +1,1 @@
+lib foo.lib1 : lib1_old.cpp : <version>old : : <define>LIB1_OLD ;

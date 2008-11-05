@@ -4,15 +4,27 @@
 #include <hammer/src/feature_registry.h>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/fstream.hpp>
+#include <boost/process.hpp>
 
 using namespace hammer;
 using namespace std;
 namespace fs = boost::filesystem;
+namespace bp = boost::process;
 
 struct scm_tests
 {
    scm_tests()
    {
+   }
+
+   void remove_all(const std::string& test_name)
+   {
+      bp::launcher launcher;
+      for(fs::directory_iterator i(test_data_path / "scm_tests" / test_name), last; i != last; ++i)
+      {
+         if (is_directory(*i) && i->leaf() != ".svn")
+            launcher.start(bp::command_line::shell("RMDIR /S /Q " + i->path().native_file_string())).wait();
+      }
    }
 
    void load_project(const string& name);
@@ -31,16 +43,19 @@ void scm_tests::load_project(const string& name)
 /*
 BOOST_FIXTURE_TEST_CASE(svn_simple_checkout, scm_tests)
 {
+   BOOST_REQUIRE_NO_THROW(remove_all("svn_simple_checkout"));
    BOOST_REQUIRE_NO_THROW(load_project("svn_simple_checkout"));
 }
 
 BOOST_FIXTURE_TEST_CASE(svn_complex_project, scm_tests)
 {
+   BOOST_REQUIRE_NO_THROW(remove_all("svn_complex_project"));
    BOOST_REQUIRE_NO_THROW(load_project("svn_complex_project"));
 }
 
 BOOST_FIXTURE_TEST_CASE(svn_repositories, scm_tests)
 {
+   BOOST_REQUIRE_NO_THROW(remove_all("svn_repositories"));
    BOOST_REQUIRE_NO_THROW(load_project("svn_repositories"));
    BOOST_CHECK(!exists(fs::path(test_data_path / "scm_tests/svn_repositories/rep2/boost/optional")));
 }

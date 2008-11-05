@@ -26,8 +26,10 @@ namespace hammer
    class engine : boost::noncopyable
    {
       public:
+         class loaded_projects_t;
+
          engine();
-         project& load_project(location_t project_path, const project& from_project);
+         loaded_projects_t load_project(location_t project_path, const project& from_project);
          project& load_project(location_t project_path);
          void insert(project* p);
          type_registry& get_type_registry() { return *type_registry_; }
@@ -40,12 +42,41 @@ namespace hammer
 
       private:
          typedef boost::ptr_map<const location_t, project> projects_t;
+         struct project_alias_node;
+         typedef boost::ptr_map<location_t, project_alias_node> global_project_links_t;
+
          struct project_alias_data
          {
             location_t location_;
             const feature_set* properties_;
          };
          
+         struct project_alias_node
+         {
+            typedef std::vector<project_alias_data> aliases_data_t;
+
+            // mapping associated with this node. One project symlink path such as /foo/bar 
+            // can be mapped on many different filesystem paths
+            aliases_data_t aliases_data_; 
+            
+            global_project_links_t project_symlinks_;
+         };
+
+         struct resolved_project_symlink_t
+         {
+            resolved_project_symlink_t(const location_t& tail, 
+                                       const project_alias_node::aliases_data_t& symlinks_data) 
+                                       : tail_(tail),
+                                         symlinks_data_(&symlinks_data)
+            {
+            }
+
+            // Unresolved part. bar is a tail_, if /foo/bar was requested and foo was founded.
+            location_t tail_;
+            const project_alias_node::aliases_data_t* symlinks_data_; // cannot be NULL
+         };
+         typedef std::vector<resolved_project_symlink_t> resolved_project_symlinks_t;
+
          struct repository_data
          {
             repository_data(const project* defined_in_project, 
@@ -64,7 +95,6 @@ namespace hammer
             bool materialized_;
          };
 
-         typedef std::map<location_t, project_alias_data> global_project_links_t;
          typedef std::map<const project*, std::map<location_t /* alias */, std::string /* map to */> > use_project_data_t;
          typedef std::deque<repository_data> repositories_t;
 
@@ -80,17 +110,25 @@ namespace hammer
          use_project_data_t use_project_data_;
          repositories_t repositories_;
 
+         loaded_projects_t try_load_project(location_t project_path, const project& from_project);
+         loaded_projects_t try_load_project(const location_t& tail_path, const project_alias_data& symlink);
+         loaded_projects_t try_load_project(location_t project_path);
          void update_project_scm_info(project& p, const project_alias_data& alias_data) const;
          project* get_upper_project(const location_t& project_path);
-         bool materialize_or_load_next_repository(project_alias_data& alias_data);
-         location_t resolve_project_alias(project_alias_data& alias_data,
-                                          const location_t& loc);
+         bool materialize_or_load_next_repository();
+         void resolve_project_alias(resolved_project_symlinks_t& symlinks,
+                                    const location_t& project_symlink);
+         void resolve_project_alias(resolved_project_symlinks_t& symlinks,
+                                    location_t::const_iterator first, location_t::const_iterator last,
+                                    global_project_links_t& symlink_storage);
          void resolve_use_project(location_t& resolved_use_path, location_t& tail_path,
                                   const hammer::project& project, const location_t& path_to_resolve);
+         const scm_client* try_resolve_scm_client(const project& p);
          const scm_client& resolve_scm_client(const project& p);
+         const scm_client& resolve_scm_client_impl(const project& p);
          void initial_materialization(const project_alias_data& alias_data) const;
-         void materialize_project(const location_t& project_path, 
-                                  const project& upper_project);
+         bool try_materialize_project(const location_t& project_path, 
+                                      const project& upper_project);
          const project* find_upper_materialized_project(const project& p);
          const project* find_upper_materialized_project(const location_t& location);
 
@@ -124,6 +162,33 @@ namespace hammer
    };
 
    boost::filesystem::path find_root(const boost::filesystem::path& initial_path);
+
+   class engine::loaded_projects_t
+   {
+      public:
+         friend class engine;
+
+         explicit loaded_projects_t(project* v) : projects_(1, v) {}
+         void push_back(project* v) { projects_.push_back(v); }
+         project& front() const { return *projects_.front(); }
+         bool is_single() const { return projects_.size() == 1; }
+         loaded_projects_t& operator +=(const loaded_projects_t& rhs) 
+         {
+            projects_.insert(projects_.end(), rhs.projects_.begin(), rhs.projects_.end());
+            return *this;
+         }
+         project::selected_targets_t select_best_alternative(const feature_set& build_request) const;
+         const basic_meta_target* select_best_alternative(const pstring& target_name, const feature_set& build_request) const;
+
+         
+      private:      
+         typedef std::vector<project*> projects_t;
+         
+         projects_t projects_;
+
+         loaded_projects_t() {};
+         bool empty() const { return projects_.empty(); }
+   };
 }
 
 #endif //h_4b62efd8_cafb_41d3_a747_e981804129e5

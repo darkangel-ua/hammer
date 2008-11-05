@@ -28,7 +28,7 @@ namespace hammer
                  const requirements_decl& usage_req
                  );
 
-         project(engine* e) : engine_(e) {};
+         project(engine* e) : engine_(e), is_root_(false) {};
          
          virtual const location_t& location() const { return location_; }
          void location(const location_t& l) { location_ = l; } 
@@ -41,6 +41,8 @@ namespace hammer
          basic_meta_target* find_target(const pstring& name);
          hammer::engine* engine() const { return engine_; }
          const pstring& intermediate_dir() const { return intermediate_dir_; }
+         bool is_root() const { return is_root_; }
+         void set_root(bool v) { is_root_ = v; }
 
          void instantiate(const std::string& target_name, 
                           const feature_set& build_request,
@@ -48,11 +50,12 @@ namespace hammer
          bool operator == (const project& rhs) const;
          bool operator != (const project& rhs) const { return !(*this == rhs); }
          
-         // select targets in project that satisfied build_request
+         // select targets in project that satisfied build_request. Can return empty list.
          selected_targets_t select_best_alternative(const feature_set& build_request) const;
 
          // choose best alternative for target_name satisfied build_request
          const basic_meta_target* select_best_alternative(const pstring& target_name, const feature_set& build_request) const;
+         const basic_meta_target* try_select_best_alternative(const pstring& target_name, const feature_set& build_request) const;
 
       private:
          location_t location_;
@@ -60,6 +63,7 @@ namespace hammer
          hammer::engine* engine_;
          pstring intermediate_dir_;
          hammer::scm_info scm_info_;
+         bool is_root_;
 
          virtual void instantiate(const main_target* owner, 
                                   const feature_set& build_request,

@@ -1,0 +1,2 @@
+use-project lib1 : lib1 ;
+use-project lib2 : lib2 ;

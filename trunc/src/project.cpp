@@ -15,7 +15,8 @@ namespace hammer{
                     const requirements_decl& req,
                     const requirements_decl& usage_req)
                    :
-                    basic_meta_target(this, name, req, usage_req), location_(location), engine_(e)
+                    basic_meta_target(this, name, req, usage_req), location_(location), engine_(e),
+                    is_root_(false)
    {
    }
 
@@ -63,6 +64,17 @@ namespace hammer{
    project::select_best_alternative(const pstring& target_name, 
                                     const feature_set& build_request) const
    {
+      const basic_meta_target* result = try_select_best_alternative(target_name, build_request);
+      if (result == NULL)
+         throw std::runtime_error("Can't select alternative for target '" + target_name.to_string() + "'.");
+
+      return result;
+   }
+
+   const basic_meta_target* 
+   project::try_select_best_alternative(const pstring& target_name, 
+                                        const feature_set& build_request) const
+   {
       boost::iterator_range<targets_t::const_iterator> r = targets_.equal_range(target_name);
 
       if (r.empty())
@@ -77,14 +89,11 @@ namespace hammer{
          if (is_alternative_suitable(*fs, build_request))
          {
             if (result != NULL)
-               throw std::runtime_error("Can't select alternative for target '" + target_name.to_string() + "'.");
+               throw std::runtime_error("Can't select alternative for target '" + target_name.to_string() + "' between others[fixme]");
 
             result = first->second;
          }
       }
-
-      if (result == NULL)
-         throw std::runtime_error("Can't select alternative for target '" + target_name.to_string() + "'.");
 
       return result;
    }
@@ -120,8 +129,9 @@ namespace hammer{
       targets_t::const_iterator first = targets_.begin(), last = targets_.end();
       while(first != last)
       {
-         const basic_meta_target* t = select_best_alternative(first->second->name(), build_request);
-         result.push_back(t);
+         const basic_meta_target* t = try_select_best_alternative(first->second->name(), build_request);
+         if (t != NULL)
+            result.push_back(t);
          
          // skip meta targets with equal names
          targets_t::const_iterator next = first; std::advance(next, 1);

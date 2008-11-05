@@ -1,0 +1,1 @@
+lib foo.lib2 : lib2.cpp ;

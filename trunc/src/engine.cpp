@@ -116,7 +116,7 @@ void engine::update_project_scm_info(project& p, const project_alias_data& alias
    }
 }
 
-bool engine::materialize_or_load_next_repository(project_alias_data& alias_data)
+bool engine::materialize_or_load_next_repository()
 {
    if (repositories_.empty())
       return false;
@@ -124,7 +124,8 @@ bool engine::materialize_or_load_next_repository(project_alias_data& alias_data)
    repository_data& rep_data = repositories_.front();
    if (repositories_.front().materialized_)
       return false;
-
+   
+   project_alias_data alias_data;
    location_t repository_full_location(rep_data.defined_in_project_->location() / rep_data.location_);
    alias_data.location_ = repository_full_location;
    alias_data.properties_ = rep_data.properties_;
@@ -142,6 +143,40 @@ bool engine::materialize_or_load_next_repository(project_alias_data& alias_data)
    return true;
 }
 
+static location_t make_location(location_t::const_iterator first, location_t::const_iterator last)
+{
+   location_t result;
+   for(; first != last; ++first)
+      result /= *first;
+
+   return result;
+}
+
+void engine::resolve_project_alias(resolved_project_symlinks_t& symlinks,
+                                   location_t::const_iterator first, location_t::const_iterator last,
+                                   global_project_links_t& symlink_storage)
+{
+   if (first == last)
+      return;
+
+   global_project_links_t::iterator i = symlink_storage.find(*first);
+   if (i != symlink_storage.end())
+   {
+      ++first; // eat head and leave tail
+      if (!i->second->aliases_data_.empty())
+         symlinks.push_back(resolved_project_symlink_t(make_location(first, last), i->second->aliases_data_));
+      resolve_project_alias(symlinks, first, last, i->second->project_symlinks_);
+   }
+}
+
+void engine::resolve_project_alias(resolved_project_symlinks_t& symlinks,
+                                   const location_t& project_symlink)
+{
+   // пропускаем начальный слеш
+   resolve_project_alias(symlinks, ++project_symlink.begin(), project_symlink.end(), global_project_links_);
+}
+
+/*
 location_t engine::resolve_project_alias(project_alias_data& alias_data, const location_t& loc)
 {
    // пропускаем начальный слеш
@@ -182,6 +217,7 @@ location_t engine::resolve_project_alias(project_alias_data& alias_data, const l
 
    return result;
 }
+*/
 
 
 void engine::initial_materialization(const project_alias_data& alias_data) const
@@ -214,7 +250,87 @@ static void materialize_directory(const scm_client& scm_client, location_t dir, 
    scm_client.up(dir, what_up, recursive);
 }
 
-project& engine::load_project(location_t project_path, const project& from_project)
+engine::loaded_projects_t 
+engine::load_project(location_t project_path, 
+                     const project& from_project)
+{
+   loaded_projects_t result(try_load_project(project_path, from_project));
+   if (result.empty())
+      throw std::runtime_error((boost::format("%s(0): error: can't load project '%s'") 
+                                   % from_project.location().native_file_string() 
+                                   % project_path).str());
+
+   return result;
+}
+
+engine::loaded_projects_t 
+engine::try_load_project(location_t project_path, 
+                         const project& from_project)
+{
+   if (project_path.has_root_path())
+   {
+      while(true)
+      {
+         loaded_projects_t result;
+         resolved_project_symlinks_t symlinks;
+         resolve_project_alias(symlinks, project_path);
+         for(resolved_project_symlinks_t::const_iterator i = symlinks.begin(), last = symlinks.end(); i != last; ++i)
+            for(project_alias_node::aliases_data_t::const_iterator j = i->symlinks_data_->begin(), j_last = i->symlinks_data_->end(); j != j_last; ++j)
+               result += try_load_project(i->tail_, *j);
+         
+         if (!result.empty())
+            return result;
+
+         if (!materialize_or_load_next_repository())
+            return result;
+      }
+   }
+   else
+   {
+      location_t resolved_use_path, tail_path;
+      resolve_use_project(resolved_use_path, tail_path,
+                          from_project, project_path);
+      if (tail_path.empty())
+         return try_load_project(from_project.location() / resolved_use_path);
+      else
+         return try_load_project(tail_path, load_project(from_project.location() / resolved_use_path));
+   }
+}
+
+engine::loaded_projects_t
+engine::try_load_project(const location_t& tail_path, 
+                         const project_alias_data& symlink)
+{
+   location_t project_path = symlink.location_;
+   if (!exists(project_path))
+   {
+      // if alias data exists than use it
+      const project* upper_materialized_project = 
+         symlink.properties_ == NULL ? find_upper_materialized_project(project_path) 
+                                        : NULL;
+      if (upper_materialized_project == NULL)
+         initial_materialization(symlink);
+      else
+      {
+         const scm_client* scm_client = try_resolve_scm_client(*upper_materialized_project);
+         if (scm_client == NULL)
+            return loaded_projects_t();
+
+         materialize_directory(*scm_client, project_path, false);
+      }
+   }
+
+   project& p = load_project(project_path);
+   update_project_scm_info(p, symlink);
+  
+   if (!tail_path.empty())
+      return try_load_project(tail_path, p);
+   else
+      return loaded_projects_t(&p);
+}
+
+/*
+engine::loaded_projects_t engine::load_project(location_t project_path, const project& from_project)
 {
    if (project_path.has_root_path())
    {
@@ -223,7 +339,10 @@ project& engine::load_project(location_t project_path, const project& from_proje
       project_path = alias_data.location_;
       if (!exists(project_path))
       {
-         const project* upper_materialized_project = find_upper_materialized_project(project_path);
+         // if alias data exists than use it
+         const project* upper_materialized_project = 
+            alias_data.properties_ == NULL ? find_upper_materialized_project(project_path) 
+                                           : NULL;
          if (upper_materialized_project == NULL)
             initial_materialization(alias_data);
          else
@@ -236,7 +355,7 @@ project& engine::load_project(location_t project_path, const project& from_proje
       if (!tail_path.empty())
          return load_project(tail_path, p);
       else
-         return p;
+         return loaded_projects_t(&p);
    }
    else
    {
@@ -244,11 +363,12 @@ project& engine::load_project(location_t project_path, const project& from_proje
       resolve_use_project(resolved_use_path, tail_path, 
                           from_project, project_path);
       if (tail_path.empty())
-         return load_project(from_project.location() / resolved_use_path);
+         return loaded_projects_t(&load_project(from_project.location() / resolved_use_path));
       else
          return load_project(tail_path, load_project(from_project.location() / resolved_use_path));
    }
 }
+*/
 
 void engine::resolve_use_project(location_t& resolved_use_path, location_t& tail_path,
                                  const hammer::project& p, const location_t& path_to_resolve)
@@ -269,7 +389,7 @@ void engine::resolve_use_project(location_t& resolved_use_path, location_t& tail
    
    resolved_use_path = j->second;
    if (!exists(p.location() / resolved_use_path))
-      materialize_directory(resolve_scm_client(p), p.location() / resolved_use_path, false);   
+      materialize_directory(resolve_scm_client(p), p.location() / resolved_use_path, false);
 
    // FIXME: stupid boost::filesystem::path can't be constructed from two iterators
    for(location_t::const_iterator i = ++path_to_resolve.begin(), last = path_to_resolve.end(); i != last; ++i)
@@ -283,6 +403,9 @@ engine::find_upper_materialized_project(const project& p)
       return &p;
    else
    {
+      if (p.is_root())
+         return NULL;
+
       const project* upper_project = get_upper_project(p.location());
       if (upper_project != NULL)
          return find_upper_materialized_project(*upper_project);
@@ -297,13 +420,9 @@ const project* engine::find_upper_materialized_project(const location_t& locatio
    return p == NULL ? NULL : find_upper_materialized_project(*p);
 }
 
-const scm_client& engine::resolve_scm_client(const project& p)
+const scm_client& engine::resolve_scm_client_impl(const project& p)
 {
-   const project* upper_materialized_project = find_upper_materialized_project(p);
-   if (upper_materialized_project == NULL)
-      throw std::runtime_error("Can't find scm client for project at location '" + p.location().string() + "'.");
-
-   std::string scm_client_name = upper_materialized_project->scm_info().scm_client_name_.to_string();
+   std::string scm_client_name = p.scm_info().scm_client_name_.to_string();
    const hammer::scm_client* scm_client = scm_manager_->find(scm_client_name);
    if (!scm_client)
       throw runtime_error("SCM client '" + scm_client_name + "' not supported.");
@@ -311,17 +430,49 @@ const scm_client& engine::resolve_scm_client(const project& p)
    return *scm_client;
 }
 
-void engine::materialize_project(const location_t& project_path, 
-                                 const project& upper_project)
+const scm_client* engine::try_resolve_scm_client(const project& p)
 {
-   materialize_directory(resolve_scm_client(upper_project), project_path);
+   const project* upper_materialized_project = find_upper_materialized_project(p);
+   if (upper_materialized_project == NULL)
+      return NULL;
+   
+   return &resolve_scm_client_impl(*upper_materialized_project);
+}
+
+const scm_client& engine::resolve_scm_client(const project& p)
+{
+   const project* upper_materialized_project = find_upper_materialized_project(p);
+   if (upper_materialized_project == NULL)
+         throw std::runtime_error("Can't find scm client for project at location '" + p.location().string() + "'.");
+
+   return resolve_scm_client_impl(*upper_materialized_project);
+}
+
+bool engine::try_materialize_project(const location_t& project_path, 
+                                     const project& upper_project)
+{
+   const scm_client* scm_client = try_resolve_scm_client(upper_project);
+   if (scm_client == NULL)
+      return false;
+   
+   materialize_directory(*scm_client, project_path);
+   return true;
 }
 
 project& engine::load_project(location_t project_path)
 {
+   loaded_projects_t result(try_load_project(project_path));
+   if (result.empty())
+      throw  runtime_error("Can't load project at '"  + project_path.string() + ": no such path.");
+
+   return result.front();
+}
+
+engine::loaded_projects_t engine::try_load_project(location_t project_path)
+{
    projects_t::iterator i = projects_.find(project_path);
    if (i != projects_.end())
-      return *i->second;
+      return loaded_projects_t(i->second);
 
    hammer_walker_context ctx;
    try
@@ -339,9 +490,10 @@ project& engine::load_project(location_t project_path)
       {
          upper_project = get_upper_project(project_path);
          if (upper_project == NULL)
-            throw  runtime_error("Can't load project at '"  + project_path.string() + ": no such path.");
+            return loaded_projects_t();
 
-         materialize_project(project_path, *upper_project);
+         if (!try_materialize_project(project_path, *upper_project))
+            return loaded_projects_t();
       }
 
       location_t project_file = project_path / "hamfile";
@@ -354,6 +506,9 @@ project& engine::load_project(location_t project_path)
       else 
          if (upper_project == NULL)
             upper_project = get_upper_project(project_path);
+
+      if (!exists(project_file))
+         return loaded_projects_t();
 
       if (!p.parse(project_file.native_file_string().c_str()))
          throw  runtime_error("Can't load project at '"  + project_path.string() + ": parser errors");
@@ -368,11 +523,13 @@ project& engine::load_project(location_t project_path)
             ctx.project_->usage_requirements().insert_infront(upper_project->usage_requirements());
          }
       }
+      else
+         ctx.project_->set_root(true);
 
       p.walk(&ctx);
       assert(ctx.project_);
       insert(ctx.project_);
-      return *ctx.project_;
+      return loaded_projects_t(ctx.project_);
    }
    catch(...)
    {
@@ -664,16 +821,31 @@ void engine::use_project_rule(project* p, const pstring& project_id_alias,
    }
    else
    {
-      global_project_links_t::const_iterator i = global_project_links_.find(l);
-      if (i != global_project_links_.end())
-         throw runtime_error("Project id alias '" + project_id_alias.to_string() + 
-                             "' already mapped to location '" + i->second.location_.string() + "'.");
+      // go thought global map and create nodes that doesn't exists
+      global_project_links_t* project_links_node = &global_project_links_;
+      global_project_links_t::iterator alias_data_home;
+      for(location_t::const_iterator i = ++l.begin(), last = l.end(); i != last; ++i)
+      {
+         alias_data_home = project_links_node->find(*i);
+         if (alias_data_home == project_links_node->end())
+         {
+            std::auto_ptr<project_alias_node> node(new project_alias_node);
+            // FIXME stupid bug in ptr_map::insert
+            location_t tmp(*i);
+            alias_data_home = project_links_node->insert(tmp, node.get()).first;
+            project_links_node = &node->project_symlinks_;
+            node.release();
+         }
+         else
+            project_links_node = &alias_data_home->second->project_symlinks_;
+      }
+      
       project_alias_data alias_data;
       alias_data.location_ = p->location() / project_location.to_string();
       alias_data.location_.normalize();
       alias_data.properties_ = props;
 
-      global_project_links_.insert(make_pair(l, alias_data));
+      alias_data_home->second->aliases_data_.push_back(alias_data);
    }
 }
 
@@ -686,6 +858,42 @@ void engine::repository_rule(project* p, const pstring& a_project_location, feat
       throw runtime_error((boost::format("Repository with placement at '%s' already defined.") % project_location.string()).str());
 
    repositories_.push_back(repository_data(p, project_location, props));
+}
+
+project::selected_targets_t 
+engine::loaded_projects_t::select_best_alternative(const feature_set& build_request) const
+{
+   project::selected_targets_t result;
+   for(projects_t::const_iterator i = projects_.begin(), last = projects_.end(); i != last; ++i)
+   {
+      project::selected_targets_t targets((**i).select_best_alternative(build_request));
+      result.insert(result.end(), targets.begin(), targets.end());
+   }
+   
+   if (result.empty())
+      throw std::runtime_error("[FIXME] Can't select best alternative - no one founded");
+
+   return result;
+}
+
+const basic_meta_target* 
+engine::loaded_projects_t::select_best_alternative(const pstring& target_name, 
+                                                   const feature_set& build_request) const
+{
+   const basic_meta_target* result = NULL;
+   for(projects_t::const_iterator i = projects_.begin(), last = projects_.end(); i != last; ++i)
+   {
+      const basic_meta_target* target = (**i).try_select_best_alternative(target_name, build_request);
+      if (result == NULL)
+         result = target;
+      else
+         throw std::runtime_error("[FIXME] Can't select best alternative from two others");
+   }
+
+   if (result == NULL)
+      throw std::runtime_error("Can't select best alternative - no one founded");
+
+   return result;
 }
 
 }

@@ -112,10 +112,10 @@ void basic_meta_target::resolve_meta_target_source(const source_decl& source,
    }
 
 	// source has target_name_ only when it was explicitly requested (./foo//bar) where target_name_ == "bar"
-   const hammer::project& target_project = project_->engine()->load_project(source.target_path().to_string(), *project_);
+   engine::loaded_projects_t suitable_projects = project_->engine()->load_project(source.target_path().to_string(), *project_);
    if (source.target_name().empty()) 
    {
-      hammer::project::selected_targets_t selected_targets(target_project.select_best_alternative(*build_request_with_source_properties));
+      hammer::project::selected_targets_t selected_targets(suitable_projects.select_best_alternative(*build_request_with_source_properties));
       for(hammer::project::selected_targets_t::const_iterator i = selected_targets.begin(), last = selected_targets.end(); i != last; ++i)
 	   {
 		   if (!(**i).is_explicit())
@@ -128,7 +128,7 @@ void basic_meta_target::resolve_meta_target_source(const source_decl& source,
    }
    else
    {
-      const basic_meta_target* m = target_project.select_best_alternative(source.target_name(), *build_request_with_source_properties);
+      const basic_meta_target* m = suitable_projects.select_best_alternative(source.target_name(), *build_request_with_source_properties);
       m->transfer_sources(simple_targets, meta_targets, 
                           *build_request_with_source_properties, source.properties());
       meta_targets->push_back(make_pair(m, source.properties()));

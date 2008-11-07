@@ -70,6 +70,10 @@ namespace hammer
                                   std::vector<basic_target*>* result, 
                                   feature_set* usage_requirements) const;
    };
+
+   bool is_alternative_suitable(const feature_set& target_properties, 
+                                const feature_set& build_request);
+
 }
 
 #endif //h_939859ef_4910_49e0_b2b8_fac2a43ebd18

@@ -188,6 +188,7 @@ namespace hammer
 
          loaded_projects_t() {};
          bool empty() const { return projects_.empty(); }
+         void post_process(project::selected_targets_t& result, const feature_set& build_request) const;
    };
 }
 

@@ -21,6 +21,7 @@
 #include "wildcard.hpp"
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
+#include <boost/logic/tribool.hpp>
 #include "scm_manager.h"
 #include "fs_helpers.h"
 #include "header_lib_meta_target.h"
@@ -860,6 +861,81 @@ void engine::repository_rule(project* p, const pstring& a_project_location, feat
    repositories_.push_back(repository_data(p, project_location, props));
 }
 
+static bool targets_by_name(const basic_meta_target* lhs, const basic_meta_target* rhs)
+{
+   return lhs->name() < rhs->name();
+}
+
+static bool has_override(engine& e, 
+                         const basic_meta_target& target, 
+                         const feature_set& build_request)
+{
+   feature_set* fs = e.feature_registry().make_set();
+   target.requirements().eval(build_request, fs);
+   return fs->find("override") != fs->end();
+}
+
+void engine::loaded_projects_t::post_process(project::selected_targets_t& result,
+                                             const feature_set& build_request) const
+{
+   if (result.empty())
+      throw std::runtime_error("[FIXME] Can't select best alternative - no one founded");
+
+   if (result.size() == 1)
+      return;
+
+   // Check for targets with same name. They already have same symbolic names so we should check names.
+   using namespace boost::logic;
+   engine& e = *result.front()->project()->engine();
+   std::sort(result.begin(), result.end(), targets_by_name);
+   project::selected_targets_t::iterator 
+      first = result.begin(), 
+      second = ++result.begin();
+   tribool overriden = false;
+   for(; second != result.end();)
+   {
+      if ((**first).name() == (**second).name())
+      {
+         switch(overriden.value)
+         {
+            case tribool::true_value:
+            {
+               if (has_override(e, **second, build_request))
+                  throw std::runtime_error("[FIXME] Can't select best alternative from two others");
+               else
+                  second = result.erase(second);
+               
+               break;
+            }
+
+            case tribool::false_value:
+            {
+               if (has_override(e, **second, build_request))
+               {
+                  std::swap(*first, *second);
+                  second = result.erase(second);
+               }
+               else
+                  throw std::runtime_error("[FIXME] Can't select best alternative from two others");
+               
+               break;
+            }
+
+            case tribool::indeterminate_value:
+            {
+               overriden = has_override(e, **first, build_request);
+               break;
+            }
+         }
+      }
+      else
+      {
+         ++first;
+         ++second;
+      }
+   }
+}
+
 project::selected_targets_t 
 engine::loaded_projects_t::select_best_alternative(const feature_set& build_request) const
 {
@@ -869,9 +945,8 @@ engine::loaded_projects_t::select_best_alternative(const feature_set& build_requ
       project::selected_targets_t targets((**i).select_best_alternative(build_request));
       result.insert(result.end(), targets.begin(), targets.end());
    }
-   
-   if (result.empty())
-      throw std::runtime_error("[FIXME] Can't select best alternative - no one founded");
+
+   post_process(result, build_request);
 
    return result;
 }
@@ -880,20 +955,18 @@ const basic_meta_target*
 engine::loaded_projects_t::select_best_alternative(const pstring& target_name, 
                                                    const feature_set& build_request) const
 {
-   const basic_meta_target* result = NULL;
+   project::selected_targets_t result;
    for(projects_t::const_iterator i = projects_.begin(), last = projects_.end(); i != last; ++i)
    {
       const basic_meta_target* target = (**i).try_select_best_alternative(target_name, build_request);
-      if (result == NULL)
-         result = target;
-      else
-         throw std::runtime_error("[FIXME] Can't select best alternative from two others");
+      if (target != NULL)
+         result.push_back(target);
    }
 
-   if (result == NULL)
-      throw std::runtime_error("Can't select best alternative - no one founded");
+   // after this call we will have only one meta target in result list
+   post_process(result, build_request);
 
-   return result;
+   return result.front();
 }
 
 }

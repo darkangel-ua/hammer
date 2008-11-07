@@ -40,8 +40,8 @@ namespace hammer{
          return i->second;
    }
 
-   static bool is_alternative_suitable(const feature_set& target_properties, 
-                                       const feature_set& build_request)
+   bool is_alternative_suitable(const feature_set& target_properties, 
+                                const feature_set& build_request)
    {
       for(feature_set::const_iterator i = target_properties.begin(), last = target_properties.end(); i != last; ++i)
       {
@@ -81,7 +81,8 @@ namespace hammer{
          throw std::runtime_error("Can't find target '" + target_name.to_string() + "'");
 
       const basic_meta_target* result = NULL;
-      
+      bool overriden = false;
+
       for(targets_t::const_iterator first = begin(r), last = end(r); first != last; ++first)
       {
          feature_set* fs = engine_->feature_registry().make_set();
@@ -89,7 +90,14 @@ namespace hammer{
          if (is_alternative_suitable(*fs, build_request))
          {
             if (result != NULL)
-               throw std::runtime_error("Can't select alternative for target '" + target_name.to_string() + "' between others[fixme]");
+            {
+               feature_set::const_iterator override_iter = fs->find("override");
+               if (overriden && override_iter != fs->end() ||
+                   !overriden && override_iter == fs->end())
+               {
+                  throw std::runtime_error("Can't select alternative for target '" + target_name.to_string() + "' between others[fixme]");
+               }
+            }
 
             result = first->second;
          }

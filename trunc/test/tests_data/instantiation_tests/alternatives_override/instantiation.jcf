@@ -1,0 +1,12 @@
+test 
+{
+   a
+   {
+      a_override.cpp {}
+   }
+   
+   lib1
+   {
+      lib1_ext.cpp {}
+   }
+}

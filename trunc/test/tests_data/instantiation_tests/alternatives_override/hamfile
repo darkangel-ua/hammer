@@ -1,0 +1,9 @@
+use-project /lib1 : lib1 ;
+use-project /lib1 : lib1_ext ;
+use-project /lib2 : lib2 ;
+use-project /lib2 : lib2_ext ;
+
+lib a : a.cpp ;
+lib a : a_override.cpp : <override>on ;
+
+exe test : a /lib1 /lib2//lib2 ;

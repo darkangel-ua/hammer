@@ -178,50 +178,6 @@ void engine::resolve_project_alias(resolved_project_symlinks_t& symlinks,
    resolve_project_alias(symlinks, ++project_symlink.begin(), project_symlink.end(), global_project_links_);
 }
 
-/*
-location_t engine::resolve_project_alias(project_alias_data& alias_data, const location_t& loc)
-{
-   // пропускаем начальный слеш
-   location_t::const_iterator i = ++loc.begin(), last = loc.end();
-   location_t searched_loc = location_t("/") / *i;
-   
-   global_project_links_t::const_iterator g;
-   for(;;)
-   {
-      g = global_project_links_.find(searched_loc);
-      if (g == global_project_links_.end())
-      {
-         ++i;
-         if (i != last)
-            searched_loc /= *i;
-         else 
-         {
-            if (!materialize_or_load_next_repository(alias_data))
-               throw runtime_error("Can't resolve global project link '" + loc.string() + "'.");
-            else // Restart searching from the beginning
-            {
-               i = ++loc.begin();
-               last = loc.end();
-               searched_loc = location_t("/") / *i;
-               continue;
-            }
-         }
-      }
-      else 
-         break;
-   }
-
-   location_t result;
-   for(++i; i != last; ++i)
-      result /= *i;
-   
-   alias_data = g->second;
-
-   return result;
-}
-*/
-
-
 void engine::initial_materialization(const project_alias_data& alias_data) const
 {
    feature_set::const_iterator scm_tag = alias_data.properties_->find("scm");
@@ -330,47 +286,6 @@ engine::try_load_project(const location_t& tail_path,
    else
       return loaded_projects_t(&p);
 }
-
-/*
-engine::loaded_projects_t engine::load_project(location_t project_path, const project& from_project)
-{
-   if (project_path.has_root_path())
-   {
-      project_alias_data alias_data;
-      location_t tail_path = resolve_project_alias(alias_data, project_path);
-      project_path = alias_data.location_;
-      if (!exists(project_path))
-      {
-         // if alias data exists than use it
-         const project* upper_materialized_project = 
-            alias_data.properties_ == NULL ? find_upper_materialized_project(project_path) 
-                                           : NULL;
-         if (upper_materialized_project == NULL)
-            initial_materialization(alias_data);
-         else
-            materialize_directory(resolve_scm_client(*upper_materialized_project), project_path, false);
-      }
-
-      project& p = load_project(project_path);
-      update_project_scm_info(p, alias_data);
-     
-      if (!tail_path.empty())
-         return load_project(tail_path, p);
-      else
-         return loaded_projects_t(&p);
-   }
-   else
-   {
-      location_t resolved_use_path, tail_path;
-      resolve_use_project(resolved_use_path, tail_path, 
-                          from_project, project_path);
-      if (tail_path.empty())
-         return loaded_projects_t(&load_project(from_project.location() / resolved_use_path));
-      else
-         return load_project(tail_path, load_project(from_project.location() / resolved_use_path));
-   }
-}
-*/
 
 void engine::resolve_use_project(location_t& resolved_use_path, location_t& tail_path,
                                  const hammer::project& p, const location_t& path_to_resolve)

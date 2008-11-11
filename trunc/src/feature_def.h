@@ -23,6 +23,7 @@ namespace hammer
          feature_attributes& attributes() { return attributes_; }
          void compose(const std::string& value, feature_set* c); // take ownership of c
          void expand_composites(const std::string value, feature_set* fs) const;
+         void extend(const std::string& new_legal_value);
          ~feature_def(); 
          bool operator ==(const feature_def& rhs) const { return this == &rhs; }
 

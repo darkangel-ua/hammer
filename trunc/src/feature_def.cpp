@@ -49,6 +49,16 @@ void feature_def::expand_composites(const std::string value, feature_set* fs) co
       fs->join(*f);
 }
 
+void feature_def::extend(const std::string& new_legal_value)
+{
+   if (find(legal_values_.begin(), legal_values_.end(), new_legal_value) != legal_values_.end())
+      throw std::runtime_error("Legal value '" + new_legal_value + "' already registred for feature '" + name_ + "'");
+
+   legal_values_.push_back(new_legal_value);
+   if (legal_values_.size() == 1)
+      default_ = legal_values_[0];
+}
+
 feature_def::~feature_def()
 {
 }

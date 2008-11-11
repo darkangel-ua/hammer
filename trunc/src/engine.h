@@ -151,8 +151,9 @@ namespace hammer
                          requirements_decl* usage_requirements);
          void import_rule(project* p, std::vector<pstring>& name);
          void feature_feature_rule(project* p, std::vector<pstring>& name, std::vector<pstring>* values,
-                                   std::vector<pstring>& attributes);
+                                   std::vector<pstring>* attributes);
          void feature_compose_rule(project* p, feature& f, feature_set& components);
+         void variant_rule(project* p, pstring& variant_name, pstring* base, feature_set& components);
          sources_decl glob_rule(project* p, std::vector<pstring>& patterns, 
                                 std::vector<pstring>* exceptions, bool recursive);
          void explicit_rule(project* p, const pstring& target_name);

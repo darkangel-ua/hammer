@@ -48,8 +48,9 @@ engine::engine()
    resolver_.insert("pch", boost::function<void (project*, pstring&, sources_decl&, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::pch_rule, this, _1, _2, _3, _4, _5, _6)));
    resolver_.insert("alias", boost::function<void (project*, pstring&, sources_decl*, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::alias_rule, this, _1, _2, _3, _4, _5, _6)));
    resolver_.insert("import", boost::function<void (project*, vector<pstring>&)>(boost::bind(&engine::import_rule, this, _1, _2)));
-   resolver_.insert("feature.feature", boost::function<void (project*, vector<pstring>&, vector<pstring>*, vector<pstring>&)>(boost::bind(&engine::feature_feature_rule, this, _1, _2, _3, _4)));
+   resolver_.insert("feature.feature", boost::function<void (project*, vector<pstring>&, vector<pstring>*, vector<pstring>*)>(boost::bind(&engine::feature_feature_rule, this, _1, _2, _3, _4)));
    resolver_.insert("feature.compose", boost::function<void (project*, feature&, feature_set&)>(boost::bind(&engine::feature_compose_rule, this, _1, _2, _3)));
+   resolver_.insert("variant", boost::function<void (project*, pstring&, pstring*, feature_set&)>(boost::bind(&engine::variant_rule, this, _1, _2, _3, _4)));
    resolver_.insert("glob", boost::function<sources_decl (project*, std::vector<pstring>&, std::vector<pstring>*)>(boost::bind(&engine::glob_rule, this, _1, _2, _3, false)));
    resolver_.insert("rglob", boost::function<sources_decl (project*, std::vector<pstring>&, std::vector<pstring>*)>(boost::bind(&engine::glob_rule, this, _1, _2, _3, true)));
    resolver_.insert("explicit", boost::function<void (project*, const pstring&)>(boost::bind(&engine::explicit_rule, this, _1, _2)));
@@ -635,45 +636,48 @@ void engine::import_rule(project* p, std::vector<pstring>& name)
 
 }
 
-static feature_attributes resolve_attributes(std::vector<pstring>& attributes)
+static feature_attributes resolve_attributes(std::vector<pstring>* attributes)
 {
    typedef std::vector<pstring>::const_iterator iter;
    feature_attributes result = {0};
    
-   iter i = find(attributes.begin(), attributes.end(), "propagated");
-   if (i != attributes.end())
+   if (attributes == NULL)
+      return result; 
+
+   iter i = find(attributes->begin(), attributes->end(), "propagated");
+   if (i != attributes->end())
       result.propagated = true;
 
-   i = find(attributes.begin(), attributes.end(), "composite");
-   if (i != attributes.end())
+   i = find(attributes->begin(), attributes->end(), "composite");
+   if (i != attributes->end())
       result.composite = true;
 
-   i = find(attributes.begin(), attributes.end(), "free");
-   if (i != attributes.end())
+   i = find(attributes->begin(), attributes->end(), "free");
+   if (i != attributes->end())
       result.free = true;
 
-   i = find(attributes.begin(), attributes.end(), "path");
-   if (i != attributes.end())
+   i = find(attributes->begin(), attributes->end(), "path");
+   if (i != attributes->end())
       result.path = true;
    
-   i = find(attributes.begin(), attributes.end(), "incidental");
-   if (i != attributes.end())
+   i = find(attributes->begin(), attributes->end(), "incidental");
+   if (i != attributes->end())
       result.incidental = true;
 
-   i = find(attributes.begin(), attributes.end(), "optional");
-   if (i != attributes.end())
+   i = find(attributes->begin(), attributes->end(), "optional");
+   if (i != attributes->end())
       result.optional = true;
 
-   i = find(attributes.begin(), attributes.end(), "symmetric");
-   if (i != attributes.end())
+   i = find(attributes->begin(), attributes->end(), "symmetric");
+   if (i != attributes->end())
       result.symmetric = true;
 
-   i = find(attributes.begin(), attributes.end(), "dependency");
-   if (i != attributes.end())
+   i = find(attributes->begin(), attributes->end(), "dependency");
+   if (i != attributes->end())
       result.dependency = true;
 
-   i = find(attributes.begin(), attributes.end(), "no-defaults");
-   if (i != attributes.end())
+   i = find(attributes->begin(), attributes->end(), "no-defaults");
+   if (i != attributes->end())
       result.no_defaults = true;
 
    return result;
@@ -681,7 +685,7 @@ static feature_attributes resolve_attributes(std::vector<pstring>& attributes)
 
 void engine::feature_feature_rule(project* p, std::vector<pstring>& name, 
                                   std::vector<pstring>* values,
-                                  std::vector<pstring>& attributes)
+                                  std::vector<pstring>* attributes)
 {
    if (name.empty() || name.size() > 1)
       throw std::runtime_error("[feature.feature] Bad feature name.");
@@ -702,6 +706,22 @@ void engine::feature_compose_rule(project* p, feature& f, feature_set& component
 {
    feature_set* cc = components.clone();
    feature_registry_->get_def(f.def().name()).compose(f.value().to_string(), cc);
+}
+
+void engine::variant_rule(project* p, pstring& variant_name, pstring* base, feature_set& components)
+{
+   feature_def& def = feature_registry_->get_def("variant");
+   def.extend(variant_name.to_string());
+
+   if (base == NULL)
+      def.compose(variant_name.to_string(), &components);
+   else
+   {
+      feature_set* composite_features = feature_registry_->make_set();
+      def.expand_composites(base->to_string(), composite_features);
+      composite_features->join(components);
+      def.compose(variant_name.to_string(), composite_features);
+   }
 }
 
 void engine::alias_rule(project* p, 

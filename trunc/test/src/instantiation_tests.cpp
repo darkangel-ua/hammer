@@ -293,7 +293,6 @@ BOOST_FIXTURE_TEST_CASE(use_project_multi, instantiation_tests)
    BOOST_REQUIRE_EQUAL(tt.size(), size_t(1));
    check(tt);
 }
-*/
 
 BOOST_FIXTURE_TEST_CASE(alternatives_override, instantiation_tests)
 {
@@ -308,3 +307,4 @@ BOOST_FIXTURE_TEST_CASE(alternatives_override, instantiation_tests)
    BOOST_REQUIRE_EQUAL(tt.size(), size_t(1));
    check(tt);
 }
+*/

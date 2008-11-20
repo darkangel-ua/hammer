@@ -71,6 +71,7 @@ namespace hammer
                                   feature_set* usage_requirements) const;
    };
 
+   // FIXME: This is bad name. Should be is_fully_inside, is_compatible or something like that
    bool is_alternative_suitable(const feature_set& target_properties, 
                                 const feature_set& build_request);
 

@@ -292,6 +292,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\toolset_tests.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\type_registry_test.cpp"
 				>
 			</File>

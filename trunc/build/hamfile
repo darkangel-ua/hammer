@@ -1,21 +1,39 @@
-project hammer.core : requirements <character-set>multi-byte ;
+project hammer.core : requirements <character-set>multi-byte 
+                                   <library>/boost/ptr_container ;
 
 pch stdafx : ../src/stdafx.cpp ../src/stdafx.h ;
 explicit stdafx ;
 
+obj parser_and_lexer
+   : 
+    ../src/build/hammerParser.c 
+    ../src/build/hammerLexer.c 
+   : 
+    <cflags>/TP 
+    <use>/libantlr3c/<version>3.1.1 
+   ;
+explicit parser_and_lexer ;
+
+obj without_pch 
+   :
+    ../src/dos_wildcard.cpp
+    ../src/build/hammer_walker.c
+   :
+    <use>/boost/regex
+    <use>/libantlr3c/<version>3.1.1 
+   ;
+explicit without_pch ;
+
 lib hammer.core 
    : 
     stdafx
-    hammer_parser
-    hammer_lexer
-    hammer_walker
-    dos_wildcard
+    parser_and_lexer
+    without_pch
     [ glob ../src/*.cpp : stdafx.cpp dos_wildcard.cpp ]
     [ rglob ../src/*.h : stdafx.h ]
     [ rglob ../src/project_generators/*.cpp ]
     /libantlr3c/<version>3.1.1
     /boost/function_types
-    /boost/ptr_container
     /boost/filesystem
     /boost/guid
     /boost/regex
@@ -30,40 +48,3 @@ lib hammer.core
     <use>/boost/ptr_container
     <use>/boost/function_types
    ;
-
-obj dos_wildcard 
-   :
-    ../src/dos_wildcard.cpp
-   :
-    <use>/boost/regex
-   ;
-
-obj hammer_walker 
-   : 
-    ../src/build/hammer_walker.c
-   :
-    <use>/libantlr3c/<version>3.1.1 
-    <use>/boost/ptr_container 
-   ;
-
-obj hammer_parser 
-   : 
-    ../src/build/hammerParser.c 
-   : 
-    <cflags>/TP 
-    <use>/libantlr3c/<version>3.1.1 
-    <use>/boost/ptr_container 
-   ;
-
-obj hammer_lexer 
-   : 
-    ../src/build/hammerLexer.c 
-   : 
-    <cflags>/TP 
-    <use>/libantlr3c/<version>3.1.1 
-   ;
-
-explicit hammer_parser ;
-explicit hammer_lexer ;
-explicit hammer_walker ;
-explicit dos_wildcard ;

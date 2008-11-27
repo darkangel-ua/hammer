@@ -6,13 +6,14 @@
 namespace hammer
 {
    class subfeature;
+   class feature_registry;
+
    class feature : public feature_base
    {
       public:
+         friend class feature_registry;
          typedef std::vector<const subfeature*> subfeatures_t;
 
-         feature(const feature_def* def, const pstring& value);
-         feature(const feature_def* def, const pstring& value, const subfeatures_t& subfeatures);
          const feature_def& definition() const { return *static_cast<const feature_def*>(definition_); }
          const subfeature* find_subfeature(const subfeature& v) const;
          const subfeature* find_subfeature(const std::string& v) const;
@@ -23,6 +24,9 @@ namespace hammer
 
       private:
          subfeatures_t subfeatures_;
+
+         feature(const feature_def* def, const pstring& value);
+         feature(const feature_def* def, const pstring& value, const subfeatures_t& subfeatures);
    };
 }
 

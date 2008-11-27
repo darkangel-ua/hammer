@@ -1,6 +1,4 @@
 #include "stdafx.h"
-#define BOOST_MULTI_INDEX_ENABLE_SAFE_MODE
-#define BOOST_MULTI_INDEX_ENABLE_INVARIANT_CHECKING
 #include "feature_registry.h"
 #include <boost/checked_delete.hpp>
 #include "feature_set.h"

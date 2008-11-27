@@ -24,10 +24,10 @@ pch_main_target::pch_main_target(const hammer::meta_target* mt,
                                  pch_source_(NULL)
 {
    feature_set* modified_properties = props->clone();
-   feature* create_pch_feature = meta_target()->project()->engine()->feature_registry().create_feature("__create_pch", NULL);
+   feature* create_pch_feature = meta_target()->project()->engine()->feature_registry().create_feature("__create_pch", "");
    create_pch_feature->get_generated_data().target_ = this;
    modified_properties->join(create_pch_feature);
-   modified_properties->join("__pch", NULL);
+   modified_properties->join("__pch", "");
    properties(modified_properties);
 }
    

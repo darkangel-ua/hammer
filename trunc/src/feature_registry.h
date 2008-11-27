@@ -28,6 +28,8 @@ namespace hammer
 
       private:
          mutable impl_t* impl_;
+
+         feature* simply_create_feature(const std::string& name, const std::string& value);
    };
 }
 

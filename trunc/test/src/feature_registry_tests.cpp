@@ -55,7 +55,6 @@ BOOST_FIXTURE_TEST_CASE(create_subfeature, complex_feature_registry_test)
    BOOST_CHECK_EQUAL(version->value(), "8.0");
 }
 
-/*
 BOOST_FIXTURE_TEST_CASE(parse_feature, complex_feature_registry_test)
 {
    feature* toolset_msvc = NULL;
@@ -67,5 +66,4 @@ BOOST_FIXTURE_TEST_CASE(parse_feature, complex_feature_registry_test)
    BOOST_CHECK_EQUAL(toolset_msvc->name(), "toolset");
    BOOST_CHECK_EQUAL(toolset_msvc->value(), "msvc");
 }
-*/
 

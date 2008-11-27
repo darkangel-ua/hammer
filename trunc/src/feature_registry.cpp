@@ -226,7 +226,7 @@ namespace hammer{
       non_cached_features_t non_cached_features_;
       subfeatures_t subfeatures_;
    };
-   
+
    feature_def* feature_registry::impl_t::find_def(const std::string& name)
    {
       defs_t::iterator i = defs_.find(name);
@@ -318,17 +318,8 @@ namespace hammer{
          throw std::runtime_error("feature_def with name '" + def.name() + "' already registered");
    }
 
-   feature* feature_registry::create_feature(const std::string& name, const std::string& value)
+   feature* feature_registry::simply_create_feature(const std::string& name, const std::string& value)
    {
-/*
-      typedef boost::tokenizer<boost::char_delimiters_separator<char>, const char*> tokenizer;
-      tokenizer tok(name, name + strlen(name), 
-                    boost::char_delimiters_separator<char>("-"));
-      tokenizer::const_iterator first = tok.begin(), last = tok.end();
-      if (first == last)
-         throw 
-         */
-
       feature* result;
       feature_def& def = get_def(name);
 
@@ -352,6 +343,32 @@ namespace hammer{
       }
       
       return result;
+   }
+
+   feature* feature_registry::create_feature(const std::string& name, const std::string& value)
+   {
+      typedef boost::tokenizer<boost::char_separator<char>, const char*> tokenizer;
+      tokenizer tok(value.c_str(), value.c_str() + value.size(), 
+                    boost::char_separator<char>("-"));
+      tokenizer::const_iterator first = tok.begin(), last = tok.end();
+      if (first != last)
+      {
+         feature* result = simply_create_feature(name, *first);
+         ++first;
+
+         for(; first != last; ++first)
+         {
+            const subfeature_def* sdef = result->definition().find_subfeature_for_value(*first);
+            if (sdef == NULL)
+               throw std::runtime_error("Can't find subfeature with legal value '" + *first + "' for feature '" + name + "'.");
+
+            result = create_feature(*result, sdef->name(), *first);
+         }
+
+         return result;
+      }
+
+      return simply_create_feature(name, value);
    }
 
    void feature_registry::add_defaults(feature_set* s)

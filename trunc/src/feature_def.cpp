@@ -72,6 +72,15 @@ const subfeature_def& feature_def::get_subfeature(const std::string& subfeature_
       return *sd;
 }
 
+const subfeature_def* feature_def::find_subfeature_for_value(const std::string& value) const
+{
+   for(subfeatures_t::const_iterator i = subfeatures_.begin(), last = subfeatures_.end(); i != last; ++i)
+      if (i->second.is_legal_value(value))
+         return &i->second;
+
+   return NULL;
+}
+
 feature_def::~feature_def()
 {
 }

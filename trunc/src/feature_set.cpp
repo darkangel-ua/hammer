@@ -29,14 +29,14 @@ namespace hammer{
             {
                *i = f;
                if (f->attributes().composite)
-                  f->def().expand_composites(f->value().to_string(), this);
+                  f->definition().expand_composites(f->value().to_string(), this);
             }
          }
          else
          {
             features_.push_back(f);
             if (f->attributes().composite)
-               f->def().expand_composites(f->value().to_string(), this);
+               f->definition().expand_composites(f->value().to_string(), this);
          }
       }
       else
@@ -77,7 +77,7 @@ namespace hammer{
    feature_set::const_iterator feature_set::find(const_iterator from, const char* name) const
    {
       for(features_t::const_iterator i = from, last = features_.end(); i != last; ++i)
-         if ((**i).def().name() == name )
+         if ((**i).definition().name() == name )
             return i;
 
       return features_.end();
@@ -91,7 +91,7 @@ namespace hammer{
    const feature* feature_set::find(const char* name, const char* value) const
    {
       for(features_t::const_iterator i = features_.begin(), last = features_.end(); i != last; ++i)
-         if ((**i).def().name() == name && (**i).value() == value)
+         if ((**i).definition().name() == name && (**i).value() == value)
             return *i;
 
       return 0;

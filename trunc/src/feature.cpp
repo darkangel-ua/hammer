@@ -1,14 +1,27 @@
 #include "stdafx.h"
 #include "feature.h"
+#include "subfeature.h"
+#include <algorithm>
 
 using namespace std;
 
 namespace hammer{
 
-feature::feature(const feature_def* def, const pstring& value)
+feature::feature(const feature_def* def, 
+                 const pstring& value)
                 : 
-                 def_(def), value_(value)
+                 feature_base(def, value)
 {
+}
+
+feature::feature(const feature_def* def, 
+                 const pstring& value, 
+                 const subfeatures_t& subfeatures)
+                : 
+                 feature_base(def, value),
+                 subfeatures_(subfeatures)
+{
+
 }
 
 bool feature::operator == (const feature& rhs) const
@@ -27,6 +40,57 @@ bool feature::operator == (const feature& rhs) const
              get_generated_data().target_ == rhs.get_generated_data().target_;
 
    return value() == rhs.value();
+}
+
+bool feature::operator < (const feature& rhs) const
+{
+   if (this == &rhs)
+      return false;
+
+   if (definition_ != rhs.definition_)
+      return definition_ < rhs.definition_;
+
+   if (this->value() != rhs.value())
+      return this->value() < rhs.value();
+
+   if (attributes().dependency)
+      if (get_dependency_data() != rhs.get_dependency_data())
+         return get_dependency_data() < rhs.get_dependency_data();
+
+   if (attributes().path)
+      if (get_path_data() != rhs.get_path_data())
+         return get_path_data() < rhs.get_path_data();
+
+   if (attributes().generated)
+      if (get_generated_data() != rhs.get_generated_data())
+         return get_generated_data() < rhs.get_generated_data();
+
+   if (subfeatures_.size() != rhs.subfeatures_.size())
+      return subfeatures_.size() < rhs.subfeatures_.size();
+
+   for(subfeatures_t::const_iterator i = subfeatures_.begin(), last = subfeatures_.end(), outer = rhs.subfeatures_.begin(); i != last; ++i, ++outer)
+      if (*i != *outer)
+         return *i < *outer;
+
+   return false;
+}
+
+const subfeature* feature::find_subfeature(const subfeature& v) const
+{
+   subfeatures_t::const_iterator i = std::find(subfeatures_.begin(), subfeatures_.end(), &v);
+   if (i == subfeatures_.end())
+      return NULL;
+   else
+      return *i;
+}
+
+const subfeature* feature::find_subfeature(const std::string& v) const
+{
+   for(subfeatures_t::const_iterator i = subfeatures_.begin(), last = subfeatures_.end(); i != last; ++i)
+      if ((**i).name() == v)
+         return *i;
+   
+   return NULL;
 }
 
 }

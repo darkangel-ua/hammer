@@ -101,7 +101,7 @@ void hammer_add_string_arg_to_args_list(void* context, void* args_list, const ch
 void* hammer_create_feature(void* context, const char* feature_name, const char* feature_value)
 {
    hammer_walker_context* ctx = static_cast<hammer_walker_context*>(context);
-   return ctx->engine_->feature_registry().create_feature(feature_name, feature_value);
+   return ctx->engine_->feature_registry().create_feature(feature_name, feature_value == NULL ? "" : feature_value);
 }
 
 void* hammer_make_requirements_condition()

@@ -1,11 +1,24 @@
 #include "stdafx.h"
+#define BOOST_MULTI_INDEX_ENABLE_SAFE_MODE
+#define BOOST_MULTI_INDEX_ENABLE_INVARIANT_CHECKING
 #include "feature_registry.h"
 #include <boost/checked_delete.hpp>
 #include "feature_set.h"
 #include "feature.h"
+#include "subfeature.h"
 #include <list>
+#include <map>
+#include <cassert>
+#include <cstdlib>
+#include <boost/tokenizer.hpp>
+#include <boost/multi_index_container.hpp>
+#include <boost/multi_index/ordered_index.hpp>
+#include <boost/multi_index/identity.hpp>
+#include <boost/ptr_container/ptr_vector.hpp>
 
 using namespace std;
+using namespace boost;
+using namespace boost::multi_index;
 
 namespace hammer{
 
@@ -14,33 +27,270 @@ namespace hammer{
       impl_t(pool* p) : pstring_pool_(p) {}
       ~impl_t();
 
-      typedef std::map<std::string, feature_def> defs_t;
-      typedef std::list<feature_set*> defs_list_t;
-      typedef std::list<feature*> features_list_t;
+      struct generic_less_comparator
+      {
+         static const bool equality_result = false;
+
+         template<typename T1, typename T2>
+         bool operator()(const T1& lhs, const T2& rhs) const { return lhs < rhs; }
+      };
+
+      struct generic_greater_equal_comparator
+      {
+         static const bool equality_result = true;
+
+         template<typename T1, typename T2>
+         bool operator()(const T1& lhs, const T2& rhs) const { return !(lhs < rhs || lhs == rhs); }
+      };
+
+      struct subfeature_storage_item
+      {
+         const feature_def* feature_def_;
+         boost::shared_ptr<subfeature> subfeature_;
+      };
       
-      feature_def* find_def(const char* name);
+      struct subfeature_find_data
+      {
+         subfeature_find_data(const feature_def& fdef, 
+                              const subfeature_def& sdef,
+                              const std::string& value)
+                              : fdef_(fdef), sdef_(sdef), value_(value)
+         {}
+
+         const feature_def& fdef_;
+         const subfeature_def& sdef_;
+         const std::string& value_;
+      };
+
+      struct subfeature_storage_item_comparator
+      {
+         bool operator()(const subfeature_storage_item& lhs, 
+                         const subfeature_storage_item& rhs) const
+         {
+            if (lhs.feature_def_ != rhs.feature_def_)
+               return lhs.feature_def_ <  rhs.feature_def_;
+
+            if (lhs.subfeature_.get() != rhs.subfeature_.get())
+               return lhs.subfeature_.get() < rhs.subfeature_.get();
+
+            return false;
+         }
+
+         template<typename Comparator>
+         bool compare_impl(const subfeature_storage_item& lhs, 
+                           const subfeature_find_data& rhs,
+                           Comparator comparator) const
+         {
+            if (lhs.feature_def_ != &rhs.fdef_)
+               return comparator(lhs.feature_def_, &rhs.fdef_);
+            
+            if (&lhs.subfeature_->definition() != &rhs.sdef_)
+               return comparator(&lhs.subfeature_->definition(), &rhs.sdef_);
+
+            if (lhs.subfeature_->value() != rhs.value_)
+               return comparator(lhs.subfeature_->value(),  rhs.value_);
+
+            return false;
+         }
+
+         bool operator()(const subfeature_storage_item& lhs, 
+                         const subfeature_find_data& rhs) const 
+         { 
+            return compare_impl(lhs, rhs, generic_less_comparator()); 
+         }            
+
+         bool operator()(const subfeature_find_data& lhs, 
+                         const subfeature_storage_item& rhs) const 
+         { 
+            return compare_impl(rhs, lhs, generic_greater_equal_comparator()); 
+         }            
+      };
+
+      struct find_feature_data
+      {
+         find_feature_data(const feature_def& def, 
+                           const string& value,
+                           const feature::subfeatures_t& subfeatures) 
+                           : def_(def), value_(value), subfeatures_(subfeatures)
+         {}
+
+         const feature_def& def_;
+         const string& value_;
+         const feature::subfeatures_t subfeatures_;
+      };
+
+      struct feature_storage_comparator
+      {
+         bool operator()(const feature& lhs, const feature& rhs) const 
+         {
+            if (&lhs == &rhs)
+               return false;
+            
+            if (&lhs.definition() != &rhs.definition())
+               return &lhs.definition() < &rhs.definition();
+            
+            if (lhs.value() != rhs.value())
+               return lhs.value() < rhs.value();
+
+            if (lhs.subfeatures().size() != rhs.subfeatures().size())
+               return lhs.subfeatures().size() < rhs.subfeatures().size();
+
+            // FIXME: this is due msvc-8.0 debug iterator bug
+            if (lhs.subfeatures().empty())
+               return false;
+
+            for(feature::subfeatures_t::const_iterator i = lhs.subfeatures().begin(), 
+                                                       last = lhs.subfeatures().end(), 
+                                                       outer = rhs.subfeatures().begin(); 
+                i != last; 
+                ++i, ++outer)
+             {
+                if (*i != *outer)
+                   return *i < *outer;
+             }
+
+            return false;
+         }
+
+         template<typename Comparator>
+         bool compare_impl(const feature& lhs, const find_feature_data& rhs, Comparator comparator) const
+         {
+            if (&lhs.definition() != &rhs.def_)
+               return comparator(&lhs.definition(), &rhs.def_);
+
+            if (lhs.value() != rhs.value_)
+               return comparator(lhs.value(), rhs.value_);
+            
+            if (lhs.subfeatures().size() != rhs.subfeatures_.size())
+               return comparator(lhs.subfeatures().size(), rhs.subfeatures_.size());
+            
+            // FIXME: this is due msvc-8.0 debug iterator bug
+            if (lhs.subfeatures().empty())
+               return false;
+
+            typedef feature::subfeatures_t::const_iterator iter;
+            for(iter i = lhs.subfeatures().begin(), 
+                     last = lhs.subfeatures().end(), 
+                     outer = rhs.subfeatures_.begin(); 
+                i != last; 
+                ++i, ++outer)
+             {
+               if (*i != *outer)
+                  return comparator(*i, *outer);
+             }
+
+            return false;
+         }
+
+         bool operator()(const feature& lhs, const find_feature_data& rhs) const 
+         {
+            return compare_impl(lhs, rhs, generic_less_comparator());
+         }
+
+         bool operator()(const find_feature_data& lhs, const feature& rhs) const 
+         {
+            return compare_impl(rhs, lhs, generic_greater_equal_comparator());
+         }
+      };
+      
+      struct feature_storage_key_extractor
+      {
+         typedef const feature& result_type;
+         result_type operator()(const shared_ptr<feature>& v) const { return *v; }
+      };
+
+      typedef std::map<std::string, feature_def> defs_t;
+      typedef std::list<feature_set*> feature_set_storage_t;
+      typedef boost::ptr_vector<feature> non_cached_features_t;
+
+      typedef multi_index_container<boost::shared_ptr<feature>,
+                                    indexed_by<
+                                       ordered_unique<feature_storage_key_extractor, feature_storage_comparator> >
+                                   > features_t;
+      typedef features_t::nth_index<0>::type main_feature_index_t;
+
+      typedef multi_index_container<subfeature_storage_item, 
+                                    indexed_by< 
+                                       ordered_unique<identity<subfeature_storage_item>, subfeature_storage_item_comparator> >
+                                   > subfeatures_t;
+      typedef subfeatures_t::nth_index<0>::type main_subfeature_index_t;
+
+      feature_def* find_def(const std::string& name);
+      feature* find_feature(const std::string& name, const string& value);
+      feature* find_feature(const feature& f, 
+                            const subfeature& sf);
+      subfeature& create_subfeature(const feature_def& fdef, const string& name, const string& value);
 
       pool* pstring_pool_;
       defs_t defs_;
-      defs_list_t defs_list_;
-      features_list_t features_list_;
+      feature_set_storage_t feature_set_list_;
+      features_t features_;
+      non_cached_features_t non_cached_features_;
+      subfeatures_t subfeatures_;
    };
    
-   feature_def* feature_registry::impl_t::find_def(const char* name)
+   feature_def* feature_registry::impl_t::find_def(const std::string& name)
    {
-      defs_t::iterator i = defs_.find(string(name));
+      defs_t::iterator i = defs_.find(name);
       if (i == defs_.end())
          return NULL;
       else
          return &i->second;
    }
 
+   feature* feature_registry::impl_t::find_feature(const string& name, const string& value)
+   {
+      feature_def* def = find_def(name);
+      if (def == NULL)
+         return NULL;
+
+       main_feature_index_t::iterator i = features_.get<0>().find(find_feature_data(*def, value, feature::subfeatures_t()));
+       if (i == features_.get<0>().end())
+          return NULL;
+       else 
+          return i->get();
+   }
+
+   subfeature& feature_registry::impl_t::create_subfeature(const feature_def& fdef, 
+                                                           const string& name, 
+                                                           const string& value)
+   {
+      const subfeature_def* sdef = fdef.find_subfeature(name);
+      if (sdef == NULL)
+         throw std::runtime_error("Feature '" + fdef.name() + "' does not have subfeature '" + name + "'.");
+      
+      if (!sdef->is_legal_value(value))
+         throw std::runtime_error("Value '" + value + "' is not a legal value for subfeature '" + name + "'.");
+
+      main_subfeature_index_t::iterator i = subfeatures_.get<0>().find(subfeature_find_data(fdef, *sdef, value));      
+      if (i != subfeatures_.get<0>().end())
+         return *i->subfeature_;
+      else
+      {
+         subfeature_storage_item item;
+         item.feature_def_ = &fdef;
+         item.subfeature_.reset(new subfeature(sdef, pstring(*pstring_pool_, value)));
+         subfeature* result = item.subfeature_.get();
+         subfeatures_.get<0>().insert(item);
+         return *result;
+      }
+   }
+
+   feature* feature_registry::impl_t::find_feature(const feature& f, 
+                                                   const subfeature& sf)
+   {
+      feature::subfeatures_t subfeatures(f.subfeatures());
+      subfeatures.push_back(&sf);
+      main_feature_index_t::iterator i = features_.get<0>().find(find_feature_data(f.definition(), f.value().to_string(), subfeatures));
+      if (i == features_.get<0>().end())
+         return NULL;
+      else 
+         return i->get();
+   }
+
    feature_registry::impl_t::~impl_t()
    {
-      for(defs_list_t::iterator i = defs_list_.begin(), last = defs_list_.end(); i != last; ++i)
-         delete *i;
-
-      for(features_list_t::iterator i = features_list_.begin(), last = features_list_.end(); i != last; ++i)
+      for(feature_set_storage_t::iterator i = feature_set_list_.begin(), last = feature_set_list_.end(); i != last; ++i)
          delete *i;
    }
 
@@ -58,7 +308,7 @@ namespace hammer{
    feature_set* feature_registry::make_set()
    {
       auto_ptr<feature_set> r(new feature_set(this));
-      impl_->defs_list_.push_back(r.get());
+      impl_->feature_set_list_.push_back(r.get());
 
       return r.release();
    }
@@ -70,15 +320,43 @@ namespace hammer{
          throw std::runtime_error("feature_def with name '" + def.name() + "' already registered");
    }
 
-   feature* feature_registry::create_feature(const char* name, const char* value) const
+   feature* feature_registry::create_feature(const std::string& name, const std::string& value)
    {
-      auto_ptr<feature> f(new feature(impl_->find_def(name), pstring(*impl_->pstring_pool_, value)));
-      impl_->features_list_.push_back(f.get());
+/*
+      typedef boost::tokenizer<boost::char_delimiters_separator<char>, const char*> tokenizer;
+      tokenizer tok(name, name + strlen(name), 
+                    boost::char_delimiters_separator<char>("-"));
+      tokenizer::const_iterator first = tok.begin(), last = tok.end();
+      if (first == last)
+         throw 
+         */
+
+      feature* result;
+      feature_def& def = get_def(name);
+
+      if (def.attributes().path || 
+          def.attributes().dependency ||
+          def.attributes().generated)
+      {
+         auto_ptr<feature> f(new feature(&def, pstring(*impl_->pstring_pool_, value)));
+         result = f.get();
+         impl_->non_cached_features_.push_back(f);
+      }
+      else
+      {
+         result = impl_->find_feature(name, value);
+         if (result == NULL)
+         {
+            shared_ptr<feature> f(new feature(&def, pstring(*impl_->pstring_pool_, value)));
+            result = f.get();
+            impl_->features_.get<0>().insert(f);
+         }
+      }
       
-      return f.release();
+      return result;
    }
 
-   void feature_registry::add_defaults(feature_set* s) const
+   void feature_registry::add_defaults(feature_set* s)
    {
       typedef impl_t::defs_t::const_iterator iter;
       for(iter i = impl_->defs_.begin(), last = impl_->defs_.end(); i != last; ++i)
@@ -95,9 +373,9 @@ namespace hammer{
 
    feature_def& feature_registry::get_def(const std::string& name)
    {
-      feature_def* result = impl_->find_def(name.c_str());
+      feature_def* result = impl_->find_def(name);
       if (result == NULL)
-         throw runtime_error("Unknown feature '" + string(name) + "'");
+         throw std::runtime_error("There is no feature definition for feature '" + name + "'.");
       else
          return *result;
    }
@@ -105,5 +383,23 @@ namespace hammer{
    const feature_def* feature_registry::find_def(const char* feature_name) const
    {
       return impl_->find_def(feature_name);
+   }
+
+   feature* feature_registry::create_feature(const feature& f, 
+                                             const string& subfeature_name, 
+                                             const string& subfeature_value)
+   {
+      subfeature& sf = impl_->create_subfeature(f.definition(), subfeature_name, subfeature_value);
+      feature* result = impl_->find_feature(f, sf);
+      if (result == NULL)
+      {
+         feature::subfeatures_t new_subfeatures(f.subfeatures());
+         new_subfeatures.push_back(&sf);
+         shared_ptr<feature> shared_result(new feature(&f.definition(), f.value(), new_subfeatures));
+         result = shared_result.get();
+         impl_->features_.get<0>().insert(shared_result);
+      }
+
+      return result;
    }
 }

@@ -1,29 +1,27 @@
 #if !defined(h_87310eb0_8b93_49c6_9804_55a01ca2f7a0)
 #define h_87310eb0_8b93_49c6_9804_55a01ca2f7a0
 
-#include <vector>
-#include <string>
 #include <map>
-#include "feature_attributes.h"
+#include "feature_def_base.h"
+#include "subfeature_def.h"
 
 namespace hammer
 {
    class feature_set;
-   class feature_def
+   // FIXME: inheritance here I think this is a bad idea
+   class feature_def : public feature_def_base
    {
       public:
-         feature_def(const std::string& name, 
-                     const std::vector<std::string>& legal_values = std::vector<std::string>(),
-                     feature_attributes fdtype = feature_attributes());
+         explicit feature_def(const std::string& name, 
+                              const legal_values_t& legal_values = legal_values_t(),
+                              feature_attributes fdtype = feature_attributes());
          
-         const std::string& name() const { return name_; }
-         void set_default(const std::string& v);
-         const std::string& get_default() const { return default_; }
-         feature_attributes attributes() const { return attributes_; }
-         feature_attributes& attributes() { return attributes_; }
-         void compose(const std::string& value, feature_set* c); // take ownership of c
+         void compose(const std::string& value, feature_set* c); // FIXME: take ownership of c
          void expand_composites(const std::string value, feature_set* fs) const;
-         void extend(const std::string& new_legal_value);
+         void add_subfeature(const subfeature_def& s);
+         const subfeature_def* find_subfeature(const std::string& name) const;
+         const subfeature_def& get_subfeature(const std::string& name) const;
+
          ~feature_def(); 
          bool operator ==(const feature_def& rhs) const { return this == &rhs; }
 
@@ -37,12 +35,10 @@ namespace hammer
          };
 
          typedef std::map<std::string /*feature value*/, component_t> components_t;
+         typedef std::map<std::string /*subfeature name*/, subfeature_def> subfeatures_t;
 
-         std::string name_;
-         std::vector<std::string> legal_values_;
-         feature_attributes attributes_;
-         std::string default_;
          components_t components_;
+         subfeatures_t subfeatures_;
    };
 }
 

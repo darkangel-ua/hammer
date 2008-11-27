@@ -24,6 +24,7 @@ namespace hammer
          ~pstring(){};
          friend std::ostream& operator << (std::ostream& os, const pstring& rhs);
          bool operator < (const pstring& rhs) const;
+         bool operator < (const std::string& rhs) const;
 
       private:
          char* s_;
@@ -31,11 +32,12 @@ namespace hammer
    };
 
    bool operator == (const pstring& lhs, const char* rhs);
-   inline bool operator != (const pstring& lhs, const char* rhs) { return !(lhs == rhs); }
-   inline bool operator != (const pstring& lhs, const pstring& rhs) { return !(lhs == rhs.begin()); }
    bool operator == (const pstring& lhs, const pstring& rhs);
    inline bool operator == (const std::string& lhs, const pstring& rhs) { return rhs == lhs.c_str(); }
    inline bool operator == (const pstring& lhs, const std::string& rhs) { return lhs == rhs.c_str(); }
+   inline bool operator != (const pstring& lhs, const std::string& rhs) { return !(lhs == rhs); }
+   inline bool operator != (const pstring& lhs, const char* rhs) { return !(lhs == rhs); }
+   inline bool operator != (const pstring& lhs, const pstring& rhs) { return !(lhs == rhs.begin()); }
 }
 
 #endif //h_8a1631c9_fa60_41d1_9cb8_283ab6090d1b

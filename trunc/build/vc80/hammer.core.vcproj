@@ -105,6 +105,9 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				Optimization="3"
+				InlineFunctionExpansion="2"
+				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="..\..\src\build;&quot;..\..\..\libantlr3c-3.1.1\include&quot;;..\..\..\boost.guid;..\..\..\boost.process;..\..\..\boost_1_34_1;..\..\..\boost.tribool"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
 				RuntimeLibrary="2"
@@ -215,7 +218,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\feature_base.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\feature_def.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\feature_def_base.cpp"
 				>
 			</File>
 			<File
@@ -451,6 +462,14 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\src\subfeature.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\subfeature_def.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\subversion_scm_client.cpp"
 				>
 			</File>
@@ -509,7 +528,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\feature_base.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\feature_def.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\feature_def_base.h"
 				>
 			</File>
 			<File
@@ -678,6 +705,14 @@
 			</File>
 			<File
 				RelativePath="..\..\src\stdafx.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\subfeature.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\subfeature_def.h"
 				>
 			</File>
 			<File

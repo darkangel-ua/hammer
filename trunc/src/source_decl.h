@@ -55,6 +55,8 @@ namespace hammer
 				return target_path_ == rhs.target_path_ && 
 					   target_name_ == rhs.target_name_;
 			}
+
+         bool operator != (const source_decl& rhs) const { return !(*this == rhs); }
          
       private:
          pstring target_path_;

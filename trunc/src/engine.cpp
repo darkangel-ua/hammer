@@ -620,13 +620,13 @@ void engine::feature_feature_rule(project* p, std::vector<pstring>& name,
 void engine::feature_compose_rule(project* p, feature& f, feature_set& components)
 {
    feature_set* cc = components.clone();
-   feature_registry_->get_def(f.def().name()).compose(f.value().to_string(), cc);
+   feature_registry_->get_def(f.definition().name()).compose(f.value().to_string(), cc);
 }
 
 void engine::variant_rule(project* p, pstring& variant_name, pstring* base, feature_set& components)
 {
    feature_def& def = feature_registry_->get_def("variant");
-   def.extend(variant_name.to_string());
+   def.extend_legal_values(variant_name.to_string());
 
    if (base == NULL)
       def.compose(variant_name.to_string(), &components);

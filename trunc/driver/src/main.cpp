@@ -95,7 +95,7 @@ namespace
       {
          if (is_looks_like_project(*i))
          {
-            const hammer::project& p = project.engine()->load_project(*i, project);
+            const hammer::engine::loaded_projects_t& p = project.engine()->load_project(*i, project);
             typedef hammer::project::selected_targets_t selected_targets_t;
             selected_targets_t st = p.select_best_alternative(build_request);
             feature_set* usage_requirements = project.engine()->feature_registry().make_set();

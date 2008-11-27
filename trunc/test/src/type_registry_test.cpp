@@ -22,8 +22,10 @@ struct type_registry_tests
 
 };
 
+/*
 BOOST_FIXTURE_TEST_CASE(resolve_from_target_name, type_registry_tests)
 {
    pstring src(p_, "lib1");
    BOOST_CHECK_EQUAL(tr_.resolve_from_target_name(src), static_cast<const type*>(0));
 }
+*/

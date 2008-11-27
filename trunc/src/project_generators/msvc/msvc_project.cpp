@@ -134,10 +134,10 @@ void msvc_project::fill_options(const feature_set& props, options* opts, const m
    
    for(feature_set::const_iterator i = props.begin(), last = props.end(); i != last; ++i)
    {
-      if ((**i).def() == define_def)
+      if ((**i).definition() == define_def)
          opts->add_define((**i).value());
       else
-         if ((**i).def() == include_def)
+         if ((**i).definition() == include_def)
          {
             // По уму это нужно вообще отсюда убрать 
             // и передавать в эту функцию variant для которого идет заполнение опций и уже у него брать путь
@@ -151,10 +151,10 @@ void msvc_project::fill_options(const feature_set& props, options* opts, const m
             opts->add_include(p.native_file_string());
          }
          else
-            if ((**i).def() == searched_lib)
+            if ((**i).definition() == searched_lib)
                opts->add_searched_lib((**i).value().to_string());
             else
-               if ((**i).def() == cxxflags)
+               if ((**i).definition() == cxxflags)
                {
                   if ((**i).value() == "/TP" || (**i).value() == "/Tp")
                      opts->compile_as_cpp(true);
@@ -162,7 +162,7 @@ void msvc_project::fill_options(const feature_set& props, options* opts, const m
                      opts->add_cxx_flag((**i).value());
                }
                else
-                  if ((**i).def() == cflags)
+                  if ((**i).definition() == cflags)
                   {
                      if ((**i).value() == "/TP" || (**i).value() == "/Tp")
                         opts->compile_as_cpp(true);
@@ -170,7 +170,7 @@ void msvc_project::fill_options(const feature_set& props, options* opts, const m
                         opts->add_cxx_flag((**i).value());
                   }
                   else
-                     if ((**i).def() == character_set)
+                     if ((**i).definition() == character_set)
                      {
                         if ((**i).value() == "unicode")
                            opts->character_set(options::character_set::unicode);
@@ -179,7 +179,7 @@ void msvc_project::fill_options(const feature_set& props, options* opts, const m
                               opts->character_set(options::character_set::multi_byte);
                      }
 
-      if ((**i).def() == use_pch)
+      if ((**i).definition() == use_pch)
       {
          if ((**i).value() == "on")
          {
@@ -191,7 +191,7 @@ void msvc_project::fill_options(const feature_set& props, options* opts, const m
             opts->pch_usage(options::pch_usage_t::not_use);
       }
       else
-         if ((**i).def() == create_pch)
+         if ((**i).definition() == create_pch)
          {
             const pch_main_target* pch_target = static_cast<const pch_main_target*>((**i).get_generated_data().target_);
             opts->pch_target(pch_target);

@@ -61,6 +61,14 @@ namespace hammer{
          return size_ < rhs.size_;
    }
 
+   bool pstring::operator < (const std::string& rhs) const
+   {
+      if (size_ == rhs.size())
+         return strncmp(s_, rhs.c_str(), size_) < 0;
+      else
+         return size_ < rhs.size();
+   }
+
    std::string pstring::to_string() const
    {
       return std::string(s_, s_ + size_);

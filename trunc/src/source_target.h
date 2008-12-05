@@ -2,7 +2,7 @@
 #define h_000faec0_e1c4_47aa_911a_31a1d9761f31
 
 #include "pstring.h"
-#include "basic_target.h"
+#include "file_target.h"
 
 namespace hammer
 {
@@ -11,7 +11,7 @@ namespace hammer
    class engine;
    class feature_set;
 
-   class source_target : public basic_target
+   class source_target : public file_target
    {
       public:  
          source_target(const main_target* mt, const pstring& name, 

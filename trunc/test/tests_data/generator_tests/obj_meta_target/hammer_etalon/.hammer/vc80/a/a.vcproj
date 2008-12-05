@@ -19,6 +19,7 @@
          CharacterSet="1">
          <Tool
             Name="VCCLCompilerTool"
+            PreprocessorDefinitions="NDEBUG;"
             UsePrecompiledHeader="0"
          />
       </Configuration>

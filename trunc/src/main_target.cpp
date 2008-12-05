@@ -40,4 +40,9 @@ const location_t& main_target::location() const
    return meta_target()->project()->location();
 }
 
+void main_target::timestamp_info_impl(timestamp_info_t::getter_policy_t how_to_get) const
+{
+   throw std::logic_error("[main_target][FIXME] - this is bad target hierarchy");
+}
+
 }

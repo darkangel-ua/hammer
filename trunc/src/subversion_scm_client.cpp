@@ -11,6 +11,7 @@ void subversion_scm_client::checkout(const location_t& path, const std::string& 
 {
    bp::launcher l;
    l.set_work_directory(path.native_file_string());
+   l.set_stdin_behavior(bp::inherit_stream);
    l.set_stdout_behavior(bp::inherit_stream);
    l.set_stderr_behavior(bp::inherit_stream);
 

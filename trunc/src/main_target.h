@@ -34,6 +34,8 @@ namespace hammer
          const hammer::meta_target* meta_target_;
          sources_t sources_;
          boost::intrusive_ptr<hammer::build_node> build_node_;
+
+         virtual void timestamp_info_impl(timestamp_info_t::getter_policy_t how_to_get) const;
    };
 }
 

@@ -5,7 +5,7 @@
 namespace hammer{
 
 generated_target::generated_target(const main_target* mt, const pstring& n, 
-                                   const hammer::type* t, const feature_set* f) : basic_target(mt, n, t, f)
+                                   const hammer::type* t, const feature_set* f) : file_target(mt, n, t, f)
 {
 }
 

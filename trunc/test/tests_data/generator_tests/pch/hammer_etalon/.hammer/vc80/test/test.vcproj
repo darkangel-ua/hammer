@@ -19,7 +19,7 @@
          CharacterSet="1">
          <Tool
             Name="VCCLCompilerTool"
-            PreprocessorDefinitions="USE_A_LIB;"
+            PreprocessorDefinitions="NDEBUG;USE_A_LIB;"
             UsePrecompiledHeader="2"
             PrecompiledHeaderThrough="stdafx.h"
          />
@@ -35,7 +35,15 @@
             Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
             UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
          <File
-            RelativePath="..\..\..\main.cpp">
+            RelativePath="..\..\..\stdafx.cpp">
+              <FileConfiguration
+                   Name="release">
+         <Tool
+            Name="VCCLCompilerTool"
+            UsePrecompiledHeader="1"
+            PrecompiledHeaderThrough="stdafx.h"
+         />
+              </FileConfiguration>
          </File>
          <File
             RelativePath="..\..\..\obj.cpp">
@@ -48,15 +56,7 @@
               </FileConfiguration>
          </File>
          <File
-            RelativePath="..\..\..\stdafx.cpp">
-              <FileConfiguration
-                   Name="release">
-         <Tool
-            Name="VCCLCompilerTool"
-            UsePrecompiledHeader="1"
-            PrecompiledHeaderThrough="stdafx.h"
-         />
-              </FileConfiguration>
+            RelativePath="..\..\..\main.cpp">
          </File>
          </Filter>
          <Filter

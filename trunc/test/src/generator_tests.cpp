@@ -201,9 +201,9 @@ struct generator_tests
    std::string test_name_;
    location_t generators_output_dir_name_;
 };
-/*
 
-BOOST_FIXTURE_TEST_CASE(simple_exe, generator_tests)
+/*
+BOOST_FIXTURE_TEST_CASE(g_simple_exe, generator_tests)
 {
    test_name_ = "simple_exe";
    load();

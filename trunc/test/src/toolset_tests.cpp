@@ -34,10 +34,13 @@ void toolset_test::do_test(const string& name)
       generated_nodes.insert(generated_nodes.end(), n.begin(), n.end());
    }
 
+/*
    for(nodes_t::const_iterator i = generated_nodes.begin(), last = generated_nodes.end(); i != last; ++i)
-   {
-      
-   }
+      (**i).check_for_update();
+
+   for(nodes_t::const_iterator i = generated_nodes.begin(), last = generated_nodes.end(); i != last; ++i)
+      (**i).();
+*/
 }
 
 BOOST_FIXTURE_TEST_CASE(simple_exe, toolset_test)

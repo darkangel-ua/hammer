@@ -19,6 +19,7 @@
          CharacterSet="1">
          <Tool
             Name="VCCLCompilerTool"
+            PreprocessorDefinitions="NDEBUG;"
             UsePrecompiledHeader="0"
          />
       </Configuration>
@@ -29,6 +30,9 @@
             Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
             UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
          <File
+            RelativePath="..\..\..\lib1.cpp">
+         </File>
+         <File
             RelativePath="..\..\..\test.c">
               <FileConfiguration
                    Name="release">
@@ -38,9 +42,6 @@
           CompileAs="2"
          />
               </FileConfiguration>
-         </File>
-         <File
-            RelativePath="..\..\..\lib1.cpp">
          </File>
          </Filter>
          <Filter

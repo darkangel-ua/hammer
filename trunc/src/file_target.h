@@ -16,6 +16,10 @@ namespace hammer
          void* operator new (size_t size, pool& p) { return p.malloc(size); }
 
          virtual std::vector<boost::intrusive_ptr<build_node> > generate();
+      
+      protected:
+         virtual void timestamp_info_impl(timestamp_info_t::getter_policy_t how_to_get) const;
+
    };
 }
 

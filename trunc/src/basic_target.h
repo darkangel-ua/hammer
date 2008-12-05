@@ -5,6 +5,7 @@
 #include "pool.h"
 #include "pstring.h"
 #include "build_node.h"
+#include "timestamp_info.h"
 
 namespace hammer
 {
@@ -28,10 +29,17 @@ namespace hammer
          const hammer::main_target* mtarget() const { return main_target_; }
          
          virtual std::vector<boost::intrusive_ptr<build_node> > generate() = 0;
+         const timestamp_info_t& timestamp_info(timestamp_info_t::getter_policy_t how_to_get = timestamp_info_t::just_get) const;
+
          void* operator new (size_t size, pool& p) { return p.malloc(size); }
          void operator delete (void* m, pool& p) {};
          virtual ~basic_target(){};
       
+      protected:
+         mutable timestamp_info_t timestamp_info_;
+
+         virtual void timestamp_info_impl(timestamp_info_t::getter_policy_t how_to_get) const = 0;
+
       private:
          const main_target* main_target_;
          const hammer::type* type_;

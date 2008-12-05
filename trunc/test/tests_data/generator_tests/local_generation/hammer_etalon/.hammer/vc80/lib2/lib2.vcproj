@@ -18,6 +18,11 @@
          ConfigurationType="2"
          CharacterSet="1">
          <Tool
+            Name="VCCLCompilerTool"
+            PreprocessorDefinitions="NDEBUG;"
+            UsePrecompiledHeader="0"
+         />
+         <Tool
             Name="VCLinkerTool"
             AdditionalDependencies=""
          />

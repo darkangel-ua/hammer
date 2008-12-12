@@ -6,6 +6,7 @@
 #include "pstring.h"
 #include "build_node.h"
 #include "timestamp_info.h"
+#include "location.h"
 
 namespace hammer
 {
@@ -33,6 +34,7 @@ namespace hammer
 
          void* operator new (size_t size, pool& p) { return p.malloc(size); }
          void operator delete (void* m, pool& p) {};
+         virtual const location_t& location() const;
          virtual ~basic_target(){};
       
       protected:

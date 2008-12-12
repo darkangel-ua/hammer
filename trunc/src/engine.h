@@ -31,6 +31,8 @@ namespace hammer
          engine();
          loaded_projects_t load_project(location_t project_path, const project& from_project);
          project& load_project(location_t project_path);
+         void load_hammer_script(location_t filepath);
+
          void insert(project* p);
          type_registry& get_type_registry() { return *type_registry_; }
          pool& pstring_pool() { return pool_; }

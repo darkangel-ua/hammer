@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <utility>
+#include <memory>
 #include "build_node.h"
 
 namespace hammer
@@ -44,7 +45,8 @@ namespace hammer
                    const producable_types_t& target_types,
                    bool composite,
                    const feature_set* c = 0);
-      
+         virtual ~generator();
+
          hammer::engine& engine() { return *engine_; }
          hammer::engine& engine() const { return *engine_; }
          const std::string& name() const { return name_; }
@@ -62,6 +64,9 @@ namespace hammer
 
          bool is_consumable(const type& t) const;
          bool is_composite() const { return composite_; }
+         template <typename T>
+         void action(std::auto_ptr<T>& a) { action_ = a; }
+         const build_action* action() const { return action_.get(); } 
 
       private:
          hammer::engine* engine_;
@@ -70,6 +75,7 @@ namespace hammer
          producable_types_t target_types_;
          bool composite_;
          const feature_set* constraints_; // == null if no constraints specified
+         std::auto_ptr<build_action> action_;
    };
 }
 

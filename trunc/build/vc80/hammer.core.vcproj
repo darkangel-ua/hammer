@@ -168,25 +168,25 @@
 			<File
 				RelativePath="..\..\src\basic_target.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\src\build_node.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\builder.cpp"
+				>
 			</File>
 			<File
 				RelativePath="..\..\src\call_resolver.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\cmdline_action.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\cmdline_builder.cpp"
 				>
 			</File>
 			<File
@@ -243,6 +243,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\file_target.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\fs_argument_writer.cpp"
 				>
 			</File>
 			<File
@@ -410,6 +414,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\product_argument_writer.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\project.cpp"
 				>
 			</File>
@@ -431,6 +439,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\searched_lib_main_target.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\source_argument_writer.cpp"
 				>
 			</File>
 			<File
@@ -478,6 +490,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\targets_argument_writer.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\type.cpp"
 				>
 			</File>
@@ -508,7 +524,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\argument_writer.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\basic_target.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\build_action.h"
 				>
 			</File>
 			<File
@@ -516,7 +540,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\builder.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\call_resolver.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\cmdline_action.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\cmdline_builder.h"
 				>
 			</File>
 			<File
@@ -557,6 +593,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\file_target.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\fs_argument_writer.h"
 				>
 			</File>
 			<File
@@ -668,6 +708,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\product_argument_writer.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\project.h"
 				>
 			</File>
@@ -693,6 +737,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\searched_lib_main_target.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\source_argument_writer.h"
 				>
 			</File>
 			<File
@@ -725,6 +773,14 @@
 			</File>
 			<File
 				RelativePath="..\..\src\subversion_scm_client.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\targets_argument_writer.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\timestamp_info.h"
 				>
 			</File>
 			<File

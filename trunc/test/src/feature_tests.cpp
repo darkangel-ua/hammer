@@ -9,6 +9,7 @@
 using namespace std;
 using namespace hammer;
 
+/*
 BOOST_AUTO_TEST_CASE(feature_def_simple_methods)
 {
    vector<string> empty_values;
@@ -38,6 +39,7 @@ BOOST_AUTO_TEST_CASE(feature_def_subfeatures)
    BOOST_REQUIRE_THROW(d.add_subfeature(sd), std::exception);
    BOOST_CHECK(d.find_subfeature(sd.name()) != NULL);
 }
+*/
 
 struct feature_test
 {

@@ -3,12 +3,13 @@
 
 #include <vector>
 #include <boost/intrusive_ptr.hpp>
-#include <algorithm>
 
 namespace hammer
 {
    class basic_target; 
    class type;
+   class build_action;
+   class feature_set;
 
    class build_node
    {
@@ -30,15 +31,28 @@ namespace hammer
          typedef std::vector<const basic_target*> targets_t;
          typedef std::vector<boost::intrusive_ptr<build_node> > nodes_t;
 
-         build_node() : up_(0), targeting_type_(0), ref_counter_(0) {}
+         build_node() : up_(0), targeting_type_(0), ref_counter_(0), up_to_date_(false), action_(NULL) {}
+
          const basic_target* find_product(const basic_target* t) const;
          
+         bool up_to_date() const { return up_to_date_; }
+         void up_to_date(bool v) { up_to_date_ = v; }
+         
+         const build_action* action() const { return action_; }
+         void action(const build_action* a) { action_ = a; }
+
+         const feature_set& build_request() const;
+
          boost::intrusive_ptr<build_node> up_; // owner of that node. Not used yet
          nodes_t down_;                        // all sources that came into node
          sources_t sources_;                   // sources that was consumed 
          targets_t products_;                  // targets that was produced
          const hammer::type* targeting_type_;  // target type that was requested for building
          mutable unsigned long ref_counter_;
+      
+      private:
+         bool up_to_date_;
+         const build_action* action_;
    };
 
    inline void intrusive_ptr_add_ref(const build_node* t)
@@ -49,15 +63,6 @@ namespace hammer
    inline void intrusive_ptr_release(const build_node* t)
    {
       if (--t->ref_counter_ == 0) delete t;
-   }
-   
-   inline const basic_target* build_node::find_product(const basic_target* t) const
-   {
-      targets_t::const_iterator i = std::find(products_.begin(), products_.end(), t);
-      if (i != products_.end())
-         return *i;
-      else 
-         return 0;
    }
 }
 

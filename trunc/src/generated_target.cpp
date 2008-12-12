@@ -9,7 +9,7 @@ generated_target::generated_target(const main_target* mt, const pstring& n,
 {
 }
 
-const pstring& generated_target::location() const
+const location_t& generated_target::location() const
 {
    return mtarget()->intermediate_dir();
 }

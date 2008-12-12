@@ -30,9 +30,9 @@ main_target::generate()
    return result;
 }
 
-const pstring& main_target::intermediate_dir() const
+const location_t& main_target::intermediate_dir() const
 {
-   return meta_target()->project()->intermediate_dir();
+   return meta_target()->project()->location();
 }
 
 const location_t& main_target::location() const

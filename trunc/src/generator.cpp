@@ -7,6 +7,7 @@
 #include "generated_target.h"
 #include "engine.h"
 #include "np_helpers.h"
+#include "build_action.h"
 
 namespace hammer{
 
@@ -44,6 +45,7 @@ generator::construct(const type& target_type,
    if (!t)
    {
       boost::intrusive_ptr<build_node> result(new build_node);
+      result->action(action());
 
       typedef std::vector<boost::intrusive_ptr<build_node> >::const_iterator iter;
       for(iter i = sources.begin(), last = sources.end(); i != last; ++i)
@@ -76,16 +78,23 @@ generator::construct(const type& target_type,
    }
    else
    {
-     pstring new_name = make_name(engine_->pstring_pool(), t->name(), t->type(), target_type);
-     assert(sources.size() == 1);
+      pstring new_name = make_name(engine_->pstring_pool(), t->name(), t->type(), target_type);
+      assert(sources.size() == 1);
       
       boost::intrusive_ptr<build_node> result(new build_node);
+      result->action(action());
+
       result->sources_.push_back(build_node::source_t(t, sources.front()));
       result->down_.push_back(sources.front());
       result->products_.push_back(new(engine_->targets_pool()) generated_target(&owner, new_name, producable_types().front().type_, &props));
       result->targeting_type_ = &target_type;
       return std::vector<boost::intrusive_ptr<build_node> >(1, result);
   }
+}
+
+generator::~generator()
+{
+
 }
 
 }

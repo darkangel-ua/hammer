@@ -81,7 +81,6 @@ engine::engine()
    feature_registry_ = fr.release();
 
    generators_.reset(new generator_registry);
-   add_msvc_generators(*this, generators());
 
    scm_manager_.reset(new scm_manager);
 }
@@ -383,6 +382,41 @@ project& engine::load_project(location_t project_path)
       throw  runtime_error("Can't load project at '"  + project_path.string() + ": no such path.");
 
    return result.front();
+}
+
+void engine::load_hammer_script(location_t filepath)
+{
+   filepath.normalize();
+   if (!exists(filepath))
+      return throw std::runtime_error("Hammer script '" + filepath.native_file_string() + "' doesn't exists.");
+
+   projects_t::iterator i = projects_.find(filepath);
+   if (i != projects_.end())
+      throw std::runtime_error("Hammer script '" + filepath.native_file_string() + "' already loaded.");
+
+   hammer_walker_context ctx;
+
+   try
+   {
+      ctx.engine_ = this;
+      ctx.location_ = filepath;
+      ctx.project_ = new project(this);
+      ctx.project_->location(filepath);
+      ctx.call_resolver_ = &resolver_;
+
+      parser p(this);
+      if (!p.parse(filepath.native_file_string().c_str()))
+         throw  runtime_error("Can't load script at '"  + filepath.string() + ": parser errors");
+
+      p.walk(&ctx);
+      assert(ctx.project_);
+      insert(ctx.project_);
+   }
+   catch(...)
+   {
+      delete ctx.project_;
+      throw;
+   }
 }
 
 engine::loaded_projects_t engine::try_load_project(location_t project_path)

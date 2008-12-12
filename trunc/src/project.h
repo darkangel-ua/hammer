@@ -40,7 +40,7 @@ namespace hammer
          const basic_meta_target* find_target(const pstring& name) const;
          basic_meta_target* find_target(const pstring& name);
          hammer::engine* engine() const { return engine_; }
-         const pstring& intermediate_dir() const { return intermediate_dir_; }
+         const location_t& intermediate_dir() const { return intermediate_dir_; }
          bool is_root() const { return is_root_; }
          void set_root(bool v) { is_root_ = v; }
 
@@ -61,7 +61,7 @@ namespace hammer
          location_t location_;
          targets_t targets_;
          hammer::engine* engine_;
-         pstring intermediate_dir_;
+         location_t intermediate_dir_;
          hammer::scm_info scm_info_;
          bool is_root_;
 

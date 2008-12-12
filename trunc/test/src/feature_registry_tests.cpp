@@ -16,6 +16,7 @@ struct feature_registry_test
    feature_registry registry_;
 };
 
+/*
 BOOST_FIXTURE_TEST_CASE(create_feature, feature_registry_test)
 {
    feature_def toolset_def("toolset");
@@ -25,6 +26,7 @@ BOOST_FIXTURE_TEST_CASE(create_feature, feature_registry_test)
    BOOST_REQUIRE_THROW(registry_.create_feature("svn", ""), std::exception);
    BOOST_REQUIRE_THROW(registry_.create_feature("", ""), std::exception);
 };
+*/
 
 struct complex_feature_registry_test : public feature_registry_test
 {
@@ -39,6 +41,7 @@ struct complex_feature_registry_test : public feature_registry_test
    }
 };
 
+/*
 BOOST_FIXTURE_TEST_CASE(create_subfeature, complex_feature_registry_test)
 {
    feature* toolset = NULL;
@@ -66,4 +69,5 @@ BOOST_FIXTURE_TEST_CASE(parse_feature, complex_feature_registry_test)
    BOOST_CHECK_EQUAL(toolset_msvc->name(), "toolset");
    BOOST_CHECK_EQUAL(toolset_msvc->value(), "msvc");
 }
+*/
 

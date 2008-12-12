@@ -12,6 +12,8 @@ feature::feature(const feature_def* def,
                 : 
                  feature_base(def, value)
 {
+   if (!attributes().free && !def->is_legal_value(value.to_string()))   
+      throw std::runtime_error("Value '" + value.to_string() + "' is not legal for feature '" + name() + "'");
 }
 
 feature::feature(const feature_def* def, 

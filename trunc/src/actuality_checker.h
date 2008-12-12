@@ -11,10 +11,10 @@ namespace hammer
       public:
          typedef std::vector<boost::intrusive_ptr<build_node> > nodes_t;
 
-         std::size_t check(const nodes_t& nodes);
+         std::size_t check(nodes_t& nodes);
       
       private: 
-         std::size_t check(boost::posix_time::ptime& max_target_time, const build_node& node);
+         std::size_t check(boost::posix_time::ptime& max_target_time, build_node& node);
    };
 }
 

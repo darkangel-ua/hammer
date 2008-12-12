@@ -12,6 +12,10 @@
 #include "feature_set.h"
 #include "feature_registry.h"
 #include "pch_generator.h"
+#include "cmdline_action.h"
+#include "fs_argument_writer.h"
+#include "source_argument_writer.h"
+#include "product_argument_writer.h"
 
 using namespace boost::assign;
 using namespace std;
@@ -20,16 +24,33 @@ namespace hammer{
 
 void add_msvc_generators(engine& e, generator_registry& gr)
 {
+   e.feature_registry().get_def("toolset").extend_legal_values("msvc");
+
    // CPP -> OBJ
    {
+      auto_ptr<fs_argument_writer> compile_flags(new fs_argument_writer("compile_flags", e.feature_registry()));
+      compile_flags->add("<optimization>speed", "/O2").
+                     add("<optimization>space", "/O1");
+
+      auto_ptr<source_argument_writer> cpp_input(new source_argument_writer("cpp_input", e.get_type_registry().get(types::CPP)));
+      auto_ptr<product_argument_writer> obj_output(new product_argument_writer("obj_output", e.get_type_registry().get(types::OBJ)));
+      cmdline_builder setup_vars("\"C:\\Program Files\\Microsoft Visual Studio 8\\VC\\bin\\vcvars32.bat\"");
+      cmdline_builder obj_cmd("cl.exe $(compile_flags) \"$(cpp_input)\" -Fo\"$(obj_output)\"");
+      obj_cmd += compile_flags;
+      obj_cmd += cpp_input;
+      obj_cmd += obj_output;
+      auto_ptr<cmdline_action> obj_action(new cmdline_action);
+      *obj_action += setup_vars;
+      *obj_action += obj_cmd;
       generator::consumable_types_t source;
       generator::producable_types_t target;
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::CPP), 1, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::OBJ), 1));
       auto_ptr<generator> g(new generator(e, "msvc.cpp.compiler", source, target, false));
+      g->action(obj_action);
       e.generators().insert(g);
    }
-
+   
    // CPP + H -> PCH + OBJ
    {
       generator::consumable_types_t source;

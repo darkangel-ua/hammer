@@ -3,7 +3,10 @@
 #include "feature_registry.h"
 #include "feature.h"
 #include <iterator>
+#include <stdexcept>
 #include "sources_decl.h"
+#include <boost/spirit/core.hpp>
+#include <boost/spirit/utility/lists.hpp>
 
 using namespace std;
 
@@ -207,4 +210,23 @@ namespace hammer{
       return true;
    }
 
+   feature_set* parse_simple_set(const std::string& s, feature_registry& r)
+   {
+      using namespace boost::spirit;
+
+      vector<string> feature_names, feature_values;
+      if (parse(s.begin(), s.end(), 
+                list_p('<' >> (+(anychar_p - '>'))[push_back_a(feature_names)] >> '>' >> 
+                              (+(anychar_p - '/'))[push_back_a(feature_values)], ch_p('/'))
+               ).full)
+      {
+         feature_set* result = r.make_set();
+         for(vector<string>::const_iterator i = feature_names.begin(), v_i = feature_values.begin(), last = feature_names.end(); i != last; ++i, ++v_i)
+            result->join(i->c_str(), v_i->c_str());
+
+         return result;
+     }
+      else
+         throw std::runtime_error("Can't parse simple feature set from '" + s + "'");
+   }
 }

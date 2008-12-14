@@ -118,12 +118,9 @@ void basic_meta_target::resolve_meta_target_source(const source_decl& source,
       hammer::project::selected_targets_t selected_targets(suitable_projects.select_best_alternative(*build_request_with_source_properties));
       for(hammer::project::selected_targets_t::const_iterator i = selected_targets.begin(), last = selected_targets.end(); i != last; ++i)
 	   {
-		   if (!(**i).is_explicit())
-		   {
-			   (**i).transfer_sources(simple_targets, meta_targets, 
-                                   *build_request_with_source_properties, source.properties());
-			   meta_targets->push_back(make_pair(*i, source.properties()));
-		   }
+		   (**i).transfer_sources(simple_targets, meta_targets, 
+                                *build_request_with_source_properties, source.properties());
+		   meta_targets->push_back(make_pair(*i, source.properties()));
 	   }
    }
    else

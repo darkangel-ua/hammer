@@ -26,14 +26,24 @@ namespace{
    class test_build_environment : public build_environment
    {
       public:
-         test_build_environment(ostream& output) : output_(output) {}
+         test_build_environment(ostream& output, const location_t& cur_dir) 
+            : output_(output),
+              current_directory_(cur_dir)
+         {}
+
          virtual void run_shell_command(const std::string& cmd) const
          {
             output_ << "[run shell command]: '" << cmd << "'\n";
          }
-      
+
+         virtual const location_t& current_directory() const
+         {
+            return current_directory_;
+         }
+         
       private:
          ostream& output_;
+         location_t current_directory_;
    };
 }
 
@@ -86,7 +96,7 @@ void toolset_test::do_test(const string& name)
       actuality_checker checker;
       checker.check(generated_nodes);
 
-      test_build_environment environment(output_file);
+      test_build_environment environment(output_file, project_path);
       builder b(environment);
       BOOST_REQUIRE_NO_THROW(b.build(generated_nodes));
       etalon_file.close();

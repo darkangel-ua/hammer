@@ -3,6 +3,8 @@
 #include "build_node.h"
 #include "basic_target.h"
 #include "type.h"
+#include "fs_helpers.h"
+#include "build_environment.h"
 
 namespace hammer{
 
@@ -23,7 +25,8 @@ void source_argument_writer::write(std::ostream& output, const build_node& node,
    {
       if (i->source_target_->type().equal_or_derived_from(this->source_type()))
       {
-         output << i->source_target_->location();
+         location_t source_path = relative_path(i->source_target_->location(), environment.current_directory()) / i->source_target_->name().to_string();
+         output << source_path.native_file_string();
          break;
       }
    }

@@ -1,0 +1,3 @@
+lib lib1 : lib1.cpp sockets : <link>shared ;
+lib sockets : : <name>sockets ;
+explicit sockets ;

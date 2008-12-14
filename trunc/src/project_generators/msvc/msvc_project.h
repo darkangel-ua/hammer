@@ -44,7 +44,7 @@ namespace hammer
                               has_linker_options_(false),
                               has_librarian_options_(false),
                               compile_as_cpp_(false),
-                              character_set_(character_set::unicode),
+                              character_set_(character_set::unknown),
                               pch_target_(NULL),
                               pch_usage_(pch_usage_t::not_set)
                   {}

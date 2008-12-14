@@ -117,7 +117,7 @@ configuration_types::value msvc_project::resolve_configuration_type(const varian
             if (v.target_->type().equal_or_derived_from(header_lib_type))
                return configuration_types::utility;
             else
-               throw std::runtime_error("[msvc_project] Can't resolve type '" + v.target_->type().tag().name() + "'.");
+               throw std::runtime_error("[msvc_project] Can't resolve configurations type '" + v.target_->type().tag().name() + "'.");
 } 
 
 void msvc_project::fill_options(const feature_set& props, options* opts, const main_target& mt) const

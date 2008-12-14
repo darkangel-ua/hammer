@@ -1,0 +1,1 @@
+lib test : main.cpp lib1 : <link>static ;

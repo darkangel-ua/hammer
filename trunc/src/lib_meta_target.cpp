@@ -27,6 +27,9 @@ main_target* lib_meta_target::construct_main_target(const feature_set* propertie
    if (properties->find("name") != properties->end() ||
        properties->find("file") != properties->end())
    {
+      if (!sources().empty())
+         throw std::runtime_error("lib target can't have sources when <file> or <name> specified");
+
       result = new(project()->engine()->targets_pool()) 
                    searched_lib_main_target(this, 
                                             name(), 

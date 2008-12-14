@@ -11,6 +11,7 @@
 #include "../../src/main_target.h"
 #include "../../src/meta_target.h"
 #include "../../src/project_generators/msvc/msvc_solution.h"
+#include "../../src/msvc_generator.h"
 
 using namespace std;
 using namespace hammer;
@@ -177,6 +178,12 @@ int main(int argc, char** argv)
          return 0;
       }
       
+      engine.load_hammer_script("d:\\bin\\scripts\\startup.ham");
+      add_msvc_generators(engine, engine.generators());
+
+      build_request->join("toolset", "msvc");
+      build_request->join("variant", "debug");
+
       if (vm.count("generate-projects-locally"))
          opts.generate_projects_localy_ = true;
 

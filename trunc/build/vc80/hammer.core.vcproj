@@ -536,6 +536,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\build_environment.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\build_node.h"
 				>
 			</File>

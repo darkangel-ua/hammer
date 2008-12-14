@@ -179,6 +179,9 @@ void engine::resolve_project_alias(resolved_project_symlinks_t& symlinks,
 
 void engine::initial_materialization(const project_alias_data& alias_data) const
 {
+   if (alias_data.properties_ == NULL)
+      throw std::runtime_error("Fail to materialize project at '" + alias_data.location_.native_file_string() + "'");
+
    feature_set::const_iterator scm_tag = alias_data.properties_->find("scm");
    if (scm_tag == alias_data.properties_->end())
       throw runtime_error("Can't materialize project because no scm feature specified.");
@@ -524,9 +527,16 @@ void engine::project_rule(project* p, std::vector<pstring>& name,
    // здесь производиться вставка так как на этаме загрузки 
    // engine уже выставила унаследованные свойства проекта от его родителя
    if (req)
+   {
+      req->requirements().setup_path_data(p);
       p->requirements().insert(req->requirements());
+   }
+
    if (usage_req)
+   {
+      usage_req->requirements().setup_path_data(p);
       p->usage_requirements().insert(usage_req->requirements());
+   }
 }
 
 void engine::lib_rule(project* p, std::vector<pstring>& name, sources_decl* sources, requirements_decl* requirements,
@@ -912,7 +922,9 @@ engine::loaded_projects_t::select_best_alternative(const feature_set& build_requ
    for(projects_t::const_iterator i = projects_.begin(), last = projects_.end(); i != last; ++i)
    {
       project::selected_targets_t targets((**i).select_best_alternative(build_request));
-      result.insert(result.end(), targets.begin(), targets.end());
+      for(project::selected_targets_t::const_iterator t = targets.begin(), t_last = targets.end(); t != t_last; ++t)
+         if (!(**t).is_explicit())
+            result.push_back(*t);
    }
 
    post_process(result, build_request);

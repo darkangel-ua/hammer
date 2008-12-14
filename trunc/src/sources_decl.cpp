@@ -61,12 +61,20 @@ void sources_decl::clone_if_needed()
 void sources_decl::push_back(const pstring& v, const type_registry& tr)
 {
    clone_if_needed();
+
+   if (std::find(v.begin(), v.end(), '<') != v.end())
+      throw std::runtime_error("Feature signature found in sources");
+
    impl_->values_.push_back(source_decl(v, pstring(), tr.resolve_from_target_name(v), NULL));
 }
 
 void sources_decl::push_back(const source_decl& v)
 {
    clone_if_needed();
+
+   if (std::find(v.target_name().begin(), v.target_name().end(), '<') != v.target_name().end())
+      throw std::runtime_error("Feature signature found in sources");
+
    impl_->values_.push_back(v);
 }
 

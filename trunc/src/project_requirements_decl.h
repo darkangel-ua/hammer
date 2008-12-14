@@ -13,6 +13,7 @@ namespace hammer
                                    const requirements_decl& r);
          const std::string& name() const { return name_; }
          const requirements_decl& requirements() const { return requirements_; }
+         requirements_decl& requirements() { return requirements_; }
 
       private:
          std::string name_;

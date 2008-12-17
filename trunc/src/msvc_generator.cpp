@@ -20,6 +20,7 @@
 
 using namespace boost::assign;
 using namespace std;
+using namespace boost;
 
 namespace hammer{
 
@@ -33,10 +34,12 @@ void add_msvc_generators(engine& e, generator_registry& gr)
       feature_def debug_store("debug-store", list_of("object")("database"), fa);
       e.feature_registry().add_def(debug_store);
    }
+
+   cmdline_builder setup_vars("call \"C:\\Program Files\\Microsoft Visual Studio 8\\VC\\bin\\vcvars32.bat\"");
  
    // CPP -> OBJ
    {
-      auto_ptr<fs_argument_writer> cflags(new fs_argument_writer("cflags", e.feature_registry()));
+      shared_ptr<fs_argument_writer> cflags(new fs_argument_writer("cflags", e.feature_registry()));
       cflags->add("<optimization>speed", "/O2").
               add("<optimization>space", "/O1").
               add("<optimization>off", "/Od").
@@ -55,18 +58,17 @@ void add_msvc_generators(engine& e, generator_registry& gr)
               add("<runtime-debugging>off/<runtime-link>static/<threading>multi", "/MT").
               add("<runtime-debugging>on/<runtime-link>static/<threading>multi", "/MTd");
 
-      auto_ptr<fs_argument_writer> cppflags(new fs_argument_writer("cppflags", e.feature_registry()));
+      shared_ptr<fs_argument_writer> cppflags(new fs_argument_writer("cppflags", e.feature_registry()));
       cppflags->add("<exception-handling>on/<asynch-exceptions>off/<extern-c-nothrow>off", "/EHs").
                 add("<exception-handling>on/<asynch-exceptions>off/<extern-c-nothrow>on", "/EHsc").
                 add("<exception-handling>on/<asynch-exceptions>on/<extern-c-nothrow>off", "/EHa").
                 add("<exception-handling>on/<asynch-exceptions>on/<extern-c-nothrow>on", "/EHac");
 
-      auto_ptr<source_argument_writer> cpp_input(new source_argument_writer("cpp_input", e.get_type_registry().get(types::CPP)));
-      auto_ptr<product_argument_writer> obj_output(new product_argument_writer("obj_output", e.get_type_registry().get(types::OBJ)));
-      auto_ptr<free_feature_arg_writer> includes(new free_feature_arg_writer("includes", e.feature_registry().get_def("include"), "-I \"", "\""));
-      auto_ptr<free_feature_arg_writer> defines(new free_feature_arg_writer("defines", e.feature_registry().get_def("define"), "-D \"", "\""));
-      auto_ptr<free_feature_arg_writer> undefines(new free_feature_arg_writer("undefines", e.feature_registry().get_def("undef"), "-U \"", "\""));
-      cmdline_builder setup_vars("\"C:\\Program Files\\Microsoft Visual Studio 8\\VC\\bin\\vcvars32.bat\"");
+      shared_ptr<source_argument_writer> cpp_input(new source_argument_writer("cpp_input", e.get_type_registry().get(types::CPP)));
+      shared_ptr<product_argument_writer> obj_output(new product_argument_writer("obj_output", e.get_type_registry().get(types::OBJ)));
+      shared_ptr<free_feature_arg_writer> includes(new free_feature_arg_writer("includes", e.feature_registry().get_def("include"), "-I \"", "\""));
+      shared_ptr<free_feature_arg_writer> defines(new free_feature_arg_writer("defines", e.feature_registry().get_def("define"), "-D \"", "\""));
+      shared_ptr<free_feature_arg_writer> undefines(new free_feature_arg_writer("undefines", e.feature_registry().get_def("undef"), "-U \"", "\""));
       cmdline_builder obj_cmd("cl.exe /c $(cflags)$(cppflags) $(includes) $(undefines) $(defines) \"$(cpp_input)\" -Fo\"$(obj_output)\"");
       obj_cmd += cflags;
       obj_cmd += cppflags;
@@ -155,6 +157,29 @@ void add_msvc_generators(engine& e, generator_registry& gr)
    }
 
    { 
+      shared_ptr<fs_argument_writer> link_flags(new fs_argument_writer("link_flags", e.feature_registry()));
+      link_flags->add("<debug-symbols>on", "/DEBUG").
+                  add("<debug-symbols>on/<runtime-debugging>off", "/OPT:REF,ICF").
+                  add("<user-interface>console", "/subsystem:console").
+                  add("<user-interface>gui", "/subsystem:windows").
+                  add("<user-interface>wince", "/subsystem:windowsce").
+                  add("<user-interface>native", "/subsystem:native").
+                  add("<user-interface>auto", "/subsystem:posix");
+
+      shared_ptr<source_argument_writer> obj_sources(new source_argument_writer("obj_sources", e.get_type_registry().get(types::OBJ)));
+      shared_ptr<product_argument_writer> exe_product(new product_argument_writer("exe_product", e.get_type_registry().get(types::EXE)));
+      shared_ptr<product_argument_writer> exe_manifest_product(new product_argument_writer("exe_manifest_product", e.get_type_registry().get(types::EXE_MANIFEST)));
+      auto_ptr<cmdline_action> exe_action(new cmdline_action);
+      cmdline_builder exe_cmd("link.exe $(link_flags) /out:\"$(exe_product)\" $(obj_sources)\n"
+                              "if %ERRORLEVEL% NEQ 0 EXIT %ERRORLEVEL%\n"
+                              "if exist \"$(exe_manifest_product)\" (mt -manifest \"$(exe_manifest_product)\" \"-outputresource:$(exe_product)\")");
+      exe_cmd += link_flags;
+      exe_cmd += obj_sources;
+      exe_cmd += exe_product;
+      exe_cmd += exe_manifest_product;
+      *exe_action += setup_vars;
+      *exe_action += exe_cmd;
+
       generator::consumable_types_t source;
       generator::producable_types_t target;
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::OBJ), 0, 0));
@@ -164,7 +189,9 @@ void add_msvc_generators(engine& e, generator_registry& gr)
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::H), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::HEADER_LIB), 0, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::EXE), 1));
+      target.push_back(generator::produced_type(e.get_type_registry().get(types::EXE_MANIFEST), 1));
       auto_ptr<generator> g(new exe_and_shared_lib_generator(e, "msvc.exe.linker", source, target, true));
+      g->action(exe_action);
       e.generators().insert(g);
    }
 
@@ -193,6 +220,7 @@ void add_msvc_generators(engine& e, generator_registry& gr)
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::HEADER_LIB), 0, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::SHARED_LIB), 1));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::IMPORT_LIB), 1));
+
       auto_ptr<generator> g(new exe_and_shared_lib_generator(e, "msvc.shared_lib.linker", source, target, true));
       e.generators().insert(g);
    }

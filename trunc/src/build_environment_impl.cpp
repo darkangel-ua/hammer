@@ -2,6 +2,8 @@
 #include "build_environment_impl.h"
 #include <boost/filesystem/operations.hpp>
 #include <boost/process.hpp>
+#include <boost/guid.hpp>
+#include <fstream>
 
 namespace bp = boost::process;
 using namespace std;
@@ -16,21 +18,27 @@ build_environment_impl::build_environment_impl(const location_t& cur_dir)
 
 void build_environment_impl::run_shell_commands(const std::vector<std::string>& cmds) const
 {
-   std::ostringstream s;
-   if (!cmds.empty())
-      s << '"' << cmds.front();
-   
-   if (cmds.size() > 1)
-      for(vector<string>::const_iterator i = cmds.begin() + 1, last = cmds.end(); i != last; ++i)
-         s << "&&" << *i;
-   
-   s << '"';
+   string tmp_file_name(boost::guid::create().to_string() + ".cmd");
+   try
+   {
+      ofstream f(tmp_file_name.c_str());
 
-   bp::launcher launcher;
-   launcher.set_stdin_behavior(bp::inherit_stream);
-   launcher.set_stdout_behavior(bp::inherit_stream);
-   launcher.set_stderr_behavior(bp::inherit_stream);
-   launcher.start(bp::command_line::shell(s.str())).wait();
+      for(vector<string>::const_iterator i = cmds.begin(), last = cmds.end(); i != last; ++i)
+         f << *i << '\n';
+      f.close();
+
+      bp::launcher launcher;
+      launcher.set_stdin_behavior(bp::inherit_stream);
+      launcher.set_stdout_behavior(bp::inherit_stream);
+      launcher.set_stderr_behavior(bp::inherit_stream);
+      launcher.start(bp::command_line::shell("call " + tmp_file_name)).wait();
+      boost::filesystem::remove(tmp_file_name);
+   }
+   catch(...)
+   {
+      boost::filesystem::remove(tmp_file_name);
+      throw;
+   }
 }
 
 const location_t& build_environment_impl::current_directory() const

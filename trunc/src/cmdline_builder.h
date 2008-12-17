@@ -4,7 +4,8 @@
 #include <string>
 #include <memory>
 #include "argument_writer.h"
-#include <boost/ptr_container/ptr_map.hpp>
+#include <map>
+#include <boost/shared_ptr.hpp>
 
 namespace hammer
 {
@@ -14,19 +15,17 @@ namespace hammer
    {
       public:
          cmdline_builder(const std::string& cmd);
-         cmdline_builder(const cmdline_builder& lhs);
          template<typename T>
-         cmdline_builder& operator +=(std::auto_ptr<T>& v) { add(v.get()); v.release(); return *this; }
-         cmdline_builder& operator =(const cmdline_builder& rhs);
+         cmdline_builder& operator +=(boost::shared_ptr<T>& v) { add(shared_dynamic_cast<argument_writer>(v)); return *this; }
          void write(std::ostream& output, const build_node& node, const build_environment& environment) const;
 
       private:
-         typedef boost::ptr_map<const std::string, argument_writer> writers_t;
+         typedef std::map<const std::string, boost::shared_ptr<argument_writer> > writers_t;
 
          std::string cmd_;
          writers_t writers_;
 
-         void add(argument_writer* v);
+         void add(const boost::shared_ptr<argument_writer>& v);
    };
 }
 

@@ -64,7 +64,7 @@ namespace
    };
 }
 
-struct generator_tests
+struct generator_tests : setuped_engine
 {
    generator_tests() : p_(0), generators_output_dir_name_(".hammer")
    {
@@ -192,7 +192,6 @@ struct generator_tests
       }
    }
   
-   engine engine_;
    jcf_parser checker_;
    auto_ptr<test_msvc_solution> msvc_solution_;
    const project* p_;
@@ -276,15 +275,6 @@ BOOST_FIXTURE_TEST_CASE(user_dir_generation, generator_tests)
    check();
 }
 
-BOOST_FIXTURE_TEST_CASE(local_generation, generator_tests)
-{
-   test_name_ = "local_generation";
-   load();
-   BOOST_REQUIRE_NO_THROW(instantiate("test"));
-   BOOST_REQUIRE_NO_THROW(run_generators(msvc_solution::generation_mode::LOCAL));
-   check();
-}
-
 BOOST_FIXTURE_TEST_CASE(non_local_generation, generator_tests)
 {
    test_name_ = "non_local_generation";
@@ -309,6 +299,15 @@ BOOST_FIXTURE_TEST_CASE(pch, generator_tests)
    load();
    BOOST_REQUIRE_NO_THROW(instantiate("test"));
    BOOST_REQUIRE_NO_THROW(run_generators(msvc_solution::generation_mode::NON_LOCAL));
+   check();
+}
+
+BOOST_FIXTURE_TEST_CASE(local_generation, generator_tests)
+{
+   test_name_ = "local_generation";
+   load();
+   BOOST_REQUIRE_NO_THROW(instantiate("test"));
+   BOOST_REQUIRE_NO_THROW(run_generators(msvc_solution::generation_mode::LOCAL));
    check();
 }
 */

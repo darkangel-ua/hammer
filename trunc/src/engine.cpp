@@ -639,6 +639,10 @@ static feature_attributes resolve_attributes(std::vector<pstring>* attributes)
    if (i != attributes->end())
       result.no_defaults = true;
 
+   i = find(attributes->begin(), attributes->end(), "no-checks");
+   if (i != attributes->end())
+      result.no_checks = true;
+
    return result;
 }
 

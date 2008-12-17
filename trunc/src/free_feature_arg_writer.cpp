@@ -4,6 +4,9 @@
 #include "feature_set.h"
 #include "feature_def.h"
 #include "feature.h"
+#include "basic_meta_target.h"
+#include "build_environment.h"
+#include "fs_helpers.h"
 
 namespace hammer{
 
@@ -22,7 +25,15 @@ void free_feature_arg_writer::write_impl(std::ostream& output, const build_node&
    for(feature_set::const_iterator i = build_request.find(feature_def_.name()), last = build_request.end(); 
        i != last;)
    {
-      output << prefix_ << (**i).value() << suffix_ << ' ';
+      if (feature_def_.attributes().path)
+      {
+         location_t include_path((**i).get_path_data().target_->location() / (**i).value().to_string());
+         include_path.normalize();
+         include_path = relative_path(include_path, environment.current_directory());
+         output << prefix_ << include_path.native_file_string() << suffix_ << ' ';
+      }
+      else
+         output << prefix_ << (**i).value() << suffix_ << ' ';
       i = build_request.find(++i, feature_def_.name());
    }
 }

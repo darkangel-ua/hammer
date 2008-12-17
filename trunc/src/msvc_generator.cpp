@@ -36,6 +36,7 @@ void add_msvc_generators(engine& e, generator_registry& gr)
    }
 
    cmdline_builder setup_vars("call \"C:\\Program Files\\Microsoft Visual Studio 8\\VC\\bin\\vcvars32.bat\"");
+   shared_ptr<source_argument_writer> static_lib_sources(new source_argument_writer("static_lib_sources", e.get_type_registry().get(types::STATIC_LIB)));
  
    // CPP -> OBJ
    {
@@ -167,14 +168,17 @@ void add_msvc_generators(engine& e, generator_registry& gr)
                   add("<user-interface>auto", "/subsystem:posix");
 
       shared_ptr<source_argument_writer> obj_sources(new source_argument_writer("obj_sources", e.get_type_registry().get(types::OBJ)));
+      shared_ptr<source_argument_writer> import_lib_sources(new source_argument_writer("import_lib_sources", e.get_type_registry().get(types::IMPORT_LIB)));
       shared_ptr<product_argument_writer> exe_product(new product_argument_writer("exe_product", e.get_type_registry().get(types::EXE)));
       shared_ptr<product_argument_writer> exe_manifest_product(new product_argument_writer("exe_manifest_product", e.get_type_registry().get(types::EXE_MANIFEST)));
       auto_ptr<cmdline_action> exe_action(new cmdline_action);
-      cmdline_builder exe_cmd("link.exe $(link_flags) /out:\"$(exe_product)\" $(obj_sources)\n"
+      cmdline_builder exe_cmd("link.exe $(link_flags) /out:\"$(exe_product)\" $(obj_sources) $(static_lib_sources) $(import_lib_sources)\n"
                               "if %ERRORLEVEL% NEQ 0 EXIT %ERRORLEVEL%\n"
                               "if exist \"$(exe_manifest_product)\" (mt -manifest \"$(exe_manifest_product)\" \"-outputresource:$(exe_product)\")");
       exe_cmd += link_flags;
       exe_cmd += obj_sources;
+      exe_cmd += static_lib_sources;
+      exe_cmd += import_lib_sources;
       exe_cmd += exe_product;
       exe_cmd += exe_manifest_product;
       *exe_action += setup_vars;
@@ -196,6 +200,16 @@ void add_msvc_generators(engine& e, generator_registry& gr)
    }
 
    { 
+      auto_ptr<cmdline_action> static_lib_action(new cmdline_action);
+      shared_ptr<source_argument_writer> obj_sources(new source_argument_writer("obj_sources", e.get_type_registry().get(types::OBJ)));
+      shared_ptr<product_argument_writer> lib_product(new product_argument_writer("lib_product", e.get_type_registry().get(types::STATIC_LIB)));
+      cmdline_builder static_lib_cmd("if exist \"$(lib_product)\" DEL \"$(lib_product)\"\n"
+                                     "lib.exe /out:\"$(lib_product)\" $(obj_sources)");
+      
+      static_lib_cmd += lib_product;
+      static_lib_cmd += obj_sources;
+      *static_lib_action +=setup_vars;
+      *static_lib_action +=static_lib_cmd;
       generator::consumable_types_t source;
       generator::producable_types_t target;
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::OBJ), 0, 0));
@@ -206,10 +220,28 @@ void add_msvc_generators(engine& e, generator_registry& gr)
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::HEADER_LIB), 0, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::STATIC_LIB), 1));
       auto_ptr<generator> g(new static_lib_generator(e, "msvc.static_lib.linker", source, target, true));
+      g->action(static_lib_action);
       e.generators().insert(g);
    }
 
    { 
+      auto_ptr<cmdline_action> shared_lib_action(new cmdline_action);
+      shared_ptr<source_argument_writer> obj_sources(new source_argument_writer("obj_sources", e.get_type_registry().get(types::OBJ)));
+      shared_ptr<product_argument_writer> import_lib_product(new product_argument_writer("import_lib_product", e.get_type_registry().get(types::IMPORT_LIB)));
+      shared_ptr<product_argument_writer> shared_lib_product(new product_argument_writer("shared_lib_product", e.get_type_registry().get(types::SHARED_LIB)));
+      shared_ptr<product_argument_writer> dll_manifest_product(new product_argument_writer("dll_manifest_product", e.get_type_registry().get(types::DLL_MANIFEST)));
+      cmdline_builder shared_lib_cmd("link.exe /DLL /out:\"$(shared_lib_product)\" /IMPLIB:\"$(import_lib_product)\" $(obj_sources) $(static_lib_sources)\n"
+                                     "if %ERRORLEVEL% NEQ 0 EXIT %ERRORLEVEL%\n"
+                                     "if exist \"$(dll_manifest_product)\" (mt -manifest \"$(dll_manifest_product)\" \"-outputresource:$(shared_lib_product)\")");
+      shared_lib_cmd += obj_sources;
+      shared_lib_cmd += static_lib_sources;
+      shared_lib_cmd += import_lib_product;
+      shared_lib_cmd += shared_lib_product;
+      shared_lib_cmd += dll_manifest_product;
+
+      *shared_lib_action += setup_vars;
+      *shared_lib_action += shared_lib_cmd;
+
       generator::consumable_types_t source;
       generator::producable_types_t target;
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::OBJ), 0, 0));
@@ -220,8 +252,10 @@ void add_msvc_generators(engine& e, generator_registry& gr)
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::HEADER_LIB), 0, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::SHARED_LIB), 1));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::IMPORT_LIB), 1));
+      target.push_back(generator::produced_type(e.get_type_registry().get(types::DLL_MANIFEST), 1));
 
       auto_ptr<generator> g(new exe_and_shared_lib_generator(e, "msvc.shared_lib.linker", source, target, true));
+      g->action(shared_lib_action);
       e.generators().insert(g);
    }
 

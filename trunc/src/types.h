@@ -20,6 +20,7 @@ namespace hammer
       extern const type_tag HEADER_LIB;
       extern const type_tag EXE;
       extern const type_tag EXE_MANIFEST;
+      extern const type_tag DLL_MANIFEST;
       extern const type_tag UNKNOWN;
 
       void register_standart_types(type_registry& tr);

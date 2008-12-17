@@ -22,6 +22,7 @@ const type_tag SEARCHED_LIB("SEARCHED_LIB");
 const type_tag HEADER_LIB("HEADER_LIB");
 const type_tag EXE("EXE");
 const type_tag EXE_MANIFEST("EXE_MANIFEST");
+const type_tag DLL_MANIFEST("DLL_MANIFEST");
 const type_tag UNKNOWN("UNKNOWN");
 
    void register_standart_types(type_registry& tr)
@@ -38,6 +39,7 @@ const type_tag UNKNOWN("UNKNOWN");
       const type tHEADER_LIB(HEADER_LIB, type::suffixes_t());
       const type tEXE(EXE, ".exe");
       const type tEXE_MANIFEST(EXE_MANIFEST, ".exe.manifest");
+      const type tDLL_MANIFEST(DLL_MANIFEST, ".dll.manifest");
       const type tUNKNOWN(UNKNOWN, "");
       
       tr.insert(tCPP);
@@ -52,6 +54,7 @@ const type_tag UNKNOWN("UNKNOWN");
       tr.insert(tHEADER_LIB);
       tr.insert(tEXE);
       tr.insert(tEXE_MANIFEST);
+      tr.insert(tDLL_MANIFEST);
       tr.insert(tUNKNOWN);
    }
 

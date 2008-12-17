@@ -1,3 +1,4 @@
+feature.feature undef : : free ;
 feature.feature define : : free ;
 feature.feature include : : free path ; 
 feature.feature toolset : : propagated ;

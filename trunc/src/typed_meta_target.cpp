@@ -8,12 +8,11 @@ namespace hammer{
 
 main_target* typed_meta_target::construct_main_target(const feature_set* properties) const
 {
-   main_target* mt = new(project()->engine()->targets_pool()) 
-                        main_target(this, 
-                                    name(), 
-                                    type_, 
-                                    properties,
-                                    project()->engine()->targets_pool());
+   main_target* mt = new main_target(this, 
+                                     name(), 
+                                     type_, 
+                                     properties,
+                                     project()->engine()->targets_pool());
    return mt;
 }
 

@@ -347,6 +347,9 @@ namespace hammer{
 
    feature* feature_registry::create_feature(const std::string& name, const std::string& value)
    {
+      if (find_def(name.c_str()))
+         return simply_create_feature(name, value);
+
       typedef boost::tokenizer<boost::char_separator<char>, const char*> tokenizer;
       tokenizer tok(value.c_str(), value.c_str() + value.size(), 
                     boost::char_separator<char>("-"));

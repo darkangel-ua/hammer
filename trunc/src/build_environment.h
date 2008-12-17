@@ -2,6 +2,7 @@
 #define h_51b99cdf_4b23_4067_b739_108519363f5b
 
 #include <string>
+#include <vector>
 #include "location.h"
 
 namespace hammer
@@ -9,8 +10,9 @@ namespace hammer
    class build_environment
    {
       public:
-         virtual void run_shell_command(const std::string& cmd) const = 0;
+         virtual void run_shell_commands(const std::vector<std::string>& cmds) const = 0;
          virtual const location_t& current_directory() const = 0;
+         virtual void create_directories(const location_t& dir_to_create) const = 0;
          virtual ~build_environment() {}
    };
 }

@@ -19,7 +19,7 @@ argument_writer* source_argument_writer::clone() const
    return new source_argument_writer(*this);
 }
 
-void source_argument_writer::write(std::ostream& output, const build_node& node, const build_environment& environment) const
+void source_argument_writer::write_impl(std::ostream& output, const build_node& node, const build_environment& environment) const
 {
    for(build_node::sources_t::const_iterator i = node.sources_.begin(), last = node.sources_.end(); i != last; ++i)
    {

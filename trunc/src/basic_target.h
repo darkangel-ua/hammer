@@ -32,15 +32,13 @@ namespace hammer
          virtual std::vector<boost::intrusive_ptr<build_node> > generate() = 0;
          const timestamp_info_t& timestamp_info(timestamp_info_t::getter_policy_t how_to_get = timestamp_info_t::just_get) const;
 
-         void* operator new (size_t size, pool& p) { return p.malloc(size); }
-         void operator delete (void* m, pool& p) {};
          virtual const location_t& location() const;
          virtual ~basic_target(){};
       
       protected:
          mutable timestamp_info_t timestamp_info_;
 
-         virtual void timestamp_info_impl(timestamp_info_t::getter_policy_t how_to_get) const = 0;
+         virtual void timestamp_info_impl() const = 0;
 
       private:
          const main_target* main_target_;

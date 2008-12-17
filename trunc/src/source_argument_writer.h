@@ -9,8 +9,10 @@ namespace hammer
    {
       public:
          source_argument_writer(const std::string& name, const type& t);
-         virtual void write(std::ostream& output, const build_node& node, const build_environment& environment) const;
          virtual argument_writer* clone() const;
+
+      protected:
+         virtual void write_impl(std::ostream& output, const build_node& node, const build_environment& environment) const;
    };
 }
 

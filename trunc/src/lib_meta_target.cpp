@@ -30,8 +30,7 @@ main_target* lib_meta_target::construct_main_target(const feature_set* propertie
       if (!sources().empty())
          throw std::runtime_error("lib target can't have sources when <file> or <name> specified");
 
-      result = new(project()->engine()->targets_pool()) 
-                   searched_lib_main_target(this, 
+      result = new searched_lib_main_target(this, 
                                             name(), 
                                             properties,
                                             project()->engine()->targets_pool());
@@ -45,12 +44,11 @@ main_target* lib_meta_target::construct_main_target(const feature_set* propertie
       else
          target_type = &this->project()->engine()->get_type_registry().get(types::SHARED_LIB);
 
-      result = new(project()->engine()->targets_pool()) 
-                   main_target(this, 
-                              name(), 
-                              target_type, 
-                              properties,
-                              project()->engine()->targets_pool());
+      result = new main_target(this, 
+                               name(), 
+                               target_type, 
+                               properties,
+                               project()->engine()->targets_pool());
    }
 
    return result;

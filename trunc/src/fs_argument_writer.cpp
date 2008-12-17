@@ -1,12 +1,16 @@
 #include "stdafx.h"
 #include "fs_argument_writer.h"
 #include "feature_set.h"
+#include "build_node.h"
 
 namespace hammer{
 
-void fs_argument_writer::write(std::ostream& output, const build_node& node, const build_environment& environment) const
+void fs_argument_writer::write_impl(std::ostream& output, const build_node& node, const build_environment& environment) const
 {
-   output << "[fs_argument_writer]";
+   const feature_set& build_request = node.build_request();
+   for(patterns_t::const_iterator i = patterns_.begin(), last = patterns_.end(); i != last; ++i)
+      if (build_request.contains(*i->first))
+         output << i->second << ' ';
 }
 
 fs_argument_writer& fs_argument_writer::add(const feature_set* pattern, const std::string& what_write)

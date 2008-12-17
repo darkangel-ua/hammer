@@ -12,8 +12,7 @@ std::vector<boost::intrusive_ptr<build_node> > file_target::generate()
    return std::vector<boost::intrusive_ptr<build_node> >();
 }
 
-void 
-file_target::timestamp_info_impl(timestamp_info_t::getter_policy_t how_to_get) const
+void file_target::timestamp_info_impl() const
 {
    boost::filesystem::path p(mtarget()->location() / name().to_string());
    timestamp_info_.is_unknown_ = false;

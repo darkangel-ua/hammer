@@ -47,6 +47,7 @@ namespace hammer
          nodes_t down_;                        // all sources that came into node
          sources_t sources_;                   // sources that was consumed 
          targets_t products_;                  // targets that was produced
+         nodes_t dependencies_;                
          const hammer::type* targeting_type_;  // target type that was requested for building
          mutable unsigned long ref_counter_;
       

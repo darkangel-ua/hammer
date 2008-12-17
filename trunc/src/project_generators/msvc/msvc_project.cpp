@@ -197,7 +197,25 @@ void msvc_project::fill_options(const feature_set& props, options* opts, const m
             opts->pch_target(pch_target);
             opts->pch_usage(options::pch_usage_t::create);
          }
+   }
 
+   feature_set::const_iterator runtime_link_i = props.find("runtime-link");
+   feature_set::const_iterator runtime_debugging_i = props.find("runtime-debugging");
+   if (runtime_link_i != props.end() && runtime_debugging_i != props.end())
+   {
+      const feature* runtime_link = *runtime_link_i;
+      const feature* runtime_debugging = *runtime_debugging_i;
+      if (runtime_link->value() == "static" && runtime_debugging->value() == "on")
+         opts->runtime_type(options::runtime_type_t::multi_threaded_static_debug);
+      else
+         if (runtime_link->value() == "static" && runtime_debugging->value() == "off")
+            opts->runtime_type(options::runtime_type_t::multi_threaded_static);
+         else
+            if (runtime_link->value() == "shared" && runtime_debugging->value() == "on")
+               opts->runtime_type(options::runtime_type_t::multi_threaded_shared_debug);
+            else
+               if (runtime_link->value() == "shared" && runtime_debugging->value() == "off")
+                  opts->runtime_type(options::runtime_type_t::multi_threaded_shared);
    }
 }
 
@@ -253,9 +271,13 @@ static void write_pch_options(std::ostream& os, const msvc_project::options& opt
 static void write_compiler_options(std::ostream& s, const msvc_project::options& opts)
 {
    s << "         <Tool\n"
-        "            Name=\"VCCLCompilerTool\"\n";
+        "            Name=\"VCCLCompilerTool\"\n"
+        "            Optimization=\"0\"\n";
    write_defines(s, opts);
    write_includes(s, opts);
+   
+   if (opts.runtime_type() != msvc_project::options::runtime_type_t::unknown)  
+      s << "          RuntimeLibrary=\"" << opts.runtime_type() << "\"\n";
    
    if (opts.compile_as_cpp())
       s << "          CompileAs=\"2\"\n";

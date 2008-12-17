@@ -21,12 +21,11 @@ pch_meta_target::pch_meta_target(hammer::project* p, const pstring& name,
 
 main_target* pch_meta_target::construct_main_target(const feature_set* properties) const
 {
-  last_constructed_main_target_ = new(project()->engine()->targets_pool()) 
-                                     pch_main_target(this, 
-                                                     name(), 
-                                                     &project()->engine()->get_type_registry().get(types::PCH), 
-                                                     properties,
-                                                     project()->engine()->targets_pool());
+  last_constructed_main_target_ = new pch_main_target(this, 
+                                                      name(), 
+                                                      &project()->engine()->get_type_registry().get(types::PCH), 
+                                                      properties,
+                                                      project()->engine()->targets_pool());
 
    return last_constructed_main_target_;
 }

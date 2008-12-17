@@ -29,17 +29,26 @@ namespace{
          test_build_environment(ostream& output, const location_t& cur_dir) 
             : output_(output),
               current_directory_(cur_dir)
-         {}
-
-         virtual void run_shell_command(const std::string& cmd) const
          {
-            output_ << "[run shell command]: '" << cmd << "'\n";
+            current_directory_.normalize();
+         }
+
+         virtual void run_shell_commands(const std::vector<std::string>& cmds) const
+         {
+            for(vector<string>::const_iterator i = cmds.begin(), last = cmds.end(); i != last; ++i)
+               output_ << "[run shell command]: '" << *i << "'\n";
          }
 
          virtual const location_t& current_directory() const
          {
             return current_directory_;
          }
+
+         virtual void create_directories(const location_t& dir_to_create) const
+         {
+            output_ << "[mkdir] '" << dir_to_create << "'\n";
+         }
+
          
       private:
          ostream& output_;

@@ -1,1 +1,1 @@
-test <toolset>msvc/<variant>debug
+test_debug <toolset>msvc/<variant>debug

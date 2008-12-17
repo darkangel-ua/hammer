@@ -17,7 +17,6 @@ namespace hammer
             : argument_writer(name), feature_registry_(&fr) 
          {}
 
-         virtual void write(std::ostream& output, const build_node& node, const build_environment& environment) const;
          fs_argument_writer& add(const feature_set* pattern, const std::string& what_write);
          fs_argument_writer& add(const std::string& pattern, const std::string& what_write);
          virtual fs_argument_writer* clone() const;
@@ -27,6 +26,8 @@ namespace hammer
          
          patterns_t patterns_;
          feature_registry* feature_registry_;
+
+         virtual void write_impl(std::ostream& output, const build_node& node, const build_environment& environment) const;
    };
 }
 

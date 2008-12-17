@@ -12,11 +12,21 @@ namespace hammer
    class argument_writer
    {
       public:
-         argument_writer(const std::string& name) : name_(name) {}
+         argument_writer(const std::string& name)
+            : name_(name)
+         {}
+
          const std::string& name() const { return name_; }
-         virtual void write(std::ostream& output, const build_node& node, const build_environment& environment) const = 0;
+         void write(std::ostream& output, const build_node& node, const build_environment& environment) const
+         {
+            write_impl(output, node, environment);
+         }
+
          virtual argument_writer* clone() const = 0;
          virtual ~argument_writer() {}
+      
+      protected:   
+         virtual void write_impl(std::ostream& output, const build_node& node, const build_environment& environment) const = 0;
       
       private:
          std::string name_;

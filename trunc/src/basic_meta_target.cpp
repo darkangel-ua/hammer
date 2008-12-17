@@ -115,13 +115,21 @@ void basic_meta_target::resolve_meta_target_source(const source_decl& source,
    engine::loaded_projects_t suitable_projects = project_->engine()->load_project(source.target_path().to_string(), *project_);
    if (source.target_name().empty()) 
    {
-      hammer::project::selected_targets_t selected_targets(suitable_projects.select_best_alternative(*build_request_with_source_properties));
-      for(hammer::project::selected_targets_t::const_iterator i = selected_targets.begin(), last = selected_targets.end(); i != last; ++i)
-	   {
-		   (**i).transfer_sources(simple_targets, meta_targets, 
-                                *build_request_with_source_properties, source.properties());
-		   meta_targets->push_back(make_pair(*i, source.properties()));
-	   }
+      try
+      {
+         hammer::project::selected_targets_t selected_targets(suitable_projects.select_best_alternative(*build_request_with_source_properties));
+         for(hammer::project::selected_targets_t::const_iterator i = selected_targets.begin(), last = selected_targets.end(); i != last; ++i)
+	      {
+		      (**i).transfer_sources(simple_targets, meta_targets, 
+                                   *build_request_with_source_properties, source.properties());
+		      meta_targets->push_back(make_pair(*i, source.properties()));
+	      }
+      }
+      catch(const std::exception& e)
+      {
+         throw std::runtime_error("While resolving meta target '" + source.target_path().to_string() + 
+                                  "' at '" + location().native_file_string() + "\n" + e.what());
+      }
    }
    else
    {

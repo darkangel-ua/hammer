@@ -25,7 +25,7 @@ const type_tag UNKNOWN("UNKNOWN");
 
    void register_standart_types(type_registry& tr)
    {
-      const type tCPP(CPP, ".cpp");
+      const type tCPP(CPP, type::suffixes_t(list_of(".h")(".cpp")(".cc")));
       const type tC(C, ".c");
       const type tH(H, type::suffixes_t(list_of(".h")(".hpp")));
       const type tOBJ(OBJ, ".obj");

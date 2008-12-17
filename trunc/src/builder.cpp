@@ -11,6 +11,10 @@ builder::builder(const build_environment& environment) : environment_(environmen
 
 void builder::build(const build_node& node)
 {
+   for(build_node::nodes_t::const_iterator i = node.dependencies_.begin(), last = node.dependencies_.end(); i != last; ++i)
+      if (!(**i).up_to_date())
+         build(**i);
+
    for(build_node::sources_t::const_iterator i = node.sources_.begin(), last = node.sources_.end(); i != last; ++i)
       if (!i->source_node_->up_to_date())
          build(*i->source_node_);

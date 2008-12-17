@@ -170,6 +170,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\build_environment_impl.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\build_node.cpp"
 				>
 			</File>
@@ -187,6 +191,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\cmdline_builder.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\directory_target.cpp"
 				>
 			</File>
 			<File
@@ -243,6 +251,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\file_target.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\free_feature_arg_writer.cpp"
 				>
 			</File>
 			<File
@@ -358,6 +370,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\meta_target.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\mkdir_action.cpp"
 				>
 			</File>
 			<File
@@ -540,6 +556,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\build_environment_impl.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\build_node.h"
 				>
 			</File>
@@ -557,6 +577,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\cmdline_builder.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\directory_target.h"
 				>
 			</File>
 			<File
@@ -597,6 +621,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\file_target.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\free_feature_arg_writer.h"
 				>
 			</File>
 			<File
@@ -665,6 +693,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\meta_target.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\mkdir_action.h"
 				>
 			</File>
 			<File

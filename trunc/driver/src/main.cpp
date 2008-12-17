@@ -12,6 +12,9 @@
 #include "../../src/meta_target.h"
 #include "../../src/project_generators/msvc/msvc_solution.h"
 #include "../../src/msvc_generator.h"
+#include "../../src/build_environment_impl.h"
+#include "../../src/builder.h"
+#include "../../src/actuality_checker.h"
 
 using namespace std;
 using namespace hammer;
@@ -41,6 +44,7 @@ namespace
       desc.add_options()
          ("help", "produce this help message")
          ("instantiate,i", "instantiate/materialize targets only")
+         ("generate-msvc-8.0-solution,g", "generate msvc-8.0 solution+projects")
          ("generate-projects-locally,l", "when generating build script makes them in one place")
          ("hammer-dir", po::value<std::string>(&opts.hammer_dir_), "specify where hammer will place all its generated output");
 
@@ -157,6 +161,15 @@ namespace
             ++i;
       }
    }
+
+   void run_build(nodes_t& nodes)
+   {
+      actuality_checker checker;
+      checker.check(nodes);
+      build_environment_impl build_environment(fs::current_path());
+      builder builder(build_environment);
+      builder.build(nodes);
+   }
 }
 
 int main(int argc, char** argv)
@@ -172,7 +185,7 @@ int main(int argc, char** argv)
       vector<string> targets;
       feature_set* build_request = engine.feature_registry().make_set();
 
-      if (vm.count("help") || argc < 2)
+      if (vm.count("help"))
       {
          cout << "Usage: hammer.exe <options> <targets> <features>\n" << options_for_help();
          return 0;
@@ -201,7 +214,10 @@ int main(int argc, char** argv)
       nodes_t nodes(generate_targets(instantiated_targets));
       remove_propagated_targets(nodes, project_to_build);
 
-      generate_msvc80_solution(nodes, project_to_build);
+      if (vm.count("generate-msvc-8.0-solution"))
+         generate_msvc80_solution(nodes, project_to_build);
+      else
+         run_build(nodes);
 
       return 0;
    }

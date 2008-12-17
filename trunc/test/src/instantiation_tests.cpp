@@ -306,7 +306,6 @@ BOOST_FIXTURE_TEST_CASE(alternatives_override, instantiation_tests)
    BOOST_REQUIRE_EQUAL(tt.size(), size_t(1));
    check(tt);
 }
-*/
 
 BOOST_FIXTURE_TEST_CASE(no_alternatives_1, instantiation_tests)
 {
@@ -319,3 +318,4 @@ BOOST_FIXTURE_TEST_CASE(no_alternatives_1, instantiation_tests)
    vector<basic_target*> tt;
    BOOST_REQUIRE_THROW(p->instantiate("test", *build_request, &tt), std::exception);
 }
+*/

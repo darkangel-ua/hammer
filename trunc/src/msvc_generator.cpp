@@ -16,6 +16,7 @@
 #include "fs_argument_writer.h"
 #include "source_argument_writer.h"
 #include "product_argument_writer.h"
+#include "free_feature_arg_writer.h"
 
 using namespace boost::assign;
 using namespace std;
@@ -25,19 +26,54 @@ namespace hammer{
 void add_msvc_generators(engine& e, generator_registry& gr)
 {
    e.feature_registry().get_def("toolset").extend_legal_values("msvc");
-
+   
+   {
+      feature_attributes fa;
+      fa.propagated = true;
+      feature_def debug_store("debug-store", list_of("object")("database"), fa);
+      e.feature_registry().add_def(debug_store);
+   }
+ 
    // CPP -> OBJ
    {
-      auto_ptr<fs_argument_writer> compile_flags(new fs_argument_writer("compile_flags", e.feature_registry()));
-      compile_flags->add("<optimization>speed", "/O2").
-                     add("<optimization>space", "/O1");
+      auto_ptr<fs_argument_writer> cflags(new fs_argument_writer("cflags", e.feature_registry()));
+      cflags->add("<optimization>speed", "/O2").
+              add("<optimization>space", "/O1").
+              add("<optimization>off", "/Od").
+              add("<debug-symbols>on/<debug-store>object", "/Z7").
+              add("<debug-symbols>on/<debug-store>database", "/Zi").
+              add("<inlining>off", "/Ob0").
+              add("<inlining>on", "/Ob1").
+              add("<inlining>full", "/Ob2").
+              add("<warnings>on", "/W3").
+              add("<warnings>off", "/W0").
+              add("<warnings>all", "/W4").
+              add("<warnings-as-errors>on", "/WX").
+              add("<rtti>on","/GR").
+              add("<runtime-debugging>off/<runtime-link>shared", "/MD").
+              add("<runtime-debugging>on/<runtime-link>shared", "/MDd").
+              add("<runtime-debugging>off/<runtime-link>static/<threading>multi", "/MT").
+              add("<runtime-debugging>on/<runtime-link>static/<threading>multi", "/MTd");
+
+      auto_ptr<fs_argument_writer> cppflags(new fs_argument_writer("cppflags", e.feature_registry()));
+      cppflags->add("<exception-handling>on/<asynch-exceptions>off/<extern-c-nothrow>off", "/EHs").
+                add("<exception-handling>on/<asynch-exceptions>off/<extern-c-nothrow>on", "/EHsc").
+                add("<exception-handling>on/<asynch-exceptions>on/<extern-c-nothrow>off", "/EHa").
+                add("<exception-handling>on/<asynch-exceptions>on/<extern-c-nothrow>on", "/EHac");
 
       auto_ptr<source_argument_writer> cpp_input(new source_argument_writer("cpp_input", e.get_type_registry().get(types::CPP)));
       auto_ptr<product_argument_writer> obj_output(new product_argument_writer("obj_output", e.get_type_registry().get(types::OBJ)));
+      auto_ptr<free_feature_arg_writer> includes(new free_feature_arg_writer("includes", e.feature_registry().get_def("include"), "-I \"", "\""));
+      auto_ptr<free_feature_arg_writer> defines(new free_feature_arg_writer("defines", e.feature_registry().get_def("define"), "-D \"", "\""));
+      auto_ptr<free_feature_arg_writer> undefines(new free_feature_arg_writer("undefines", e.feature_registry().get_def("undef"), "-U \"", "\""));
       cmdline_builder setup_vars("\"C:\\Program Files\\Microsoft Visual Studio 8\\VC\\bin\\vcvars32.bat\"");
-      cmdline_builder obj_cmd("cl.exe $(compile_flags) \"$(cpp_input)\" -Fo\"$(obj_output)\"");
-      obj_cmd += compile_flags;
+      cmdline_builder obj_cmd("cl.exe /c $(cflags)$(cppflags) $(includes) $(undefines) $(defines) \"$(cpp_input)\" -Fo\"$(obj_output)\"");
+      obj_cmd += cflags;
+      obj_cmd += cppflags;
       obj_cmd += cpp_input;
+      obj_cmd += includes;
+      obj_cmd += undefines;
+      obj_cmd += defines;
       obj_cmd += obj_output;
       auto_ptr<cmdline_action> obj_action(new cmdline_action);
       *obj_action += setup_vars;

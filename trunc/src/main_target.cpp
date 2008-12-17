@@ -5,6 +5,7 @@
 #include "engine.h"
 #include "generator_registry.h"
 #include "build_node.h"
+#include "directory_target.h"
 
 namespace hammer{
 
@@ -27,12 +28,19 @@ main_target::generate()
 {
    std::vector<boost::intrusive_ptr<hammer::build_node> >  result(meta_target_->project()->engine()->generators().construct(this));
    build_node_ = result.front();
+   boost::intrusive_ptr<hammer::build_node> int_dir_node(new hammer::build_node);
+   int_dir_node->products_.push_back(new directory_target(this, intermediate_dir()));
+   int_dir_node->action(static_cast<const directory_target*>(int_dir_node->products_.front())->action());
+
+   build_node_->dependencies_.push_back(int_dir_node);
+
    return result;
 }
 
 const location_t& main_target::intermediate_dir() const
 {
-   return meta_target()->project()->location();
+   intermediate_dir_ = meta_target()->project()->location() / "bin";
+   return intermediate_dir_;
 }
 
 const location_t& main_target::location() const
@@ -40,7 +48,7 @@ const location_t& main_target::location() const
    return meta_target()->project()->location();
 }
 
-void main_target::timestamp_info_impl(timestamp_info_t::getter_policy_t how_to_get) const
+void main_target::timestamp_info_impl() const
 {
    throw std::logic_error("[main_target][FIXME] - this is bad target hierarchy");
 }

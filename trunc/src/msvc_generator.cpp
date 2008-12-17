@@ -37,7 +37,16 @@ void add_msvc_generators(engine& e, generator_registry& gr)
 
    cmdline_builder setup_vars("call \"C:\\Program Files\\Microsoft Visual Studio 8\\VC\\bin\\vcvars32.bat\"");
    shared_ptr<source_argument_writer> static_lib_sources(new source_argument_writer("static_lib_sources", e.get_type_registry().get(types::STATIC_LIB)));
- 
+
+   shared_ptr<fs_argument_writer> link_flags(new fs_argument_writer("link_flags", e.feature_registry()));
+   link_flags->add("<debug-symbols>on", "/DEBUG").
+               add("<debug-symbols>on/<runtime-debugging>off", "/OPT:REF,ICF").
+               add("<user-interface>console", "/subsystem:console").
+               add("<user-interface>gui", "/subsystem:windows").
+               add("<user-interface>wince", "/subsystem:windowsce").
+               add("<user-interface>native", "/subsystem:native").
+               add("<user-interface>auto", "/subsystem:posix");
+
    // CPP -> OBJ
    {
       shared_ptr<fs_argument_writer> cflags(new fs_argument_writer("cflags", e.feature_registry()));
@@ -158,15 +167,6 @@ void add_msvc_generators(engine& e, generator_registry& gr)
    }
 
    { 
-      shared_ptr<fs_argument_writer> link_flags(new fs_argument_writer("link_flags", e.feature_registry()));
-      link_flags->add("<debug-symbols>on", "/DEBUG").
-                  add("<debug-symbols>on/<runtime-debugging>off", "/OPT:REF,ICF").
-                  add("<user-interface>console", "/subsystem:console").
-                  add("<user-interface>gui", "/subsystem:windows").
-                  add("<user-interface>wince", "/subsystem:windowsce").
-                  add("<user-interface>native", "/subsystem:native").
-                  add("<user-interface>auto", "/subsystem:posix");
-
       shared_ptr<source_argument_writer> obj_sources(new source_argument_writer("obj_sources", e.get_type_registry().get(types::OBJ)));
       shared_ptr<source_argument_writer> import_lib_sources(new source_argument_writer("import_lib_sources", e.get_type_registry().get(types::IMPORT_LIB)));
       shared_ptr<product_argument_writer> exe_product(new product_argument_writer("exe_product", e.get_type_registry().get(types::EXE)));
@@ -230,9 +230,10 @@ void add_msvc_generators(engine& e, generator_registry& gr)
       shared_ptr<product_argument_writer> import_lib_product(new product_argument_writer("import_lib_product", e.get_type_registry().get(types::IMPORT_LIB)));
       shared_ptr<product_argument_writer> shared_lib_product(new product_argument_writer("shared_lib_product", e.get_type_registry().get(types::SHARED_LIB)));
       shared_ptr<product_argument_writer> dll_manifest_product(new product_argument_writer("dll_manifest_product", e.get_type_registry().get(types::DLL_MANIFEST)));
-      cmdline_builder shared_lib_cmd("link.exe /DLL /out:\"$(shared_lib_product)\" /IMPLIB:\"$(import_lib_product)\" $(obj_sources) $(static_lib_sources)\n"
+      cmdline_builder shared_lib_cmd("link.exe /DLL $(link_flags) /out:\"$(shared_lib_product)\" /IMPLIB:\"$(import_lib_product)\" $(obj_sources) $(static_lib_sources)\n"
                                      "if %ERRORLEVEL% NEQ 0 EXIT %ERRORLEVEL%\n"
                                      "if exist \"$(dll_manifest_product)\" (mt -manifest \"$(dll_manifest_product)\" \"-outputresource:$(shared_lib_product)\")");
+      shared_lib_cmd += link_flags;
       shared_lib_cmd += obj_sources;
       shared_lib_cmd += static_lib_sources;
       shared_lib_cmd += import_lib_product;

@@ -1,5 +1,5 @@
 project hammer.core : requirements <character-set>multi-byte 
-                                   <library>/boost/ptr_container ;
+                                   <library>/boost/ptr_container/<version>1.34.1 ;
 
 pch stdafx : ../src/stdafx.cpp ../src/stdafx.h ;
 explicit stdafx ;
@@ -34,7 +34,7 @@ lib hammer.core
     [ rglob ../src/project_generators/*.cpp ]
     /libantlr3c/<version>3.1.1
     /boost/function_types
-    /boost/filesystem
+    /boost/filesystem/<version>1.34.1
     /boost/guid
     /boost/regex
     /boost/assign

@@ -2,7 +2,7 @@ exe hammer :
              [ glob ../src/*.cpp ]
              [ glob ../src/*.h ]
              /boost/program_options/<link>static
-             /boost/filesystem/<link>static
+             /boost/filesystem/<version>1.34.1/<link>static
              /boost/format
              /hammer//core/<link>static
            ;

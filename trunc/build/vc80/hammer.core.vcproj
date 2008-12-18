@@ -458,6 +458,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\searched_lib_target.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\source_argument_writer.cpp"
 				>
 			</File>
@@ -773,6 +777,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\searched_lib_main_target.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\searched_lib_target.h"
 				>
 			</File>
 			<File

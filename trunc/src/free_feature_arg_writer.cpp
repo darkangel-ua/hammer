@@ -13,9 +13,10 @@ namespace hammer{
 free_feature_arg_writer::free_feature_arg_writer(const std::string& name, 
                                                  const feature_def& def,
                                                  const std::string& prefix, 
-                                                 const std::string& suffix)
+                                                 const std::string& suffix,
+                                                 const std::string& delimiter)
    : argument_writer(name), feature_def_(def),
-     prefix_(prefix), suffix_(suffix)
+     prefix_(prefix), suffix_(suffix), delimiter_(delimiter)
 {
 }
 
@@ -30,10 +31,10 @@ void free_feature_arg_writer::write_impl(std::ostream& output, const build_node&
          location_t include_path((**i).get_path_data().target_->location() / (**i).value().to_string());
          include_path.normalize();
          include_path = relative_path(include_path, environment.current_directory());
-         output << prefix_ << include_path.native_file_string() << suffix_ << ' ';
+         output << prefix_ << include_path.native_file_string() << suffix_ << delimiter_;
       }
       else
-         output << prefix_ << (**i).value() << suffix_ << ' ';
+         output << prefix_ << (**i).value() << suffix_ << delimiter_;
       i = build_request.find(++i, feature_def_.name());
    }
 }

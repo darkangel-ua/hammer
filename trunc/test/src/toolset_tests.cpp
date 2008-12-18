@@ -133,4 +133,9 @@ BOOST_FIXTURE_TEST_CASE(exe_and_shared_lib, toolset_test)
    BOOST_REQUIRE_NO_THROW(do_test("exe_and_shared_lib"));
 }
 
+BOOST_FIXTURE_TEST_CASE(searched_lib, toolset_test)
+{
+   BOOST_REQUIRE_NO_THROW(do_test("searched_lib"));
+}
+
 }

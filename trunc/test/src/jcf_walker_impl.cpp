@@ -71,7 +71,8 @@ void check_type(void* e, void *t, const char* type_id)
    }
 
    if (!bt->type().equal_or_derived_from(*et))
-      cout << "checker(0): error: Expected type '" << type_id << "' but got '" << bt->type().tag().name() << "'.\n";
+      cout << "checker(0): error: Expected type '" << type_id << "' but got '" << bt->type().tag().name() << "'. "
+              "Target '" << bt->name() << "'";
 }
 
 void* get_features(void* t)

@@ -27,7 +27,7 @@ const type_tag UNKNOWN("UNKNOWN");
 
    void register_standart_types(type_registry& tr)
    {
-      const type tCPP(CPP, type::suffixes_t(list_of(".h")(".cpp")(".cc")));
+      const type tCPP(CPP, type::suffixes_t(list_of(".cpp")(".cc")));
       const type tC(C, ".c");
       const type tH(H, type::suffixes_t(list_of(".h")(".hpp")));
       const type tOBJ(OBJ, ".obj");
@@ -35,7 +35,7 @@ const type_tag UNKNOWN("UNKNOWN");
       const type tSHARED_LIB(SHARED_LIB, ".dll");
       const type tSTATIC_LIB(STATIC_LIB, ".lib");
       const type tIMPORT_LIB(IMPORT_LIB, ".lib");
-      const type tSEARCHED_LIB(SEARCHED_LIB, ".lib");
+      const type tSEARCHED_LIB(SEARCHED_LIB, "");
       const type tHEADER_LIB(HEADER_LIB, type::suffixes_t());
       const type tEXE(EXE, ".exe");
       const type tEXE_MANIFEST(EXE_MANIFEST, ".exe.manifest");

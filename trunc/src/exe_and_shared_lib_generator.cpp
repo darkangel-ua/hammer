@@ -33,37 +33,25 @@ exe_and_shared_lib_generator::construct(const type& target_type,
 {
    feature_set* new_props = 0;
    typedef std::vector<boost::intrusive_ptr<build_node> > build_sources_t;
-   build_sources_t modified_sources(sources);
-   for(build_sources_t::iterator i = modified_sources.begin(); i != modified_sources.end();)
+   for(build_sources_t::const_iterator i = sources.begin(); i != sources.end(); ++i)
    {
       if ((**i).targeting_type_->equal_or_derived_from(searched_lib_))
       {
-        
-         // searched_lib produce only one products - self or file target.
+         // searched_lib produce only one products - searched_lib or file target.
          const basic_target& lib_target = *(**i).products_.front();
 
-         if (lib_target.type().equal_or_derived_from(searched_lib_))
+         feature_set::const_iterator search_location = lib_target.properties().find("search");
+         if (search_location != lib_target.properties().end())
          {
             if (!new_props)
                new_props = props.clone();
 
-            const feature& lib_name = lib_target.properties().get("name");
-            new_props->join("__searched_lib_name", lib_name.value().begin());
-
-            feature_set::const_iterator search_location = lib_target.properties().find("search");
-            if (search_location != lib_target.properties().end())
-               new_props->join(*search_location);
-
-            i = modified_sources.erase(i);
+            new_props->join(*search_location);
          }
-         else
-            ++i; // file target we pass to generator
       }
-      else
-         ++i;
    }
 
-   return generator::construct(target_type, new_props ? *new_props : props, modified_sources, t, name, owner);
+   return generator::construct(target_type, new_props ? *new_props : props, sources, t, name, owner);
 }
 
 }

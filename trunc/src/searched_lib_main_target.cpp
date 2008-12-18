@@ -9,6 +9,7 @@
 #include "file_target.h"
 #include "feature_set.h"
 #include "feature.h"
+#include "searched_lib_target.h"
 
 namespace hammer{
 
@@ -29,13 +30,16 @@ searched_lib_main_target::generate()
    if (i != properties().end())
    {
       engine* e = mtarget()->meta_target()->project()->engine();
-      basic_target* t = new file_target(this, name(), e->get_type_registry().resolve_from_target_name((**i).value()), &properties());
+      basic_target* t = new file_target(this, (**i).value(), &e->get_type_registry().get(types::SEARCHED_LIB), &properties());
       result->products_.push_back(t);
       result->targeting_type_ = &this->type();
    }
    else
    {
-      result->products_.push_back(this);
+      i = properties().find("name");
+      engine* e = mtarget()->meta_target()->project()->engine();
+      basic_target* t = new searched_lib_target(this, (**i).value(), &e->get_type_registry().get(types::SEARCHED_LIB), &properties());
+      result->products_.push_back(t);
       result->targeting_type_ = &this->type();
    }
 

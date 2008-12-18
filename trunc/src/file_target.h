@@ -17,7 +17,6 @@ namespace hammer
       
       protected:
          virtual void timestamp_info_impl() const;
-
    };
 }
 

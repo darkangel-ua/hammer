@@ -170,6 +170,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\build_action.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\build_environment_impl.cpp"
 				>
 			</File>

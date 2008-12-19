@@ -33,10 +33,12 @@ namespace{
             current_directory_.normalize();
          }
 
-         virtual void run_shell_commands(const std::vector<std::string>& cmds) const
+         virtual bool run_shell_commands(const std::vector<std::string>& cmds) const
          {
             for(vector<string>::const_iterator i = cmds.begin(), last = cmds.end(); i != last; ++i)
                output_ << "[run shell command]: '" << *i << "'\n";
+            
+            return true;
          }
 
          virtual const location_t& current_directory() const

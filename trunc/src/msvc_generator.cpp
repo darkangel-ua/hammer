@@ -35,10 +35,17 @@ void add_msvc_generators(engine& e, generator_registry& gr)
       e.feature_registry().add_def(debug_store);
    }
 
-   cmdline_builder setup_vars("call \"C:\\Program Files\\Microsoft Visual Studio 8\\VC\\bin\\vcvars32.bat\"");
+   cmdline_builder setup_vars("call \"C:\\Program Files\\Microsoft Visual Studio 8\\VC\\bin\\vcvars32.bat\" >nul");
    shared_ptr<source_argument_writer> static_lib_sources(new source_argument_writer("static_lib_sources", e.get_type_registry().get(types::STATIC_LIB)));
    shared_ptr<source_argument_writer> searched_lib_sources(new source_argument_writer("searched_lib_sources", e.get_type_registry().get(types::SEARCHED_LIB)));
-   shared_ptr<free_feature_arg_writer> searched_lib_searched_dirs(new free_feature_arg_writer("searched_lib_searched_dirs", e.feature_registry().get_def("search"), string(), string(), ";"));
+   shared_ptr<free_feature_arg_writer> searched_lib_searched_dirs(
+      new free_feature_arg_writer("searched_lib_searched_dirs", 
+                                  e.feature_registry().get_def("search"), 
+                                  string(), 
+                                  string(), 
+                                  ";",
+                                  "/LIBPATH:\"",
+                                  "\""));
 
    shared_ptr<fs_argument_writer> link_flags(new fs_argument_writer("link_flags", e.feature_registry()));
    link_flags->add("<debug-symbols>on", "/DEBUG").
@@ -81,7 +88,7 @@ void add_msvc_generators(engine& e, generator_registry& gr)
       shared_ptr<free_feature_arg_writer> includes(new free_feature_arg_writer("includes", e.feature_registry().get_def("include"), "-I \"", "\""));
       shared_ptr<free_feature_arg_writer> defines(new free_feature_arg_writer("defines", e.feature_registry().get_def("define"), "-D \"", "\""));
       shared_ptr<free_feature_arg_writer> undefines(new free_feature_arg_writer("undefines", e.feature_registry().get_def("undef"), "-U \"", "\""));
-      cmdline_builder obj_cmd("cl.exe /c $(cflags)$(cppflags) $(includes) $(undefines) $(defines) \"$(cpp_input)\" -Fo\"$(obj_output)\"");
+      cmdline_builder obj_cmd("cl.exe /c /nologo $(cflags) $(cppflags) $(includes) $(undefines) $(defines) \"$(cpp_input)\" -Fo\"$(obj_output)\"");
       obj_cmd += cflags;
       obj_cmd += cppflags;
       obj_cmd += cpp_input;
@@ -89,7 +96,7 @@ void add_msvc_generators(engine& e, generator_registry& gr)
       obj_cmd += undefines;
       obj_cmd += defines;
       obj_cmd += obj_output;
-      auto_ptr<cmdline_action> obj_action(new cmdline_action);
+      auto_ptr<cmdline_action> obj_action(new cmdline_action("compile-c-c++", obj_output));
       *obj_action += setup_vars;
       *obj_action += obj_cmd;
       generator::consumable_types_t source;
@@ -173,8 +180,8 @@ void add_msvc_generators(engine& e, generator_registry& gr)
       shared_ptr<source_argument_writer> import_lib_sources(new source_argument_writer("import_lib_sources", e.get_type_registry().get(types::IMPORT_LIB)));
       shared_ptr<product_argument_writer> exe_product(new product_argument_writer("exe_product", e.get_type_registry().get(types::EXE)));
       shared_ptr<product_argument_writer> exe_manifest_product(new product_argument_writer("exe_manifest_product", e.get_type_registry().get(types::EXE_MANIFEST)));
-      auto_ptr<cmdline_action> exe_action(new cmdline_action);
-      cmdline_builder exe_cmd("link.exe $(link_flags) /LIBPATH:\"$(searched_lib_searched_dirs)\" /out:\"$(exe_product)\" $(obj_sources) $(static_lib_sources) $(searched_lib_sources) $(import_lib_sources)\n"
+      auto_ptr<cmdline_action> exe_action(new cmdline_action("link-exe", exe_product));
+      cmdline_builder exe_cmd("link.exe /nologo $(link_flags) $(searched_lib_searched_dirs) /out:\"$(exe_product)\" $(obj_sources) $(static_lib_sources) $(searched_lib_sources) $(import_lib_sources)\n"
                               "if %ERRORLEVEL% NEQ 0 EXIT %ERRORLEVEL%\n"
                               "if exist \"$(exe_manifest_product)\" (mt -manifest \"$(exe_manifest_product)\" \"-outputresource:$(exe_product)\")");
       exe_cmd += link_flags;
@@ -204,14 +211,14 @@ void add_msvc_generators(engine& e, generator_registry& gr)
    }
 
    { 
-      auto_ptr<cmdline_action> static_lib_action(new cmdline_action);
       shared_ptr<source_argument_writer> obj_sources(new source_argument_writer("obj_sources", e.get_type_registry().get(types::OBJ)));
       shared_ptr<product_argument_writer> lib_product(new product_argument_writer("lib_product", e.get_type_registry().get(types::STATIC_LIB)));
       cmdline_builder static_lib_cmd("if exist \"$(lib_product)\" DEL \"$(lib_product)\"\n"
-                                     "lib.exe /out:\"$(lib_product)\" $(obj_sources)");
+                                     "lib.exe /nologo /out:\"$(lib_product)\" $(obj_sources)");
       
       static_lib_cmd += lib_product;
       static_lib_cmd += obj_sources;
+      auto_ptr<cmdline_action> static_lib_action(new cmdline_action("link-static-lib", lib_product));
       *static_lib_action +=setup_vars;
       *static_lib_action +=static_lib_cmd;
       generator::consumable_types_t source;
@@ -229,12 +236,11 @@ void add_msvc_generators(engine& e, generator_registry& gr)
    }
 
    { 
-      auto_ptr<cmdline_action> shared_lib_action(new cmdline_action);
       shared_ptr<source_argument_writer> obj_sources(new source_argument_writer("obj_sources", e.get_type_registry().get(types::OBJ)));
       shared_ptr<product_argument_writer> import_lib_product(new product_argument_writer("import_lib_product", e.get_type_registry().get(types::IMPORT_LIB)));
       shared_ptr<product_argument_writer> shared_lib_product(new product_argument_writer("shared_lib_product", e.get_type_registry().get(types::SHARED_LIB)));
       shared_ptr<product_argument_writer> dll_manifest_product(new product_argument_writer("dll_manifest_product", e.get_type_registry().get(types::DLL_MANIFEST)));
-      cmdline_builder shared_lib_cmd("link.exe /DLL $(link_flags) /LIBPATH:\"$(searched_lib_searched_dirs)\" /out:\"$(shared_lib_product)\" /IMPLIB:\"$(import_lib_product)\" $(obj_sources) $(static_lib_sources) $(searched_lib_sources)\n"
+      cmdline_builder shared_lib_cmd("link.exe /DLL /nologo $(link_flags) $(searched_lib_searched_dirs) /out:\"$(shared_lib_product)\" /IMPLIB:\"$(import_lib_product)\" $(obj_sources) $(static_lib_sources) $(searched_lib_sources)\n"
                                      "if %ERRORLEVEL% NEQ 0 EXIT %ERRORLEVEL%\n"
                                      "if exist \"$(dll_manifest_product)\" (mt -manifest \"$(dll_manifest_product)\" \"-outputresource:$(shared_lib_product)\")");
       shared_lib_cmd += link_flags;
@@ -246,6 +252,7 @@ void add_msvc_generators(engine& e, generator_registry& gr)
       shared_lib_cmd += shared_lib_product;
       shared_lib_cmd += dll_manifest_product;
 
+      auto_ptr<cmdline_action> shared_lib_action(new cmdline_action("link-shared-lib", shared_lib_product));
       *shared_lib_action += setup_vars;
       *shared_lib_action += shared_lib_cmd;
 

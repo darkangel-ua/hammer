@@ -10,7 +10,7 @@ namespace hammer
    class build_environment
    {
       public:
-         virtual void run_shell_commands(const std::vector<std::string>& cmds) const = 0;
+         virtual bool run_shell_commands(const std::vector<std::string>& cmds) const = 0;
          virtual const location_t& current_directory() const = 0;
          virtual void create_directories(const location_t& dir_to_create) const = 0;
          virtual ~build_environment() {}

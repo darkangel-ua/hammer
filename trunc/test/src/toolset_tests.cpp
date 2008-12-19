@@ -51,6 +51,11 @@ namespace{
             output_ << "[mkdir] '" << dir_to_create << "'\n";
          }
 
+         virtual void remove(const location_t& p) const
+         {
+            output_ << "[remove] '" << p << "'\n";
+         }
+
          
       private:
          ostream& output_;

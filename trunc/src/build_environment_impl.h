@@ -12,6 +12,7 @@ namespace hammer
          virtual bool run_shell_commands(const std::vector<std::string>& cmds) const;
          virtual const location_t& current_directory() const;
          virtual void create_directories(const location_t& dir_to_create) const;
+         virtual void remove(const location_t& p) const;
       
       private:
          location_t current_directory_;

@@ -71,4 +71,9 @@ void build_environment_impl::create_directories(const location_t& dir_to_create)
    boost::filesystem::create_directories(dir_to_create);
 }
 
+void build_environment_impl::remove(const location_t& p) const
+{
+   boost::filesystem::remove(p);
+}
+
 }

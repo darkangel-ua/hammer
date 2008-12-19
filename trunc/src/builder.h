@@ -13,7 +13,7 @@ namespace hammer
 
          builder(const build_environment& environment);
          void build(const nodes_t& nodes);
-         void build(const build_node& node);
+         bool build(const build_node& node);
 
       private:
          const build_environment& environment_;

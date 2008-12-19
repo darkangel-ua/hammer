@@ -13,13 +13,14 @@ namespace hammer
       public:
          build_action(const std::string& name) : name_(name) {}
          const std::string& name() const { return name_; }
-         void execute(const build_node& node, const build_environment& environment) const;
+         bool execute(const build_node& node, const build_environment& environment) const;
          virtual std::string target_tag(const build_node& node, const build_environment& environment) const = 0;
 
          virtual ~build_action();
 
       protected:
-         virtual bool execute_impl(const build_node& node, const build_environment& environment) const  = 0;
+         virtual bool execute_impl(const build_node& node, const build_environment& environment) const = 0;
+         virtual void clean_on_fail(const build_node& node, const build_environment& environment) const;
       
       private:
          std::string name_;

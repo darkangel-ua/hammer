@@ -11,7 +11,6 @@ namespace hammer
    class cmdline_action : public build_action
    {
       public:
-         
          template<typename T>
          cmdline_action(const std::string& name, 
                         boost::shared_ptr<T>& target_writer)
@@ -19,7 +18,6 @@ namespace hammer
            target_writer_(shared_dynamic_cast<argument_writer>(target_writer))
          {
          }
-
          virtual std::string target_tag(const build_node& node, const build_environment& environment) const;
 
          cmdline_action& operator +=(const cmdline_builder& b);

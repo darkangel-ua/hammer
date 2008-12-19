@@ -49,16 +49,16 @@ std::size_t actuality_checker::check(boost::posix_time::ptime& max_target_time, 
    if (products_max_time == neg_infin)
    {
       node.up_to_date(false);
-      max_target_time = neg_infin;
-      ++result;
+      result += node.products_.size();
    }
    else
    {
       max_target_time = std::max(sources_max_time, products_max_time);
-      if (sources_max_time > products_max_time)
+      if (sources_max_time > products_max_time ||
+          result != 0) // if some sources or dependencies not up to date thst result != 0
       {
          node.up_to_date(false);
-         ++result;
+         result += node.products_.size();
       }
       else
          node.up_to_date(true);

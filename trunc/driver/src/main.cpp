@@ -165,10 +165,22 @@ namespace
    void run_build(nodes_t& nodes)
    {
       actuality_checker checker;
-      checker.check(nodes);
+      cout << "...checking targets for update... ";
+      size_t target_to_update_count = checker.check(nodes);
+      cout << "Done\n";
+      
+      if (target_to_update_count == 0)
+      {
+         cout << "...nothing to update...\n";
+         return;
+      }
+
+      cout << "...updating " << target_to_update_count << " targets...\n";
       build_environment_impl build_environment(fs::current_path());
       builder builder(build_environment);
       builder.build(nodes);
+
+      cout << "...updated " << target_to_update_count << " targets...\n";
    }
 }
 
@@ -207,11 +219,17 @@ int main(int argc, char** argv)
       if (targets.empty())
          add_all_targets(targets, project_to_build);
 
+      cout << "...instantiating... ";
       vector<basic_target*> instantiated_targets(instantiate_targets(targets, project_to_build, *build_request));
+      cout << "Done.\n";
+
       if (vm.count("instantiate"))
          return 0;
 
+      cout << "...generating build graph... ";
       nodes_t nodes(generate_targets(instantiated_targets));
+      cout << "Done.\n";
+
       remove_propagated_targets(nodes, project_to_build);
 
       if (vm.count("generate-msvc-8.0-solution"))

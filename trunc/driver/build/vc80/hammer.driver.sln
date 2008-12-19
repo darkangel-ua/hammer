@@ -13,8 +13,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hammer.core", "..\..\..\bui
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libantlr3c", "..\..\..\build\vc80\libantlr3c.vcproj", "{8C5A1353-9046-4D77-81B6-843ECDB6DA61}"
 EndProject
-Project("{4CAA2610-1955-4629-BDC1-8133FE0B2087}") = "AQtimeProject1", "..\AQtimeProject1\AQtimeProject1.aqt", "{EC548D9E-B76B-44D4-BA10-7F6801278915}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32

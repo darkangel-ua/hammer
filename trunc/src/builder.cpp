@@ -19,8 +19,9 @@ void builder::build(const build_node& node)
       if (!i->source_node_->up_to_date())
          build(*i->source_node_);
 
-   if (const build_action* action = node.action())
-      action->execute(node, environment_);
+   if (!node.up_to_date())
+      if (const build_action* action = node.action())
+         action->execute(node, environment_);
 }
 
 void builder::build(const nodes_t& nodes)

@@ -183,7 +183,7 @@ void add_msvc_generators(engine& e, generator_registry& gr)
       auto_ptr<cmdline_action> exe_action(new cmdline_action("link-exe", exe_product));
       cmdline_builder exe_cmd("link.exe /nologo $(link_flags) $(searched_lib_searched_dirs) /out:\"$(exe_product)\" $(obj_sources) $(static_lib_sources) $(searched_lib_sources) $(import_lib_sources)\n"
                               "if %ERRORLEVEL% NEQ 0 EXIT %ERRORLEVEL%\n"
-                              "if exist \"$(exe_manifest_product)\" (mt -manifest \"$(exe_manifest_product)\" \"-outputresource:$(exe_product)\")");
+                              "if exist \"$(exe_manifest_product)\" (mt -nologo -manifest \"$(exe_manifest_product)\" \"-outputresource:$(exe_product)\")");
       exe_cmd += link_flags;
       exe_cmd += searched_lib_searched_dirs;
       exe_cmd += obj_sources;
@@ -242,7 +242,7 @@ void add_msvc_generators(engine& e, generator_registry& gr)
       shared_ptr<product_argument_writer> dll_manifest_product(new product_argument_writer("dll_manifest_product", e.get_type_registry().get(types::DLL_MANIFEST)));
       cmdline_builder shared_lib_cmd("link.exe /DLL /nologo $(link_flags) $(searched_lib_searched_dirs) /out:\"$(shared_lib_product)\" /IMPLIB:\"$(import_lib_product)\" $(obj_sources) $(static_lib_sources) $(searched_lib_sources)\n"
                                      "if %ERRORLEVEL% NEQ 0 EXIT %ERRORLEVEL%\n"
-                                     "if exist \"$(dll_manifest_product)\" (mt -manifest \"$(dll_manifest_product)\" \"-outputresource:$(shared_lib_product)\")");
+                                     "if exist \"$(dll_manifest_product)\" (mt -nologo -manifest \"$(dll_manifest_product)\" \"-outputresource:$(shared_lib_product)\")");
       shared_lib_cmd += link_flags;
       shared_lib_cmd += searched_lib_searched_dirs;
       shared_lib_cmd += obj_sources;
@@ -285,7 +285,6 @@ void add_msvc_generators(engine& e, generator_registry& gr)
       auto_ptr<generator> g(new header_lib_generator(e, "header_lib.linker", source, target));
       e.generators().insert(g);
    }
-
 }
 
 }

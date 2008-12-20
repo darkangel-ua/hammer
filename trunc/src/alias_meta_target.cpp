@@ -18,10 +18,10 @@ alias_meta_target::alias_meta_target(hammer::project* p, const pstring& name,
    this->sources(sources);
 }
    
-void alias_meta_target::instantiate(const main_target* owner, 
-                                    const feature_set& build_request,
-                                    std::vector<basic_target*>* result, 
-                                    feature_set* usage_requirements) const
+void alias_meta_target::instantiate_impl(const main_target* owner, 
+                                         const feature_set& build_request,
+                                         std::vector<basic_target*>* result, 
+                                         feature_set* usage_requirements) const
 {
    if (owner != NULL)
       this->usage_requirements().eval(owner->properties(), usage_requirements);

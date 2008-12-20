@@ -9,6 +9,7 @@
 #include "type_registry.h"
 #include "source_target.h"
 #include "main_target.h"
+#include "feature_registry.h"
 
 using namespace std;
 
@@ -151,6 +152,36 @@ void basic_meta_target::transfer_sources(sources_decl* simple_targets,
 
 basic_meta_target::~basic_meta_target()
 {
+}
+
+void basic_meta_target::instantiate(const main_target* owner, 
+                                    const feature_set& build_request,
+                                    std::vector<basic_target*>* result, 
+                                    feature_set* usage_requirements) const
+{
+   if (is_cachable())
+   {
+      for(instantiation_cache_t::const_iterator i = instantiation_cache_.begin(), last = instantiation_cache_.end(); i != last; ++i)
+         if (*i->build_request_ == build_request)
+         {
+            result->insert(result->end(), i->instantiated_targets_.begin(), i->instantiated_targets_.end());
+            usage_requirements->join(*i->computed_usage_requirements_);
+            return;
+         }
+
+      cached_instantiation_data_t cache_item;
+      cache_item.build_request_ = &build_request;
+      cache_item.computed_usage_requirements_ = project()->engine()->feature_registry().make_set();
+      instantiate_impl(owner, build_request, &cache_item.instantiated_targets_, cache_item.computed_usage_requirements_);
+      instantiation_cache_.push_back(cache_item);
+      
+      result->insert(result->end(), cache_item.instantiated_targets_.begin(), cache_item.instantiated_targets_.end());
+      usage_requirements->join(*cache_item.computed_usage_requirements_);
+      
+      return;
+   }
+
+   instantiate_impl(owner, build_request, result, usage_requirements);
 }
 
 }

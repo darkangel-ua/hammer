@@ -45,7 +45,8 @@ namespace hammer
          virtual void instantiate(const main_target* owner, 
                                   const feature_set& build_request,
                                   std::vector<basic_target*>* result, 
-                                  feature_set* usage_requirements) const = 0;
+                                  feature_set* usage_requirements) const;
+
          void set_explicit(bool v) { is_explicit_ = true; }
          bool is_explicit() const { return is_explicit_; }
 
@@ -53,6 +54,14 @@ namespace hammer
          typedef std::vector<std::pair<const basic_meta_target* /* target */, 
                                        const feature_set* /* requested build properties*/> > meta_targets_t;
 
+         // returns true if instantiate() can cache instantiation for build_request
+         virtual bool is_cachable() const { return true; }
+
+         virtual void instantiate_impl(const main_target* owner, 
+                                       const feature_set& build_request,
+                                       std::vector<basic_target*>* result, 
+                                       feature_set* usage_requirements) const = 0;
+         
          void instantiate_simple_targets(const sources_decl& targets, 
                                          const feature_set& build_request,
                                          const main_target& owner, 
@@ -82,12 +91,21 @@ namespace hammer
                                        const feature_set* additional_build_properties) const;
 
       private:
+         struct cached_instantiation_data_t
+         {
+            const feature_set* build_request_;
+            std::vector<basic_target*> instantiated_targets_;
+            feature_set* computed_usage_requirements_;
+         };
+         typedef std::vector<cached_instantiation_data_t> instantiation_cache_t;
+
          hammer::project* project_;
          pstring name_;
          sources_decl sources_;
          requirements_decl requirements_;
          requirements_decl usage_requirements_;
          bool is_explicit_;
+         mutable instantiation_cache_t instantiation_cache_;
    };
 }
 

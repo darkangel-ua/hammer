@@ -65,10 +65,10 @@ namespace hammer
          hammer::scm_info scm_info_;
          bool is_root_;
 
-         virtual void instantiate(const main_target* owner, 
-                                  const feature_set& build_request,
-                                  std::vector<basic_target*>* result, 
-                                  feature_set* usage_requirements) const;
+         virtual void instantiate_impl(const main_target* owner, 
+                                       const feature_set& build_request,
+                                       std::vector<basic_target*>* result, 
+                                       feature_set* usage_requirements) const;
    };
 
    // FIXME: This is bad name. Should be is_fully_inside, is_compatible or something like that

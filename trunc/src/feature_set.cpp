@@ -193,7 +193,14 @@ namespace hammer{
 
    bool feature_set::operator == (const feature_set& rhs) const
    {
-      return this == &rhs;
+      if (size() != rhs.size())
+         return false;
+
+      for(features_t::const_iterator i = rhs.begin(), last = rhs.end(); i != last; ++i)
+         if (find(**i) == end())
+            return false;
+
+      return true;
    }
    
    void feature_set::clear()

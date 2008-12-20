@@ -116,10 +116,10 @@ namespace hammer{
       best_target->instantiate(0, build_request, result, usage_requirements);
    }
    
-   void project::instantiate(const main_target* owner, 
-                             const feature_set& build_request,
-                             std::vector<basic_target*>* result, 
-                             feature_set* usage_requirements) const
+   void project::instantiate_impl(const main_target* owner, 
+                                  const feature_set& build_request,
+                                  std::vector<basic_target*>* result, 
+                                  feature_set* usage_requirements) const
    {
       assert(false && "not implemented.");
    }

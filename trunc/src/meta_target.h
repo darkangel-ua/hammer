@@ -16,14 +16,15 @@ namespace hammer
          meta_target(hammer::project* p, const pstring& name, 
                      const requirements_decl& props,
                      const requirements_decl& usage_req);
-         virtual void instantiate(const main_target* owner, 
-                                  const feature_set& build_request, 
-                                  std::vector<basic_target*>* result, 
-                                  feature_set* usage_requirements) const;
 
          virtual ~meta_target(){}
 
       protected:
+         virtual void instantiate_impl(const main_target* owner, 
+                                       const feature_set& build_request, 
+                                       std::vector<basic_target*>* result, 
+                                       feature_set* usage_requirements) const;
+
          // Now used for PCH support. PCH meta target import meta target sources from owner to reduce typing for msvc pch support
          // pch stdafx : stdafx.cpp stdafx.h ;
          // test a : main.cpp stdafx /boost/regex ;
@@ -35,6 +36,7 @@ namespace hammer
          virtual void compute_usage_requirements(feature_set& result, 
                                                  const feature_set& full_build_request,
                                                  const feature_set& computed_usage_requirements) const;
+         
       private:
          void instantiate_meta_targets(sources_decl& simple_targets,
                                        std::vector<basic_target*>& instantiated_meta_targets,

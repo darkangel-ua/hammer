@@ -16,7 +16,7 @@ namespace hammer
          pstring(pool& p, const char* str);
          pstring(pool& p, const std::string& str);
          size_type size() const { return size_; }
-		 bool empty() const { return s_ == NULL || size_ == 0; }
+         bool empty() const { return s_ == NULL || size_ == 0; }
          std::string to_string() const;
          const char* begin() const { return s_; }
          const char* end() const { return s_ + size_; }
@@ -25,6 +25,7 @@ namespace hammer
          friend std::ostream& operator << (std::ostream& os, const pstring& rhs);
          bool operator < (const pstring& rhs) const;
          bool operator < (const std::string& rhs) const;
+         std::string::size_type find_last_of(char c) const;
 
       private:
          char* s_;

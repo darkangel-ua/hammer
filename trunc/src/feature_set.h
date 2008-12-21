@@ -41,6 +41,7 @@ namespace hammer
          feature_set* clone() const;
          void copy_propagated(const feature_set& rhs);
          size_t size() const { return features_.size(); }
+         bool empty() const { return features_.empty(); }
          void clear();
 
          bool operator == (const feature_set& rhs) const;
@@ -60,6 +61,7 @@ namespace hammer
    void extract_sources(sources_decl& result, const feature_set& fs);
    void extract_uses(sources_decl& result, const feature_set& fs);
    feature_set* parse_simple_set(const std::string& s, feature_registry& r);
+   void dump_for_hash(std::ostream& s, const feature_set& fs);
 }
 
 #endif //h_9689707e_e6c1_4154_9276_3693b32bc777

@@ -86,4 +86,16 @@ namespace hammer{
    {
       return lhs == rhs.begin();
    }
+
+   std::string::size_type pstring::find_last_of(char c) const
+   {
+      if (empty())
+         return std::string::npos;
+      
+      for(const char* i = end() - 1, *first = begin(); i >= first; --i)
+         if (*i == c)
+            return i - begin();
+
+      return std::string::npos;
+   }
 }

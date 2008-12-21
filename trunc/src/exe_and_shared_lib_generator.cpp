@@ -33,7 +33,9 @@ exe_and_shared_lib_generator::construct(const type& target_type,
 {
    feature_set* new_props = 0;
    typedef std::vector<boost::intrusive_ptr<build_node> > build_sources_t;
-   for(build_sources_t::const_iterator i = sources.begin(); i != sources.end(); ++i)
+   build_sources_t modified_sources(sources);
+   remove_dups(modified_sources);
+   for(build_sources_t::const_iterator i = modified_sources.begin(); i != modified_sources.end(); ++i)
    {
       if ((**i).targeting_type_->equal_or_derived_from(searched_lib_))
       {
@@ -51,7 +53,7 @@ exe_and_shared_lib_generator::construct(const type& target_type,
       }
    }
 
-   return generator::construct(target_type, new_props ? *new_props : props, sources, t, name, owner);
+   return generator::construct(target_type, new_props ? *new_props : props, modified_sources, t, name, owner);
 }
 
 }

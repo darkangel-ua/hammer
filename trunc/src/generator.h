@@ -77,6 +77,8 @@ namespace hammer
          const feature_set* constraints_; // == null if no constraints specified
          std::auto_ptr<build_action> action_;
    };
+
+   void remove_dups(std::vector<boost::intrusive_ptr<build_node> >& nodes);
 }
 
 #endif //h_9b0699bd_cc04_4e19_874b_45c95b909551

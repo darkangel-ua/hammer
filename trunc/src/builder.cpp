@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "builder.h"
 #include "build_action.h"
+#include "basic_target.h"
 
 namespace hammer{
 
@@ -8,8 +9,7 @@ builder::builder(const build_environment& environment) : environment_(environmen
 {
 }
 
-
-bool builder::build(const build_node& node)
+bool builder::build(build_node& node)
 {
    typedef std::vector<const build_node*> not_builded_nodes_t;
    not_builded_nodes_t not_builded_nodes;
@@ -37,12 +37,16 @@ bool builder::build(const build_node& node)
 
    if (!node.up_to_date())
       if (const build_action* action = node.action())
-         return action->execute(node, environment_);
+      {
+         bool result = action->execute(node, environment_);
+         node.up_to_date(result);
+         return result;
+      }
    
    return true;
 }
 
-void builder::build(const nodes_t& nodes)
+void builder::build(nodes_t& nodes)
 {
    for(nodes_t::const_iterator i = nodes.begin(), last= nodes.end(); i != last; ++i)
       build(**i);

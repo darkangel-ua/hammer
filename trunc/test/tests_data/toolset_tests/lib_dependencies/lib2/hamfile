@@ -1,0 +1,1 @@
+lib lib2 : lib2.cpp ../lib1/<link>static : <link>static ;

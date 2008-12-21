@@ -12,8 +12,8 @@ namespace hammer
          typedef std::vector<boost::intrusive_ptr<build_node> > nodes_t;
 
          builder(const build_environment& environment);
-         void build(const nodes_t& nodes);
-         bool build(const build_node& node);
+         void build(nodes_t& nodes);
+         bool build(build_node& node);
 
       private:
          const build_environment& environment_;

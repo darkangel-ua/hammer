@@ -125,14 +125,10 @@ void toolset_test::do_test(const string& name)
 
 namespace{
 
+/*
 BOOST_FIXTURE_TEST_CASE(simple_exe, toolset_test)
 {
    BOOST_REQUIRE_NO_THROW(do_test("simple_exe"));
-}
-
-BOOST_FIXTURE_TEST_CASE(exe_and_static_lib, toolset_test)
-{
-   BOOST_REQUIRE_NO_THROW(do_test("exe_and_static_lib"));
 }
 
 BOOST_FIXTURE_TEST_CASE(exe_and_shared_lib, toolset_test)
@@ -143,6 +139,17 @@ BOOST_FIXTURE_TEST_CASE(exe_and_shared_lib, toolset_test)
 BOOST_FIXTURE_TEST_CASE(searched_lib, toolset_test)
 {
    BOOST_REQUIRE_NO_THROW(do_test("searched_lib"));
+}
+
+BOOST_FIXTURE_TEST_CASE(exe_and_static_lib, toolset_test)
+{
+   BOOST_REQUIRE_NO_THROW(do_test("exe_and_static_lib"));
+}
+*/
+
+BOOST_FIXTURE_TEST_CASE(lib_dependencies, toolset_test)
+{
+   BOOST_REQUIRE_NO_THROW(do_test("lib_dependencies"));
 }
 
 }

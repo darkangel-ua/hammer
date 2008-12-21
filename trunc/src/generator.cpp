@@ -97,4 +97,16 @@ generator::~generator()
 
 }
 
+static bool less_by_addr(const boost::intrusive_ptr<build_node>& lhs,
+                         const boost::intrusive_ptr<build_node>& rhs)
+{
+   return lhs.get() < rhs.get();
+}
+
+void remove_dups(std::vector<boost::intrusive_ptr<build_node> >& nodes)
+{
+   std::sort(nodes.begin(), nodes.end(), &less_by_addr);
+   nodes.erase(std::unique(nodes.begin(), nodes.end(), &less_by_addr), nodes.end());
+}
+
 }

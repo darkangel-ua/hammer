@@ -12,8 +12,11 @@ namespace hammer
                              const hammer::type* t, const feature_set* f) : file_target(mt, name, t, f) 
          {
          }
+         
+         virtual const location_t& location() const { return empty_location_; }
 
       protected:
+         location_t empty_location_;
          virtual void timestamp_info_impl() const;
    };
 }

@@ -38,6 +38,9 @@ void add_msvc_generators(engine& e, generator_registry& gr)
    cmdline_builder setup_vars("call \"C:\\Program Files\\Microsoft Visual Studio 8\\VC\\bin\\vcvars32.bat\" >nul");
    shared_ptr<source_argument_writer> static_lib_sources(new source_argument_writer("static_lib_sources", e.get_type_registry().get(types::STATIC_LIB)));
    shared_ptr<source_argument_writer> searched_lib_sources(new source_argument_writer("searched_lib_sources", e.get_type_registry().get(types::SEARCHED_LIB)));
+
+   shared_ptr<product_argument_writer> obj_product(new product_argument_writer("obj_product", e.get_type_registry().get(types::OBJ)));
+
    shared_ptr<free_feature_arg_writer> searched_lib_searched_dirs(
       new free_feature_arg_writer("searched_lib_searched_dirs", 
                                   e.feature_registry().get_def("search"), 
@@ -56,27 +59,31 @@ void add_msvc_generators(engine& e, generator_registry& gr)
                add("<user-interface>native", "/subsystem:native").
                add("<user-interface>auto", "/subsystem:posix");
 
+   shared_ptr<fs_argument_writer> cflags(new fs_argument_writer("cflags", e.feature_registry()));
+   cflags->add("<optimization>speed", "/O2").
+           add("<optimization>space", "/O1").
+           add("<optimization>off", "/Od").
+           add("<debug-symbols>on/<debug-store>object", "/Z7").
+           add("<debug-symbols>on/<debug-store>database", "/Zi").
+           add("<inlining>off", "/Ob0").
+           add("<inlining>on", "/Ob1").
+           add("<inlining>full", "/Ob2").
+           add("<warnings>on", "/W3").
+           add("<warnings>off", "/W0").
+           add("<warnings>all", "/W4").
+           add("<warnings-as-errors>on", "/WX").
+           add("<rtti>on","/GR").
+           add("<runtime-debugging>off/<runtime-link>shared", "/MD").
+           add("<runtime-debugging>on/<runtime-link>shared", "/MDd").
+           add("<runtime-debugging>off/<runtime-link>static/<threading>multi", "/MT").
+           add("<runtime-debugging>on/<runtime-link>static/<threading>multi", "/MTd");
+
+   shared_ptr<free_feature_arg_writer> includes(new free_feature_arg_writer("includes", e.feature_registry().get_def("include"), "-I \"", "\""));
+   shared_ptr<free_feature_arg_writer> defines(new free_feature_arg_writer("defines", e.feature_registry().get_def("define"), "-D \"", "\""));
+   shared_ptr<free_feature_arg_writer> undefines(new free_feature_arg_writer("undefines", e.feature_registry().get_def("undef"), "-U \"", "\""));
+
    // CPP -> OBJ
    {
-      shared_ptr<fs_argument_writer> cflags(new fs_argument_writer("cflags", e.feature_registry()));
-      cflags->add("<optimization>speed", "/O2").
-              add("<optimization>space", "/O1").
-              add("<optimization>off", "/Od").
-              add("<debug-symbols>on/<debug-store>object", "/Z7").
-              add("<debug-symbols>on/<debug-store>database", "/Zi").
-              add("<inlining>off", "/Ob0").
-              add("<inlining>on", "/Ob1").
-              add("<inlining>full", "/Ob2").
-              add("<warnings>on", "/W3").
-              add("<warnings>off", "/W0").
-              add("<warnings>all", "/W4").
-              add("<warnings-as-errors>on", "/WX").
-              add("<rtti>on","/GR").
-              add("<runtime-debugging>off/<runtime-link>shared", "/MD").
-              add("<runtime-debugging>on/<runtime-link>shared", "/MDd").
-              add("<runtime-debugging>off/<runtime-link>static/<threading>multi", "/MT").
-              add("<runtime-debugging>on/<runtime-link>static/<threading>multi", "/MTd");
-
       shared_ptr<fs_argument_writer> cppflags(new fs_argument_writer("cppflags", e.feature_registry()));
       cppflags->add("<exception-handling>on/<asynch-exceptions>off/<extern-c-nothrow>off", "/EHs").
                 add("<exception-handling>on/<asynch-exceptions>off/<extern-c-nothrow>on", "/EHsc").
@@ -84,19 +91,15 @@ void add_msvc_generators(engine& e, generator_registry& gr)
                 add("<exception-handling>on/<asynch-exceptions>on/<extern-c-nothrow>on", "/EHac");
 
       shared_ptr<source_argument_writer> cpp_input(new source_argument_writer("cpp_input", e.get_type_registry().get(types::CPP)));
-      shared_ptr<product_argument_writer> obj_output(new product_argument_writer("obj_output", e.get_type_registry().get(types::OBJ)));
-      shared_ptr<free_feature_arg_writer> includes(new free_feature_arg_writer("includes", e.feature_registry().get_def("include"), "-I \"", "\""));
-      shared_ptr<free_feature_arg_writer> defines(new free_feature_arg_writer("defines", e.feature_registry().get_def("define"), "-D \"", "\""));
-      shared_ptr<free_feature_arg_writer> undefines(new free_feature_arg_writer("undefines", e.feature_registry().get_def("undef"), "-U \"", "\""));
-      cmdline_builder obj_cmd("cl.exe /c /nologo $(cflags) $(cppflags) $(includes) $(undefines) $(defines) \"$(cpp_input)\" -Fo\"$(obj_output)\"");
+      cmdline_builder obj_cmd("cl.exe /c /nologo $(cflags) $(cppflags) $(includes) $(undefines) $(defines) \"$(cpp_input)\" -Fo\"$(obj_product)\"");
       obj_cmd += cflags;
       obj_cmd += cppflags;
       obj_cmd += cpp_input;
       obj_cmd += includes;
       obj_cmd += undefines;
       obj_cmd += defines;
-      obj_cmd += obj_output;
-      auto_ptr<cmdline_action> obj_action(new cmdline_action("compile-c-c++", obj_output));
+      obj_cmd += obj_product;
+      auto_ptr<cmdline_action> obj_action(new cmdline_action("compile-c-c++", obj_product));
       *obj_action += setup_vars;
       *obj_action += obj_cmd;
       generator::consumable_types_t source;
@@ -131,11 +134,23 @@ void add_msvc_generators(engine& e, generator_registry& gr)
 
    // C -> OBJ
    {
+      shared_ptr<source_argument_writer> c_source(new source_argument_writer("c_source", e.get_type_registry().get(types::C)));
+      cmdline_builder obj_cmd("cl.exe /c /TC /nologo $(cflags) $(includes) $(undefines) $(defines) \"$(c_source)\" -Fo\"$(obj_product)\"");
+      obj_cmd += cflags;
+      obj_cmd += c_source;
+      obj_cmd += includes;
+      obj_cmd += undefines;
+      obj_cmd += defines;
+      obj_cmd += obj_product;
+      auto_ptr<cmdline_action> obj_action(new cmdline_action("compile-c-c", obj_product));
+      *obj_action += setup_vars;
+      *obj_action += obj_cmd;
       generator::consumable_types_t source;
       generator::producable_types_t target;
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::C), 1, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::OBJ), 1));
       auto_ptr<generator> g(new generator(e, "msvc.c.compiler", source, target, false));
+      g->action(obj_action);
       e.generators().insert(g);
    }
 

@@ -250,10 +250,12 @@ engine::try_load_project(location_t project_path,
       location_t resolved_use_path, tail_path;
       resolve_use_project(resolved_use_path, tail_path,
                           from_project, project_path);
+      location_t next_load_path(from_project.location() / resolved_use_path);
+      next_load_path.normalize();
       if (tail_path.empty())
-         return try_load_project(from_project.location() / resolved_use_path);
+         return try_load_project(next_load_path);
       else
-         return try_load_project(tail_path, load_project(from_project.location() / resolved_use_path));
+         return try_load_project(tail_path, load_project(next_load_path));
    }
 }
 

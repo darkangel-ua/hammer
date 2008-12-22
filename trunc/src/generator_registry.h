@@ -15,7 +15,7 @@ namespace hammer
          typedef boost::ptr_map<std::string, generator> generators_t;
 
          void insert(std::auto_ptr<generator> g);
-         std::vector<boost::intrusive_ptr<build_node> > construct(main_target* mt) const;
+         std::vector<boost::intrusive_ptr<build_node> > construct(const main_target* mt) const;
 
       private:
          typedef std::vector<const generator*> viable_generators_t;

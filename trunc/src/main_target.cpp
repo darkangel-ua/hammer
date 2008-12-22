@@ -18,7 +18,8 @@ main_target::main_target(const hammer::meta_target* mt,
                          const hammer::type* t, 
                          const feature_set* props,
                          pool& p)
-                        : basic_target(this, name, t, props), meta_target_(mt)
+   : basic_target(this, name, t, props), meta_target_(mt),
+     generate_cache_filled_(false)
 {
 }
 
@@ -30,15 +31,26 @@ void main_target::sources(const std::vector<basic_target*>& srcs)
 std::vector<boost::intrusive_ptr<build_node> > 
 main_target::generate()
 {
-   std::vector<boost::intrusive_ptr<hammer::build_node> >  result(meta_target_->project()->engine()->generators().construct(this));
-   build_node_ = result.front();
+   if (generate_cache_filled_)
+      return generate_cache_;
+   else
+   {
+      std::vector<boost::intrusive_ptr<hammer::build_node> >  result(meta_target_->project()->engine()->generators().construct(this));
+      build_node_ = result.front();
+      add_additional_dependencies(*build_node_);
+      generate_cache_ = result;
+      generate_cache_filled_ = true;
+      return result;
+   }
+}
+
+void main_target::add_additional_dependencies(hammer::build_node& generated_node) const
+{
    boost::intrusive_ptr<hammer::build_node> int_dir_node(new hammer::build_node);
    int_dir_node->products_.push_back(new directory_target(this, intermediate_dir()));
    int_dir_node->action(static_cast<const directory_target*>(int_dir_node->products_.front())->action());
 
-   build_node_->dependencies_.push_back(int_dir_node);
-
-   return result;
+   generated_node.dependencies_.push_back(int_dir_node);
 }
 
 const location_t& main_target::intermediate_dir() const

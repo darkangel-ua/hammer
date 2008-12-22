@@ -44,7 +44,9 @@ namespace
       desc.add_options()
          ("help", "produce this help message")
          ("instantiate,i", "instantiate/materialize targets only")
-         ("generate-msvc-8.0-solution,g", "generate msvc-8.0 solution+projects")
+         ("generate,g", "instantiate/materialize + generate targets")
+         ("up-to-date-check,c", "instantiate/materialize + generate targets + up to date check")
+         ("generate-msvc-8.0-solution,p", "generate msvc-8.0 solution+projects")
          ("generate-projects-locally,l", "when generating build script makes them in one place")
          ("hammer-dir", po::value<std::string>(&opts.hammer_dir_), "specify where hammer will place all its generated output");
 
@@ -162,13 +164,16 @@ namespace
       }
    }
 
-   void run_build(nodes_t& nodes)
+   void run_build(nodes_t& nodes, bool only_up_to_date_check)
    {
       actuality_checker checker;
       cout << "...checking targets for update... ";
       size_t target_to_update_count = checker.check(nodes);
       cout << "Done\n";
-      
+ 
+      if (only_up_to_date_check)
+         return;
+
       if (target_to_update_count == 0)
       {
          cout << "...nothing to update...\n";
@@ -229,13 +234,16 @@ int main(int argc, char** argv)
       cout << "...generating build graph... ";
       nodes_t nodes(generate_targets(instantiated_targets));
       cout << "Done.\n";
+      
+      if (vm.count("generate"))
+         return 0;
 
       remove_propagated_targets(nodes, project_to_build);
 
       if (vm.count("generate-msvc-8.0-solution"))
          generate_msvc80_solution(nodes, project_to_build);
       else
-         run_build(nodes);
+         run_build(nodes, vm.count("up-to-date-check") != 0);
 
       return 0;
    }

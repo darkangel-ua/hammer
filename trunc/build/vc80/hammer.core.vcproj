@@ -361,7 +361,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\header_lib_main_target.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\header_lib_meta_target.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\header_lib_target.cpp"
 				>
 			</File>
 			<File
@@ -684,7 +692,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\header_lib_main_target.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\header_lib_meta_target.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\header_lib_target.h"
 				>
 			</File>
 			<File

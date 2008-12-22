@@ -4,6 +4,7 @@
 #include "type.h"
 #include "engine.h"
 #include "type_registry.h"
+#include "header_lib_target.h"
 
 namespace hammer{
 
@@ -29,22 +30,21 @@ header_lib_generator::construct(const type& target_type,
                                 const main_target& owner) const
 {
    typedef std::vector<boost::intrusive_ptr<build_node> > build_sources_t;
-   build_sources_t modified_sources(sources);
-   build_sources_t extracted_products;
-   for(build_sources_t::iterator i = modified_sources.begin(); i != modified_sources.end();)
-   {
-      if (!(**i).targeting_type_->equal_or_derived_from(header_type_))
-      {
-         extracted_products.push_back(*i);
-         
-         i = modified_sources.erase(i);
-      }
-      else
-         ++i;
-   }
+   build_sources_t result;
 
-   std::vector<boost::intrusive_ptr<build_node> > result(generator::construct(target_type, props, modified_sources, t, composite_target_name, owner));
-   result.insert(result.end(), extracted_products.begin(), extracted_products.end());
+   // add HEADER_LIB node to result
+   boost::intrusive_ptr<build_node> header_lib_node(new build_node);
+   header_lib_node->targeting_type_ = &target_type;
+   result.push_back(header_lib_node);
+   std::auto_ptr<header_lib_target> header_lib_product(new header_lib_target(&owner, *composite_target_name, &target_type, &props));
+   header_lib_node->products_.push_back(header_lib_product.get());
+   header_lib_product.release();
+
+   // filter out H targets
+   for(build_sources_t::const_iterator i = sources.begin(); i != sources.end(); ++i)
+      if (!(**i).targeting_type_->equal_or_derived_from(header_type_))
+         result.push_back(*i);
+   
    return result;
 }
 

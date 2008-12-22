@@ -155,7 +155,7 @@ namespace
 }
 
 std::vector<boost::intrusive_ptr<build_node> >
-generator_registry::construct(main_target* mt) const
+generator_registry::construct(const main_target* mt) const
 {
    typedef std::vector<generator_data> main_viable_generators_t;
    viable_generators_t viable_generators(find_viable_generators(mt->type(), true, mt->properties()));

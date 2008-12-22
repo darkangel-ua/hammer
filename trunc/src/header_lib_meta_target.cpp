@@ -5,6 +5,7 @@
 #include "project.h"
 #include "engine.h"
 #include "type_registry.h"
+#include "header_lib_main_target.h"
 
 namespace hammer{
 
@@ -24,6 +25,16 @@ void header_lib_meta_target::compute_usage_requirements(feature_set& result,
 {
    meta_target::compute_usage_requirements(result, full_build_request, computed_usage_requirements);
    result.join(computed_usage_requirements);
+}
+
+main_target* header_lib_meta_target::construct_main_target(const feature_set* properties) const
+{
+   main_target* mt = new header_lib_main_target(this, 
+                                                name(), 
+                                                &type(), 
+                                                properties,
+                                                project()->engine()->targets_pool());
+   return mt;
 }
 
 }

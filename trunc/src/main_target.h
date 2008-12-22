@@ -30,11 +30,16 @@ namespace hammer
          const location_t& intermediate_dir() const;
          boost::intrusive_ptr<const hammer::build_node> build_node() const { return build_node_; }
 
+      protected:
+         virtual void add_additional_dependencies(hammer::build_node& generated_node) const;
+
       private:
          const hammer::meta_target* meta_target_;
          sources_t sources_;
          boost::intrusive_ptr<hammer::build_node> build_node_;
          mutable location_t intermediate_dir_;
+         std::vector<boost::intrusive_ptr<hammer::build_node> > generate_cache_;
+         bool generate_cache_filled_;
 
          virtual void timestamp_info_impl() const;
    };

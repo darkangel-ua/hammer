@@ -18,6 +18,17 @@ namespace hammer
            target_writer_(shared_dynamic_cast<argument_writer>(target_writer))
          {
          }
+
+         template<typename T>
+         cmdline_action(const std::string& name, 
+                        boost::shared_ptr<T>& target_writer,
+                        const cmdline_builder& rsp_builder)
+         : build_action(name),
+           target_writer_(shared_dynamic_cast<argument_writer>(target_writer)),
+           rsp_builder_(new cmdline_builder(rsp_builder))
+         {
+         }
+
          virtual std::string target_tag(const build_node& node, const build_environment& environment) const;
 
          cmdline_action& operator +=(const cmdline_builder& b);
@@ -30,6 +41,7 @@ namespace hammer
 
          builders_t builders_;
          boost::shared_ptr<argument_writer> target_writer_;
+         std::auto_ptr<cmdline_builder> rsp_builder_;
    };
 }
 

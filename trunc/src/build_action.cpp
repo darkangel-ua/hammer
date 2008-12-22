@@ -18,8 +18,9 @@ bool build_action::execute(const build_node& node, const build_environment& envi
    {
       execution_result = execute_impl(node, environment); 
    }
-   catch(...)
+   catch(const std::exception& e)
    {
+      std::cout << "error: " << e.what() << '\n';
    }
 
    if (execution_result == false)

@@ -14,6 +14,7 @@ namespace hammer
          virtual const location_t& current_directory() const = 0;
          virtual void create_directories(const location_t& dir_to_create) const = 0;
          virtual void remove(const location_t& p) const = 0;
+         virtual void copy(const location_t& source, const location_t& destination) const = 0;
          virtual ~build_environment() {}
    };
 }

@@ -13,7 +13,7 @@ struct type_registry_tests
 {
    type_registry_tests() : fr_(&p_)
    {
-      tr_.insert(type(types::STATIC_LIB, ".lib"));   
+      tr_.insert(type(types::STATIC_LIB, ".lib"));
    }
 
    type_registry tr_;

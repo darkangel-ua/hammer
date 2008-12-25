@@ -27,6 +27,9 @@ generator::generator(hammer::engine& e,
 
 bool generator::is_consumable(const type& t) const
 {
+   if (consumable_types().empty())
+      return true;
+
    for(generator::consumable_types_t::const_iterator i = consumable_types().begin(), last = consumable_types().end(); i != last; ++i)
       if (i->type_->equal_or_derived_from(t))
          return true;
@@ -104,7 +107,7 @@ static bool less_by_addr(const boost::intrusive_ptr<build_node>& lhs,
 }
 
 static bool equal_by_addr(const boost::intrusive_ptr<build_node>& lhs,
-                         const boost::intrusive_ptr<build_node>& rhs)
+                          const boost::intrusive_ptr<build_node>& rhs)
 {
    return lhs.get() == rhs.get();
 }

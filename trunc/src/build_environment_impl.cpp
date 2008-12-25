@@ -57,7 +57,7 @@ void build_environment_impl::dump_shell_command(std::ostream& s, const std::stri
 {
    ifstream f(content_file_name.c_str());
    s << '\n';
-   copy(istreambuf_iterator<char>(f), istreambuf_iterator<char>(), ostreambuf_iterator<char>(s));
+   std::copy(istreambuf_iterator<char>(f), istreambuf_iterator<char>(), ostreambuf_iterator<char>(s));
    s << '\n';
 }
 
@@ -74,6 +74,11 @@ void build_environment_impl::create_directories(const location_t& dir_to_create)
 void build_environment_impl::remove(const location_t& p) const
 {
    boost::filesystem::remove(p);
+}
+
+void build_environment_impl::copy(const location_t& source, const location_t& destination) const
+{
+   assert(false);
 }
 
 }

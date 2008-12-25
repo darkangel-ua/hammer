@@ -56,6 +56,10 @@ namespace{
             output_ << "[remove] '" << p << "'\n";
          }
 
+         virtual void copy(const location_t& source, const location_t& destination) const
+         {
+            output_ << "[copy] '" << source << "' '" << destination << "'\n";
+         }
          
       private:
          ostream& output_;
@@ -145,11 +149,16 @@ BOOST_FIXTURE_TEST_CASE(exe_and_static_lib, toolset_test)
 {
    BOOST_REQUIRE_NO_THROW(do_test("exe_and_static_lib"));
 }
-*/
 
 BOOST_FIXTURE_TEST_CASE(lib_dependencies, toolset_test)
 {
    BOOST_REQUIRE_NO_THROW(do_test("lib_dependencies"));
+}
+*/
+
+BOOST_FIXTURE_TEST_CASE(copy, toolset_test)
+{
+   BOOST_REQUIRE_NO_THROW(do_test("copy"));
 }
 
 }

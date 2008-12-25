@@ -151,6 +151,8 @@ namespace hammer
                          requirements_decl* fs, 
                          feature_set* default_build, 
                          requirements_decl* usage_requirements);
+         void copy_rule(project* p, pstring& name, sources_decl& sources, requirements_decl* fs,
+                        feature_set* default_build, requirements_decl* usage_requirements);
          void import_rule(project* p, std::vector<pstring>& name);
          void feature_feature_rule(project* p, std::vector<pstring>& name, std::vector<pstring>* values,
                                    std::vector<pstring>* attributes);

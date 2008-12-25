@@ -198,6 +198,22 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\copy_generator.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\copy_main_target.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\copy_meta_target.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\copy_target.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\directory_target.cpp"
 				>
 			</File>
@@ -593,6 +609,22 @@
 			</File>
 			<File
 				RelativePath="..\..\src\cmdline_builder.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\copy_generator.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\copy_main_target.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\copy_meta_target.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\copy_target.h"
 				>
 			</File>
 			<File

@@ -24,6 +24,8 @@ const type_tag EXE("EXE");
 const type_tag EXE_MANIFEST("EXE_MANIFEST");
 const type_tag DLL_MANIFEST("DLL_MANIFEST");
 const type_tag UNKNOWN("UNKNOWN");
+const type_tag COPIED("COPIED");
+const type_tag COPIED_TAG("COPIED_TAG");
 
    void register_standart_types(type_registry& tr)
    {
@@ -41,6 +43,8 @@ const type_tag UNKNOWN("UNKNOWN");
       const type tEXE_MANIFEST(EXE_MANIFEST, ".exe.manifest");
       const type tDLL_MANIFEST(DLL_MANIFEST, ".dll.manifest");
       const type tUNKNOWN(UNKNOWN, "");
+      const type tCOPIED(COPIED, "");
+      const type tCOPIED_TAG(COPIED_TAG, ".copy_tag");
       
       tr.insert(tCPP);
       tr.insert(tC);
@@ -56,6 +60,7 @@ const type_tag UNKNOWN("UNKNOWN");
       tr.insert(tEXE_MANIFEST);
       tr.insert(tDLL_MANIFEST);
       tr.insert(tUNKNOWN);
+      tr.insert(tCOPIED);
+      tr.insert(tCOPIED_TAG);
    }
-
 }}

@@ -28,6 +28,10 @@ feature.feature exception-handling : on off : propagated ;
 feature.feature asynch-exceptions : off on : propagated ;  
 feature.feature extern-c-nothrow : off on : propagated ;
 feature.feature debug-symbols : on off : propagated ;
+feature.feature destination : : path no-checks ;                  # for copy rule
+feature.feature recursive : on off : optional ;                   # for copy rule
+feature.feature type-to-copy : : free ;                           # for copy rule
+
 feature.feature warnings :
     on         # enable default/"reasonable" warning level for the tool
     all        # enable all possible warnings issued by the tool

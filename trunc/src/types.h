@@ -22,6 +22,8 @@ namespace hammer
       extern const type_tag EXE_MANIFEST;
       extern const type_tag DLL_MANIFEST;
       extern const type_tag UNKNOWN;
+      extern const type_tag COPIED;
+      extern const type_tag COPIED_TAG;
 
       void register_standart_types(type_registry& tr);
    }

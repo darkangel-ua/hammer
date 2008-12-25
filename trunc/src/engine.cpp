@@ -26,6 +26,7 @@
 #include "fs_helpers.h"
 #include "header_lib_meta_target.h"
 #include "pch_meta_target.h"
+#include "copy_meta_target.h"
 
 using namespace std;
 namespace fs = boost::filesystem;
@@ -46,6 +47,7 @@ engine::engine()
    resolver_.insert("exe", boost::function<void (project*, vector<pstring>&, sources_decl&, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::exe_rule, this, _1, _2, _3, _4, _5, _6)));
    resolver_.insert("obj", boost::function<void (project*, pstring&, sources_decl&, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::obj_rule, this, _1, _2, _3, _4, _5, _6)));
    resolver_.insert("pch", boost::function<void (project*, pstring&, sources_decl&, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::pch_rule, this, _1, _2, _3, _4, _5, _6)));
+   resolver_.insert("copy", boost::function<void (project*, pstring&, sources_decl&, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::copy_rule, this, _1, _2, _3, _4, _5, _6)));
    resolver_.insert("alias", boost::function<void (project*, pstring&, sources_decl*, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::alias_rule, this, _1, _2, _3, _4, _5, _6)));
    resolver_.insert("import", boost::function<void (project*, vector<pstring>&)>(boost::bind(&engine::import_rule, this, _1, _2)));
    resolver_.insert("feature.feature", boost::function<void (project*, vector<pstring>&, vector<pstring>*, vector<pstring>*)>(boost::bind(&engine::feature_feature_rule, this, _1, _2, _3, _4)));
@@ -590,6 +592,18 @@ void engine::pch_rule(project* p, pstring& name, sources_decl& sources, requirem
       usage_requirements ? *usage_requirements : requirements_decl()));
    mt->sources(sources);
    p->add_target(mt);
+}
+
+void engine::copy_rule(project* p, pstring& name, sources_decl& sources, requirements_decl* requirements,
+                       feature_set* default_build, requirements_decl* usage_requirements)
+{
+   auto_ptr<basic_meta_target> mt(new copy_meta_target(p,
+                                                       name, 
+                                                       requirements ? *requirements : requirements_decl(), 
+                                                       usage_requirements ? *usage_requirements : requirements_decl()));
+   mt->sources(sources);
+   p->add_target(mt);
+
 }
 
 void engine::import_rule(project* p, std::vector<pstring>& name)

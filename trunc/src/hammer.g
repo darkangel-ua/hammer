@@ -24,7 +24,7 @@ SOURCE_DECL;
 TARGET_PATH;
 TARGET_NAME;
 SOURCE_DECL_EXPLICIT_TARGET;
-SOURCE_PUBLIC_TAG;
+PUBLIC_TAG;
 }
 
 @parser::preincludes
@@ -77,8 +77,8 @@ sources_decl_impl  : (source_decl | rule_invoke)+ ;
 rule_invoke   : { enter_rule_invoke(PARSER); } '[' { on_nested_rule_enter(PARSER); } rule_impl { on_nested_rule_leave(PARSER); }']' { leave_rule_invoke(PARSER); } -> rule_impl;
 
 source_decl : { enter_sources_decl(PARSER); } source_decl_impl { leave_sources_decl(PARSER); } -> ^(SOURCE_DECL source_decl_impl);
-source_decl_impl : source_public_tag target_path target_name target_features -> source_public_tag ^(TARGET_PATH target_path) target_name target_features;
-source_public_tag : '@' -> SOURCE_PUBLIC_TAG
+source_decl_impl : public_tag target_path target_name target_features -> public_tag ^(TARGET_PATH target_path) target_name target_features;
+public_tag : '@' -> PUBLIC_TAG
              | ;
 target_path : head_slash? ID path_element* trail_slash?;
 target_name : path_slash path_slash ID -> ^(TARGET_NAME ID)

@@ -17,6 +17,8 @@ namespace hammer
    class basic_target : public boost::noncopyable
    {
       public:
+         typedef std::vector<boost::intrusive_ptr<build_node> > build_nodes_t;
+
          basic_target(const main_target* mt, const pstring& name, 
                       const type* t, const feature_set* f) 
                      : main_target_(mt), name_(name), 
@@ -29,7 +31,7 @@ namespace hammer
          void properties(const feature_set* p) { features_ = p; }
          const hammer::main_target* mtarget() const { return main_target_; }
          
-         virtual std::vector<boost::intrusive_ptr<build_node> > generate() = 0;
+         virtual build_nodes_t generate() = 0;
          const timestamp_info_t& timestamp_info(timestamp_info_t::getter_policy_t how_to_get = timestamp_info_t::just_get) const;
 
          virtual const location_t& location() const;

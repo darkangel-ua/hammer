@@ -1,4 +1,5 @@
 lib lib1 : lib1.cpp ;
+lib lib2 : lib2.cpp ;
 exe etest_without_lib : main.cpp ;
 exe etest_with_lib : main.cpp lib1 ;
 

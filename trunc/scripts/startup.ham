@@ -20,6 +20,7 @@ feature.feature version : : no-defaults no-checks ;
 feature.feature library : : free dependency incidental ;
 feature.feature source : : free dependency incidental ;
 feature.feature use : : free dependency incidental ;
+feature.feature dependency : : free dependency incidental ;
 feature.feature optimization : off speed space : propagated ;
 feature.feature profiling : off on : propagated ;
 feature.feature inlining : off on full : propagated ;
@@ -28,8 +29,8 @@ feature.feature exception-handling : on off : propagated ;
 feature.feature asynch-exceptions : off on : propagated ;  
 feature.feature extern-c-nothrow : off on : propagated ;
 feature.feature debug-symbols : on off : propagated ;
-feature.feature destination : : path no-checks ;                  # for copy rule
-feature.feature recursive : on off : optional ;                   # for copy rule
+feature.feature destination : : path no-checks incidental ;       # for copy rule
+feature.feature recursive : on off : optional incidental ;        # for copy rule
 feature.feature type-to-copy : : free ;                           # for copy rule
 
 feature.feature warnings :

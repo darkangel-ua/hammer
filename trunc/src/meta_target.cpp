@@ -110,16 +110,21 @@ namespace hammer{
       build_request_for_dependencies->copy_propagated(*mt_fs);
 
       vector<basic_target*> instantiated_meta_targets;
+      vector<basic_target*> instantiated_dependency_meta_targets;
       sources_decl simple_targets;
       meta_targets_t meta_targets;
+      meta_targets_t dependency_meta_targets;
 
       sources_decl additional_sources(owner == NULL ? sources_decl() : compute_additional_sources(*owner));
       sources_decl sources_from_requirements;
+      sources_decl dependencies_from_requierements;
       extract_sources(sources_from_requirements, *mt_fs);
+      extract_dependencies(dependencies_from_requierements, *mt_fs);
 
       split_sources(&simple_targets, &meta_targets, sources(), *build_request_for_dependencies); 
       split_sources(&simple_targets, &meta_targets, sources_from_requirements, *build_request_for_dependencies);
       split_sources(&simple_targets, &meta_targets, additional_sources, *build_request_for_dependencies);
+      split_sources(&simple_targets, &dependency_meta_targets, dependencies_from_requierements, *build_request_for_dependencies);
       
       project()->engine()->feature_registry().add_defaults(mt_fs);
       main_target* mt = construct_main_target(mt_fs); // construct_main_target may construct main_target with different properties PCH is example
@@ -129,6 +134,12 @@ namespace hammer{
          instantiate_meta_targets(simple_targets, instantiated_meta_targets, 
                                  *local_usage_requirements, meta_targets, 
                                  *build_request_for_dependencies, *mt);
+      
+      if (!dependency_meta_targets.empty())
+         instantiate_meta_targets(simple_targets, instantiated_dependency_meta_targets, 
+                                 *local_usage_requirements, dependency_meta_targets, 
+                                 *build_request_for_dependencies, *mt);
+
       
       sources_decl sources_from_uses;
       extract_uses(sources_from_uses, *mt_fs);
@@ -142,6 +153,7 @@ namespace hammer{
       mt->properties(mt_fs);
       instantiate_simple_targets(simple_targets, *mt_fs, *mt, &instantiated_meta_targets);
       mt->sources(instantiated_meta_targets);
+      mt->dependencies(instantiated_dependency_meta_targets);
       compute_usage_requirements(*usage_requirements, *mt_fs, *local_usage_requirements);
       
       result->push_back(mt);

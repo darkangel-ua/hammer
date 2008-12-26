@@ -15,6 +15,8 @@ namespace hammer
    {
       public:
          typedef std::vector<basic_target*> sources_t;
+         // FIXME I think this should be std::vector<main_target*>
+         typedef sources_t dependencies_t;
 
          main_target(const meta_target* mt, 
                      const pstring& name, 
@@ -23,10 +25,12 @@ namespace hammer
                      pool& p);
 
          virtual const location_t& location() const;
-         void sources(const std::vector<basic_target*>& srcs);
+         void sources(const sources_t& srcs);
          const sources_t& sources() const { return sources_; }
+         void dependencies(const dependencies_t& deps);
+         const dependencies_t& dependencies() const { return dependencies_; }
          const hammer::meta_target* meta_target() const { return meta_target_; }
-         virtual std::vector<boost::intrusive_ptr<build_node> > generate();
+         virtual build_nodes_t generate();
          const location_t& intermediate_dir() const;
          boost::intrusive_ptr<const hammer::build_node> build_node() const { return build_node_; }
 
@@ -36,12 +40,14 @@ namespace hammer
       private:
          const hammer::meta_target* meta_target_;
          sources_t sources_;
+         sources_t dependencies_;
          boost::intrusive_ptr<hammer::build_node> build_node_;
          mutable location_t intermediate_dir_;
          std::vector<boost::intrusive_ptr<hammer::build_node> > generate_cache_;
          bool generate_cache_filled_;
 
          virtual void timestamp_info_impl() const;
+         void generate_and_add_dependencies(hammer::build_node& node);
    };
 }
 

@@ -28,6 +28,23 @@ void main_target::sources(const std::vector<basic_target*>& srcs)
    sources_ = srcs;
 }
 
+void main_target::dependencies(const dependencies_t& deps)
+{
+   dependencies_ = deps;
+}
+
+void main_target::generate_and_add_dependencies(hammer::build_node& node)
+{
+   build_nodes_t result;
+   for(dependencies_t::iterator i = dependencies_.begin(), last = dependencies_.end(); i != last; ++i)
+   {
+      build_nodes_t tmp(static_cast<main_target*>(*i)->generate());
+      result.insert(result.end(), tmp.begin(), tmp.end());
+   }
+
+   node.dependencies_.insert(node.dependencies_.end(), result.begin(), result.end());
+}
+
 std::vector<boost::intrusive_ptr<build_node> > 
 main_target::generate()
 {
@@ -37,6 +54,7 @@ main_target::generate()
    {
       std::vector<boost::intrusive_ptr<hammer::build_node> >  result(meta_target_->project()->engine()->generators().construct(this));
       build_node_ = result.front();
+      generate_and_add_dependencies(*build_node_);
       add_additional_dependencies(*build_node_);
       generate_cache_ = result;
       generate_cache_filled_ = true;

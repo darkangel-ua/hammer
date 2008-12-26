@@ -246,6 +246,12 @@ void hammer_source_decl_set_target_properties(void* sd, void* fs)
    source_decl->properties(static_cast<hammer::feature_set*>(fs));
 }
 
+void hammer_source_decl_set_public(void* sd)
+{
+   source_decl* source_decl = static_cast<hammer::source_decl*>(sd);
+   source_decl->set_public(true);
+}
+
 void* hammer_make_target_path()
 {
    return new target_path_t();

@@ -96,6 +96,19 @@ namespace hammer{
       usage_requirements.join(*local_usage_requirements);
    }
 
+   static void transfer_public_sources(feature_set& dest,
+                                       const sources_decl& sources, 
+                                       feature_registry& fr)
+   {
+      for(sources_decl::const_iterator i = sources.begin(), last = sources.end(); i != last; ++i)
+         if (i->is_public())
+         {
+            feature* f = fr.create_feature("source", "");
+            f->get_dependency_data().source_ = *i;
+            dest.join(f);
+         }
+   }
+
    void meta_target::instantiate_impl(const main_target* owner,
                                       const feature_set& build_request,
                                       std::vector<basic_target*>* result,
@@ -154,6 +167,8 @@ namespace hammer{
       instantiate_simple_targets(simple_targets, *mt_fs, *mt, &instantiated_meta_targets);
       mt->sources(instantiated_meta_targets);
       mt->dependencies(instantiated_dependency_meta_targets);
+      
+      transfer_public_sources(*usage_requirements, sources(), project()->engine()->feature_registry());
       compute_usage_requirements(*usage_requirements, *mt_fs, *local_usage_requirements);
       
       result->push_back(mt);

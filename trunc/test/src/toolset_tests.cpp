@@ -159,11 +159,11 @@ BOOST_FIXTURE_TEST_CASE(copy, toolset_test)
 {
    BOOST_REQUIRE_NO_THROW(do_test("copy"));
 }
-*/
 
 BOOST_FIXTURE_TEST_CASE(dependency, toolset_test)
 {
    BOOST_REQUIRE_NO_THROW(do_test("dependency"));
 }
+*/
 
 }

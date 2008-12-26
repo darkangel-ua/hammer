@@ -12,7 +12,7 @@ namespace hammer
    class source_decl
 	{
 		public:
-         source_decl() : properties_(NULL) {};
+         source_decl() : properties_(NULL), public_(false) {};
          source_decl(const pstring& target_path,
 				         const pstring& target_name,
                      const type* t, 
@@ -21,11 +21,13 @@ namespace hammer
 			            target_path_(target_path),
 						   target_name_(target_name),
                      type_(t),
-                     properties_(props)
+                     properties_(props),
+                     public_(false)
              {}
 			
          void target_path(const pstring& v, const type* t) { target_path_ = v; type_ = t; }
          void target_name(const pstring& v) { target_name_ = v; }
+         void set_public(bool v) { public_ = v; }
 
          // FIXME. feature_set should be ref counted
          void properties(feature_set* v) { properties_ = v; }
@@ -35,6 +37,7 @@ namespace hammer
          const hammer::type* type() const { return type_; }
          // FIXME. feature_set should be ref counted
          feature_set* properties() const { return properties_; }
+         bool is_public() const { return public_; }
 
          bool operator < (const source_decl& rhs) const
 			{
@@ -66,6 +69,7 @@ namespace hammer
          // FIXME: это должно быть const, но так как нужно делать set_dependency_data приходиться от этого отказываться
          // нужно перевести feature_set и feature на reference counted основу и тогда все будет зашибись
          feature_set* properties_;
+         bool public_;
 	 };
 }
 

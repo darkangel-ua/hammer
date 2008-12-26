@@ -319,3 +319,16 @@ BOOST_FIXTURE_TEST_CASE(header_lib, instantiation_tests)
    check(tt);
 }
 */
+
+BOOST_FIXTURE_TEST_CASE(public_source, instantiation_tests)
+{
+   name_ = "public_source";
+   const project* p = 0;
+   BOOST_REQUIRE_NO_THROW(p = &load());
+   BOOST_REQUIRE(p);
+   feature_set* build_request = engine_.feature_registry().make_set();
+   vector<basic_target*> tt;
+   p->instantiate("test", *build_request, &tt);
+   BOOST_REQUIRE_EQUAL(tt.size(), size_t(1));
+   check(tt);
+}

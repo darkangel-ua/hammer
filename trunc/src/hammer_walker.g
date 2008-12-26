@@ -65,9 +65,12 @@ sources_decl returns[void* sources]
 
 source_decl returns[void* sd]
 @init { sd = hammer_make_source_decl(PARSER->super); }	
-	: ^(SOURCE_DECL target_path { hammer_source_decl_set_target_path(PARSER->super, sd, $target_path.tp); } 
+	: ^(SOURCE_DECL source_public_tag[sd]
+	                target_path { hammer_source_decl_set_target_path(PARSER->super, sd, $target_path.tp); } 
 	                target_name[sd] 
 	                target_features[sd]);
+source_public_tag[void* sd] : SOURCE_PUBLIC_TAG { hammer_source_decl_set_public(sd); }
+                           | ;
 target_path returns[void* tp] 
 @init { tp = hammer_make_target_path(); }
         : ^(TARGET_PATH (ID { hammer_add_to_target_path(PARSER->super, tp, $ID); } | SLASH { hammer_add_to_target_path(PARSER->super, tp, $SLASH); })+);

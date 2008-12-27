@@ -108,14 +108,14 @@ namespace hammer{
             dest.join(f);
          }
    }
-
+   
    void meta_target::instantiate_impl(const main_target* owner,
                                       const feature_set& build_request,
                                       std::vector<basic_target*>* result,
                                       feature_set* usage_requirements) const
    {
       feature_set* mt_fs = build_request.clone();
-      requirements().eval(build_request, mt_fs);
+      requirements().eval(build_request, mt_fs, usage_requirements);
 
       feature_set* local_usage_requirements = project()->engine()->feature_registry().make_set();
       feature_set* build_request_for_dependencies = project()->engine()->feature_registry().make_set();

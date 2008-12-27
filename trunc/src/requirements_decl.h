@@ -11,13 +11,21 @@ namespace hammer
    class requirement_base
    {
       public:
+         requirement_base() : public_(false) {}
+
          virtual void eval(feature_set* result, 
                            feature_registry& fr) const = 0; // FIX: война с const-ами разразилась не на шутку :(
          virtual void eval(const feature_set& build_request,
-                           feature_set* result) const = 0;
+                           feature_set* result,
+                           feature_set* public_result) const = 0;
          virtual requirement_base* clone() const = 0;
          virtual void setup_path_data(const basic_meta_target* t) = 0;
          virtual ~requirement_base() {}
+         void set_public(bool v) { public_ = v; } 
+         bool is_public() const { return public_; }
+
+      private:
+         bool public_;
    };
    
    class just_feature_requirement : public requirement_base
@@ -27,7 +35,8 @@ namespace hammer
          virtual void eval(feature_set* result, 
                            feature_registry& fr) const;
          virtual void eval(const feature_set& build_request,
-                           feature_set* result) const;
+                           feature_set* result,
+                           feature_set* public_result) const;
          virtual requirement_base* clone() const { return new just_feature_requirement(*this); }
          virtual void setup_path_data(const basic_meta_target* t);
       
@@ -43,7 +52,8 @@ namespace hammer
          virtual void eval(feature_set* result, 
                            feature_registry& fr) const;
          virtual void eval(const feature_set& build_request,
-                           feature_set* result) const;
+                           feature_set* result,
+                           feature_set* public_result) const;
          virtual requirement_base* clone() const { return new linear_and_condition(*this); }
          virtual void setup_path_data(const basic_meta_target* t);
       
@@ -61,10 +71,11 @@ namespace hammer
          requirements_decl& operator = (const requirements_decl& rhs);
          void add(std::auto_ptr<requirement_base> r);
          void add(const feature& f);
-         void eval(feature_set* result, 
-                   feature_registry& fr) const;
+//          void eval(feature_set* result, 
+//                    feature_registry& fr) const;
          void eval(const feature_set& build_request, 
-                   feature_set* result) const;
+                   feature_set* result,
+                   feature_set* public_result = NULL) const;
          void setup_path_data(const basic_meta_target* t);
          void insert_infront(const requirements_decl& v);
          void insert(const requirements_decl& v); // insert in the end

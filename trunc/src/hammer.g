@@ -60,8 +60,10 @@ rule_posible_args
 string_list : (ID { on_string_list_element(PARSER, $ID.text->chars); })+ -> ^(STRING_LIST ID+);
 feature_set_arg : feature_set -> ^(FEATURE_SET_ARG feature_set);
 feature_set : feature+ -> ^(FEATURE_SET feature+);
+
 project_requirements : ID requirements -> ^(PROJECT_REQUIREMENTS ID ^(REQUIREMENTS_DECL requirements));
-requirements : (feature | conditional_features)+;
+requirements : (public_tag (feature | conditional_features))+;
+
 string_arg  : ID -> ^(STRING_ARG ID);
 feature_arg : feature -> ^(FEATURE_ARG feature);
 // FIXME: wrong implementation of conditional features because its cannot work with dependency features

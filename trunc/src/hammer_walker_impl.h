@@ -32,8 +32,8 @@ extern "C"
    void* hammer_make_feature_arg(void* f);
 
    void* hammer_create_feature(void* context, const char* feature_name, const char* feature_value);
-   void hammer_add_conditional_to_rdecl(void* condition, void* rdecl);
-   void hammer_add_feature_to_rdecl(void* feature, void* rdecl);
+   void hammer_add_conditional_to_rdecl(void* condition, char is_public, void* rdecl);
+   void hammer_add_feature_to_rdecl(void* feature, char is_public, void* rdecl);
    void hammer_set_condition_result(void* condition, void* feature);
    void hammer_add_feature_to_condition(void* feature, void* condition);
    void* hammer_make_sources_decl();

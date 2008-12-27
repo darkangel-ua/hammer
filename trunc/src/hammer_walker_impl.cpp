@@ -129,17 +129,19 @@ void* hammer_make_project_requirements_decl_arg(void* pdecl)
    return new call_resolver_call_arg<project_requirements_decl>(p, true);
 }
 
-void hammer_add_conditional_to_rdecl(void* condition, void* rdecl)
+void hammer_add_conditional_to_rdecl(void* condition, char is_public, void* rdecl)
 {
    requirements_decl* r = static_cast<requirements_decl*>(rdecl);
    std::auto_ptr<requirement_base> c(static_cast<linear_and_condition*>(condition)); 
+   c->set_public(is_public);
    r->add(c);
 }
 
-void hammer_add_feature_to_rdecl(void* feature, void* rdecl)
+void hammer_add_feature_to_rdecl(void* feature, char is_public, void* rdecl)
 {
    requirements_decl* r = static_cast<requirements_decl*>(rdecl);
    std::auto_ptr<requirement_base> nr(new just_feature_requirement(static_cast<hammer::feature*>(feature)));
+   nr->set_public(is_public);
    r->add(nr);
 }
 

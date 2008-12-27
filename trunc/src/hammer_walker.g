@@ -44,10 +44,14 @@ null_arg[void* args_list]
 project_requirements returns[void* result] 
 	: ^(PROJECT_REQUIREMENTS ID requirements) {result = hammer_make_project_requirements_decl($ID.text->chars, $requirements.result); };
 requirements returns[void* result] 
-@init { result = hammer_make_requirements_decl(); }
-	: ^(REQUIREMENTS_DECL (conditional_features { hammer_add_conditional_to_rdecl($conditional_features.c, result); } | 
-	                       feature { hammer_add_feature_to_rdecl($feature.feature, result); })+
+@init { char is_public = 0;
+        result = hammer_make_requirements_decl(); 
+      }
+	: ^(REQUIREMENTS_DECL ( requirements_public_tag[&is_public] (conditional_features { hammer_add_conditional_to_rdecl($conditional_features.c, is_public, result); } | 
+                                                                     feature { hammer_add_feature_to_rdecl($feature.feature, is_public, result); }))+
 	   );
+requirements_public_tag[char* flag] : PUBLIC_TAG { *flag = 1; }
+                        | ;
 conditional_features returns[void* c] 
 @init { c = hammer_make_requirements_condition(); }
 	: ^(CONDITIONAL_FEATURES condition[c] COLON feature { hammer_set_condition_result(c, $feature.feature); });

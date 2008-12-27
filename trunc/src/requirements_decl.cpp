@@ -79,18 +79,19 @@ requirements_decl::~requirements_decl()
       delete impl_;
 }
 
-void requirements_decl::eval(feature_set* result, 
-                             feature_registry& fr) const
-{
-   for(impl_t::requirements_t::const_iterator i = impl_->requirements_.begin(), last = impl_->requirements_.end(); i != last; ++i)
-      i->eval(result, fr);
-}
+// void requirements_decl::eval(feature_set* result, 
+//                              feature_registry& fr) const
+// {
+//    for(impl_t::requirements_t::const_iterator i = impl_->requirements_.begin(), last = impl_->requirements_.end(); i != last; ++i)
+//       i->eval(result, fr);
+// }
 
 void requirements_decl::eval(const feature_set& build_request, 
-                             feature_set* result) const
+                             feature_set* result,
+                             feature_set* public_result) const
 {
    for(impl_t::requirements_t::const_iterator i = impl_->requirements_.begin(), last = impl_->requirements_.end(); i != last; ++i)
-      i->eval(build_request, result);
+      i->eval(build_request, result, public_result);
 }
 
 void linear_and_condition::eval(feature_set* result, 
@@ -110,7 +111,8 @@ void linear_and_condition::eval(feature_set* result,
 }
 
 void linear_and_condition::eval(const feature_set& build_request,
-                                feature_set* result) const
+                                feature_set* result,
+                                feature_set* public_result) const
 {
    bool satisfy = true;
    for(features_t::const_iterator i = features_.begin(), last = features_.end(); i != last; ++i)
@@ -118,7 +120,12 @@ void linear_and_condition::eval(const feature_set& build_request,
                             result->find(**i) != result->end());
 
    if (satisfy)
+   {
       result->join(result_);
+      
+      if (is_public() && public_result != NULL)
+         public_result->join(result_);
+   }
 }
 
 void linear_and_condition::setup_path_data(const basic_meta_target* t)
@@ -134,9 +141,14 @@ void just_feature_requirement::eval(feature_set* result,
 }
 
 void just_feature_requirement::eval(const feature_set& build_request,
-                                    feature_set* result) const
+                                    feature_set* result,
+                                    feature_set* public_result) const
 {
    result->join(f_);
+   
+   if (is_public() && public_result != NULL)
+      public_result->join(f_);
+
 }
 
 void just_feature_requirement::setup_path_data(const basic_meta_target* t)
@@ -167,6 +179,5 @@ void requirements_decl::insert(const requirements_decl& v)
    for(impl_t::const_iterator i = v.impl_->requirements_.begin(), last = v.impl_->requirements_.end(); i!= last; ++i)
       impl_->requirements_.insert(impl_->requirements_.end(), i->clone());
 }
-
 
 }

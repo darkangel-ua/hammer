@@ -633,7 +633,9 @@ void msvc_project::gether_files_impl(const build_node& node, variant& v) const
          if (mi->source_target_->mtarget()->type().equal_or_derived_from(searched_lib_))
          { // this target is searched lib product
             const pstring& file_name = mi->source_target_->name();
-            location_t searched_file(relative_path(mi->source_target_->location(), project_output_dir_) / file_name.to_string());
+            location_t searched_file(mi->source_target_->location().empty() 
+                                       ? file_name.to_string() 
+                                       : relative_path(mi->source_target_->location(), project_output_dir_) / file_name.to_string());
             searched_file.normalize();
             v.options_->add_searched_lib(searched_file.native_file_string());
          }

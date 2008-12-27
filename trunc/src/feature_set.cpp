@@ -204,6 +204,9 @@ void extract_uses(sources_decl& result, const feature_set& fs)
 
 bool feature_set::operator == (const feature_set& rhs) const
 {
+   if (this == &rhs)
+      return true;
+
    if (size() != rhs.size())
       return false;
 
@@ -221,6 +224,9 @@ void feature_set::clear()
 
 bool feature_set::contains(const feature_set& rhs) const
 {
+   if (this == &rhs)
+      return true;
+
    for(const_iterator i = rhs.begin(), last = rhs.end(); i != last; ++i)
       if (find(**i) == end())
          return false;

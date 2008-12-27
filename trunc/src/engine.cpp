@@ -64,6 +64,7 @@ engine::engine()
       fr->add_def(feature_def("__searched_lib_name", vector<string>(), ft));
    }
 
+/*
    {
       feature_attributes ft = {0}; ft.generated = 1;
       fr->add_def(feature_def("__use_pch", boost::assign::list_of<string>("off")("on"), ft));
@@ -73,6 +74,7 @@ engine::engine()
       feature_attributes ft = {0}; ft.generated = ft.free = 1;
       fr->add_def(feature_def("__create_pch", vector<string>(), ft));
    }
+*/
 
    {
       // used to mark targets that belong to pch meta target. Needed for distinguishing PCH and OBJ generators
@@ -658,6 +660,10 @@ static feature_attributes resolve_attributes(std::vector<pstring>* attributes)
    i = find(attributes->begin(), attributes->end(), "no-checks");
    if (i != attributes->end())
       result.no_checks = true;
+
+   i = find(attributes->begin(), attributes->end(), "generated");
+   if (i != attributes->end())
+      result.generated = true;
 
    return result;
 }

@@ -32,6 +32,7 @@ void source_argument_writer::write_impl(std::ostream& output, const build_node& 
             first = false;
 
          location_t source_path = relative_path(i->source_target_->location(), environment.current_directory()) / i->source_target_->name().to_string();
+         source_path.normalize();
          output << source_path.native_file_string();
       }
    }

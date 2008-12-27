@@ -201,19 +201,9 @@ struct generator_tests : setuped_engine
    location_t generators_output_dir_name_;
 };
 
-/*
 BOOST_FIXTURE_TEST_CASE(g_simple_exe, generator_tests)
 {
    test_name_ = "simple_exe";
-   load();
-   BOOST_REQUIRE_NO_THROW(instantiate("test"));
-   BOOST_REQUIRE_NO_THROW(run_generators());
-   check();
-}
-
-BOOST_FIXTURE_TEST_CASE(exe_and_static_lib, generator_tests)
-{
-   test_name_ = "exe_and_static_lib";
    load();
    BOOST_REQUIRE_NO_THROW(instantiate("test"));
    BOOST_REQUIRE_NO_THROW(run_generators());
@@ -229,6 +219,15 @@ BOOST_FIXTURE_TEST_CASE(path_features, generator_tests)
    check();
 }
 
+BOOST_FIXTURE_TEST_CASE(pch, generator_tests)
+{
+   test_name_ = "pch";
+   load();
+   BOOST_REQUIRE_NO_THROW(instantiate("test"));
+   BOOST_REQUIRE_NO_THROW(run_generators(msvc_solution::generation_mode::NON_LOCAL));
+   check();
+}
+
 BOOST_FIXTURE_TEST_CASE(prebuilt_libs, generator_tests)
 {
    test_name_ = "prebuilt_libs";
@@ -238,6 +237,7 @@ BOOST_FIXTURE_TEST_CASE(prebuilt_libs, generator_tests)
    check();
 }
 
+/*
 BOOST_FIXTURE_TEST_CASE(composite_features, generator_tests)
 {
    test_name_ = "composite_features";
@@ -293,21 +293,21 @@ BOOST_FIXTURE_TEST_CASE(obj_meta_target, generator_tests)
    check();
 }
 
-BOOST_FIXTURE_TEST_CASE(pch, generator_tests)
-{
-   test_name_ = "pch";
-   load();
-   BOOST_REQUIRE_NO_THROW(instantiate("test"));
-   BOOST_REQUIRE_NO_THROW(run_generators(msvc_solution::generation_mode::NON_LOCAL));
-   check();
-}
-
 BOOST_FIXTURE_TEST_CASE(local_generation, generator_tests)
 {
    test_name_ = "local_generation";
    load();
    BOOST_REQUIRE_NO_THROW(instantiate("test"));
    BOOST_REQUIRE_NO_THROW(run_generators(msvc_solution::generation_mode::LOCAL));
+   check();
+}
+
+BOOST_FIXTURE_TEST_CASE(exe_and_static_lib, generator_tests)
+{
+   test_name_ = "exe_and_static_lib";
+   load();
+   BOOST_REQUIRE_NO_THROW(instantiate("test"));
+   BOOST_REQUIRE_NO_THROW(run_generators());
    check();
 }
 */

@@ -16,15 +16,26 @@
          OutputDirectory="$(SolutionDir)$(ConfigurationName)"
          IntermediateDirectory="$(ConfigurationName)"
          ConfigurationType="1"
-         CharacterSet="1">
+         CharacterSet="1 ">
          <Tool
             Name="VCCLCompilerTool"
+            Optimization="2 "
+            InlineFunctionExpansion="2 "
+            AdditionalIncludeDirectories=""
+            DebugInformationFormat="0 "
+            WarningLevel=""
             PreprocessorDefinitions="NDEBUG;"
-            UsePrecompiledHeader="0"
+            ExceptionHandling="1 "
+            RuntimeLibrary="2 "
+            RuntimeTypeInfo="true "
+            AdditionalOptions=""
+            UsePrecompiledHeader="0 "
+            PrecompiledHeaderThrough=""
          />
          <Tool
             Name="VCLinkerTool"
-            AdditionalDependencies="..\..\..\lib2\lib2.lib winsock.lib "
+            AdditionalDependencies="winsock.lib ..\..\..\lib2\lib2.lib"
+            AdditionalLibraryDirectories="..\..\..\dummydir;"
          />
       </Configuration>
    </Configurations>
@@ -35,9 +46,6 @@
             UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
          <File
             RelativePath="..\..\..\main.cpp">
-              <FileConfiguration
-                   Name="release">
-              </FileConfiguration>
          </File>
          </Filter>
          <Filter

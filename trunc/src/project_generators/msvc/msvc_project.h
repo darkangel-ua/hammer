@@ -10,6 +10,7 @@
 #include "../../build_node.h"
 #include <boost/shared_ptr.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
+#include "../../cmdline_builder.h"
 
 namespace hammer
 {
@@ -123,10 +124,18 @@ namespace hammer
             struct write_context
             {
                write_context(std::ostream& s,
-                             const type& h_type) : output_(s), h_type_(h_type) {}   
+                             const type& h_type,
+                             build_environment& environment,
+                             const cmdline_builder& compiller_options) 
+                  : output_(s), h_type_(h_type),
+                    environment_(environment),
+                    compiller_options_(compiller_options)
+               {}
 
                const type& h_type_;
                std::ostream& output_;
+               build_environment& environment_;
+               const cmdline_builder& compiller_options_;
             };
 
             struct file_configuration
@@ -135,6 +144,7 @@ namespace hammer
                
                void write(write_context& ctx, const variant& v) const;
                const basic_target* target_;
+               boost::intrusive_ptr<build_node> node_;
                bool exclude_from_build;
             };
 
@@ -161,7 +171,9 @@ namespace hammer
                            const std::string& uid) : types_(t), name(name), uid(uid) {}
                   void write(write_context& ctx, const std::string& path_prefix) const;
                   bool accept(const type* t) const;
-                  void insert(const basic_target* t, const variant& v);
+                  void insert(const boost::intrusive_ptr<build_node>& node,
+                              const basic_target* t, 
+                              const variant& v);
 
                private:
                   types_t types_;
@@ -184,6 +196,9 @@ namespace hammer
             const type& searched_lib_;
             const type& obj_type_;
             const type& pch_type_;
+            cmdline_builder configuration_options_;
+            cmdline_builder compiller_options_;
+            cmdline_builder linker_options_;
 
             void fill_filters() const;
             void write_header(std::ostream& s) const;
@@ -191,7 +206,9 @@ namespace hammer
             void write_files(write_context& ctx) const;
             void gether_files_impl(const build_node& node, variant& v) const;
             void gether_files() const;
-            void insert_into_files(const basic_target* t, const variant& v) const;
+            void insert_into_files(const boost::intrusive_ptr<build_node>& node, 
+                                   const basic_target* t, 
+                                   const variant& v) const;
             configuration_types::value resolve_configuration_type(const variant& v) const;
             void fill_options(const feature_set& props, options* opts, const main_target& mt) const;
       };

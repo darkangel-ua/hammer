@@ -12,10 +12,73 @@
 #include "../../feature_registry.h"
 #include "../../fs_helpers.h"
 #include "../../pch_main_target.h"
+#include "../../build_environment.h"
+#include "../../fs_argument_writer.h"
+#include "../../free_feature_arg_writer.h"
+#include "../../source_argument_writer.h"
 
 using namespace std;
    
 namespace hammer{ namespace project_generators{
+
+namespace
+{
+   class fake_environment : public build_environment
+   {
+      public:
+         fake_environment(const location_t& cur_dir) : current_dir_(cur_dir) {}
+
+         virtual bool run_shell_commands(const std::vector<std::string>& cmds) const { return true; }
+         virtual const location_t& current_directory() const { return current_dir_; }
+         virtual void create_directories(const location_t& dir_to_create) const {};
+         virtual void remove(const location_t& p) const {};
+         virtual void copy(const location_t& source, const location_t& destination) const {};
+      
+      private:
+         location_t current_dir_;
+   };
+
+   class pch_argument_writer : public argument_writer
+   {
+      public:
+         pch_argument_writer(const std::string& name) : argument_writer(name) {}
+         virtual pch_argument_writer* clone() const { return new pch_argument_writer(*this); }
+
+      protected:   
+         virtual void write_impl(std::ostream& output, const build_node& node, const build_environment& environment) const
+         {
+            const feature_set& build_request = node.build_request();
+            feature_set::const_iterator pch_iter = build_request.find("pch");
+            if (pch_iter == build_request.end() || (**pch_iter).value() == "off")
+               return;
+          
+            const pch_main_target* pch_target = static_cast<const pch_main_target*>((**pch_iter).get_generated_data().target_);
+            location_t pch_header(pch_target->pch_header().name().to_string());
+            output << pch_header.leaf();
+         }
+   };
+}
+
+static const string configuration_option_format_string(
+   "         CharacterSet=\"$(charset)\">\n");
+
+static const string compiller_option_format_string(
+   "            Optimization=\"$(optimization)\"\n"
+   "            InlineFunctionExpansion=\"$(inlining)\"\n"
+   "            AdditionalIncludeDirectories=\"$(includes)\"\n"
+   "            DebugInformationFormat=\"$(debug_format)\"\n"
+   "            WarningLevel=\"$(warning_level)\"\n"
+   "            PreprocessorDefinitions=\"$(defines)\"\n"
+   "            ExceptionHandling=\"$(exception_handling)\"\n"
+   "            RuntimeLibrary=\"$(runtime)\"\n"
+   "            RuntimeTypeInfo=\"$(rtti)\"\n"
+   "            AdditionalOptions=\"$(cxxflags)$(cflags)\"\n"
+   "            UsePrecompiledHeader=\"$(pch_type)\"\n"
+   "            PrecompiledHeaderThrough=\"$(pch_header)\"\n");
+
+static const string linker_option_format_string(
+   "            AdditionalDependencies=\"$(additional_libraries)\"\n"
+   "            AdditionalLibraryDirectories=\"$(additional_libraries_dirs)\"\n");
 
 msvc_project::msvc_project(engine& e, 
                            const location_t& output_dir, 
@@ -27,9 +90,95 @@ msvc_project::msvc_project(engine& e,
     project_output_dir_(output_dir_),
     searched_lib_(engine_->get_type_registry().get(types::SEARCHED_LIB)),
     obj_type_(engine_->get_type_registry().get(types::OBJ)),
-    pch_type_(engine_->get_type_registry().get(types::PCH))
-
+    pch_type_(engine_->get_type_registry().get(types::PCH)),
+    configuration_options_(configuration_option_format_string),
+    compiller_options_(compiller_option_format_string),
+    linker_options_(linker_option_format_string)
 {
+   output_dir_.normalize();
+   // configuration options
+   boost::shared_ptr<fs_argument_writer> charset(new fs_argument_writer("charset", e.feature_registry()));
+   charset->add("<character-set>unicode", "1").
+            add("<character-set>multi-byte", "2").
+            add("<character-set>unknown", "0");
+   configuration_options_ += charset;
+
+   // compiller options
+   boost::shared_ptr<fs_argument_writer> optimization(new fs_argument_writer("optimization", e.feature_registry()));
+   optimization->add("<optimization>off", "0").
+                 add("<optimization>speed", "2").
+                 add("<optimization>space", "1");
+   
+   compiller_options_ += optimization;
+
+   boost::shared_ptr<fs_argument_writer> inlining(new fs_argument_writer("inlining", e.feature_registry()));
+   inlining->add("<inlining>off", "0").
+             add("<inlining>on", "1").
+             add("<inlining>full", "2");
+   compiller_options_ += inlining;
+
+   boost::shared_ptr<free_feature_arg_writer> includes(new free_feature_arg_writer("includes", e.feature_registry().get_def("include"), string(), string(), ";"));
+   compiller_options_ += includes;
+
+   boost::shared_ptr<fs_argument_writer> debug_format(new fs_argument_writer("debug_format", e.feature_registry()));
+   debug_format->add("<debug-symbols>on/<profiling>off", "4").
+                 add("<debug-symbols>on/<profiling>on",  "3").
+                 add("<debug-symbols>off",  "0");
+   compiller_options_ += debug_format;
+
+   boost::shared_ptr<fs_argument_writer> warning_level(new fs_argument_writer("warning_level", e.feature_registry()));
+   warning_level->add("<warnings>on", "3").
+                  add("<warnings>off", "0").
+                  add("<warnings>all", "4");
+   compiller_options_ += warning_level;
+
+   boost::shared_ptr<free_feature_arg_writer> defines(new free_feature_arg_writer("defines", e.feature_registry().get_def("define"), string(), string(), ";"));
+   compiller_options_ += defines;
+
+   boost::shared_ptr<fs_argument_writer> exception_handling(new fs_argument_writer("exception_handling", e.feature_registry()));
+   exception_handling->add("<exception-handling>off", "0").
+                       add("<exception-handling>on/<asynch-exceptions>off", "1").
+                       add("<asynch-exceptions>on", "2");
+   compiller_options_ += exception_handling;
+
+   boost::shared_ptr<fs_argument_writer> runtime(new fs_argument_writer("runtime", e.feature_registry()));
+   runtime->add("<runtime-link>static/<runtime-debugging>off", "0").
+            add("<runtime-link>static/<runtime-debugging>on", "1").
+            add("<runtime-link>shared/<runtime-debugging>off", "2").
+            add("<runtime-link>shared/<runtime-debugging>on", "3");
+   compiller_options_ += runtime;
+
+   boost::shared_ptr<fs_argument_writer> rtti(new fs_argument_writer("rtti", e.feature_registry()));
+   rtti->add("<rtti>on", "true").
+         add("<rtti>off", "false");
+   compiller_options_ += rtti;
+
+   boost::shared_ptr<free_feature_arg_writer> cxxflags(new free_feature_arg_writer("cxxflags", e.feature_registry().get_def("cxxflags")));
+   compiller_options_ += cxxflags;
+
+   boost::shared_ptr<free_feature_arg_writer> cflags(new free_feature_arg_writer("cflags", e.feature_registry().get_def("cflags")));
+   compiller_options_ += cflags;
+
+   boost::shared_ptr<pch_argument_writer> pch_header(new pch_argument_writer("pch_header"));
+   compiller_options_ += pch_header;
+
+   boost::shared_ptr<fs_argument_writer> pch_type(new fs_argument_writer("pch_type", e.feature_registry()));
+   pch_type->add("<pch>use", "2").
+             add("<pch>create", "1").
+             add("<pch>off", "0");
+   compiller_options_ += pch_type;
+
+   // linker options
+   boost::shared_ptr<source_argument_writer> additional_libraries(
+       new source_argument_writer("additional_libraries", 
+                                  e.get_type_registry().get(types::SEARCHED_LIB)));
+   linker_options_ += additional_libraries;
+
+   boost::shared_ptr<free_feature_arg_writer> additional_libraries_dirs(
+       new free_feature_arg_writer("additional_libraries_dirs", 
+                                   e.feature_registry().get_def("search"),
+                                   string(), string(), ";"));
+   linker_options_ += additional_libraries_dirs;
 }
 
 static std::string make_variant_name(const feature_set& fs)
@@ -55,6 +204,7 @@ void msvc_project::add_variant(boost::intrusive_ptr<const build_node> node)
    {
       meta_target_ = naked_variant->target_->meta_target();
       project_output_dir_ = output_dir() / name().to_string();
+      project_output_dir_.normalize();
       id_ = project_output_dir().string();
       full_project_name_ = project_output_dir() / (name().to_string() + ".vcproj");
       meta_target_relative_to_output_ = relative_path(meta_target_->location(), project_output_dir());
@@ -128,8 +278,8 @@ void msvc_project::fill_options(const feature_set& props, options* opts, const m
    const feature_def& cxxflags = engine_->feature_registry().get_def("cxxflags");
    const feature_def& cflags = engine_->feature_registry().get_def("cflags");
    const feature_def& character_set = engine_->feature_registry().get_def("character-set");
-   const feature_def& use_pch = engine_->feature_registry().get_def("__use_pch");
-   const feature_def& create_pch = engine_->feature_registry().get_def("__create_pch");
+   const feature_def& use_pch = engine_->feature_registry().get_def("pch");
+   const feature_def& create_pch = engine_->feature_registry().get_def("pch");
    const feature_def& pch = engine_->feature_registry().get_def("__pch");
    
    for(feature_set::const_iterator i = props.begin(), last = props.end(); i != last; ++i)
@@ -287,6 +437,17 @@ static void write_compiler_options(std::ostream& s, const msvc_project::options&
    s << "         />\n";
 }
 
+static void write_compiler_options(std::ostream& s, 
+                                   const cmdline_builder& formater, 
+                                   const build_node& node,
+                                   const build_environment& environment)
+{
+   s << "         <Tool\n"
+      "            Name=\"VCCLCompilerTool\"\n";
+   formater.write(s, node, environment);
+   s << "         />\n";
+}
+
 void msvc_project::write_configurations(std::ostream& s) const
 {
    s << "   <Configurations>\n";
@@ -300,11 +461,11 @@ void msvc_project::write_configurations(std::ostream& s) const
            "         Name=\"" << i->name_ << "|Win32\"\n"
            "         OutputDirectory=\"$(SolutionDir)$(ConfigurationName)\"\n"
            "         IntermediateDirectory=\"$(ConfigurationName)\"\n"
-           "         ConfigurationType=\"" << cfg_type << "\"\n"
-           "         CharacterSet=\"" << opts.character_set() << "\">\n";
-      
-      if (opts.has_compiler_options())
-         write_compiler_options(s, opts);
+           "         ConfigurationType=\"" << cfg_type << "\"\n";
+
+      configuration_options_.write(s, *i->node_, fake_environment(project_output_dir()));
+
+      write_compiler_options(s, compiller_options_, *i->node_, fake_environment(project_output_dir()));
 
       switch(cfg_type)
       {
@@ -312,9 +473,9 @@ void msvc_project::write_configurations(std::ostream& s) const
          case configuration_types::shared_lib:
          {
             s << "         <Tool\n"
-                 "            Name=\"VCLinkerTool\"\n"
-                 "            AdditionalDependencies=\"" << opts.searched_libs().str() << "\"\n"
-                 "         />\n";
+                 "            Name=\"VCLinkerTool\"\n";
+            linker_options_.write(s, *i->node_, fake_environment(project_output_dir()));
+            s << "         />\n";
             break;
          }
       }
@@ -344,13 +505,13 @@ void msvc_project::file_configuration::write(write_context& ctx, const variant& 
    feature_set* props = compute_file_conf_properties(*target_, v);
    v.owner_->fill_options(*props, &opts, *v.target_);
 
-   ctx.output_ << "              <FileConfiguration\n"
-               << "                   Name=\"" << v.name_ << "\">\n";
-   
-   if (opts.has_compiler_options())
-      write_compiler_options(ctx.output_, opts);
-
-   ctx.output_ << "              </FileConfiguration>\n";
+   if (!v.properties_->contains(target_->properties()))
+   {
+      ctx.output_ << "              <FileConfiguration\n"
+                  << "                   Name=\"" << v.name_ << "\">\n";
+      write_compiler_options(ctx.output_, ctx.compiller_options_, *node_, ctx.environment_);
+      ctx.output_ << "              </FileConfiguration>\n";
+   }
 }
 
 void msvc_project::file_with_cfgs_t::write(write_context& ctx, const std::string& path_prefix) const
@@ -408,7 +569,8 @@ void msvc_project::generate() const
    write_header(f);
    write_configurations(f);
    
-   write_context ctx(f, engine_->get_type_registry().get(types::H));
+   fake_environment environment(project_output_dir());
+   write_context ctx(f, engine_->get_type_registry().get(types::H), environment, compiller_options_);
    write_files(ctx);
 
    write_bottom(f);
@@ -426,23 +588,28 @@ bool msvc_project::filter_t::accept(const type* t) const
    return false;
 }
 
-void msvc_project::filter_t::insert(const basic_target* t, const variant& v)
+void msvc_project::filter_t::insert(const boost::intrusive_ptr<build_node>& node, 
+                                    const basic_target* t, 
+                                    const variant& v)
 {
    file_with_cfgs_t& fwc = files_[t];
    fwc.file_name_ = t->name();
    file_configuration& fc = fwc.file_config[&v];
    fc.exclude_from_build = false;
    fc.target_ = t;
+   fc.node_ = node;
 }
 
-void msvc_project::insert_into_files(const basic_target* t, const variant& v) const
+void msvc_project::insert_into_files(const boost::intrusive_ptr<build_node>& node, 
+                                     const basic_target* t, 
+                                     const variant& v) const
 {
    const type* tp = &t->type();
    for(files_t::iterator fi = files_.begin(), flast = files_.end(); fi != flast; ++fi)
    {
       if (fi->accept(tp))
       {
-         fi->insert(t, v);
+         fi->insert(node, t, v);
          return;
       }
    }
@@ -457,7 +624,7 @@ void msvc_project::gether_files_impl(const build_node& node, variant& v) const
           mi->source_target_->mtarget()->type().equal_or_derived_from(obj_type_) ||
           mi->source_target_->mtarget()->type().equal_or_derived_from(pch_type_))
       {
-         insert_into_files(mi->source_target_, v);
+         insert_into_files(mi->source_node_, mi->source_target_, v);
          if (mi->source_node_)
             gether_files_impl(*mi->source_node_, v);
       }
@@ -465,8 +632,8 @@ void msvc_project::gether_files_impl(const build_node& node, variant& v) const
       {
          if (mi->source_target_->mtarget()->type().equal_or_derived_from(searched_lib_))
          { // this target is searched lib product
-            const feature& file_name = mi->source_target_->properties().get("file");
-            location_t searched_file(relative_path(mi->source_target_->mtarget()->location(), project_output_dir_) / file_name.value().to_string());
+            const pstring& file_name = mi->source_target_->name();
+            location_t searched_file(relative_path(mi->source_target_->location(), project_output_dir_) / file_name.to_string());
             searched_file.normalize();
             v.options_->add_searched_lib(searched_file.native_file_string());
          }

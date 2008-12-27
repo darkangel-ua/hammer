@@ -32,6 +32,7 @@ feature.feature debug-symbols : on off : propagated ;
 feature.feature destination : : path no-checks incidental ;       # for copy rule
 feature.feature recursive : on off : optional incidental ;        # for copy rule
 feature.feature type-to-copy : : free ;                           # for copy rule
+feature.feature pch : off create use : generated ;
 
 feature.feature warnings :
     on         # enable default/"reasonable" warning level for the tool
@@ -93,7 +94,7 @@ feature.feature user-interface : console gui wince native auto ;
 
 feature.feature variant : : propagated composite ;
 feature.feature override : on : no-defaults optional ;
-feature.feature character-set : unicode multi-byte : optional no-defaults ; # toolset.msvc
+feature.feature character-set : unicode multi-byte unknown : optional ; # toolset.msvc
 
 variant debug   : : <optimization>off <debug-symbols>on <inlining>off <runtime-debugging>on ;
 variant release : : <optimization>speed <debug-symbols>off <inlining>full 

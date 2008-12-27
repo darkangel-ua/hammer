@@ -6,6 +6,7 @@
 #include "argument_writer.h"
 #include <map>
 #include <boost/shared_ptr.hpp>
+#include <boost/smart_cast.hpp>
 
 namespace hammer
 {
@@ -16,7 +17,7 @@ namespace hammer
       public:
          cmdline_builder(const std::string& cmd);
          template<typename T>
-         cmdline_builder& operator +=(boost::shared_ptr<T>& v) { add(shared_dynamic_cast<argument_writer>(v)); return *this; }
+         cmdline_builder& operator +=(boost::shared_ptr<T>& v) { add(boost::shared_static_cast<argument_writer>(v)); return *this; }
          void write(std::ostream& output, const build_node& node, const build_environment& environment) const;
 
       private:

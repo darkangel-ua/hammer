@@ -74,10 +74,10 @@ void add_msvc_generators(engine& e, generator_registry& gr)
            add("<warnings>all", "/W4").
            add("<warnings-as-errors>on", "/WX").
            add("<rtti>on","/GR").
-           add("<runtime-debugging>off/<runtime-link>shared", "/MD").
-           add("<runtime-debugging>on/<runtime-link>shared", "/MDd").
            add("<runtime-debugging>off/<runtime-link>static/<threading>multi", "/MT").
-           add("<runtime-debugging>on/<runtime-link>static/<threading>multi", "/MTd");
+           add("<runtime-debugging>on/<runtime-link>static/<threading>multi", "/MTd").
+           add("<runtime-debugging>off/<runtime-link>shared", "/MD").
+           add("<runtime-debugging>on/<runtime-link>shared", "/MDd");
 
    shared_ptr<free_feature_arg_writer> includes(new free_feature_arg_writer("includes", e.feature_registry().get_def("include"), "-I \"", "\""));
    shared_ptr<free_feature_arg_writer> defines(new free_feature_arg_writer("defines", e.feature_registry().get_def("define"), "-D \"", "\""));

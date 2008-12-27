@@ -2,6 +2,7 @@
 #include "fs_argument_writer.h"
 #include "feature_set.h"
 #include "build_node.h"
+#include "feature.h"
 
 namespace hammer{
 
@@ -9,8 +10,21 @@ void fs_argument_writer::write_impl(std::ostream& output, const build_node& node
 {
    const feature_set& build_request = node.build_request();
    for(patterns_t::const_iterator i = patterns_.begin(), last = patterns_.end(); i != last; ++i)
-      if (build_request.contains(*i->first))
-         output << i->second << ' ';
+   {
+      if (i->first->size() == 1 &&
+          (**i->first->begin()).attributes().generated)
+      {
+         feature_set::const_iterator f = build_request.find((**i->first->begin()).name());
+         if (f != build_request.end() &&
+             (**f).value() == (**i->first->begin()).value())
+         {
+            output << i->second << ' ';
+         }
+      }
+      else
+         if (build_request.contains(*i->first))
+            output << i->second << ' ';
+   }
 }
 
 fs_argument_writer& fs_argument_writer::add(const feature_set* pattern, const std::string& what_write)

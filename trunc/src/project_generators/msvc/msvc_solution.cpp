@@ -174,6 +174,8 @@ void msvc_solution::add_target(boost::intrusive_ptr<const build_node> node)
                        p->dependencies().begin(), 
                        p->dependencies().end());
 
+   // stabilize order to allow normal testing. May be FIXME:
+   std::sort(dependencies.begin(), dependencies.end(), &less_by_location_and_name);
    impl_->generate_dependencies(dependencies.begin(), dependencies.end());
 }
 

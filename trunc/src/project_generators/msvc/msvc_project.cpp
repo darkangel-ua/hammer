@@ -197,7 +197,6 @@ void msvc_project::add_variant(boost::intrusive_ptr<const build_node> node)
    v->node_ = node;
    v->target_ = node->products_[0]->mtarget();
    v->name_ = make_variant_name(t->properties());
-   v->options_.reset(new options);
    v->owner_ = this;
    variants_.push_back(v);
    if (id_.empty())
@@ -270,173 +269,6 @@ configuration_types::value msvc_project::resolve_configuration_type(const varian
                throw std::runtime_error("[msvc_project] Can't resolve configurations type '" + v.target_->type().tag().name() + "'.");
 } 
 
-void msvc_project::fill_options(const feature_set& props, options* opts, const main_target& mt) const
-{
-   const feature_def& define_def = engine_->feature_registry().get_def("define");
-   const feature_def& include_def = engine_->feature_registry().get_def("include");
-   const feature_def& searched_lib = engine_->feature_registry().get_def("__searched_lib_name");
-   const feature_def& cxxflags = engine_->feature_registry().get_def("cxxflags");
-   const feature_def& cflags = engine_->feature_registry().get_def("cflags");
-   const feature_def& character_set = engine_->feature_registry().get_def("character-set");
-   const feature_def& use_pch = engine_->feature_registry().get_def("pch");
-   const feature_def& create_pch = engine_->feature_registry().get_def("pch");
-   const feature_def& pch = engine_->feature_registry().get_def("__pch");
-   
-   for(feature_set::const_iterator i = props.begin(), last = props.end(); i != last; ++i)
-   {
-      if ((**i).definition() == define_def)
-         opts->add_define((**i).value());
-      else
-         if ((**i).definition() == include_def)
-         {
-            // По уму это нужно вообще отсюда убрать 
-            // и передавать в эту функцию variant для которого идет заполнение опций и уже у него брать путь
-            // относительно которого будут путезависимые опции
-            const basic_meta_target* bmt = (**i).get_path_data().target_;
-            location_t p1(bmt->location() / (**i).value().to_string());
-            p1.normalize();
-            location_t p = relative_path(p1, project_output_dir_) ;
-            p.normalize();
-
-            opts->add_include(p.native_file_string());
-         }
-         else
-            if ((**i).definition() == searched_lib)
-               opts->add_searched_lib((**i).value().to_string());
-            else
-               if ((**i).definition() == cxxflags)
-               {
-                  if ((**i).value() == "/TP" || (**i).value() == "/Tp")
-                     opts->compile_as_cpp(true);
-                  else
-                     opts->add_cxx_flag((**i).value());
-               }
-               else
-                  if ((**i).definition() == cflags)
-                  {
-                     if ((**i).value() == "/TP" || (**i).value() == "/Tp")
-                        opts->compile_as_cpp(true);
-                     else
-                        opts->add_cxx_flag((**i).value());
-                  }
-                  else
-                     if ((**i).definition() == character_set)
-                     {
-                        if ((**i).value() == "unicode")
-                           opts->character_set(options::character_set::unicode);
-                        else
-                           if ((**i).value() == "multi-byte")
-                              opts->character_set(options::character_set::multi_byte);
-                     }
-
-      if ((**i).definition() == use_pch)
-      {
-         if ((**i).value() == "on")
-         {
-            const pch_main_target* pch_target = static_cast<const pch_main_target*>((**i).get_generated_data().target_);
-            opts->pch_target(pch_target);
-            opts->pch_usage(options::pch_usage_t::use);
-         }
-         else
-            opts->pch_usage(options::pch_usage_t::not_use);
-      }
-      else
-         if ((**i).definition() == create_pch)
-         {
-            const pch_main_target* pch_target = static_cast<const pch_main_target*>((**i).get_generated_data().target_);
-            opts->pch_target(pch_target);
-            opts->pch_usage(options::pch_usage_t::create);
-         }
-   }
-
-   feature_set::const_iterator runtime_link_i = props.find("runtime-link");
-   feature_set::const_iterator runtime_debugging_i = props.find("runtime-debugging");
-   if (runtime_link_i != props.end() && runtime_debugging_i != props.end())
-   {
-      const feature* runtime_link = *runtime_link_i;
-      const feature* runtime_debugging = *runtime_debugging_i;
-      if (runtime_link->value() == "static" && runtime_debugging->value() == "on")
-         opts->runtime_type(options::runtime_type_t::multi_threaded_static_debug);
-      else
-         if (runtime_link->value() == "static" && runtime_debugging->value() == "off")
-            opts->runtime_type(options::runtime_type_t::multi_threaded_static);
-         else
-            if (runtime_link->value() == "shared" && runtime_debugging->value() == "on")
-               opts->runtime_type(options::runtime_type_t::multi_threaded_shared_debug);
-            else
-               if (runtime_link->value() == "shared" && runtime_debugging->value() == "off")
-                  opts->runtime_type(options::runtime_type_t::multi_threaded_shared);
-   }
-}
-
-static void write_includes(std::ostream& os, const msvc_project::options& opts)
-{
-   string s = opts.includes().str();
-   if (!s.empty())
-      os << "            AdditionalIncludeDirectories=\"" << s << "\"\n";
-}
-
-static void write_defines(std::ostream& os, const msvc_project::options& opts)
-{
-   string s = opts.defines().str();
-   if (!s.empty())
-      os << "            PreprocessorDefinitions=\"" << s << "\"\n";
-}
-
-static void write_pch_options(std::ostream& os, const msvc_project::options& opts)
-{
-   switch (opts.pch_usage())
-   {
-      case msvc_project::options::pch_usage_t::not_use:
-      {
-         os << "            UsePrecompiledHeader=\"0\"\n";
-
-         break;
-      }
-      case msvc_project::options::pch_usage_t::use:
-      {
-         location_t pch_header(opts.pch_target().pch_header().name().to_string());
-         
-         os << "            UsePrecompiledHeader=\"2\"\n";
-         os << "            PrecompiledHeaderThrough=\"" << pch_header.leaf() << "\"\n";
-
-         break;
-      }
-
-      case msvc_project::options::pch_usage_t::create:
-      {
-         location_t pch_header(opts.pch_target().pch_header().name().to_string());
-
-         os << "            UsePrecompiledHeader=\"1\"\n";
-         os << "            PrecompiledHeaderThrough=\"" << pch_header.leaf() << "\"\n";
-
-         break;
-      }
-      
-      default:
-         break;
-   }
-}
-
-static void write_compiler_options(std::ostream& s, const msvc_project::options& opts)
-{
-   s << "         <Tool\n"
-        "            Name=\"VCCLCompilerTool\"\n"
-        "            Optimization=\"0\"\n";
-   write_defines(s, opts);
-   write_includes(s, opts);
-   
-   if (opts.runtime_type() != msvc_project::options::runtime_type_t::unknown)  
-      s << "          RuntimeLibrary=\"" << opts.runtime_type() << "\"\n";
-   
-   if (opts.compile_as_cpp())
-      s << "          CompileAs=\"2\"\n";
-   
-   write_pch_options(s, opts);
-
-   s << "         />\n";
-}
-
 static void write_compiler_options(std::ostream& s, 
                                    const cmdline_builder& formater, 
                                    const build_node& node,
@@ -454,9 +286,7 @@ void msvc_project::write_configurations(std::ostream& s) const
    
    for(variants_t::iterator i = variants_.begin(), last = variants_.end(); i != last; ++i)
    {
-      options& opts = *i->options_;
       configuration_types::value cfg_type = resolve_configuration_type(*i);
-      fill_options(*i->properties_, &opts, *i->target_);
       s << "      <Configuration\n"
            "         Name=\"" << i->name_ << "|Win32\"\n"
            "         OutputDirectory=\"$(SolutionDir)$(ConfigurationName)\"\n"
@@ -501,10 +331,6 @@ static feature_set* compute_file_conf_properties(const basic_target& target, con
 
 void msvc_project::file_configuration::write(write_context& ctx, const variant& v) const
 {
-   options opts;
-   feature_set* props = compute_file_conf_properties(*target_, v);
-   v.owner_->fill_options(*props, &opts, *v.target_);
-
    if (!v.properties_->contains(target_->properties()))
    {
       ctx.output_ << "              <FileConfiguration\n"
@@ -657,7 +483,6 @@ void msvc_project::gether_files_impl(const build_node& node, variant& v)
                                        ? file_name.to_string() 
                                        : relative_path(mi->source_target_->location(), project_output_dir_) / file_name.to_string());
             searched_file.normalize();
-            v.options_->add_searched_lib(searched_file.native_file_string());
          }
          else
             dependencies_.push_back(mi->source_target_->mtarget());

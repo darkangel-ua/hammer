@@ -16,11 +16,21 @@
          OutputDirectory="$(SolutionDir)$(ConfigurationName)"
          IntermediateDirectory="$(ConfigurationName)"
          ConfigurationType="4"
-         CharacterSet="1">
+         CharacterSet="2 ">
          <Tool
             Name="VCCLCompilerTool"
+            Optimization="2 "
+            InlineFunctionExpansion="2 "
+            AdditionalIncludeDirectories=""
+            DebugInformationFormat="0 "
+            WarningLevel=""
             PreprocessorDefinitions="NDEBUG;"
-            UsePrecompiledHeader="0"
+            ExceptionHandling="1 "
+            RuntimeLibrary="2 "
+            RuntimeTypeInfo="true "
+            AdditionalOptions=""
+            UsePrecompiledHeader="0 "
+            PrecompiledHeaderThrough=""
          />
       </Configuration>
    </Configurations>
@@ -38,8 +48,18 @@
                    Name="release">
          <Tool
             Name="VCCLCompilerTool"
-            PreprocessorDefinitions="USE_A_LIB;"
-          CompileAs="2"
+            Optimization="2 "
+            InlineFunctionExpansion="2 "
+            AdditionalIncludeDirectories=""
+            DebugInformationFormat="0 "
+            WarningLevel=""
+            PreprocessorDefinitions="NDEBUG;USE_A_LIB;"
+            ExceptionHandling="1 "
+            RuntimeLibrary="2 "
+            RuntimeTypeInfo="true "
+            AdditionalOptions="/TP "
+            UsePrecompiledHeader="0 "
+            PrecompiledHeaderThrough=""
          />
               </FileConfiguration>
          </File>

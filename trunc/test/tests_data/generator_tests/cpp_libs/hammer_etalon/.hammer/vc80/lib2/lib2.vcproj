@@ -3,7 +3,7 @@
    ProjectType="Visual C++"
    Version="8,00"
    Name="lib2"
-   ProjectGUID="{00000000-0000-0000-0000-000000000002}"
+   ProjectGUID="{00000000-0000-0000-0000-000000000004}"
    RootNamespace="lib2"
    Keyword="Win32Proj">
 	<Platforms>
@@ -16,15 +16,26 @@
          OutputDirectory="$(SolutionDir)$(ConfigurationName)"
          IntermediateDirectory="$(ConfigurationName)"
          ConfigurationType="2"
-         CharacterSet="1">
+         CharacterSet="2 ">
          <Tool
             Name="VCCLCompilerTool"
+            Optimization="2 "
+            InlineFunctionExpansion="2 "
+            AdditionalIncludeDirectories=""
+            DebugInformationFormat="0 "
+            WarningLevel=""
             PreprocessorDefinitions="NDEBUG;"
-            UsePrecompiledHeader="0"
+            ExceptionHandling="1 "
+            RuntimeLibrary="2 "
+            RuntimeTypeInfo="true "
+            AdditionalOptions=""
+            UsePrecompiledHeader="0 "
+            PrecompiledHeaderThrough=""
          />
          <Tool
             Name="VCLinkerTool"
             AdditionalDependencies=""
+            AdditionalLibraryDirectories=""
          />
       </Configuration>
    </Configurations>

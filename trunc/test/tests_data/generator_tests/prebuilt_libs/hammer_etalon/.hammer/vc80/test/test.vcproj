@@ -16,7 +16,7 @@
          OutputDirectory="$(SolutionDir)$(ConfigurationName)"
          IntermediateDirectory="$(ConfigurationName)"
          ConfigurationType="1"
-         CharacterSet="1 ">
+         CharacterSet="2 ">
          <Tool
             Name="VCCLCompilerTool"
             Optimization="2 "
@@ -34,7 +34,7 @@
          />
          <Tool
             Name="VCLinkerTool"
-            AdditionalDependencies="winsock.lib ..\..\..\lib2\lib2.lib"
+            AdditionalDependencies="..\..\..\lib2\lib2.lib winsock.lib"
             AdditionalLibraryDirectories="..\..\..\dummydir;"
          />
       </Configuration>

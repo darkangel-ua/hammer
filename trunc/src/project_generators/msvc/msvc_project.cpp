@@ -212,7 +212,7 @@ void msvc_project::add_variant(boost::intrusive_ptr<const build_node> node)
    }
 }
 
-void msvc_project::fill_filters() const
+void msvc_project::fill_filters()
 {
    filter_t::types_t source_types;
    source_types.push_back(&engine_->get_type_registry().get(types::CPP));
@@ -531,6 +531,19 @@ void msvc_project::file_with_cfgs_t::write(write_context& ctx, const std::string
    ctx.output_ << "         </File>\n";
 }
 
+struct less_target 
+{
+   bool operator ()(const basic_target* lhs, const basic_target* rhs)
+   {
+      location_t lhs_id = lhs->location() / lhs->name().to_string();
+      location_t rhs_id = rhs->location() / rhs->name().to_string();
+      lhs_id.normalize();
+      rhs_id.normalize();
+
+      return lhs_id < rhs_id;
+   }
+};
+
 void msvc_project::filter_t::write(write_context& ctx, const std::string& path_prefix) const
 {
    ctx.output_ << "         <Filter\n"
@@ -538,8 +551,12 @@ void msvc_project::filter_t::write(write_context& ctx, const std::string& path_p
                   "            Filter=\"cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx\"\n"
                   "            UniqueIdentifier=\"" << uid << "\">\n";
 
-   for(map<const basic_target*, file_with_cfgs_t>::const_iterator i = files_.begin(), last = files_.end(); i != last; ++i)
-      i->second.write(ctx, path_prefix);
+   // FIXME: this trick used only for test to stabilize order of sources in project file
+   typedef std::map<const basic_target*, boost::reference_wrapper<const file_with_cfgs_t>, less_target> stabilized_t;
+   stabilized_t stabilized(files_.begin(), files_.end());
+
+   for(stabilized_t::const_iterator i = stabilized.begin(), last = stabilized.end(); i != last; ++i)
+      i->second.get().write(ctx, path_prefix);
 
    ctx.output_ << "         </Filter>\n";
 }
@@ -554,28 +571,31 @@ void msvc_project::write_files(write_context& ctx) const
    ctx.output_ << "      </Files>\n";
 }
 
-void msvc_project::generate() const
+void msvc_project::generate()
 {
    if (variants_.empty())
       throw runtime_error("Can't generate empty msvc project");
 
    fill_filters();
    gether_files();
+}
 
-   const main_target& mt = *variants_.front().target_;
-   
+void msvc_project::write() const
+{
+   if (variants_.empty())
+      throw runtime_error("Can't write empty msvc project");
+
    create_directories(full_project_name_.branch_path());
    boost::filesystem::ofstream f(full_project_name_, std::ios_base::trunc);
    write_header(f);
    write_configurations(f);
-   
+
    fake_environment environment(project_output_dir());
    write_context ctx(f, engine_->get_type_registry().get(types::H), environment, compiller_options_);
    write_files(ctx);
 
    write_bottom(f);
 }
-
 
 bool msvc_project::filter_t::accept(const type* t) const
 {
@@ -602,7 +622,7 @@ void msvc_project::filter_t::insert(const boost::intrusive_ptr<build_node>& node
 
 void msvc_project::insert_into_files(const boost::intrusive_ptr<build_node>& node, 
                                      const basic_target* t, 
-                                     const variant& v) const
+                                     const variant& v)
 {
    const type* tp = &t->type();
    for(files_t::iterator fi = files_.begin(), flast = files_.end(); fi != flast; ++fi)
@@ -615,7 +635,7 @@ void msvc_project::insert_into_files(const boost::intrusive_ptr<build_node>& nod
    }
 }
 
-void msvc_project::gether_files_impl(const build_node& node, variant& v) const
+void msvc_project::gether_files_impl(const build_node& node, variant& v)
 {
    typedef build_node::sources_t::const_iterator iter;
    for(iter mi = node.sources_.begin(), mlast = node.sources_.end(); mi != mlast; ++mi)
@@ -645,7 +665,7 @@ void msvc_project::gether_files_impl(const build_node& node, variant& v) const
    }
 }
 
-void msvc_project::gether_files() const
+void msvc_project::gether_files()
 {
    for(variants_t::iterator i = variants_.begin(), last = variants_.end(); i != last; ++i)
       gether_files_impl(*i->node_, *i);

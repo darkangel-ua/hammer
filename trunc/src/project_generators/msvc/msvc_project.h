@@ -109,9 +109,11 @@ namespace hammer
             msvc_project(engine& e, const location_t& output_dir, const boost::guid& uid = boost::guid::create());
             void add_variant(boost::intrusive_ptr<const build_node> node);
             bool has_variant(const main_target* v) const;
-            void generate() const;
+            void generate();
+            void write() const;
             const std::string& id() const { return id_; }
             const boost::guid& guid() const { return uid_; }
+            void guid(const boost::guid& new_uid) { uid_ = new_uid; }
             const hammer::meta_target& meta_target() const { return *meta_target_; }
             const dependencies_t& dependencies() const { return dependencies_;}
             location_t full_project_name() const { return full_project_name_; } // путь относительно meta_target проекта и имя файла проекта
@@ -183,7 +185,7 @@ namespace hammer
             
             engine* engine_;
             mutable variants_t variants_;
-            mutable files_t files_;
+            files_t files_;
             boost::guid uid_;
             std::string id_;
             const hammer::meta_target* meta_target_;
@@ -200,15 +202,15 @@ namespace hammer
             cmdline_builder compiller_options_;
             cmdline_builder linker_options_;
 
-            void fill_filters() const;
+            void fill_filters();
             void write_header(std::ostream& s) const;
             void write_configurations(std::ostream& s) const;
             void write_files(write_context& ctx) const;
-            void gether_files_impl(const build_node& node, variant& v) const;
-            void gether_files() const;
+            void gether_files_impl(const build_node& node, variant& v);
+            void gether_files();
             void insert_into_files(const boost::intrusive_ptr<build_node>& node, 
                                    const basic_target* t, 
-                                   const variant& v) const;
+                                   const variant& v);
             configuration_types::value resolve_configuration_type(const variant& v) const;
             void fill_options(const feature_set& props, options* opts, const main_target& mt) const;
       };

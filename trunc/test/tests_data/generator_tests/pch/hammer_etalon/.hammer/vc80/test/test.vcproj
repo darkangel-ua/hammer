@@ -16,7 +16,7 @@
          OutputDirectory="$(SolutionDir)$(ConfigurationName)"
          IntermediateDirectory="$(ConfigurationName)"
          ConfigurationType="1"
-         CharacterSet="1 ">
+         CharacterSet="2 ">
          <Tool
             Name="VCCLCompilerTool"
             Optimization="2 "
@@ -45,25 +45,7 @@
             Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
             UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
          <File
-            RelativePath="..\..\..\stdafx.cpp">
-              <FileConfiguration
-                   Name="release">
-         <Tool
-            Name="VCCLCompilerTool"
-            Optimization="2 "
-            InlineFunctionExpansion="2 "
-            AdditionalIncludeDirectories=""
-            DebugInformationFormat="0 "
-            WarningLevel=""
-            PreprocessorDefinitions="NDEBUG;USE_A_LIB;"
-            ExceptionHandling="1 "
-            RuntimeLibrary="2 "
-            RuntimeTypeInfo="true "
-            AdditionalOptions=""
-            UsePrecompiledHeader="1 "
-            PrecompiledHeaderThrough="stdafx.h"
-         />
-              </FileConfiguration>
+            RelativePath="..\..\..\main.cpp">
          </File>
          <File
             RelativePath="..\..\..\obj.cpp">
@@ -87,7 +69,25 @@
               </FileConfiguration>
          </File>
          <File
-            RelativePath="..\..\..\main.cpp">
+            RelativePath="..\..\..\stdafx.cpp">
+              <FileConfiguration
+                   Name="release">
+         <Tool
+            Name="VCCLCompilerTool"
+            Optimization="2 "
+            InlineFunctionExpansion="2 "
+            AdditionalIncludeDirectories=""
+            DebugInformationFormat="0 "
+            WarningLevel=""
+            PreprocessorDefinitions="NDEBUG;USE_A_LIB;"
+            ExceptionHandling="1 "
+            RuntimeLibrary="2 "
+            RuntimeTypeInfo="true "
+            AdditionalOptions=""
+            UsePrecompiledHeader="1 "
+            PrecompiledHeaderThrough="stdafx.h"
+         />
+              </FileConfiguration>
          </File>
          </Filter>
          <Filter

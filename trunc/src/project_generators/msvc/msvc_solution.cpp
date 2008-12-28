@@ -58,6 +58,16 @@ struct msvc_solution::impl_t
 
 typedef msvc_solution::impl_t impl_t;
 
+static bool less_by_location_and_name(const main_target* lhs, const main_target* rhs)
+{
+   location_t lhs_id = lhs->location() / lhs->name().to_string();
+   location_t rhs_id = rhs->location() / rhs->name().to_string();
+   lhs_id.normalize();
+   rhs_id.normalize();
+
+   return lhs_id < rhs_id;
+}
+
 void impl_t::generate_dependencies(impl_t::dependencies_t::const_iterator first, 
                                    impl_t::dependencies_t::const_iterator last) const
 {
@@ -84,6 +94,8 @@ void impl_t::generate_dependencies(impl_t::dependencies_t::const_iterator first,
       std::sort(dependencies.begin(), dependencies.end());
       dependencies.erase(std::unique(dependencies.begin(), dependencies.end()), dependencies.end());
       generate_dependencies(dependencies.begin(), dependencies.end());
+      // stabilize order to allow normal testing. May be FIXME:
+      std::sort(dependencies.begin(), dependencies.end(), &less_by_location_and_name);
    }
 }
 
@@ -97,8 +109,11 @@ void impl_t::generate_dependencies(impl_t::dependencies_t::const_iterator first,
 
 void msvc_solution::impl_t::write_project_section(ostream& os, const msvc_project& project) const
 {
+   location_t project_path(relative_path(project.full_project_name(), output_location_));
+   project_path.normalize();
+
    os << "Project(\"{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}\") = \"" << project.name() 
-      << "\", \"" << project.full_project_name() << "\", \"{" << project.guid() << "}\"\n" ;
+      << "\", \"" << project_path << "\", \"{" << project.guid() << "}\"\n" ;
 
    os << "\tProjectSection(ProjectDependencies) = postProject\n";
    typedef msvc_project::dependencies_t::const_iterator iter;
@@ -149,11 +164,17 @@ void msvc_solution::add_target(boost::intrusive_ptr<const build_node> node)
 {
    std::auto_ptr<msvc_project> p_guarg(new msvc_project(impl_->engine_, impl_->project_output_dir(*node), generate_id()));
    msvc_project* p = p_guarg.get();
-   typedef vector<const main_target*> dependencies_t;
-   dependencies_t dependencies;
    p->add_variant(node);
    impl_->projects_.insert(&p->meta_target(), p_guarg);
    impl_->name_ = p->meta_target().name().to_string();
+
+   msvc_project::dependencies_t dependencies;
+   p->generate();
+   dependencies.insert(dependencies.begin(), 
+                       p->dependencies().begin(), 
+                       p->dependencies().end());
+
+   impl_->generate_dependencies(dependencies.begin(), dependencies.end());
 }
 
 static bool less_by_name(const msvc_project* lhs, 
@@ -172,28 +193,11 @@ void msvc_solution::write() const
    f << "Microsoft Visual Studio Solution File, Format Version 9.00\n"
         "# Visual Studio 2005\n";
    
-   typedef vector<const msvc_project*> sorted_projects_t;
-
-   // стабилизируем порядок проектов с солюшине, чтобы порядок сгенерированных гуидов не менялся
-   sorted_projects_t sorted_initial_projects;
-   typedef impl_t::projects_t::const_iterator iter;
-   for(iter i = impl_->projects_.begin(), last = impl_->projects_.end(); i != last; ++i)
-      sorted_initial_projects.push_back(i->second);
-   sort(sorted_initial_projects.begin(), sorted_initial_projects.end(), less_by_name);
-
-   msvc_project::dependencies_t dependencies;
-   for(sorted_projects_t::const_iterator i = sorted_initial_projects.begin(), last = sorted_initial_projects.end(); i != last; ++i)
-   {
-      (**i).generate();
-      dependencies.insert(dependencies.begin(), 
-                          (**i).dependencies().begin(), 
-                          (**i).dependencies().end());
-   }
-
-   impl_->generate_dependencies(dependencies.begin(), dependencies.end());
-
    // стабилизируем порядок проектов с солюшине, а то он все время меняется и 
    // невозможно нормально это тестировать
+   typedef impl_t::projects_t::const_iterator iter;
+   typedef vector<const msvc_project*> sorted_projects_t;
+
    sorted_projects_t sorted_projects;
    for(iter i = impl_->projects_.begin(), last = impl_->projects_.end(); i != last; ++i)
       sorted_projects.push_back(i->second);
@@ -202,6 +206,7 @@ void msvc_solution::write() const
    set<string> variant_names;
    for(sorted_projects_t::const_iterator i = sorted_projects.begin(), last = sorted_projects.end(); i != last; ++i)
    {
+      (**i).write();
       impl_->write_project_section(f, **i);
       typedef msvc_project::variants_t::const_iterator viter;
       for(viter v = (*i)->variants().begin(), vlast = (*i)->variants().end(); v != vlast; ++v)

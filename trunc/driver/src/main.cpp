@@ -28,11 +28,12 @@ namespace
 {
    struct hammer_options
    {
-      hammer_options() : generate_projects_localy_(false), hammer_dir_(".hammer") {}
+      hammer_options() : generate_projects_localy_(false), hammer_output_dir_(".hammer") {}
 
       vector<string> build_request_options_;
       bool generate_projects_localy_;
-      std::string hammer_dir_;
+      std::string hammer_output_dir_;
+      std::string hammer_install_dir_;
    };
 
    po::positional_options_description build_request_options;
@@ -48,7 +49,8 @@ namespace
          ("up-to-date-check,c", "instantiate/materialize + generate targets + up to date check")
          ("generate-msvc-8.0-solution,p", "generate msvc-8.0 solution+projects")
          ("generate-projects-locally,l", "when generating build script makes them in one place")
-         ("hammer-dir", po::value<std::string>(&opts.hammer_dir_), "specify where hammer will place all its generated output");
+         ("hammer-out", po::value<std::string>(&opts.hammer_output_dir_), "specify where hammer will place all its generated output")
+         ("install-dir", po::value<std::string>(&opts.hammer_install_dir_), "specify where hammer was installed");
 
       return desc;
    }
@@ -142,7 +144,7 @@ namespace
    void generate_msvc80_solution(const nodes_t& nodes, const hammer::project& project_to_build)
    {
       project_generators::msvc_solution solution(project_to_build, 
-                                                 project_to_build.location() / opts.hammer_dir_, 
+                                                 project_to_build.location() / opts.hammer_output_dir_, 
                                                  opts.generate_projects_localy_ ? msvc_solution::generation_mode::LOCAL 
                                                                                 : msvc_solution::generation_mode::NON_LOCAL);
 
@@ -208,7 +210,11 @@ int main(int argc, char** argv)
          return 0;
       }
       
-      engine.load_hammer_script("d:\\bin\\scripts\\startup.ham");
+      fs::path startup_script_dir("./");
+      if (vm.count("install-dir"))
+         startup_script_dir = opts.hammer_install_dir_;
+
+      engine.load_hammer_script(startup_script_dir / "scripts/startup.ham");
       add_msvc_generators(engine, engine.generators());
 
       build_request->join("toolset", "msvc");

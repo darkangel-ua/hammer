@@ -116,8 +116,12 @@ void msvc_solution::impl_t::write_project_section(ostream& os, const msvc_projec
       << "\", \"" << project_path << "\", \"{" << project.guid() << "}\"\n" ;
 
    os << "\tProjectSection(ProjectDependencies) = postProject\n";
+   msvc_project::dependencies_t sorted_dependencies(project.dependencies());
+   // stabilize order to allow normal testing. May be FIXME:
+   std::sort(sorted_dependencies.begin(), sorted_dependencies.end(), &less_by_location_and_name);
+
    typedef msvc_project::dependencies_t::const_iterator iter;
-   for(iter i = project.dependencies().begin(), last = project.dependencies().end(); i != last; ++i)
+   for(iter i = sorted_dependencies.begin(), last = sorted_dependencies.end(); i != last; ++i)
    {
       projects_t::const_iterator p = projects_.find((**i).meta_target());
       if (p == projects_.end())
@@ -191,7 +195,6 @@ void msvc_solution::write() const
    location_t filename = impl_->output_location_ / (impl_->name_ + ".sln");
    create_directories(filename.branch_path());
    f.open(filename, std::ios::trunc);
-   //throw std::runtime_error("Can't write '" + filename.string() + "'.";
    f << "Microsoft Visual Studio Solution File, Format Version 9.00\n"
         "# Visual Studio 2005\n";
    

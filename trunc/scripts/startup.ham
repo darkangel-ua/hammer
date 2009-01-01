@@ -3,9 +3,9 @@ feature.feature define : : free ;
 feature.feature include : : free path ; 
 feature.feature toolset : : propagated ;
 feature.feature link : shared static : propagated ;
-feature.feature runtime-link : shared static : propagated ;
-feature.feature runtime-debugging : on off : propagated ;
-feature.feature threading : multi single : propagated ;
+feature.feature runtime-link : shared static ;
+feature.feature runtime-debugging : on off ;
+feature.feature threading : multi single ;
 feature.feature name : : free ;
 feature.feature search : : free path ;
 feature.feature file : : free path ;
@@ -21,14 +21,14 @@ feature.feature library : : free dependency incidental ;
 feature.feature source : : free dependency incidental ;
 feature.feature use : : free dependency incidental ;
 feature.feature dependency : : free dependency incidental ;
-feature.feature optimization : off speed space : propagated ;
-feature.feature profiling : off on : propagated ;
-feature.feature inlining : off on full : propagated ;
+feature.feature optimization : off speed space ;
+feature.feature profiling : off on ;
+feature.feature inlining : off on full ;
 feature.feature rtti : on off : propagated ;
-feature.feature exception-handling : on off : propagated ;
-feature.feature asynch-exceptions : off on : propagated ;  
-feature.feature extern-c-nothrow : off on : propagated ;
-feature.feature debug-symbols : on off : propagated ;
+feature.feature exception-handling : on off ;
+feature.feature asynch-exceptions : off on ;  
+feature.feature extern-c-nothrow : off on ;
+feature.feature debug-symbols : on off ;
 feature.feature destination : : path no-checks incidental ;       # for copy rule
 feature.feature recursive : on off : optional incidental ;        # for copy rule
 feature.feature type-to-copy : : free ;                           # for copy rule
@@ -38,7 +38,7 @@ feature.feature warnings :
     on         # enable default/"reasonable" warning level for the tool
     all        # enable all possible warnings issued by the tool
     off        # disable all warnings issued by the tool
-  : incidental propagated ;
+  : incidental ;
 
 feature.feature warnings-as-errors :
     off        # do not fail the compilation if there are warnings
@@ -96,7 +96,6 @@ feature.feature variant : : propagated composite ;
 feature.feature override : on : no-defaults optional ;
 feature.feature character-set : multi-byte unicode unknown : optional ; # toolset.msvc
 
-variant debug   : : <optimization>off <debug-symbols>on <inlining>off <runtime-debugging>on ;
-variant release : : <optimization>speed <debug-symbols>off <inlining>full 
-                    <runtime-debugging>off <define>NDEBUG ;
+variant debug   : : <optimization>off   <debug-symbols>on  <inlining>off  <runtime-debugging>on ;
+variant release : : <optimization>speed <debug-symbols>off <inlining>full <runtime-debugging>off <define>NDEBUG ;
 variant profile : release : <profiling>on <debug-symbols>on ;

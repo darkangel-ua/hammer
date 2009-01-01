@@ -37,11 +37,6 @@ namespace hammer
          void requirements(const requirements_decl& r) { requirements_ = r; }
          virtual const location_t& location() const;
 
-         // PERFORMANCEHIT: We must cache instantiated targets or something like that because for target 'c'
-         // lib a : [ glob ../src.cpp ] ;
-         // lib b : a [ glob ../src.cpp ] ;
-         // lib c : a [ glob ../src.cpp ] ;
-         // we will do THREE instantiations of target 'a' - this is very costly operations
          virtual void instantiate(const main_target* owner, 
                                   const feature_set& build_request,
                                   std::vector<basic_target*>* result, 

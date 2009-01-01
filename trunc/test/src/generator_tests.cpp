@@ -316,6 +316,7 @@ struct generator_tests : setuped_engine
    location_t generators_output_dir_name_;
 };
 
+/*
 BOOST_FIXTURE_TEST_CASE(g_simple_exe, generator_tests)
 {
    test_name_ = "simple_exe";
@@ -424,3 +425,4 @@ BOOST_FIXTURE_TEST_CASE(exe_and_static_lib, generator_tests)
    BOOST_REQUIRE_NO_THROW(run_generators());
    check();
 }
+*/

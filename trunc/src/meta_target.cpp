@@ -103,7 +103,7 @@ namespace hammer{
       for(sources_decl::const_iterator i = sources.begin(), last = sources.end(); i != last; ++i)
          if (i->is_public())
          {
-            feature* f = fr.create_feature("source", "");
+            feature* f = fr.create_feature("use", "");
             f->get_dependency_data().source_ = *i;
             dest.join(f);
          }

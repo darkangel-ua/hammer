@@ -2,7 +2,7 @@ feature.feature undef : : free ;
 feature.feature define : : free ;
 feature.feature include : : free path ; 
 feature.feature toolset : : propagated ;
-feature.feature link : shared static : propagated ;
+feature.feature link : shared static ;
 feature.feature runtime-link : shared static ;
 feature.feature runtime-debugging : on off ;
 feature.feature threading : multi single ;

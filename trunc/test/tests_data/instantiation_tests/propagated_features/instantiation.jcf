@@ -1,8 +1,8 @@
 test [ type = EXE; ]
 {  
    main.cpp [ type = CPP; ] {}
-   a [ type = STATIC_LIB; ]
+   a [ type = SHARED_LIB; features = <instruction-set>i386; ]
    {
-      a.cpp [ type = CPP; ] {}
+      a.cpp [ type = CPP; features = <instruction-set>i386; ] {}
    }
 }

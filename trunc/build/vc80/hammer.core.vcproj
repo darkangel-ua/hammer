@@ -198,6 +198,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\collect_nodes.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\copy_generator.cpp"
 				>
 			</File>
@@ -490,6 +494,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\shared_lib_dirs_writer.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\source_argument_writer.cpp"
 				>
 			</File>
@@ -539,6 +547,14 @@
 			</File>
 			<File
 				RelativePath="..\..\src\targets_argument_writer.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\testing_generators.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\testing_run_action.cpp"
 				>
 			</File>
 			<File
@@ -609,6 +625,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\cmdline_builder.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\collect_nodes.h"
 				>
 			</File>
 			<File
@@ -836,6 +856,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\shared_lib_dirs_writer.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\source_argument_writer.h"
 				>
 			</File>
@@ -873,6 +897,14 @@
 			</File>
 			<File
 				RelativePath="..\..\src\targets_argument_writer.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\testing_generators.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\testing_run_action.h"
 				>
 			</File>
 			<File

@@ -64,6 +64,9 @@ namespace hammer
 
          bool is_consumable(const type& t) const;
          bool is_composite() const { return composite_; }
+         bool include_composite_generators() const { return include_composite_generators_; } 
+         void include_composite_generators(bool v) { include_composite_generators_ = v; }
+
          template <typename T>
          void action(std::auto_ptr<T>& a) { action_ = a; }
          const build_action* action() const { return action_.get(); } 
@@ -76,6 +79,7 @@ namespace hammer
          bool composite_;
          const feature_set* constraints_; // == null if no constraints specified
          std::auto_ptr<build_action> action_;
+         bool include_composite_generators_; // include composite generators while searching for sources indirect transformations
    };
 
    void remove_dups(std::vector<boost::intrusive_ptr<build_node> >& nodes);

@@ -79,13 +79,6 @@ requirements_decl::~requirements_decl()
       delete impl_;
 }
 
-// void requirements_decl::eval(feature_set* result, 
-//                              feature_registry& fr) const
-// {
-//    for(impl_t::requirements_t::const_iterator i = impl_->requirements_.begin(), last = impl_->requirements_.end(); i != last; ++i)
-//       i->eval(result, fr);
-// }
-
 void requirements_decl::eval(const feature_set& build_request, 
                              feature_set* result,
                              feature_set* public_result) const

@@ -5,6 +5,7 @@
 #include <boost/guid.hpp>
 #include <fstream>
 #include <iterator>
+
 namespace bp = boost::process;
 using namespace std;
 
@@ -16,7 +17,7 @@ build_environment_impl::build_environment_impl(const location_t& cur_dir)
 
 }
 
-bool build_environment_impl::run_shell_commands(const std::vector<std::string>& cmds) const
+bool build_environment_impl::run_shell_commands(std::string* captured_output, const std::vector<std::string>& cmds) const
 {
    string tmp_file_name(boost::guid::create().to_string() + ".cmd");
    try
@@ -29,17 +30,32 @@ bool build_environment_impl::run_shell_commands(const std::vector<std::string>& 
 
       bp::launcher launcher;
       launcher.set_stdin_behavior(bp::inherit_stream);
-      launcher.set_stdout_behavior(bp::inherit_stream);
-      launcher.set_stderr_behavior(bp::inherit_stream);
+      
+      if (captured_output != NULL)
+      {
+         launcher.set_stdout_behavior(bp::redirect_stream);
+         launcher.set_stderr_behavior(bp::close_stream);
+         launcher.set_merge_out_err(true);
+      }
+      else
+      {
+         launcher.set_stdout_behavior(bp::inherit_stream);
+         launcher.set_stderr_behavior(bp::inherit_stream);
+      }
+
       bp::command_line cmdline = bp::command_line("cmd.exe");
       cmdline.argument("/Q").argument("/C").argument("call " + tmp_file_name);
       bp::child shell_action_child = launcher.start(cmdline);
+      
+      if (captured_output != NULL)
+         std::copy(istreambuf_iterator<char>(shell_action_child.get_stdout()), 
+                   istreambuf_iterator<char>(), 
+                   back_inserter(*captured_output));
+
       bp::status st = shell_action_child.wait();
 
       if (st.exit_status() != 0)
-      {
          dump_shell_command(std::cerr, tmp_file_name);
-      }
 
       boost::filesystem::remove(tmp_file_name);
       
@@ -51,6 +67,16 @@ bool build_environment_impl::run_shell_commands(const std::vector<std::string>& 
       boost::filesystem::remove(tmp_file_name);
       return false;
    }
+}
+
+bool build_environment_impl::run_shell_commands(const std::vector<std::string>& cmds) const
+{
+   return run_shell_commands(NULL, cmds);
+}
+
+bool build_environment_impl::run_shell_commands(std::string& captured_output, const std::vector<std::string>& cmds) const
+{
+   return run_shell_commands(&captured_output, cmds);
 }
 
 void build_environment_impl::dump_shell_command(std::ostream& s, const std::string& content_file_name) const
@@ -78,7 +104,28 @@ void build_environment_impl::remove(const location_t& p) const
 
 void build_environment_impl::copy(const location_t& source, const location_t& destination) const
 {
-   assert(false);
+   boost::filesystem::copy_file(source, destination);
+}
+
+bool build_environment_impl::write_tag_file(const std::string& filename, const std::string& content) const
+{
+   ofstream f(filename.c_str(), ios_base::trunc);
+   if (!f)
+      return false;
+
+   f << content;
+   f.close();
+
+   return true;
+}
+
+std::auto_ptr<ostream> build_environment_impl::create_output_file(const char* filename, ios_base::_Openmode mode) const
+{
+   std::auto_ptr<ofstream> f(new ofstream);
+   f->exceptions(ios_base::badbit | ios_base::eofbit | ios_base::failbit);
+   f->open(filename, mode);
+
+   return f;
 }
 
 }

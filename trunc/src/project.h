@@ -28,7 +28,7 @@ namespace hammer
                  const requirements_decl& usage_req
                  );
 
-         project(engine* e) : engine_(e), is_root_(false) {};
+         project(engine* e) : engine_(e), is_root_(false), add_targets_as_explicit_(false) {};
          
          virtual const location_t& location() const { return location_; }
          void location(const location_t& l) { location_ = l; } 
@@ -43,6 +43,7 @@ namespace hammer
          const location_t& intermediate_dir() const { return intermediate_dir_; }
          bool is_root() const { return is_root_; }
          void set_root(bool v) { is_root_ = v; }
+         void add_targets_as_explicit(bool v);
 
          void instantiate(const std::string& target_name, 
                           const feature_set& build_request,
@@ -64,6 +65,7 @@ namespace hammer
          location_t intermediate_dir_;
          hammer::scm_info scm_info_;
          bool is_root_;
+         bool add_targets_as_explicit_;
 
          virtual void instantiate_impl(const main_target* owner, 
                                        const feature_set& build_request,

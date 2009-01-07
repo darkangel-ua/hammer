@@ -34,6 +34,10 @@ feature.feature recursive : on off : optional incidental ;        # for copy rul
 feature.feature type-to-copy : : free ;                           # for copy rule
 feature.feature pch : off create use : generated ;
 
+# testing support
+feature.feature testing.argument : : free ;
+feature.feature testing.input-file : : free path ;
+
 feature.feature warnings :
     on         # enable default/"reasonable" warning level for the tool
     all        # enable all possible warnings issued by the tool

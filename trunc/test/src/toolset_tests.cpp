@@ -41,6 +41,11 @@ namespace{
             return true;
          }
 
+         virtual bool run_shell_commands(std::string& captured_output, const std::vector<std::string>& cmds) const
+         {
+            return run_shell_commands(cmds);
+         }
+
          virtual const location_t& current_directory() const
          {
             return current_directory_;
@@ -59,6 +64,17 @@ namespace{
          virtual void copy(const location_t& source, const location_t& destination) const
          {
             output_ << "[copy] '" << source << "' '" << destination << "'\n";
+         }
+
+         virtual bool write_tag_file(const std::string& filename, const std::string& content) const
+         {
+            output_ << "[write_tag_file] filename ='" << filename << "', content = '" << content << "'\n";
+            return true;
+         }
+
+         std::auto_ptr<ostream> create_output_file(const char* filename, ios_base::_Openmode mode) const
+         {
+            return std::auto_ptr<ostream>(new ostringstream);
          }
          
       private:
@@ -165,5 +181,10 @@ BOOST_FIXTURE_TEST_CASE(dependency, toolset_test)
    BOOST_REQUIRE_NO_THROW(do_test("dependency"));
 }
 */
+
+BOOST_FIXTURE_TEST_CASE(testing_run, toolset_test)
+{
+   BOOST_REQUIRE_NO_THROW(do_test("testing_run"));
+}
 
 }

@@ -19,16 +19,8 @@ bool cmdline_action::execute_impl(const build_node& node, const build_environmen
    if (rsp_builder_.get() != NULL)
    {
       string rsp_file_name(target_tag(node, environment) + ".rsp");
-      ofstream f(rsp_file_name.c_str(), ios_base::trunc);
-      if (!f)
-         throw runtime_error("Can't open response file '" + rsp_file_name + "' for writing");
-
-      rsp_builder_->write(f, node, environment);
-      
-      if (!f)
-         throw std::runtime_error("Error while writing to response file '" + rsp_file_name + "'");
-      
-      f.close();
+      auto_ptr<ostream> rsp_stream(environment.create_output_file(rsp_file_name.c_str(), ios_base::trunc));
+      rsp_builder_->write(*rsp_stream, node, environment);
    }
 
    std::vector<std::string> commands;
@@ -39,6 +31,13 @@ bool cmdline_action::execute_impl(const build_node& node, const build_environmen
       commands.push_back(s.str());
    }
 
+   return run_shell_commands(commands, node, environment);
+}
+
+bool cmdline_action::run_shell_commands(const std::vector<std::string>& commands, 
+                                        const build_node& node, 
+                                        const build_environment& environment) const
+{
    return environment.run_shell_commands(commands);
 }
 

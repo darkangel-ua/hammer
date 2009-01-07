@@ -25,8 +25,10 @@ std::vector<boost::intrusive_ptr<build_node> > directory_target::generate()
 void directory_target::timestamp_info_impl() const
 {
    timestamp_info_.is_unknown_ = false;
+   // if directory exists we don't care about its timestamp. 
+   // We just say that it was created very long time ago.
    if (exists(dir_to_create_))
-      timestamp_info_.timestamp_ = boost::posix_time::from_time_t(last_write_time(dir_to_create_));
+      timestamp_info_.timestamp_ = boost::posix_time::ptime(boost::gregorian::date(1900, 1, 1));
    else
       timestamp_info_.timestamp_ = boost::posix_time::ptime(boost::date_time::neg_infin);
 }

@@ -1,0 +1,1 @@
+testing.run main.cpp lib1 : : : : test ;

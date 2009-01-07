@@ -80,7 +80,7 @@ generator_registry::transform(const generator& target_generator,
 {
    for(generator::consumable_types_t::const_iterator i = current_generator.consumable_types().begin(), last = current_generator.consumable_types().end(); i != last; ++i)
    {
-      vector<const generator*> vg(find_viable_generators(*i->type_, false, props));
+      vector<const generator*> vg(find_viable_generators(*i->type_, current_generator.include_composite_generators(), props));
       if (vg.empty())
          return false;
 

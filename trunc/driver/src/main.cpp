@@ -12,6 +12,7 @@
 #include "../../src/meta_target.h"
 #include "../../src/project_generators/msvc/msvc_solution.h"
 #include "../../src/msvc_generator.h"
+#include "../../src/testing_generators.h"
 #include "../../src/build_environment_impl.h"
 #include "../../src/builder.h"
 #include "../../src/actuality_checker.h"
@@ -216,6 +217,7 @@ int main(int argc, char** argv)
 
       engine.load_hammer_script(startup_script_dir / "scripts/startup.ham");
       add_msvc_generators(engine, engine.generators());
+      add_testing_generators(engine, engine.generators());
 
       build_request->join("toolset", "msvc");
       build_request->join("variant", "debug");
@@ -244,7 +246,7 @@ int main(int argc, char** argv)
       if (vm.count("generate"))
          return 0;
 
-      remove_propagated_targets(nodes, project_to_build);
+//      remove_propagated_targets(nodes, project_to_build);
 
       if (vm.count("generate-msvc-8.0-solution"))
          generate_msvc80_solution(nodes, project_to_build);

@@ -29,10 +29,16 @@ namespace
          fake_environment(const location_t& cur_dir) : current_dir_(cur_dir) {}
 
          virtual bool run_shell_commands(const std::vector<std::string>& cmds) const { return true; }
+         virtual bool run_shell_commands(std::string& captured_output, const std::vector<std::string>& cmds) const { return true; }
          virtual const location_t& current_directory() const { return current_dir_; }
          virtual void create_directories(const location_t& dir_to_create) const {};
          virtual void remove(const location_t& p) const {};
          virtual void copy(const location_t& source, const location_t& destination) const {};
+         virtual bool write_tag_file(const std::string& filename, const std::string& content) const { return true; }
+         virtual std::auto_ptr<std::ostream> create_output_file(const char* filename, std::ios_base::_Openmode mode) const 
+         { 
+            return std::auto_ptr<std::ostream>(new ostringstream);
+         }
       
       private:
          location_t current_dir_;
@@ -78,7 +84,8 @@ static const string compiller_option_format_string(
 
 static const string linker_option_format_string(
    "            AdditionalDependencies=\"$(additional_libraries)\"\n"
-   "            AdditionalLibraryDirectories=\"$(additional_libraries_dirs)\"\n");
+   "            AdditionalLibraryDirectories=\"$(additional_libraries_dirs)\"\n"
+   "            GenerateDebugInformation=\"$(debug_info)\"\n");
 
 msvc_project::msvc_project(engine& e, 
                            const location_t& output_dir, 
@@ -179,6 +186,11 @@ msvc_project::msvc_project(engine& e,
                                    e.feature_registry().get_def("search"),
                                    string(), string(), ";"));
    linker_options_ += additional_libraries_dirs;
+
+   boost::shared_ptr<fs_argument_writer> link_debug_info(new fs_argument_writer("debug_info", engine_->feature_registry()));
+   link_debug_info->add("<debug-symbols>on", "true").
+                    add("<debug-symbols>off", "false");
+   linker_options_ += link_debug_info;
 }
 
 static std::string make_variant_name(const feature_set& fs)

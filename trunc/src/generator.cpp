@@ -20,7 +20,8 @@ generator::generator(hammer::engine& e,
    engine_(&e), name_(name), source_types_(source_types),
    target_types_(target_types),
    composite_(composite),
-   constraints_(c)
+   constraints_(c),
+   include_composite_generators_(false)
 {
 
 }

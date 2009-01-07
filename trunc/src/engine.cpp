@@ -49,6 +49,8 @@ engine::engine()
    resolver_.insert("pch", boost::function<void (project*, pstring&, sources_decl&, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::pch_rule, this, _1, _2, _3, _4, _5, _6)));
    resolver_.insert("copy", boost::function<void (project*, pstring&, sources_decl&, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::copy_rule, this, _1, _2, _3, _4, _5, _6)));
    resolver_.insert("alias", boost::function<void (project*, pstring&, sources_decl*, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::alias_rule, this, _1, _2, _3, _4, _5, _6)));
+   resolver_.insert("test-suite", boost::function<void (project*, pstring&, sources_decl*, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::alias_rule, this, _1, _2, _3, _4, _5, _6)));
+   resolver_.insert("testing.run", boost::function<sources_decl (project*, sources_decl*, std::vector<pstring>*, std::vector<pstring>*, requirements_decl*, pstring*)>(boost::bind(&engine::testing_run_rule, this, _1, _2, _3, _4, _5, _6)));
    resolver_.insert("import", boost::function<void (project*, vector<pstring>&)>(boost::bind(&engine::import_rule, this, _1, _2)));
    resolver_.insert("feature.feature", boost::function<void (project*, vector<pstring>&, vector<pstring>*, vector<pstring>*)>(boost::bind(&engine::feature_feature_rule, this, _1, _2, _3, _4)));
    resolver_.insert("feature.compose", boost::function<void (project*, feature&, feature_set&)>(boost::bind(&engine::feature_compose_rule, this, _1, _2, _3)));
@@ -721,6 +723,65 @@ void engine::alias_rule(project* p,
                                                         requirements ? *requirements : requirements_decl(), 
                                                         usage_requirements ? *usage_requirements : requirements_decl()));
    p->add_target(mt);
+}
+
+sources_decl engine::testing_run_rule(project* p, 
+                                      sources_decl* sources, 
+                                      std::vector<pstring>* args, 
+                                      std::vector<pstring>* input_files, 
+                                      requirements_decl* requirements,
+                                      pstring* target_name)
+{
+   string real_target_name;
+   if (target_name != NULL)
+      real_target_name = target_name->to_string();
+   else
+      if (sources != NULL && !sources->empty())
+         real_target_name = sources->begin()->target_path().to_string();
+      else
+         throw std::runtime_error("Target must have either sources or target name");
+   
+   pstring exe_name(pstring_pool(), real_target_name + ".test");
+   auto_ptr<basic_meta_target> intermediate_exe(
+      new typed_meta_target(p, 
+                            exe_name, 
+                            requirements != NULL ? *requirements 
+                                                 : requirements_decl(), 
+                            requirements_decl(),
+                            get_type_registry().get(types::EXE)));
+
+   intermediate_exe->sources(sources == NULL ? sources_decl() : *sources);
+   intermediate_exe->set_explicit(true);
+   p->add_target(intermediate_exe);
+
+   requirements_decl run_requirements;
+
+   if (input_files != NULL)
+      for(vector<pstring>::const_iterator i = input_files->begin(), last = input_files->end(); i != last; ++i)
+         run_requirements.add(*this->feature_registry().create_feature("testing.input-file", i->to_string()));
+
+   auto_ptr<basic_meta_target> run_target(
+      new typed_meta_target(p, 
+                            pstring(pstring_pool(), real_target_name), 
+                            run_requirements, 
+                            requirements_decl(),
+                            get_type_registry().get(types::TESTING_RUN_PASSED)));
+
+   sources_decl run_sources;
+   run_sources.push_back(exe_name, get_type_registry());
+   run_target->sources(run_sources);
+
+   source_decl run_target_source(run_target->name(), 
+                                 pstring(), 
+                                 NULL /*to signal that this is meta target*/, 
+                                 NULL);
+
+   p->add_target(run_target);
+
+   sources_decl result;
+   result.push_back(run_target_source);
+
+   return result;
 }
 
 static void glob_impl(sources_decl& result,

@@ -15,7 +15,7 @@ namespace hammer
          cmdline_action(const std::string& name, 
                         boost::shared_ptr<T>& target_writer)
          : build_action(name),
-           target_writer_(shared_dynamic_cast<argument_writer>(target_writer))
+           target_writer_(shared_static_cast<argument_writer>(target_writer))
          {
          }
 
@@ -24,7 +24,7 @@ namespace hammer
                         boost::shared_ptr<T>& target_writer,
                         const cmdline_builder& rsp_builder)
          : build_action(name),
-           target_writer_(shared_dynamic_cast<argument_writer>(target_writer)),
+           target_writer_(shared_static_cast<argument_writer>(target_writer)),
            rsp_builder_(new cmdline_builder(rsp_builder))
          {
          }
@@ -35,6 +35,9 @@ namespace hammer
 
       protected:
          virtual bool execute_impl(const build_node& node, const build_environment& environment) const;
+         virtual bool run_shell_commands(const std::vector<std::string>& commands,
+                                         const build_node& node, 
+                                         const build_environment& environment) const;
 
       private:
          typedef std::vector<cmdline_builder> builders_t;

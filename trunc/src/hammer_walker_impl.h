@@ -51,6 +51,8 @@ extern "C"
    void* hammer_make_feature_set(void* context);
    void hammer_add_feature_to_feature_set(void* feature_set, void* feature);
    void hammer_feature_set_dependency_data(void* f, void* sd);
+   void hammer_on_nested_rule_enter(void* context);
+   void hammer_on_nested_rule_leave(void* context);
 #ifdef __cplusplus
 };
 #endif

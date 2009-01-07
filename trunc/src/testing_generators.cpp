@@ -1,0 +1,46 @@
+#include "stdafx.h"
+#include "testing_generators.h"
+#include "types.h"
+#include "engine.h"
+#include "generator_registry.h"
+#include "testing_run_action.h"
+#include "product_argument_writer.h"
+#include "source_argument_writer.h"
+#include "shared_lib_dirs_writer.h"
+#include "free_feature_arg_writer.h"
+#include "feature_registry.h"
+
+using namespace boost;
+
+namespace hammer{
+
+void add_testing_generators(engine& e, generator_registry& gr)
+{
+   generator::consumable_types_t source;
+   generator::producable_types_t target;
+   source.push_back(generator::consumable_type(e.get_type_registry().get(types::EXE), 1, 0));
+   target.push_back(generator::produced_type(e.get_type_registry().get(types::TESTING_OUTPUT), 1));
+   target.push_back(generator::produced_type(e.get_type_registry().get(types::TESTING_RUN_PASSED), 1));
+   std::auto_ptr<generator> g(new generator(e, "testing.run", source, target, true));
+   g->include_composite_generators(true);
+   
+   shared_ptr<product_argument_writer> run_product(new product_argument_writer("run_product", e.get_type_registry().get(types::TESTING_RUN_PASSED)));
+   shared_ptr<product_argument_writer> run_output_product(new product_argument_writer("run_output_product", e.get_type_registry().get(types::TESTING_OUTPUT)));
+   shared_ptr<source_argument_writer> test_executable(new source_argument_writer("test_executable", e.get_type_registry().get(types::EXE)));
+   shared_ptr<shared_lib_dirs_writer> additional_dirs(new shared_lib_dirs_writer("additional_dirs", e.get_type_registry().get(types::SHARED_LIB)));
+   shared_ptr<free_feature_arg_writer> input_files(new free_feature_arg_writer("input_files", e.feature_registry().get_def("testing.input-file")));
+   cmdline_builder cmdline("@SET PATH=%PATH%;$(additional_dirs)\n"
+                           "@$(test_executable) $(input_files)\n");
+   cmdline += run_product;
+   cmdline += run_output_product;
+   cmdline += test_executable;
+   cmdline += additional_dirs;
+   cmdline += input_files;
+
+   std::auto_ptr<testing_run_action> action(new testing_run_action("testing.run", run_product, run_output_product));
+   *action += cmdline;
+   g->action(action);
+   gr.insert(g);
+}
+
+}

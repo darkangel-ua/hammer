@@ -287,3 +287,15 @@ void hammer_feature_set_dependency_data(void* f, void* sd_)
    static_cast<feature*>(f)->get_dependency_data().source_ = *sd;
    delete sd;
 }
+
+void hammer_on_nested_rule_enter(void* context)
+{
+   hammer_walker_context* ctx = static_cast<hammer_walker_context*>(context);
+   ctx->project_->add_targets_as_explicit(true);
+}
+
+void hammer_on_nested_rule_leave(void* context)
+{
+   hammer_walker_context* ctx = static_cast<hammer_walker_context*>(context);
+   ctx->project_->add_targets_as_explicit(false);
+}

@@ -151,6 +151,12 @@ namespace hammer
                          requirements_decl* fs, 
                          feature_set* default_build, 
                          requirements_decl* usage_requirements);
+         sources_decl testing_run_rule(project* p, 
+                                       sources_decl* sources, 
+                                       std::vector<pstring>* args, 
+                                       std::vector<pstring>* input_files, 
+                                       requirements_decl* requirements,
+                                       pstring* target_name);
          void copy_rule(project* p, pstring& name, sources_decl& sources, requirements_decl* fs,
                         feature_set* default_build, requirements_decl* usage_requirements);
          void import_rule(project* p, std::vector<pstring>& name);

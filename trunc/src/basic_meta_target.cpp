@@ -107,7 +107,6 @@ void basic_meta_target::resolve_meta_target_source(const source_decl& source,
          m = project_->select_best_alternative(source.target_path(), *build_request_with_source_properties);
          m->transfer_sources(simple_targets, meta_targets, 
                              *build_request_with_source_properties, source.properties());
-			meta_targets->push_back(make_pair(m, source.properties()));
 			return;
 		}
    }
@@ -123,7 +122,6 @@ void basic_meta_target::resolve_meta_target_source(const source_decl& source,
 	      {
 		      (**i).transfer_sources(simple_targets, meta_targets, 
                                    *build_request_with_source_properties, source.properties());
-		      meta_targets->push_back(make_pair(*i, source.properties()));
 	      }
       }
       catch(const std::exception& e)
@@ -137,7 +135,6 @@ void basic_meta_target::resolve_meta_target_source(const source_decl& source,
       const basic_meta_target* m = suitable_projects.select_best_alternative(source.target_name(), *build_request_with_source_properties);
       m->transfer_sources(simple_targets, meta_targets, 
                           *build_request_with_source_properties, source.properties());
-      meta_targets->push_back(make_pair(m, source.properties()));
       return;
    }
 }
@@ -147,7 +144,7 @@ void basic_meta_target::transfer_sources(sources_decl* simple_targets,
                                          const feature_set& build_request,
                                          const feature_set* additional_build_properties) const
 {
-
+   meta_targets->push_back(make_pair(this, additional_build_properties));
 }
 
 basic_meta_target::~basic_meta_target()

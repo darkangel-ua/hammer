@@ -109,8 +109,21 @@ void linear_and_condition::eval(const feature_set& build_request,
 {
    bool satisfy = true;
    for(features_t::const_iterator i = features_.begin(), last = features_.end(); i != last; ++i)
-      satisfy = satisfy && (build_request.find(**i) != build_request.end() || 
-                            result->find(**i) != result->end());
+   {
+      if (build_request.find(**i) != build_request.end() ||
+          result->find(**i) != result->end())
+      {
+         continue;
+      }
+      else
+         if (build_request.find((**i).name()) != build_request.end() ||
+             result->find((**i).name()) != result->end() ||
+             (**i).definition().get_default() == (**i).value())
+         {
+            satisfy = false;
+            break;
+         }
+   }
 
    if (satisfy)
    {

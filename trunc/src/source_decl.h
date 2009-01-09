@@ -9,6 +9,9 @@ namespace hammer
    class feature_set;
    class type;
 
+   // FIXME: type should not be determined at constructing time
+   // FIXME: source_decl should have method resolve_type for resolving type of source
+   // FIXME: and caching it. Without caching it will be huge performance hit
    class source_decl
 	{
 		public:

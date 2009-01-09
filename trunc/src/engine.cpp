@@ -725,6 +725,14 @@ void engine::alias_rule(project* p,
    p->add_target(mt);
 }
 
+void engine::test_suite_rule(project* p, 
+                             pstring& name, 
+                             sources_decl* sources, 
+                             sources_decl* sources)
+{
+
+}
+
 sources_decl engine::testing_run_rule(project* p, 
                                       sources_decl* sources, 
                                       std::vector<pstring>* args, 

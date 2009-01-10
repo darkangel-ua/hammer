@@ -40,6 +40,7 @@ namespace hammer
          void join(const feature_set& v);
          feature_set* clone() const;
          void copy_propagated(const feature_set& rhs);
+         void erase_all(const std::string& feature_name);
          size_t size() const { return features_.size(); }
          bool empty() const { return features_.empty(); }
          void clear();

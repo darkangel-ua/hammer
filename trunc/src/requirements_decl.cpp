@@ -118,7 +118,7 @@ void linear_and_condition::eval(const feature_set& build_request,
       else
          if (build_request.find((**i).name()) != build_request.end() ||
              result->find((**i).name()) != result->end() ||
-             (**i).definition().get_default() == (**i).value())
+             (**i).definition().get_default() != (**i).value())
          {
             satisfy = false;
             break;

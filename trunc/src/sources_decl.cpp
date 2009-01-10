@@ -29,6 +29,26 @@ sources_decl::sources_decl(const sources_decl& rhs) : impl_(rhs.impl_)
    ++impl_->ref_counter_;
 }
 
+sources_decl::const_iterator sources_decl::begin() const
+{
+   return impl_->values_.begin();
+}
+
+sources_decl::const_iterator sources_decl::end() const
+{
+   return impl_->values_.end();
+}
+
+sources_decl::iterator sources_decl::begin()
+{
+   return impl_->values_.begin();
+}
+
+sources_decl::iterator sources_decl::end()
+{
+   return impl_->values_.end();
+}
+
 sources_decl& sources_decl::operator = (const sources_decl& rhs)
 {
    if (impl_ != rhs.impl_)
@@ -96,20 +116,17 @@ void sources_decl::add_to_source_properties(const feature_set& props)
          i->properties(const_cast<const feature_set*>(i->properties())->join(props)); 
 }
 
-
-sources_decl::const_iterator::const_iterator(const sources_decl& s, bool last) 
-{
-   if (s.impl_->values_.empty())
-      i_ = 0;
-   else
-      i_ = (last ? &s.impl_->values_.front() + s.impl_->values_.size() : &s.impl_->values_.front());
-}
-
 void sources_decl::transfer_from(sources_decl& s)
 {
    clone_if_needed();
    impl_->values_.insert(impl_->values_.end(), s.impl_->values_.begin(), s.impl_->values_.end());
    s.clear();
+}
+
+void sources_decl::insert(const sources_decl& s)
+{
+   clone_if_needed();
+   impl_->values_.insert(impl_->values_.end(), s.impl_->values_.begin(), s.impl_->values_.end());
 }
 
 void sources_decl::clear()

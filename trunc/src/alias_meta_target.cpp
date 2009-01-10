@@ -4,6 +4,7 @@
 #include "project.h"
 #include "engine.h"
 #include "feature_registry.h"
+#include "feature_set.h"
 
 using namespace std;
 
@@ -52,7 +53,11 @@ void alias_meta_target::transfer_sources(sources_decl* simple_targets,
       simple_targets->add_to_source_properties(*additional_build_properties);
       
       for(meta_targets_t::iterator i = new_meta_targets.begin(), last = new_meta_targets.end(); i != last; ++i)
-         i->second = additional_build_properties;
+         if (i->second != NULL)
+            i->second->join(*additional_build_properties);
+         else
+            i->second = additional_build_properties;
+
       meta_targets->insert(meta_targets->end(), new_meta_targets.begin(), new_meta_targets.end());
    }
 }

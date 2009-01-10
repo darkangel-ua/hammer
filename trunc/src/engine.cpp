@@ -27,6 +27,7 @@
 #include "header_lib_meta_target.h"
 #include "pch_meta_target.h"
 #include "copy_meta_target.h"
+#include "testing_meta_target.h"
 
 using namespace std;
 namespace fs = boost::filesystem;
@@ -49,7 +50,7 @@ engine::engine()
    resolver_.insert("pch", boost::function<void (project*, pstring&, sources_decl&, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::pch_rule, this, _1, _2, _3, _4, _5, _6)));
    resolver_.insert("copy", boost::function<void (project*, pstring&, sources_decl&, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::copy_rule, this, _1, _2, _3, _4, _5, _6)));
    resolver_.insert("alias", boost::function<void (project*, pstring&, sources_decl*, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::alias_rule, this, _1, _2, _3, _4, _5, _6)));
-   resolver_.insert("test-suite", boost::function<void (project*, pstring&, sources_decl*, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::alias_rule, this, _1, _2, _3, _4, _5, _6)));
+   resolver_.insert("test-suite", boost::function<void (project*, pstring&, sources_decl&, sources_decl*)>(boost::bind(&engine::test_suite_rule, this, _1, _2, _3, _4)));
    resolver_.insert("testing.run", boost::function<sources_decl (project*, sources_decl*, std::vector<pstring>*, std::vector<pstring>*, requirements_decl*, pstring*)>(boost::bind(&engine::testing_run_rule, this, _1, _2, _3, _4, _5, _6)));
    resolver_.insert("import", boost::function<void (project*, vector<pstring>&)>(boost::bind(&engine::import_rule, this, _1, _2)));
    resolver_.insert("feature.feature", boost::function<void (project*, vector<pstring>&, vector<pstring>*, vector<pstring>*)>(boost::bind(&engine::feature_feature_rule, this, _1, _2, _3, _4)));
@@ -727,10 +728,30 @@ void engine::alias_rule(project* p,
 
 void engine::test_suite_rule(project* p, 
                              pstring& name, 
-                             sources_decl* sources, 
-                             sources_decl* sources)
+                             sources_decl& sources, 
+                             sources_decl* propagated_sources)
 {
+   sources_decl& real_propagated_sources = (propagated_sources == NULL ? sources_decl() : *propagated_sources);
+   feature_set* additional_sources_set = feature_registry_->make_set();
+   for(sources_decl::const_iterator i = real_propagated_sources.begin(), last = real_propagated_sources.end(); i != last; ++i)
+   {
+      feature* f = feature_registry_->create_feature("testing.additional-source", "");
+      f->get_dependency_data().source_ = *i;
+      additional_sources_set->join(f);
+   }
 
+   for(sources_decl::iterator i = sources.begin(), last = sources.end(); i != last; ++i)
+      if (i->properties() != NULL)
+         i->properties()->join(*additional_sources_set);
+      else
+         i->properties(additional_sources_set);
+
+   auto_ptr<basic_meta_target> mt(new alias_meta_target(p, name, 
+                                                        sources, 
+                                                        requirements_decl(), 
+                                                        requirements_decl()));
+
+   p->add_target(mt);
 }
 
 sources_decl engine::testing_run_rule(project* p, 
@@ -751,12 +772,12 @@ sources_decl engine::testing_run_rule(project* p,
    
    pstring exe_name(pstring_pool(), real_target_name + ".test");
    auto_ptr<basic_meta_target> intermediate_exe(
-      new typed_meta_target(p, 
-                            exe_name, 
-                            requirements != NULL ? *requirements 
-                                                 : requirements_decl(), 
-                            requirements_decl(),
-                            get_type_registry().get(types::EXE)));
+      new testing_meta_target(p, 
+                              exe_name, 
+                              requirements != NULL ? *requirements 
+                                                   : requirements_decl(), 
+                              requirements_decl(),
+                              get_type_registry().get(types::EXE)));
 
    intermediate_exe->sources(sources == NULL ? sources_decl() : *sources);
    intermediate_exe->set_explicit(true);

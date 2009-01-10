@@ -153,8 +153,8 @@ namespace hammer
                          requirements_decl* usage_requirements);
          void test_suite_rule(project* p, 
                               pstring& name, 
-                              sources_decl* sources, 
-                              sources_decl* sources);
+                              sources_decl& sources, 
+                              sources_decl* propagated_sources);
          sources_decl testing_run_rule(project* p, 
                                        sources_decl* sources, 
                                        std::vector<pstring>* args, 

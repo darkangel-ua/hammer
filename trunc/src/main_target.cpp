@@ -79,7 +79,7 @@ const location_t& main_target::intermediate_dir() const
       dump_for_hash(s, properties());
       boost::crypto::md5 md5(s.str());
       
-      intermediate_dir_ = meta_target()->project()->location() / ".hammer/bin" / md5.to_string();
+      intermediate_dir_ = meta_target()->project()->location() / ".hammer/bin" / name().to_string() / md5.to_string();
    }
 
    return intermediate_dir_;

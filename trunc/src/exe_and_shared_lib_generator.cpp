@@ -19,7 +19,6 @@ exe_and_shared_lib_generator::exe_and_shared_lib_generator(hammer::engine& e,
    : generator(e, name, source_types, 
                target_types, composite, c),
      searched_lib_(e.get_type_registry().get(types::SEARCHED_LIB))
-
 {
 }
 

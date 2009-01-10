@@ -37,6 +37,7 @@ namespace hammer
    inline bool operator == (const std::string& lhs, const pstring& rhs) { return rhs == lhs.c_str(); }
    inline bool operator == (const pstring& lhs, const std::string& rhs) { return lhs == rhs.c_str(); }
    inline bool operator != (const pstring& lhs, const std::string& rhs) { return !(lhs == rhs); }
+   inline bool operator != (const std::string& lhs, const pstring& rhs) { return !(rhs == lhs); }
    inline bool operator != (const pstring& lhs, const char* rhs) { return !(lhs == rhs); }
    inline bool operator != (const pstring& lhs, const pstring& rhs) { return !(lhs == rhs.begin()); }
 }

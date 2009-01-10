@@ -331,4 +331,15 @@ void dump_for_hash(std::ostream& s, const feature_set& fs)
    }
 }
 
+void feature_set::erase_all(const std::string& feature_name)
+{
+   for(features_t::iterator i = features_.begin(); i != features_.end();)
+   {
+      if ((**i).name() == feature_name)
+         i = features_.erase(i);
+      else
+         ++i;
+   }
+}
+
 }

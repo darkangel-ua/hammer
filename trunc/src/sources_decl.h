@@ -2,7 +2,6 @@
 #define h_29741f53_09ff_4880_b28d_86010263122e
 
 #include "pstring.h"
-#include <boost/iterator/iterator_facade.hpp>
 #include "source_decl.h"
 
 namespace hammer
@@ -14,29 +13,8 @@ namespace hammer
    class sources_decl
     {
       public:
-         class const_iterator;
-         friend class const_iterator;
-
-         // это попытка спрятать контейнер за интерфейсом. 
-         // Мне сильно не нравиться что я не могу спрятать тип контейрера от пользователя.
-         // А реализация прятания выглядит явно криво. Возможно что-нибудь позже придумаю получше.
-         class const_iterator : public boost::iterator_facade<const_iterator, source_decl const, 
-                                                              boost::forward_traversal_tag>
-         {
-            public:
-               const_iterator(const sources_decl& s, bool last);
-
-            private:
-               friend class boost::iterator_core_access;
-               void increment() { ++i_; }
-               bool equal(const const_iterator& other) const
-               {
-                  return this->i_ == other.i_;
-               }
-               const source_decl& dereference() const { return *i_; }
-
-               source_decl* i_;
-         };
+         typedef std::vector<source_decl>::iterator iterator;
+         typedef std::vector<source_decl>::const_iterator const_iterator;
 
          sources_decl();
          sources_decl(const sources_decl& rhs);
@@ -47,13 +25,16 @@ namespace hammer
          
          // добавляет в конец
          void insert(const std::vector<pstring>& v, const type_registry& tr);
+         void insert(const sources_decl& s);
          
          // перебрасывает все что есть в s в конец данного инстанса
          // s после переброски пуст
          void transfer_from(sources_decl& s);
          void add_to_source_properties(const feature_set& props);
-         const_iterator begin() const { return const_iterator(*this, false); }
-         const_iterator end() const { return const_iterator(*this, true); }
+         const_iterator begin() const;
+         const_iterator end() const;
+         iterator begin();
+         iterator end();
          void clear();
          void unique();
          bool empty() const;

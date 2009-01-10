@@ -36,6 +36,11 @@ void basic_meta_target::sources(const sources_decl& s)
    sources_ = s;
 }
 
+void basic_meta_target::add_sources(const sources_decl& s)
+{
+   sources_.insert(s);
+}
+
 const location_t& basic_meta_target::location() const 
 {
    return project()->location();

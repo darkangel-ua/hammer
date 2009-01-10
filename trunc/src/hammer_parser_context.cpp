@@ -18,7 +18,6 @@ void on_enter_rule(pANTLR3_PARSER parser, pANTLR3_UINT8 rule_name_)
 {
    MAKE_CTX();
    const char* rule_name = reinterpret_cast<const char*>(rule_name_);
-
    call_resolver& resolver = ctx.engine_->call_resolver();
    call_resolver::const_iterator i = resolver.find(rule_name);
    if (i == resolver.end())

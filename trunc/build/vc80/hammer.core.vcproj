@@ -554,6 +554,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\testing_meta_target.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\testing_run_action.cpp"
 				>
 			</File>
@@ -901,6 +905,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\testing_generators.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\testing_meta_target.h"
 				>
 			</File>
 			<File

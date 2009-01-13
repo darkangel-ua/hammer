@@ -180,11 +180,11 @@ BOOST_FIXTURE_TEST_CASE(dependency, toolset_test)
 {
    BOOST_REQUIRE_NO_THROW(do_test("dependency"));
 }
-*/
 
 BOOST_FIXTURE_TEST_CASE(testing_run, toolset_test)
 {
    BOOST_REQUIRE_NO_THROW(do_test("testing_run"));
 }
+*/
 
 }

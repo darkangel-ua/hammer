@@ -60,6 +60,9 @@ void alias_meta_target::transfer_sources(sources_decl* simple_targets,
 
       meta_targets->insert(meta_targets->end(), new_meta_targets.begin(), new_meta_targets.end());
    }
+
+   basic_meta_target::transfer_sources(simple_targets, meta_targets, 
+                                       build_request, additional_build_properties);
 }
 
 }

@@ -43,7 +43,7 @@ std::size_t actuality_checker::check(boost::posix_time::ptime& max_target_time, 
          break;
       }
 
-      products_max_time = std::max(products_max_time, time_info.timestamp_);
+      products_max_time = (std::max)(products_max_time, time_info.timestamp_);
    }
    
    if (products_max_time == neg_infin)
@@ -53,7 +53,7 @@ std::size_t actuality_checker::check(boost::posix_time::ptime& max_target_time, 
    }
    else
    {
-      max_target_time = std::max(sources_max_time, products_max_time);
+      max_target_time = (std::max)(sources_max_time, products_max_time);
       if (sources_max_time > products_max_time ||
           result != 0) // if some sources or dependencies not up to date than result != 0
       {

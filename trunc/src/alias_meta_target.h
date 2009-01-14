@@ -17,7 +17,11 @@ namespace hammer
                                        const feature_set& build_request,
                                        std::vector<basic_target*>* result, 
                                        feature_set* usage_requirements) const;
-         virtual bool is_cachable() const { return false; }
+         
+         virtual bool is_cachable(const main_target* owner) const 
+         { 
+            return owner != NULL; 
+         }
       
       private:
          virtual void transfer_sources(sources_decl* simple_targets, 

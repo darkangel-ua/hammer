@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;D:\Projects\C++\boost_1_34_1&quot;;&quot;D:\Projects\C++\boost.crypto&quot;"
+				AdditionalIncludeDirectories="&quot;D:\Projects\C++\boost_1_36_0&quot;;&quot;D:\Projects\C++\boost.crypto&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -103,7 +103,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;D:\Projects\C++\boost_1_34_1&quot;;&quot;D:\Projects\C++\boost.crypto&quot;"
+				AdditionalIncludeDirectories="&quot;D:\Projects\C++\boost_1_36_0&quot;;&quot;D:\Projects\C++\boost.crypto&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"

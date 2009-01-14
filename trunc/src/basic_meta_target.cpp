@@ -161,7 +161,7 @@ void basic_meta_target::instantiate(const main_target* owner,
                                     std::vector<basic_target*>* result, 
                                     feature_set* usage_requirements) const
 {
-   if (is_cachable())
+   if (is_cachable(owner))
    {
       for(instantiation_cache_t::const_iterator i = instantiation_cache_.begin(), last = instantiation_cache_.end(); i != last; ++i)
          if (*i->build_request_ == build_request)

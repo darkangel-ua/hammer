@@ -15,7 +15,7 @@ namespace hammer
                              const hammer::type& t);
       protected:
          virtual sources_decl compute_additional_sources(const main_target& owner) const;
-         virtual bool is_cachable() const { return false; }
+         virtual bool is_cachable(const main_target* owner) const { return false; }
    };
 }
 

@@ -6,11 +6,13 @@
 #include <boost/ptr_container/ptr_map.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/unordered_map.hpp>
 #include <deque>
 #include "location.h"
 #include "project.h"
 #include "pool.h"
 #include "call_resolver.h"
+
 
 namespace hammer
 {

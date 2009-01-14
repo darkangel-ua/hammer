@@ -94,14 +94,14 @@ engine::engine()
 
 project* engine::get_upper_project(const location_t& project_path)
 {
-   location_t upper_path = project_path.branch_path();
+   location_t upper_path = project_path.parent_path();
    if (exists(upper_path / "hamfile"))
       return &load_project(upper_path);
    
    if (exists(upper_path / "hamroot"))
       return &load_project(upper_path);
    
-   if (upper_path.has_leaf())
+   if (upper_path.has_parent_path())
       return get_upper_project(upper_path);
    else
       return 0;
@@ -822,10 +822,10 @@ static void glob_impl(sources_decl& result,
 {
    for(fs::directory_iterator i(searching_path), last = fs::directory_iterator(); i != last; ++i)
    {
-      if (!is_directory(*i) && wildcard.match(i->leaf()) && 
-          !(exceptions != 0 && find(exceptions->begin(), exceptions->end(), i->leaf()) != exceptions->end()))
+      if (!is_directory(*i) && wildcard.match(i->filename()) && 
+          !(exceptions != 0 && find(exceptions->begin(), exceptions->end(), i->filename()) != exceptions->end()))
       {
-         pstring v(e.pstring_pool(), (relative_path / i->leaf()).string());
+         pstring v(e.pstring_pool(), (relative_path / i->filename()).string());
          result.push_back(v, e.get_type_registry());
       }
    }
@@ -849,15 +849,15 @@ static void rglob_impl(sources_decl& result,
 
       if (is_directory(i.status()))
       {
-         relative_path /= i->leaf();
+         relative_path /= i->filename();
          ++level;
       }
       else
-         if (wildcard.match(i->leaf()) && 
+         if (wildcard.match(i->filename()) && 
              !(exceptions != 0 && 
-               find(exceptions->begin(), exceptions->end(), i->leaf()) != exceptions->end()))
+               find(exceptions->begin(), exceptions->end(), i->filename()) != exceptions->end()))
          {
-            pstring v(e.pstring_pool(), (relative_path / i->leaf()).string());
+            pstring v(e.pstring_pool(), (relative_path / i->filename()).string());
             result.push_back(v, e.get_type_registry());
          }
    }

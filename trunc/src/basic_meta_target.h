@@ -51,7 +51,7 @@ namespace hammer
                                        const feature_set* /* requested build properties*/> > meta_targets_t;
 
          // returns true if instantiate() can cache instantiation for build_request
-         virtual bool is_cachable() const { return true; }
+         virtual bool is_cachable(const main_target* owner) const { return true; }
 
          virtual void instantiate_impl(const main_target* owner, 
                                        const feature_set& build_request,

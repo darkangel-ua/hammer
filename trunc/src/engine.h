@@ -45,7 +45,7 @@ namespace hammer
          ~engine();
 
       private:
-         typedef boost::ptr_map<const location_t, project> projects_t;
+         typedef boost::unordered_map<const location_t, boost::shared_ptr<project> > projects_t;
          struct project_alias_node;
          typedef boost::ptr_map<location_t, project_alias_node> global_project_links_t;
 

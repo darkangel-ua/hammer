@@ -187,7 +187,7 @@ struct generator_tests : setuped_engine
       for(fs::recursive_directory_iterator last_etalon_files; i_etalon_files != last_etalon_files; ++i_etalon_files)
       {
          if (is_directory(*i_generated_files) &&
-            i_etalon_files->leaf() == ".svn")
+            i_etalon_files->filename() == ".svn")
          {
             i_etalon_files.no_push();
             continue;
@@ -200,7 +200,7 @@ struct generator_tests : setuped_engine
       for(fs::recursive_directory_iterator last_generated_files; i_generated_files != last_generated_files; ++i_generated_files)
       {
          if (is_directory(*i_generated_files) &&
-             i_generated_files->leaf() == "hammer_etalon")
+             i_generated_files->filename() == "hammer_etalon")
          {
             i_generated_files.no_push();
             continue;

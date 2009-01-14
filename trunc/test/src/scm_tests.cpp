@@ -22,7 +22,7 @@ struct scm_tests
       bp::launcher launcher;
       for(fs::directory_iterator i(test_data_path / "scm_tests" / test_name), last; i != last; ++i)
       {
-         if (is_directory(*i) && i->leaf() != ".svn")
+         if (is_directory(*i) && i->filename() != ".svn")
             launcher.start(bp::command_line::shell("RMDIR /S /Q " + i->path().native_file_string())).wait();
       }
    }

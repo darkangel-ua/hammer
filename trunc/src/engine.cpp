@@ -435,7 +435,7 @@ engine::loaded_projects_t engine::try_load_project(location_t project_path)
 {
    projects_t::iterator i = projects_.find(project_path);
    if (i != projects_.end())
-      return loaded_projects_t(i->second);
+      return loaded_projects_t(i->second.get());
 
    hammer_walker_context ctx;
    try
@@ -503,7 +503,7 @@ engine::loaded_projects_t engine::try_load_project(location_t project_path)
 
 void engine::insert(project* p)
 {
-   projects_.insert(p->location(), p);
+   projects_.insert(make_pair(p->location(), boost::shared_ptr<project>(p)));
 }
 
 engine::~engine()

@@ -3,8 +3,6 @@
 
 #include <boost/filesystem/path.hpp>
 #include <boost/noncopyable.hpp>
-#include <boost/ptr_container/ptr_map.hpp>
-#include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
 #include <deque>
@@ -45,9 +43,15 @@ namespace hammer
          ~engine();
 
       private:
-         typedef boost::unordered_map<const location_t, boost::shared_ptr<project> > projects_t;
+         typedef boost::unordered_map<const location_t, 
+                                      boost::shared_ptr<project>,
+                                      boost::hash<location_t>,
+                                      location_equal_to> projects_t;
          struct project_alias_node;
-         typedef boost::ptr_map<location_t, project_alias_node> global_project_links_t;
+         typedef boost::unordered_map<location_t, 
+                                      boost::shared_ptr<project_alias_node>,
+                                      boost::hash<location_t>,
+                                      location_equal_to>  global_project_links_t;
 
          struct project_alias_data
          {
@@ -99,7 +103,11 @@ namespace hammer
             bool materialized_;
          };
 
-         typedef std::map<const project*, std::map<location_t /* alias */, std::string /* map to */> > use_project_data_t;
+         typedef std::map<const project*, 
+                          boost::unordered_map<location_t /* alias */, 
+                                               std::string /* map to */,
+                                               boost::hash<location_t>,
+                                               location_equal_to> > use_project_data_t;
          typedef std::deque<repository_data> repositories_t;
 
          projects_t projects_;

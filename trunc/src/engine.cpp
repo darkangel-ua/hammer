@@ -925,12 +925,11 @@ void engine::use_project_rule(project* p, const pstring& project_id_alias,
          alias_data_home = project_links_node->find(*i);
          if (alias_data_home == project_links_node->end())
          {
-            std::auto_ptr<project_alias_node> node(new project_alias_node);
+            boost::shared_ptr<project_alias_node> node(new project_alias_node);
             // FIXME stupid bug in ptr_map::insert
             location_t tmp(*i);
-            alias_data_home = project_links_node->insert(tmp, node.get()).first;
+            alias_data_home = project_links_node->insert(make_pair(tmp, node)).first;
             project_links_node = &node->project_symlinks_;
-            node.release();
          }
          else
             project_links_node = &alias_data_home->second->project_symlinks_;

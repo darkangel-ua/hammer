@@ -12,10 +12,12 @@
 #include "../../src/meta_target.h"
 #include "../../src/project_generators/msvc/msvc_solution.h"
 #include "../../src/msvc_generator.h"
+#include "../../src/copy_generator.h"
 #include "../../src/testing_generators.h"
 #include "../../src/build_environment_impl.h"
 #include "../../src/builder.h"
 #include "../../src/actuality_checker.h"
+#include "../../src/generator_registry.h"
 
 using namespace std;
 using namespace hammer;
@@ -217,6 +219,7 @@ int main(int argc, char** argv)
 
       engine.load_hammer_script(startup_script_dir / "scripts/startup.ham");
       add_msvc_generators(engine, engine.generators());
+      engine.generators().insert(std::auto_ptr<generator>(new copy_generator(engine)));
       add_testing_generators(engine, engine.generators());
 
       build_request->join("toolset", "msvc");

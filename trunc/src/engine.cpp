@@ -308,20 +308,34 @@ void engine::resolve_use_project(location_t& resolved_use_path, location_t& tail
       return;
    }
    
-   use_project_data_t::mapped_type::const_iterator j = i->second.find(*path_to_resolve.begin());
-   if (j == i->second.end())
+   use_project_data_t::mapped_type::const_iterator largets_use_iter = i->second.find(*path_to_resolve.begin());
+   if (largets_use_iter == i->second.end())
    {
       resolved_use_path = path_to_resolve;
       return;
    }
+   location_t larget_use_path = *path_to_resolve.begin();
+   location_t::const_iterator to_resolve_begin = ++path_to_resolve.begin(),
+                              to_resolve_end = path_to_resolve.end();
    
-   resolved_use_path = j->second;
+   for(;to_resolve_begin != to_resolve_end; ++to_resolve_begin)
+   {
+      location_t to_resolve = larget_use_path / *to_resolve_begin;
+      use_project_data_t::mapped_type::const_iterator next_resolve_iter = i->second.find(to_resolve);
+      if (next_resolve_iter == i->second.end())
+         break;
+      
+      larget_use_path = to_resolve;
+      largets_use_iter = next_resolve_iter;
+   }
+
+   resolved_use_path = largets_use_iter->second;
    if (!exists(p.location() / resolved_use_path))
       materialize_directory(resolve_scm_client(p), p.location() / resolved_use_path, false);
 
    // FIXME: stupid boost::filesystem::path can't be constructed from two iterators
-   for(location_t::const_iterator i = ++path_to_resolve.begin(), last = path_to_resolve.end(); i != last; ++i)
-      tail_path /= *i;
+   for(;to_resolve_begin != to_resolve_end; ++to_resolve_begin)
+      tail_path /= *to_resolve_begin;
 }
 
 const project* 

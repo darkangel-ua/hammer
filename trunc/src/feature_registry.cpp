@@ -379,7 +379,7 @@ namespace hammer{
       typedef impl_t::defs_t::const_iterator iter;
       for(iter i = impl_->defs_.begin(), last = impl_->defs_.end(); i != last; ++i)
       {
-         if (!i->second.attributes().incidental &&
+         if (!i->second.attributes().optional &&
              !i->second.attributes().free &&
              !i->second.attributes().no_defaults &&
              s->find(i->first.c_str()) == s->end())

@@ -8,7 +8,6 @@
 #include "copy_target.h"
 #include "generated_target.h"
 #include <set>
-#include "np_helpers.h"
 #include "types.h"
 #include "build_action.h"
 #include "type.h"
@@ -110,8 +109,7 @@ nodes_t copy_generator::construct(const type& target_type,
       new_node->action(action());
       new_node->sources_.push_back(*i);
 
-      pstring new_name = make_name(this->engine().pstring_pool(), *composite_target_name, i->source_target_->type());
-      copy_target* new_target = new copy_target(&owner, new_name, &target_type, &props);
+      copy_target* new_target = new copy_target(&owner, i->source_target_->name(), &target_type, &props);
       new_node->products_.push_back(new_target);
 
       result.push_back(new_node);

@@ -33,9 +33,15 @@ copy_main_target::copy_main_target(const hammer::meta_target* mt,
    if (types_to_copy_.empty())
       throw std::runtime_error("Copy main target must have at least one <type-to-copy> feature in requirements");
 
+   // FIXME: By default recursive is on. Because recursive feature is optional, we must turn it on by hands
+   // Solution will be specify on what target types feature a works
+   // feature.feature recursive : on off : : COPIED ;
    feature_set::const_iterator i = props->find("recursive");
-   if (i != props->end() && (**i).value() == "on")
+   if (i != props->end() && (**i).value() == "on" ||
+       i == props->end())
+   {
       recursive_ = true;
+   }
 }
 
 void copy_main_target::add_additional_dependencies(hammer::build_node& generated_node) const

@@ -171,11 +171,6 @@ BOOST_FIXTURE_TEST_CASE(lib_dependencies, toolset_test)
    BOOST_REQUIRE_NO_THROW(do_test("lib_dependencies"));
 }
 
-BOOST_FIXTURE_TEST_CASE(copy, toolset_test)
-{
-   BOOST_REQUIRE_NO_THROW(do_test("copy"));
-}
-
 BOOST_FIXTURE_TEST_CASE(dependency, toolset_test)
 {
    BOOST_REQUIRE_NO_THROW(do_test("dependency"));
@@ -186,5 +181,10 @@ BOOST_FIXTURE_TEST_CASE(testing_run, toolset_test)
    BOOST_REQUIRE_NO_THROW(do_test("testing_run"));
 }
 */
+
+BOOST_FIXTURE_TEST_CASE(copy, toolset_test)
+{
+   BOOST_REQUIRE_NO_THROW(do_test("copy"));
+}
 
 }

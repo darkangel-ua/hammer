@@ -37,6 +37,7 @@ namespace hammer{
 
       sources_decl sources_from_features;
       extract_sources(sources_from_features, local_usage_requirements);
+      usage_requirements.join(local_usage_requirements);
       if (!sources_from_features.empty())
       {
          meta_targets_t new_meta_targets;
@@ -45,8 +46,6 @@ namespace hammer{
                                   usage_requirements, new_meta_targets, 
                                   build_request, owner_for_new_targets);
       }
-      else
-         usage_requirements.join(local_usage_requirements);
    }
 
    void meta_target::compute_additional_usage_requirements(sources_decl& simple_targets,

@@ -97,6 +97,20 @@ BOOST_FIXTURE_TEST_CASE(simple_usage_requirements, instantiation_tests)
    check(tt);
 }
 
+BOOST_FIXTURE_TEST_CASE(usage_requirements_bug_1, instantiation_tests)
+{
+   name_ = "usage_requirements_bug_1";
+   const project* p = 0;
+   BOOST_REQUIRE_NO_THROW(p = &load());
+   BOOST_REQUIRE(p);
+   feature_set* build_request = engine_.feature_registry().make_set();
+   build_request->join("variant", "debug");
+   vector<basic_target*> tt;
+   p->instantiate("test", *build_request, &tt);
+   BOOST_REQUIRE_EQUAL(tt.size(), size_t(1));
+   check(tt);
+}
+
 BOOST_FIXTURE_TEST_CASE(conflicting_usage_requirements, instantiation_tests)
 {
    name_ = "conflicting_usage_requirements";
@@ -343,3 +357,4 @@ BOOST_FIXTURE_TEST_CASE(alias, instantiation_tests)
    BOOST_REQUIRE_EQUAL(tt.size(), size_t(1));
    check(tt);
 }
+

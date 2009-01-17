@@ -1,0 +1,2 @@
+test [ type = EXE; features = <define>USE_LIB3; ]
+{}

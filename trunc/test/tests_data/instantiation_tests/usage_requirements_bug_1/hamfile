@@ -1,0 +1,4 @@
+lib lib1 : lib1.cpp ;
+lib lib2 : lib2.cpp lib1 : : : <library>lib1 ;
+lib lib3 : lib3.cpp : @<define>USE_LIB3 ;
+exe test : main.cpp lib2 lib3 ;

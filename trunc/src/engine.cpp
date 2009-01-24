@@ -780,7 +780,7 @@ sources_decl engine::testing_run_rule(project* p,
       real_target_name = target_name->to_string();
    else
       if (sources != NULL && !sources->empty())
-         real_target_name = sources->begin()->target_path().to_string();
+         real_target_name = location_t(sources->begin()->target_path().to_string()).filename();
       else
          throw std::runtime_error("Target must have either sources or target name");
    

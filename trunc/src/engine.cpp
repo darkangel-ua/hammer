@@ -506,6 +506,15 @@ engine::loaded_projects_t engine::try_load_project(location_t project_path)
       p.walk(&ctx);
       assert(ctx.project_);
       insert(ctx.project_);
+      
+      // check if project has global link on it and if it has, update scm info
+      // This is needed because if we load projects from down to up than if upper projects has
+      // use-project /foo : foo ;
+      // than foo don't get scm info, because we do most of scm updating load from up to down.
+      reversed_global_project_links_t::const_iterator rgi = reversed_global_project_links_.find(ctx.project_->location());
+      if (rgi != reversed_global_project_links_.end())
+         update_project_scm_info(*ctx.project_, rgi->second);
+
       return loaded_projects_t(ctx.project_);
    }
    catch(...)
@@ -955,6 +964,8 @@ void engine::use_project_rule(project* p, const pstring& project_id_alias,
       alias_data.properties_ = props;
 
       alias_data_home->second->aliases_data_.push_back(alias_data);
+
+      reversed_global_project_links_.insert(make_pair(alias_data.location_, alias_data));
    }
 }
 

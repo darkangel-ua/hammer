@@ -52,12 +52,18 @@ namespace hammer
                                       boost::shared_ptr<project_alias_node>,
                                       boost::hash<location_t>,
                                       location_equal_to>  global_project_links_t;
-
+         
          struct project_alias_data
          {
             location_t location_;
             const feature_set* properties_;
          };
+
+         // map filesystem path on global alias node for a project
+         typedef boost::unordered_map<location_t, 
+                                      project_alias_data,
+                                      boost::hash<location_t>,
+                                      location_equal_to> reversed_global_project_links_t;
          
          struct project_alias_node
          {
@@ -112,6 +118,7 @@ namespace hammer
 
          projects_t projects_;
          global_project_links_t global_project_links_;
+         reversed_global_project_links_t reversed_global_project_links_;
          
          boost::shared_ptr<type_registry> type_registry_;
          pool pool_;

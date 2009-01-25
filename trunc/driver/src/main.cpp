@@ -2,6 +2,8 @@
 #include <boost/program_options.hpp>
 #include <boost/filesystem/convenience.hpp>
 #include <boost/format.hpp>
+#include <boost/regex.hpp>
+
 #include <iostream>
 #include "../../src/engine.h"
 #include "../../src/feature_set.h"
@@ -97,6 +99,21 @@ namespace
       return s.find('/') != string::npos;
    }
 
+   void split_target_path(string& target_path, 
+                          string& target_name, 
+                          const string& to_split)
+   {
+      boost::smatch match;
+      boost::regex pattern("(.+?)//(.+)");
+      if (boost::regex_match(to_split, match, pattern))
+      {
+         target_path = match[1];
+         target_name = match[2];
+      }
+      else
+         target_path = to_split;
+   }
+
    vector<basic_target*> 
    instantiate_targets(const vector<string>& targets, const hammer::project& project,
                        const feature_set& build_request)
@@ -107,9 +124,15 @@ namespace
       {
          if (is_looks_like_project(*i))
          {
-            const hammer::engine::loaded_projects_t& p = project.engine()->load_project(*i, project);
+            string target_path, target_name;
+            
+            split_target_path(target_path, target_name, *i);
+            pstring p_target_name(project.engine()->pstring_pool(), target_name);
+
+            const hammer::engine::loaded_projects_t& p = project.engine()->load_project(target_path, project);
             typedef hammer::project::selected_targets_t selected_targets_t;
-            selected_targets_t st = p.select_best_alternative(build_request);
+            selected_targets_t st = target_name.empty() ? p.select_best_alternative(build_request) :
+                                                          selected_targets_t(1, p.select_best_alternative(p_target_name, build_request));
             feature_set* usage_requirements = project.engine()->feature_registry().make_set();
             for(selected_targets_t::const_iterator t = st.begin(), t_last = st.end(); t != t_last; ++t)
             {

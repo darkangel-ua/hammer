@@ -95,6 +95,9 @@ engine::engine()
 project* engine::get_upper_project(const location_t& project_path)
 {
    location_t upper_path = project_path.parent_path();
+   if (upper_path.empty())
+      return NULL;
+
    if (exists(upper_path / "hamfile"))
       return &load_project(upper_path);
    
@@ -104,7 +107,7 @@ project* engine::get_upper_project(const location_t& project_path)
    if (upper_path.has_parent_path())
       return get_upper_project(upper_path);
    else
-      return 0;
+      return NULL;
 }
 
 void engine::update_project_scm_info(project& p, const project_alias_data& alias_data) const

@@ -33,12 +33,16 @@ namespace
 {
    struct hammer_options
    {
-      hammer_options() : generate_projects_localy_(false), hammer_output_dir_(".hammer") {}
+      hammer_options() : generate_projects_localy_(false), 
+                         hammer_output_dir_(".hammer"),
+                         debug_level_(0)
+      {}
 
       vector<string> build_request_options_;
       bool generate_projects_localy_;
       std::string hammer_output_dir_;
       std::string hammer_install_dir_;
+      int debug_level_;
    };
 
    po::positional_options_description build_request_options;
@@ -55,7 +59,8 @@ namespace
          ("generate-msvc-8.0-solution,p", "generate msvc-8.0 solution+projects")
          ("generate-projects-locally,l", "when generating build script makes them in one place")
          ("hammer-out", po::value<std::string>(&opts.hammer_output_dir_), "specify where hammer will place all its generated output")
-         ("install-dir", po::value<std::string>(&opts.hammer_install_dir_), "specify where hammer was installed");
+         ("install-dir", po::value<std::string>(&opts.hammer_install_dir_), "specify where hammer was installed")
+         ("debug,d", po::value<int>(&opts.debug_level_), "specify verbosity level");
 
       return desc;
    }
@@ -215,12 +220,21 @@ namespace
 
       cout << "...updated " << target_to_update_count << " targets...\n";
    }
+
+   terminate_function old_terminate_function;
+   void terminate_hander()
+   {
+      cout << "Critical error - terminate handler was invoked\n";
+      old_terminate_function();
+   }
 }
 
 int main(int argc, char** argv)
 {
    try
    {
+      old_terminate_function = set_terminate(terminate_hander);
+
       po::options_description desc(options_for_work());
       po::variables_map vm;
       po::parsed_options options = po::command_line_parser(argc, argv).options(desc).positional(build_request_options).run();
@@ -239,12 +253,29 @@ int main(int argc, char** argv)
       fs::path startup_script_dir("./");
       if (vm.count("install-dir"))
          startup_script_dir = opts.hammer_install_dir_;
+      
+      startup_script_dir /= "scripts/startup.ham";
+      if (opts.debug_level_ > 0)
+         cout << "...Full path to script is '" << startup_script_dir << "'\n";
 
-      engine.load_hammer_script(startup_script_dir / "scripts/startup.ham");
+      if (opts.debug_level_ > 0)
+         cout << "...Loading startup script... ";
+
+      engine.load_hammer_script(startup_script_dir);
+
+      if (opts.debug_level_ > 0)
+         cout << "Done\n";
+
+      if (opts.debug_level_ > 0)
+         cout << "...Installing generators... ";
+
       add_msvc_generators(engine, engine.generators());
       engine.generators().insert(std::auto_ptr<generator>(new copy_generator(engine)));
       add_testing_generators(engine, engine.generators());
 
+      if (opts.debug_level_ > 0)
+         cout << "Done\n";
+      
       build_request->join("toolset", "msvc");
       build_request->join("variant", "debug");
 
@@ -254,9 +285,31 @@ int main(int argc, char** argv)
       if (vm.count("build-request"))
          resolve_arguments(vm["build-request"].as<vector<string> >(), targets, build_request);
 
+      if (opts.debug_level_ > 0)
+         cout << "...Loading project at '" << fs::current_path() << "'... ";
+      
       const project& project_to_build = engine.load_project(fs::current_path());
+      if (opts.debug_level_ > 0)
+         cout << "Done\n";
+
       if (targets.empty())
          add_all_targets(targets, project_to_build);
+
+      if (opts.debug_level_ > 0)
+      {
+         cout << "...Targets to build is: ";
+         bool first_pass = true;
+         for(vector<string>::const_iterator i = targets.begin(), last = targets.end(); i != last; ++i)
+         {
+            if (first_pass)
+               first_pass = false;
+            else
+               cout << ',';
+
+            cout << *i;
+         }
+         cout << "\n";
+      }
 
       cout << "...instantiating... ";
       vector<basic_target*> instantiated_targets(instantiate_targets(targets, project_to_build, *build_request));
@@ -272,7 +325,7 @@ int main(int argc, char** argv)
       if (vm.count("generate"))
          return 0;
 
-//      remove_propagated_targets(nodes, project_to_build);
+      remove_propagated_targets(nodes, project_to_build);
 
       if (vm.count("generate-msvc-8.0-solution"))
          generate_msvc80_solution(nodes, project_to_build);

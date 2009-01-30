@@ -87,6 +87,8 @@ namespace hammer
                                        const feature_set& build_request,
                                        const feature_set* additional_build_properties) const;
 
+         const feature_set& resolve_undefined_features(const feature_set& fs) const;
+
       private:
          struct cached_instantiation_data_t
          {

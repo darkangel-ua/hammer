@@ -8,6 +8,8 @@
 #include <vector>
 #include "basic_meta_target.h"
 #include "scm_info.h"
+#include "feature_registry.h"
+#include "pool.h"
 
 namespace hammer
 {
@@ -18,8 +20,23 @@ namespace hammer
    class project : public basic_meta_target
    {
       public:
+         struct selected_target
+         {
+            
+            selected_target(const basic_meta_target* t, 
+                            const feature_set* resolved_build_request)
+                           : target_(t),
+                             resolved_build_request_(resolved_build_request)
+            {}
+            selected_target() : target_(NULL), resolved_build_request_(NULL) {}
+
+            const basic_meta_target* target_;
+            // == project.try_resolve_local_features(build_request)
+            const feature_set* resolved_build_request_; 
+         };
+
          typedef boost::ptr_multimap<const pstring /* target name */, basic_meta_target> targets_t;
-         typedef std::vector<const basic_meta_target*> selected_targets_t;
+         typedef std::vector<selected_target> selected_targets_t;
 
          project(engine* e, 
                  const pstring& name,
@@ -28,7 +45,11 @@ namespace hammer
                  const requirements_decl& usage_req
                  );
 
-         project(engine* e) : engine_(e), is_root_(false), add_targets_as_explicit_(false) {};
+         project(engine* e) : engine_(e), 
+                              is_root_(false), 
+                              add_targets_as_explicit_(false), 
+                              local_feature_registry_(&pool_for_feature_registry_) 
+         {};
          
          virtual const location_t& location() const { return location_; }
          void location(const location_t& l) { location_ = l; } 
@@ -41,6 +62,7 @@ namespace hammer
          basic_meta_target* find_target(const pstring& name);
          hammer::engine* engine() const { return engine_; }
          const location_t& intermediate_dir() const { return intermediate_dir_; }
+         feature_registry& local_feature_registry() const { return local_feature_registry_; }
          bool is_root() const { return is_root_; }
          void set_root(bool v) { is_root_ = v; }
          void add_targets_as_explicit(bool v);
@@ -55,8 +77,9 @@ namespace hammer
          selected_targets_t select_best_alternative(const feature_set& build_request) const;
 
          // choose best alternative for target_name satisfied build_request
-         const basic_meta_target* select_best_alternative(const pstring& target_name, const feature_set& build_request) const;
-         const basic_meta_target* try_select_best_alternative(const pstring& target_name, const feature_set& build_request) const;
+         selected_target select_best_alternative(const pstring& target_name, const feature_set& build_request) const;
+         selected_target try_select_best_alternative(const pstring& target_name, const feature_set& build_request) const;
+         feature_set* try_resolve_local_features(const feature_set& fs) const;
 
       private:
          location_t location_;
@@ -66,6 +89,8 @@ namespace hammer
          hammer::scm_info scm_info_;
          bool is_root_;
          bool add_targets_as_explicit_;
+         pool pool_for_feature_registry_; //FIXME:
+         mutable feature_registry local_feature_registry_;
 
          virtual void instantiate_impl(const main_target* owner, 
                                        const feature_set& build_request,

@@ -141,7 +141,7 @@ namespace
             feature_set* usage_requirements = project.engine()->feature_registry().make_set();
             for(selected_targets_t::const_iterator t = st.begin(), t_last = st.end(); t != t_last; ++t)
             {
-               (**t).instantiate(NULL, build_request, &result, usage_requirements);
+               t->target_->instantiate(NULL, build_request, &result, usage_requirements);
                usage_requirements->clear();
             }
          }

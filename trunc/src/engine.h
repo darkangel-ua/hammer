@@ -183,6 +183,8 @@ namespace hammer
          void import_rule(project* p, std::vector<pstring>& name);
          void feature_feature_rule(project* p, std::vector<pstring>& name, std::vector<pstring>* values,
                                    std::vector<pstring>* attributes);
+         void feature_local_rule(project* p, std::vector<pstring>& name, std::vector<pstring>* values,
+                                 std::vector<pstring>* attributes);
          void feature_compose_rule(project* p, feature& f, feature_set& components);
          void variant_rule(project* p, pstring& variant_name, pstring* base, feature_set& components);
          sources_decl glob_rule(project* p, std::vector<pstring>& patterns, 
@@ -210,8 +212,8 @@ namespace hammer
             return *this;
          }
          project::selected_targets_t select_best_alternative(const feature_set& build_request) const;
-         const basic_meta_target* select_best_alternative(const pstring& target_name, const feature_set& build_request) const;
-
+         project::selected_target select_best_alternative(const pstring& target_name, const feature_set& build_request) const;
+         feature_set* resolve_undefined_features(const feature_set& s);
          
       private:      
          typedef std::vector<project*> projects_t;
@@ -220,7 +222,7 @@ namespace hammer
 
          loaded_projects_t() {};
          bool empty() const { return projects_.empty(); }
-         void post_process(project::selected_targets_t& result, const feature_set& build_request) const;
+         void post_process(project::selected_targets_t& result) const;
    };
 }
 

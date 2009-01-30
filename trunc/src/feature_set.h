@@ -43,6 +43,7 @@ namespace hammer
          void erase_all(const std::string& feature_name);
          size_t size() const { return features_.size(); }
          bool empty() const { return features_.empty(); }
+         bool has_undefined_features() const { return has_undefined_; }
          void clear();
 
          bool operator == (const feature_set& rhs) const;
@@ -52,6 +53,7 @@ namespace hammer
       private:
          feature_registry* fr_;
          features_t features_;
+         bool has_undefined_;
 
          void join_impl(feature_set* lhs, const feature_set& rhs) const;
          iterator deconstify(const_iterator i);

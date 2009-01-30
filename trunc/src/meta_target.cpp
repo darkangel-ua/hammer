@@ -109,10 +109,14 @@ namespace hammer{
    }
    
    void meta_target::instantiate_impl(const main_target* owner,
-                                      const feature_set& build_request,
+                                      const feature_set& build_request_param,
                                       std::vector<basic_target*>* result,
                                       feature_set* usage_requirements) const
    {
+      const feature_set& build_request = build_request_param.has_undefined_features() 
+                                              ? resolve_undefined_features(build_request_param)
+                                              : build_request_param;
+
       feature_set* mt_fs = build_request.clone();
       requirements().eval(build_request, mt_fs, usage_requirements);
 
@@ -139,13 +143,15 @@ namespace hammer{
       split_sources(&simple_targets, &dependency_meta_targets, dependencies_from_requierements, *build_request_for_dependencies);
       
       project()->engine()->feature_registry().add_defaults(mt_fs);
+      project()->local_feature_registry().add_defaults(mt_fs);
+
       main_target* mt = construct_main_target(mt_fs); // construct_main_target may construct main_target with different properties PCH is example
       mt_fs = mt->properties().clone(); // FIXME ref semantic required
 
       if (!meta_targets.empty())
          instantiate_meta_targets(simple_targets, instantiated_meta_targets, 
-                                 *local_usage_requirements, meta_targets, 
-                                 *build_request_for_dependencies, *mt);
+                                  *local_usage_requirements, meta_targets, 
+                                  *build_request_for_dependencies, *mt);
       
       if (!dependency_meta_targets.empty())
          instantiate_meta_targets(simple_targets, instantiated_dependency_meta_targets, 

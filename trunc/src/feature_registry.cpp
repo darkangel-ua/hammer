@@ -321,11 +321,24 @@ namespace hammer{
    feature* feature_registry::simply_create_feature(const std::string& name, const std::string& value)
    {
       feature* result;
-      feature_def& def = get_def(name);
+      const feature_def* maybe_def = find_def(name.c_str());
+      if (maybe_def == NULL)
+      {
+         // no such feature definition found
+         // create def with undefined attribute
+         feature_attributes fa = {0};
+         fa.undefined_ = fa.no_checks = 1;
+         feature_def new_feature_def(name, feature_def::legal_values_t(), fa);
+         add_def(new_feature_def);
+         maybe_def = find_def(name.c_str());
+      }
+
+      const feature_def& def = *maybe_def;
 
       if (def.attributes().path || 
           def.attributes().dependency ||
-          def.attributes().generated)
+          def.attributes().generated ||
+          def.attributes().undefined_)
       {
          auto_ptr<feature> f(new feature(&def, pstring(*impl_->pstring_pool_, value)));
          result = f.get();
@@ -401,6 +414,20 @@ namespace hammer{
    const feature_def* feature_registry::find_def(const char* feature_name) const
    {
       return impl_->find_def(feature_name);
+   }
+
+   const feature_def* feature_registry::find_def_from_full_name(const char* feature_name) const
+   {
+      const feature_def* result = find_def(feature_name);
+      if (result != NULL)
+         return result;
+      // FIXME: performance hit
+      string feature_name_str(feature_name);
+      string::size_type p = feature_name_str.find('-');
+      if (p != string::npos)
+         return find_def(feature_name_str.substr(0, p).c_str());
+      else
+         return NULL;
    }
 
    feature* feature_registry::create_feature(const feature& f, 

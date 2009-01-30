@@ -86,7 +86,13 @@ void hammer_add_feature_argument(void* context, void* args_list, const char* fea
 {
    hammer_walker_context* ctx = static_cast<hammer_walker_context*>(context);
    args_list_t* args_list_ = static_cast<args_list_t*>(args_list);
-   call_resolver_call_arg<feature>* arg = new call_resolver_call_arg<feature>(ctx->engine_->feature_registry().create_feature(feature_name, feature_value), false);
+   const feature_def* fdef = ctx->engine_->feature_registry().find_def_from_full_name(feature_name);
+   call_resolver_call_arg<feature>* arg;
+   if (fdef == NULL)
+      arg = new call_resolver_call_arg<feature>(ctx->project_->local_feature_registry().create_feature(feature_name, feature_value), false);
+   else
+      arg = new call_resolver_call_arg<feature>(ctx->engine_->feature_registry().create_feature(feature_name, feature_value), false);
+
    args_list_->push_back(arg);
 }
 
@@ -101,7 +107,11 @@ void hammer_add_string_arg_to_args_list(void* context, void* args_list, const ch
 void* hammer_create_feature(void* context, const char* feature_name, const char* feature_value)
 {
    hammer_walker_context* ctx = static_cast<hammer_walker_context*>(context);
-   return ctx->engine_->feature_registry().create_feature(feature_name, feature_value == NULL ? "" : feature_value);
+   const feature_def* fdef = ctx->engine_->feature_registry().find_def_from_full_name(feature_name);
+   if (fdef != NULL)
+      return ctx->engine_->feature_registry().create_feature(feature_name, feature_value == NULL ? "" : feature_value);
+   else
+      return ctx->project_->local_feature_registry().create_feature(feature_name, feature_value == NULL ? "" : feature_value);
 }
 
 void* hammer_make_requirements_condition()

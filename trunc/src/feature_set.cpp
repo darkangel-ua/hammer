@@ -13,7 +13,7 @@ using namespace std;
 
 namespace hammer{
 
-feature_set::feature_set(feature_registry* fr) : fr_(fr)
+feature_set::feature_set(feature_registry* fr) : fr_(fr), has_undefined_(false)
 {
 }
 
@@ -24,6 +24,9 @@ feature_set& feature_set::join(const char* name, const char* value)
 
 feature_set& feature_set::join(feature* f)
 {
+   if (f->attributes().undefined_)
+      has_undefined_ = true;
+
    if (!f->attributes().free)
    {
       iterator i = find(f->name());
@@ -202,6 +205,8 @@ void extract_uses(sources_decl& result, const feature_set& fs)
    }
 }
 
+// FIXME: this is wrong. If we compare two sets with same free features that placed in different order
+// than we don't detects that difference
 bool feature_set::operator == (const feature_set& rhs) const
 {
    if (this == &rhs)
@@ -220,6 +225,7 @@ bool feature_set::operator == (const feature_set& rhs) const
 void feature_set::clear()
 {
    features_.clear();
+   has_undefined_ = false;
 }
 
 bool feature_set::contains(const feature_set& rhs) const
@@ -339,6 +345,18 @@ void feature_set::erase_all(const std::string& feature_name)
          i = features_.erase(i);
       else
          ++i;
+   }
+
+   has_undefined_ = false;
+   const feature_def& def = fr_->get_def(feature_name);
+   if (def.attributes().undefined_)
+   {
+      for(features_t::const_iterator i = features_.begin(), last = features_.end(); i != last; ++i)
+         if ((**i).attributes().undefined_)
+         {
+            has_undefined_ = true;
+            break;
+         }
    }
 }
 

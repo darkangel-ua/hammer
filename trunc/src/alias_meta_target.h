@@ -20,7 +20,7 @@ namespace hammer
          
          virtual bool is_cachable(const main_target* owner) const 
          { 
-            return owner != NULL; 
+            return false; 
          }
       
       private:

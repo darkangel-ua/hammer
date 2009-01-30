@@ -10,6 +10,7 @@
 #include <hammer/src/feature_set.h>
 #include <hammer/src/feature_registry.h>
 #include <hammer/src/fs_helpers.h>
+#include <hammer/src/meta_target.h>
 
 using namespace hammer;
 using namespace std;
@@ -89,7 +90,11 @@ void check_feature(void* e, void* t, void* features, const char* name, const cha
    const feature_set* fs = static_cast<const feature_set*>(features);
    const basic_target* bt = static_cast<const basic_target*>(t);
    engine* eng = static_cast<engine*>(e);
-   const feature_def& fd = eng->feature_registry().get_def(name);
+   const feature_def* global_def = eng->feature_registry().find_def(name);
+   const feature_def* local_def = bt->mtarget()->meta_target()->project()->local_feature_registry().find_def(name);
+   const feature_def& fd = global_def != NULL 
+                              ? *global_def 
+                              : bt->mtarget()->meta_target()->project()->local_feature_registry().get_def(name);;
    
    if (fd.attributes().path)
    {

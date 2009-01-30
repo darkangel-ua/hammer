@@ -12,9 +12,6 @@ namespace hammer
    {
       public:
          requirement_base() : public_(false) {}
-
-         virtual void eval(feature_set* result, 
-                           feature_registry& fr) const = 0; // FIX: война с const-ами разразилась не на шутку :(
          virtual void eval(const feature_set& build_request,
                            feature_set* result,
                            feature_set* public_result) const = 0;
@@ -32,8 +29,6 @@ namespace hammer
    {
       public:
          just_feature_requirement(feature* f) : f_(f) {}
-         virtual void eval(feature_set* result, 
-                           feature_registry& fr) const;
          virtual void eval(const feature_set& build_request,
                            feature_set* result,
                            feature_set* public_result) const;
@@ -49,8 +44,6 @@ namespace hammer
       public:
          void add(feature* c);
          void result(feature *r) { result_ = r; }
-         virtual void eval(feature_set* result, 
-                           feature_registry& fr) const;
          virtual void eval(const feature_set& build_request,
                            feature_set* result,
                            feature_set* public_result) const;

@@ -72,8 +72,10 @@ void basic_meta_target::instantiate_meta_targets(const meta_targets_t& targets,
    // FIXME: если в result уже есть проинстанцированная цель то нужно проверить с какими параметрами это было сделанно
    // Если они совпадают значит мы просто пропускаем инстанцирование, если нет, то кидаем исключение
    for(meta_targets_t::const_iterator i = targets.begin(), last = targets.end(); i != last; ++i)
+   {
       i->first->instantiate(owner, i->second == NULL ? build_request : *build_request.join(*i->second), 
                             result, usage_requirments);
+   }
 }
 
 void basic_meta_target::split_one_source(sources_decl* simple_targets,
@@ -109,9 +111,11 @@ void basic_meta_target::resolve_meta_target_source(const source_decl& source,
 	{
 		if (const basic_meta_target* m = project_->find_target(source.target_path()))
 		{
-         m = project_->select_best_alternative(source.target_path(), *build_request_with_source_properties);
-         m->transfer_sources(simple_targets, meta_targets, 
-                             *build_request_with_source_properties, source.properties());
+         project::selected_target selected_target = project_->select_best_alternative(source.target_path(), *build_request_with_source_properties);
+         selected_target.target_->transfer_sources(simple_targets, 
+                                                   meta_targets, 
+                                                   *selected_target.resolved_build_request_, 
+                                                   source.properties());
 			return;
 		}
    }
@@ -125,8 +129,10 @@ void basic_meta_target::resolve_meta_target_source(const source_decl& source,
          hammer::project::selected_targets_t selected_targets(suitable_projects.select_best_alternative(*build_request_with_source_properties));
          for(hammer::project::selected_targets_t::const_iterator i = selected_targets.begin(), last = selected_targets.end(); i != last; ++i)
 	      {
-		      (**i).transfer_sources(simple_targets, meta_targets, 
-                                   *build_request_with_source_properties, source.properties());
+		      i->target_->transfer_sources(simple_targets, 
+                                         meta_targets, 
+                                         *i->resolved_build_request_, 
+                                         source.properties());
 	      }
       }
       catch(const std::exception& e)
@@ -137,10 +143,11 @@ void basic_meta_target::resolve_meta_target_source(const source_decl& source,
    }
    else
    {
-      const basic_meta_target* m = suitable_projects.select_best_alternative(source.target_name(), *build_request_with_source_properties);
-      m->transfer_sources(simple_targets, meta_targets, 
-                          *build_request_with_source_properties, source.properties());
-      return;
+      project::selected_target selected_target = suitable_projects.select_best_alternative(source.target_name(), 
+                                                                                           *build_request_with_source_properties);
+      selected_target.target_->transfer_sources(simple_targets, meta_targets, 
+                                                *selected_target.resolved_build_request_,
+                                                source.properties());
    }
 }
 
@@ -154,6 +161,18 @@ void basic_meta_target::transfer_sources(sources_decl* simple_targets,
 
 basic_meta_target::~basic_meta_target()
 {
+}
+
+const feature_set& basic_meta_target::resolve_undefined_features(const feature_set& fs) const
+{
+   const feature_set* without_undefined = fs.has_undefined_features() 
+                                             ? project()->try_resolve_local_features(fs)
+                                             : &fs;
+   if (without_undefined->has_undefined_features())
+      throw std::runtime_error("Target '" + name().to_string() + "' at location '" +
+                               location().native_file_string() + "' has been instantiated with unknown local features");
+
+   return *without_undefined;
 }
 
 void basic_meta_target::instantiate(const main_target* owner, 
@@ -174,7 +193,11 @@ void basic_meta_target::instantiate(const main_target* owner,
       cached_instantiation_data_t cache_item;
       cache_item.build_request_ = &build_request;
       cache_item.computed_usage_requirements_ = project()->engine()->feature_registry().make_set();
-      instantiate_impl(owner, build_request, &cache_item.instantiated_targets_, cache_item.computed_usage_requirements_);
+
+      instantiate_impl(owner, 
+                       build_request, 
+                       &cache_item.instantiated_targets_, 
+                       cache_item.computed_usage_requirements_);
       instantiation_cache_.push_back(cache_item);
       
       result->insert(result->end(), cache_item.instantiated_targets_.begin(), cache_item.instantiated_targets_.end());
@@ -183,7 +206,10 @@ void basic_meta_target::instantiate(const main_target* owner,
       return;
    }
 
-   instantiate_impl(owner, build_request, result, usage_requirements);
+   instantiate_impl(owner, 
+                    build_request, 
+                    result, 
+                    usage_requirements);
 }
 
 }

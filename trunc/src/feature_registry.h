@@ -24,6 +24,8 @@ namespace hammer
 
          void add_defaults(feature_set* s);
          const feature_def* find_def(const char* feature_name) const;
+         // find definition for complex names such as os-version where version is subfeature
+         const feature_def* find_def_from_full_name(const char* feature_name) const;
          ~feature_registry();
 
       private:

@@ -87,22 +87,6 @@ void requirements_decl::eval(const feature_set& build_request,
       i->eval(build_request, result, public_result);
 }
 
-void linear_and_condition::eval(feature_set* result, 
-                                feature_registry& fr) const
-{
-   bool satisfy = true;
-   for(features_t::const_iterator i = features_.begin(), last = features_.end(); i != last; ++i)
-   {
-      feature_set::const_iterator f = result->find(**i);
-      satisfy = satisfy && (f != result->end() ||
-                            (f == result->end() && 
-                             fr.get_def((**i).name()).get_default() == (**i).value()));
-   }
-
-   if (satisfy)
-      result->join(result_);
-}
-
 void linear_and_condition::eval(const feature_set& build_request,
                                 feature_set* result,
                                 feature_set* public_result) const
@@ -138,12 +122,6 @@ void linear_and_condition::setup_path_data(const basic_meta_target* t)
 {
    if (result_->attributes().path || result_->attributes().dependency)
       result_->get_path_data().target_ = t;
-}
-
-void just_feature_requirement::eval(feature_set* result, 
-                                    feature_registry& fr) const
-{
-   result->join(f_);
 }
 
 void just_feature_requirement::eval(const feature_set& build_request,

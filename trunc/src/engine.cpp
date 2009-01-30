@@ -54,6 +54,7 @@ engine::engine()
    resolver_.insert("testing.run", boost::function<sources_decl (project*, sources_decl*, std::vector<pstring>*, std::vector<pstring>*, requirements_decl*, pstring*)>(boost::bind(&engine::testing_run_rule, this, _1, _2, _3, _4, _5, _6)));
    resolver_.insert("import", boost::function<void (project*, vector<pstring>&)>(boost::bind(&engine::import_rule, this, _1, _2)));
    resolver_.insert("feature.feature", boost::function<void (project*, vector<pstring>&, vector<pstring>*, vector<pstring>*)>(boost::bind(&engine::feature_feature_rule, this, _1, _2, _3, _4)));
+   resolver_.insert("feature.local", boost::function<void (project*, vector<pstring>&, vector<pstring>*, vector<pstring>*)>(boost::bind(&engine::feature_local_rule, this, _1, _2, _3, _4)));
    resolver_.insert("feature.compose", boost::function<void (project*, feature&, feature_set&)>(boost::bind(&engine::feature_compose_rule, this, _1, _2, _3)));
    resolver_.insert("variant", boost::function<void (project*, pstring&, pstring*, feature_set&)>(boost::bind(&engine::variant_rule, this, _1, _2, _3, _4)));
    resolver_.insert("glob", boost::function<sources_decl (project*, std::vector<pstring>&, std::vector<pstring>*)>(boost::bind(&engine::glob_rule, this, _1, _2, _3, false)));
@@ -716,6 +717,25 @@ void engine::feature_feature_rule(project* p, std::vector<pstring>& name,
    feature_registry_->add_def(def);
 }
 
+void engine::feature_local_rule(project* p, std::vector<pstring>& name, 
+                                std::vector<pstring>* values,
+                                std::vector<pstring>* attributes)
+{
+   if (name.empty() || name.size() > 1)
+      throw std::runtime_error("[feature.feature] Bad feature name.");
+
+   vector<string> def_values;
+   if (values)
+   {
+      for(vector<pstring>::const_iterator i = values->begin(), last = values->end(); i != last; ++i)
+         def_values.push_back(i->to_string());
+   }
+
+   feature_def def(name[0].to_string(), def_values, resolve_attributes(attributes));
+
+   p->local_feature_registry().add_def(def);
+}
+
 void engine::feature_compose_rule(project* p, feature& f, feature_set& components)
 {
    feature_set* cc = components.clone();
@@ -983,9 +1003,10 @@ void engine::repository_rule(project* p, const pstring& a_project_location, feat
    repositories_.push_back(repository_data(p, project_location, props));
 }
 
-static bool targets_by_name(const basic_meta_target* lhs, const basic_meta_target* rhs)
+static bool targets_by_name(const project::selected_target& lhs, 
+                            const project::selected_target& rhs)
 {
-   return lhs->name() < rhs->name();
+   return lhs.target_->name() < rhs.target_->name();
 }
 
 static bool has_override(engine& e, 
@@ -997,8 +1018,7 @@ static bool has_override(engine& e,
    return fs->find("override") != fs->end();
 }
 
-void engine::loaded_projects_t::post_process(project::selected_targets_t& result,
-                                             const feature_set& build_request) const
+void engine::loaded_projects_t::post_process(project::selected_targets_t& result) const
 {
    if (result.empty())
       throw std::runtime_error("[FIXME] Can't select best alternative - no one founded");
@@ -1008,7 +1028,7 @@ void engine::loaded_projects_t::post_process(project::selected_targets_t& result
 
    // Check for targets with same name. They already have same symbolic names so we should check names.
    using namespace boost::logic;
-   engine& e = *result.front()->project()->engine();
+   engine& e = *result.front().target_->project()->engine();
    std::sort(result.begin(), result.end(), targets_by_name);
    project::selected_targets_t::iterator 
       first = result.begin(), 
@@ -1016,13 +1036,13 @@ void engine::loaded_projects_t::post_process(project::selected_targets_t& result
    tribool overriden = false;
    for(; second != result.end();)
    {
-      if ((**first).name() == (**second).name())
+      if (first->target_->name() == second->target_->name())
       {
          switch(overriden.value)
          {
             case tribool::true_value:
             {
-               if (has_override(e, **second, build_request))
+               if (has_override(e, *second->target_, *second->resolved_build_request_))
                   throw std::runtime_error("[FIXME] Can't select best alternative from two others");
                else
                   second = result.erase(second);
@@ -1032,7 +1052,7 @@ void engine::loaded_projects_t::post_process(project::selected_targets_t& result
 
             case tribool::false_value:
             {
-               if (has_override(e, **second, build_request))
+               if (has_override(e, *second->target_, *second->resolved_build_request_))
                {
                   std::swap(*first, *second);
                   second = result.erase(second);
@@ -1045,7 +1065,7 @@ void engine::loaded_projects_t::post_process(project::selected_targets_t& result
 
             case tribool::indeterminate_value:
             {
-               overriden = has_override(e, **first, build_request);
+               overriden = has_override(e, *first->target_, *first->resolved_build_request_);
                break;
             }
          }
@@ -1066,29 +1086,29 @@ engine::loaded_projects_t::select_best_alternative(const feature_set& build_requ
    {
       project::selected_targets_t targets((**i).select_best_alternative(build_request));
       for(project::selected_targets_t::const_iterator t = targets.begin(), t_last = targets.end(); t != t_last; ++t)
-         if (!(**t).is_explicit())
+         if (!t->target_->is_explicit())
             result.push_back(*t);
    }
 
-   post_process(result, build_request);
+   post_process(result);
 
    return result;
 }
 
-const basic_meta_target* 
+project::selected_target
 engine::loaded_projects_t::select_best_alternative(const pstring& target_name, 
                                                    const feature_set& build_request) const
 {
    project::selected_targets_t result;
    for(projects_t::const_iterator i = projects_.begin(), last = projects_.end(); i != last; ++i)
    {
-      const basic_meta_target* target = (**i).try_select_best_alternative(target_name, build_request);
-      if (target != NULL)
-         result.push_back(target);
+      project::selected_target st = (**i).try_select_best_alternative(target_name, build_request);
+      if (st.target_ != NULL)
+         result.push_back(st);
    }
 
    // after this call we will have only one meta target in result list
-   post_process(result, build_request);
+   post_process(result);
 
    return result.front();
 }

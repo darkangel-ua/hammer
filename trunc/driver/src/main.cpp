@@ -325,7 +325,7 @@ int main(int argc, char** argv)
       if (vm.count("generate"))
          return 0;
 
-      remove_propagated_targets(nodes, project_to_build);
+//      remove_propagated_targets(nodes, project_to_build);
 
       if (vm.count("generate-msvc-8.0-solution"))
          generate_msvc80_solution(nodes, project_to_build);

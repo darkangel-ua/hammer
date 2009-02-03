@@ -66,6 +66,7 @@ namespace hammer
    void extract_dependencies(sources_decl& result, const feature_set& fs);
    feature_set* parse_simple_set(const std::string& s, feature_registry& r);
    void dump_for_hash(std::ostream& s, const feature_set& fs);
+   std::string dump_for_hash(const feature_set& fs);
 }
 
 #endif //h_9689707e_e6c1_4154_9276_3693b32bc777

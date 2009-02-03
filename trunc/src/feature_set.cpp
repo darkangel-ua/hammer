@@ -4,6 +4,7 @@
 #include "feature.h"
 #include <iterator>
 #include <stdexcept>
+#include <sstream>
 #include "sources_decl.h"
 #include <boost/spirit/core.hpp>
 #include <boost/spirit/utility/lists.hpp>
@@ -335,6 +336,13 @@ void dump_for_hash(std::ostream& s, const feature_set& fs)
 
       dump_for_hash(s, **i);
    }
+}
+
+std::string dump_for_hash(const feature_set& fs)
+{
+   std::ostringstream s;
+   dump_for_hash(s, fs);
+   return s.str();
 }
 
 void feature_set::erase_all(const std::string& feature_name)

@@ -6,11 +6,17 @@ namespace hammer
    class type;   
    class pstring;
    class pool;
+   class feature_set;
 
-   pstring make_name(pool& p, const pstring& source_name, 
-                     const type& source_type, const type& target_type);
-   pstring make_name(pool& p, const pstring& source_name, 
-                     const type& target_type);
+   pstring make_name(pool& p, 
+                     const pstring& source_name, 
+                     const type& source_type, 
+                     const type& target_type,
+                     const feature_set* target_properties);
+   pstring make_name(pool& p, 
+                     const pstring& source_name, 
+                     const type& target_type,
+                     const feature_set* target_properties);
    pstring cut_suffix(pool& p, const pstring& source_name,
                       const type& source_type);
 }

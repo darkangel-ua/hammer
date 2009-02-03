@@ -106,7 +106,7 @@ void add_msvc_generators(engine& e, generator_registry& gr)
       generator::consumable_types_t source;
       generator::producable_types_t target;
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::CPP), 1, 0));
-      target.push_back(generator::produced_type(e.get_type_registry().get(types::OBJ), 1));
+      target.push_back(generator::produced_type(e.get_type_registry().get(types::OBJ)));
       auto_ptr<generator> g(new generator(e, "msvc.cpp.compiler", source, target, false));
       g->action(obj_action);
       e.generators().insert(g);
@@ -123,8 +123,8 @@ void add_msvc_generators(engine& e, generator_registry& gr)
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::IMPORT_LIB), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::SEARCHED_LIB), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::HEADER_LIB), 0, 0));
-      target.push_back(generator::produced_type(e.get_type_registry().get(types::OBJ), 1));
-      target.push_back(generator::produced_type(e.get_type_registry().get(types::PCH), 1));
+      target.push_back(generator::produced_type(e.get_type_registry().get(types::OBJ)));
+      target.push_back(generator::produced_type(e.get_type_registry().get(types::PCH)));
 
       feature_set* constraints = e.feature_registry().make_set();
       constraints->join("__pch", "");
@@ -149,7 +149,7 @@ void add_msvc_generators(engine& e, generator_registry& gr)
       generator::consumable_types_t source;
       generator::producable_types_t target;
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::C), 1, 0));
-      target.push_back(generator::produced_type(e.get_type_registry().get(types::OBJ), 1));
+      target.push_back(generator::produced_type(e.get_type_registry().get(types::OBJ)));
       auto_ptr<generator> g(new generator(e, "msvc.c.compiler", source, target, false));
       g->action(obj_action);
       e.generators().insert(g);
@@ -166,8 +166,8 @@ void add_msvc_generators(engine& e, generator_registry& gr)
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::IMPORT_LIB), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::SEARCHED_LIB), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::HEADER_LIB), 0, 0));
-      target.push_back(generator::produced_type(e.get_type_registry().get(types::PCH), 1));
-      target.push_back(generator::produced_type(e.get_type_registry().get(types::OBJ), 1));
+      target.push_back(generator::produced_type(e.get_type_registry().get(types::PCH)));
+      target.push_back(generator::produced_type(e.get_type_registry().get(types::OBJ)));
 
       feature_set* constraints = e.feature_registry().make_set();
       constraints->join("__pch", "");
@@ -186,7 +186,7 @@ void add_msvc_generators(engine& e, generator_registry& gr)
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::SEARCHED_LIB), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::H), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::HEADER_LIB), 0, 0));
-      target.push_back(generator::produced_type(e.get_type_registry().get(types::OBJ), 1));
+      target.push_back(generator::produced_type(e.get_type_registry().get(types::OBJ)));
       auto_ptr<generator> g(new exe_and_shared_lib_generator(e, "obj meta target generator", source, target, true));
       e.generators().insert(g);
    }
@@ -218,8 +218,8 @@ void add_msvc_generators(engine& e, generator_registry& gr)
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::SEARCHED_LIB), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::H), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::HEADER_LIB), 0, 0));
-      target.push_back(generator::produced_type(e.get_type_registry().get(types::EXE), 1));
-      target.push_back(generator::produced_type(e.get_type_registry().get(types::EXE_MANIFEST), 1));
+      target.push_back(generator::produced_type(e.get_type_registry().get(types::EXE)));
+      target.push_back(generator::produced_type(e.get_type_registry().get(types::EXE_MANIFEST)));
       auto_ptr<generator> g(new exe_and_shared_lib_generator(e, "msvc.exe.linker", source, target, true));
       g->action(exe_action);
       e.generators().insert(g);
@@ -247,7 +247,7 @@ void add_msvc_generators(engine& e, generator_registry& gr)
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::SEARCHED_LIB), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::H), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::HEADER_LIB), 0, 0));
-      target.push_back(generator::produced_type(e.get_type_registry().get(types::STATIC_LIB), 1));
+      target.push_back(generator::produced_type(e.get_type_registry().get(types::STATIC_LIB), true));
       auto_ptr<generator> g(new static_lib_generator(e, "msvc.static_lib.linker", source, target, true));
       g->action(static_lib_action);
       e.generators().insert(g);
@@ -283,9 +283,9 @@ void add_msvc_generators(engine& e, generator_registry& gr)
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::SEARCHED_LIB), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::H), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::HEADER_LIB), 0, 0));
-      target.push_back(generator::produced_type(e.get_type_registry().get(types::SHARED_LIB), 1));
-      target.push_back(generator::produced_type(e.get_type_registry().get(types::IMPORT_LIB), 1));
-      target.push_back(generator::produced_type(e.get_type_registry().get(types::DLL_MANIFEST), 1));
+      target.push_back(generator::produced_type(e.get_type_registry().get(types::SHARED_LIB), true));
+      target.push_back(generator::produced_type(e.get_type_registry().get(types::IMPORT_LIB), true));
+      target.push_back(generator::produced_type(e.get_type_registry().get(types::DLL_MANIFEST), true));
 
       auto_ptr<generator> g(new exe_and_shared_lib_generator(e, "msvc.shared_lib.linker", source, target, true));
       g->action(shared_lib_action);

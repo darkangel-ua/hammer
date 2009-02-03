@@ -19,8 +19,8 @@ void add_testing_generators(engine& e, generator_registry& gr)
    generator::consumable_types_t source;
    generator::producable_types_t target;
    source.push_back(generator::consumable_type(e.get_type_registry().get(types::EXE), 1, 0));
-   target.push_back(generator::produced_type(e.get_type_registry().get(types::TESTING_OUTPUT), 1));
-   target.push_back(generator::produced_type(e.get_type_registry().get(types::TESTING_RUN_PASSED), 1));
+   target.push_back(generator::produced_type(e.get_type_registry().get(types::TESTING_OUTPUT)));
+   target.push_back(generator::produced_type(e.get_type_registry().get(types::TESTING_RUN_PASSED)));
    std::auto_ptr<generator> g(new generator(e, "testing.run", source, target, true));
    g->include_composite_generators(true);
    

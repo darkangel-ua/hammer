@@ -30,10 +30,10 @@ namespace hammer
 
          struct produced_type
          {
-            produced_type(const type& t, unsigned int f) : type_(&t), flags_(f) {}
+            produced_type(const type& t, bool need_tag = false) : type_(&t), need_tag_(need_tag) {}
 
             const type* type_;
-            unsigned int flags_;
+            bool need_tag_;
          };
 
          typedef std::vector<consumable_type> consumable_types_t;

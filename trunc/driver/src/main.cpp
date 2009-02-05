@@ -3,6 +3,7 @@
 #include <boost/filesystem/convenience.hpp>
 #include <boost/format.hpp>
 #include <boost/regex.hpp>
+#include <boost/bind.hpp>
 
 #include <iostream>
 #include "../../src/engine.h"
@@ -20,6 +21,11 @@
 #include "../../src/builder.h"
 #include "../../src/actuality_checker.h"
 #include "../../src/generator_registry.h"
+
+#include "../../src/toolsets/msvc_toolset.h"
+#include "../../src/toolset_manager.h"
+
+#include "user_config_location.h"
 
 using namespace std;
 using namespace hammer;
@@ -227,6 +233,15 @@ namespace
       cout << "Critical error - terminate handler was invoked\n";
       old_terminate_function();
    }
+
+   void use_toolset_rule(project*, engine& e, pstring& toolset_name, pstring& toolset_version, pstring* toolset_home_)
+   {
+      location_t toolset_home;
+      if (toolset_home_ != NULL)
+         toolset_home = toolset_home_->to_string();
+
+      e.toolset_manager().init_toolset(e, toolset_name.to_string(), toolset_version.to_string(), &toolset_home);
+   }
 }
 
 int main(int argc, char** argv)
@@ -269,13 +284,38 @@ int main(int argc, char** argv)
       if (opts.debug_level_ > 0)
          cout << "...Installing generators... ";
 
-      add_msvc_generators(engine, engine.generators());
       engine.generators().insert(std::auto_ptr<generator>(new copy_generator(engine)));
       add_testing_generators(engine, engine.generators());
 
       if (opts.debug_level_ > 0)
          cout << "Done\n";
       
+      if (opts.debug_level_ > 0)
+         cout << "...Registering known toolsets... ";
+
+      engine.toolset_manager().add_toolset(auto_ptr<toolset>(new msvc_toolset));
+
+      if (opts.debug_level_ > 0)
+         cout << "Done\n";
+
+      engine.call_resolver().insert("use-toolset", boost::function<void (project*, pstring&, pstring&, pstring*)>(boost::bind(use_toolset_rule, _1, boost::ref(engine), _2, _3, _4)));
+
+      location_t user_config_script = get_user_config_location();
+      if (user_config_script.empty() || !exists(user_config_script))
+      {
+         if (opts.debug_level_ > 0)
+            cout << "...user-config.ham not founded...\n";
+      }
+      else
+      {
+         if (opts.debug_level_ > 0)
+            cout << "...Loading user-config.ham at '" << user_config_script.native_file_string() << "'...";
+
+         engine.load_hammer_script(user_config_script);
+         if (opts.debug_level_ > 0)
+            cout << "Done\n";
+      }
+
       build_request->join("toolset", "msvc");
       build_request->join("variant", "debug");
 

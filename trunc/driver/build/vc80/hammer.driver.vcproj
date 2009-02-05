@@ -207,6 +207,10 @@
 					/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath="..\..\src\user_config_location.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -215,6 +219,10 @@
 			>
 			<File
 				RelativePath="..\..\src\stdafx.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\user_config_location.h"
 				>
 			</File>
 		</Filter>

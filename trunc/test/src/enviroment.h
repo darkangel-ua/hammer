@@ -8,7 +8,7 @@ extern boost::filesystem::path test_data_path;
 
 struct setuped_engine
 {
-   setuped_engine();
+   setuped_engine(bool install_toolsets = true);
 
    hammer::engine engine_;
 };

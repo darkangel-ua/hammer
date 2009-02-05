@@ -206,6 +206,22 @@ namespace hammer
             return std::auto_ptr<call_resolver_call_arg_base>();
          }
 
+         std::auto_ptr<call_resolver_call_arg_base> invoke(args_list_t& args, boost::mpl::int_<5>,
+                                                           boost::mpl::int_<1>)
+         {
+            typedef boost::mpl::at_c<boost::function_types::parameter_types<T>::type, 0>::type arg0_t;
+            typedef boost::mpl::at_c<boost::function_types::parameter_types<T>::type, 1>::type arg1_t;
+            typedef boost::mpl::at_c<boost::function_types::parameter_types<T>::type, 2>::type arg2_t;
+            typedef boost::mpl::at_c<boost::function_types::parameter_types<T>::type, 3>::type arg3_t;
+            typedef boost::mpl::at_c<boost::function_types::parameter_types<T>::type, 4>::type arg4_t;
+            
+            f_(arg_getter<arg0_t>::get(args, args_, 0), arg_getter<arg1_t>::get(args, args_, 1), 
+               arg_getter<arg2_t>::get(args, args_, 2), arg_getter<arg3_t>::get(args, args_, 3),
+               arg_getter<arg4_t>::get(args, args_, 4));
+
+            return std::auto_ptr<call_resolver_call_arg_base>();
+         }
+
          std::auto_ptr<call_resolver_call_arg_base> invoke(args_list_t& args, boost::mpl::int_<6>,
                                                            boost::mpl::int_<1>)
          {

@@ -8,6 +8,10 @@
 #include <hammer/src/builder.h>
 #include <hammer/src/build_action.h>
 #include <hammer/src/feature_set.h>
+
+#include <hammer/src/toolset_manager.h>
+#include <hammer/src/toolsets/msvc_toolset.h>
+
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/regex.hpp>
@@ -16,9 +20,31 @@ using namespace hammer;
 using namespace std;
 namespace fs = boost::filesystem;
 
+class test_msvc_toolset : public hammer::msvc_toolset
+{
+   protected:
+      virtual msvc_8_0_data resolve_8_0_data(const location_t* toolset_home) const
+      {
+         msvc_8_0_data result;
+         result.setup_script_ = "vcvars32.bat";
+         result.compiler_ = "cl.exe";
+         result.librarian_ = "lib.exe";
+         result.linker_ = "link.exe";
+         result.manifest_tool_ = "mt.exe";
+
+         return result;
+      }
+};
+
 class toolset_test : public setuped_engine
 {
    public:
+      toolset_test() : setuped_engine(false)
+      {
+         engine_.toolset_manager().add_toolset(auto_ptr<toolset>(new test_msvc_toolset));
+         engine_.toolset_manager().init_toolset(engine_, "msvc", "8.0");
+      }
+
       void do_test(const string& name);
 };
 
@@ -145,7 +171,6 @@ void toolset_test::do_test(const string& name)
 
 namespace{
 
-/*
 BOOST_FIXTURE_TEST_CASE(simple_exe, toolset_test)
 {
    BOOST_REQUIRE_NO_THROW(do_test("simple_exe"));
@@ -180,7 +205,6 @@ BOOST_FIXTURE_TEST_CASE(testing_run, toolset_test)
 {
    BOOST_REQUIRE_NO_THROW(do_test("testing_run"));
 }
-*/
 
 BOOST_FIXTURE_TEST_CASE(copy, toolset_test)
 {

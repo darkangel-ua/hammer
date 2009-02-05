@@ -21,6 +21,7 @@ namespace hammer
          void add_subfeature(const subfeature_def& s);
          const subfeature_def* find_subfeature(const std::string& name) const;
          const subfeature_def& get_subfeature(const std::string& name) const;
+         subfeature_def& get_subfeature(const std::string& name);
          const subfeature_def* find_subfeature_for_value(const std::string& value) const;
 
          ~feature_def(); 

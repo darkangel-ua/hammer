@@ -10,5 +10,6 @@
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/guid.hpp>
+#include <boost/unordered_map.hpp>
 
 #endif //h_f71a8e70_7a12_4435_b9cc_ced1d1f88ee7

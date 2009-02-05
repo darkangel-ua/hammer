@@ -72,6 +72,11 @@ const subfeature_def& feature_def::get_subfeature(const std::string& subfeature_
       return *sd;
 }
 
+subfeature_def& feature_def::get_subfeature(const std::string& name)
+{
+   return const_cast<subfeature_def&>(const_cast<const feature_def*>(this)->get_subfeature(name));
+}
+
 const subfeature_def* feature_def::find_subfeature_for_value(const std::string& value) const
 {
    for(subfeatures_t::const_iterator i = subfeatures_.begin(), last = subfeatures_.end(); i != last; ++i)

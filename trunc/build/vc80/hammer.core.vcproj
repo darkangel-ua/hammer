@@ -421,6 +421,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\toolsets\msvc_toolset.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\non_buffered_token_stream.cpp"
 				>
 			</File>
@@ -559,6 +563,14 @@
 			</File>
 			<File
 				RelativePath="..\..\src\testing_run_action.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\toolset.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\toolset_manager.cpp"
 				>
 			</File>
 			<File
@@ -792,6 +804,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\toolsets\msvc_toolset.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\non_buffered_token_stream.h"
 				>
 			</File>
@@ -917,6 +933,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\timestamp_info.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\toolset_manager.h"
 				>
 			</File>
 			<File

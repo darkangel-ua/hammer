@@ -22,6 +22,7 @@ namespace hammer
    class project_requirements_decl;
    class scm_manager;
    class scm_client;
+   class toolset_manager;
 
    class engine : boost::noncopyable
    {
@@ -40,6 +41,7 @@ namespace hammer
          generator_registry& generators() const { return *generators_; }
          hammer::feature_registry& feature_registry() { return *feature_registry_; }
          hammer::call_resolver& call_resolver() { return resolver_; }
+         hammer::toolset_manager& toolset_manager() { return *toolset_manager_; }
          ~engine();
 
       private:
@@ -126,6 +128,8 @@ namespace hammer
          hammer::call_resolver resolver_;
          boost::shared_ptr<generator_registry> generators_;
          boost::shared_ptr<scm_manager> scm_manager_;
+         boost::shared_ptr<hammer::toolset_manager> toolset_manager_;
+
          use_project_data_t use_project_data_;
          repositories_t repositories_;
 
@@ -183,6 +187,8 @@ namespace hammer
          void import_rule(project* p, std::vector<pstring>& name);
          void feature_feature_rule(project* p, std::vector<pstring>& name, std::vector<pstring>* values,
                                    std::vector<pstring>* attributes);
+         void feature_subfeature_rule(project* p, pstring& feature_name, pstring& subfeature_name, std::vector<pstring>* values,
+                                      std::vector<pstring>* attributes);
          void feature_local_rule(project* p, std::vector<pstring>& name, std::vector<pstring>* values,
                                  std::vector<pstring>* attributes);
          void feature_compose_rule(project* p, feature& f, feature_set& components);

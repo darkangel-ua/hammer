@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="../../../../boost_1_36_0;../../../../boost.crypto"
+				AdditionalIncludeDirectories="../../../../../../boost_1_36_0;../../../../../../boost.crypto"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -103,7 +103,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="../../../../boost_1_36_0;../../../../boost.crypto"
+				AdditionalIncludeDirectories="../../../../../../boost_1_36_0;../../../../../../boost.crypto"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -149,35 +149,35 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\..\..\boost.crypto\libs\crypto\src\blowfish_cipher.cpp"
+				RelativePath="..\..\..\..\..\..\boost.crypto\libs\crypto\src\blowfish_cipher.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\boost.crypto\libs\crypto\src\md4_ctx.cpp"
+				RelativePath="..\..\..\..\..\..\boost.crypto\libs\crypto\src\md4_ctx.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\boost.crypto\libs\crypto\src\md5_ctx.cpp"
+				RelativePath="..\..\..\..\..\..\boost.crypto\libs\crypto\src\md5_ctx.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\boost.crypto\libs\crypto\src\rc4_cipher.cpp"
+				RelativePath="..\..\..\..\..\..\boost.crypto\libs\crypto\src\rc4_cipher.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\boost.crypto\libs\crypto\src\rijndael_cipher.cpp"
+				RelativePath="..\..\..\..\..\..\boost.crypto\libs\crypto\src\rijndael_cipher.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\boost.crypto\libs\crypto\src\ripemd_ctx.cpp"
+				RelativePath="..\..\..\..\..\..\boost.crypto\libs\crypto\src\ripemd_ctx.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\boost.crypto\libs\crypto\src\sha1_ctx.cpp"
+				RelativePath="..\..\..\..\..\..\boost.crypto\libs\crypto\src\sha1_ctx.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\boost.crypto\libs\crypto\src\sha2_ctx.cpp"
+				RelativePath="..\..\..\..\..\..\boost.crypto\libs\crypto\src\sha2_ctx.cpp"
 				>
 			</File>
 		</Filter>
@@ -187,99 +187,99 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\..\..\boost.crypto\boost\crypto\block_cipher.hpp"
+				RelativePath="..\..\..\..\..\..\boost.crypto\boost\crypto\block_cipher.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\boost.crypto\boost\crypto\blowfish_cipher.hpp"
+				RelativePath="..\..\..\..\..\..\boost.crypto\boost\crypto\blowfish_cipher.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\boost.crypto\boost\crypto\cipher_block_chaining_mode.hpp"
+				RelativePath="..\..\..\..\..\..\boost.crypto\boost\crypto\cipher_block_chaining_mode.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\boost.crypto\boost\crypto\electronic_code_book_mode.hpp"
+				RelativePath="..\..\..\..\..\..\boost.crypto\boost\crypto\electronic_code_book_mode.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\boost.crypto\boost\crypto\hmac.hpp"
+				RelativePath="..\..\..\..\..\..\boost.crypto\boost\crypto\hmac.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\boost.crypto\boost\crypto\md4.hpp"
+				RelativePath="..\..\..\..\..\..\boost.crypto\boost\crypto\md4.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\boost.crypto\boost\crypto\detail\md4_ctx.hpp"
+				RelativePath="..\..\..\..\..\..\boost.crypto\boost\crypto\detail\md4_ctx.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\boost.crypto\boost\crypto\md5.hpp"
+				RelativePath="..\..\..\..\..\..\boost.crypto\boost\crypto\md5.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\boost.crypto\boost\crypto\detail\md5_ctx.hpp"
+				RelativePath="..\..\..\..\..\..\boost.crypto\boost\crypto\detail\md5_ctx.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\boost.crypto\boost\crypto\detail\md_utils.hpp"
+				RelativePath="..\..\..\..\..\..\boost.crypto\boost\crypto\detail\md_utils.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\boost.crypto\boost\crypto\message_digest.hpp"
+				RelativePath="..\..\..\..\..\..\boost.crypto\boost\crypto\message_digest.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\boost.crypto\boost\crypto\detail\null_cipher.hpp"
+				RelativePath="..\..\..\..\..\..\boost.crypto\boost\crypto\detail\null_cipher.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\boost.crypto\boost\crypto\detail\null_ctx.hpp"
+				RelativePath="..\..\..\..\..\..\boost.crypto\boost\crypto\detail\null_ctx.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\boost.crypto\boost\crypto\output_feedback_mode.hpp"
+				RelativePath="..\..\..\..\..\..\boost.crypto\boost\crypto\output_feedback_mode.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\boost.crypto\boost\crypto\rc4_cipher.hpp"
+				RelativePath="..\..\..\..\..\..\boost.crypto\boost\crypto\rc4_cipher.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\boost.crypto\boost\crypto\rijndael_cipher.hpp"
+				RelativePath="..\..\..\..\..\..\boost.crypto\boost\crypto\rijndael_cipher.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\boost.crypto\boost\crypto\ripemd.hpp"
+				RelativePath="..\..\..\..\..\..\boost.crypto\boost\crypto\ripemd.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\boost.crypto\boost\crypto\detail\ripemd_ctx.hpp"
+				RelativePath="..\..\..\..\..\..\boost.crypto\boost\crypto\detail\ripemd_ctx.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\boost.crypto\boost\crypto\secure_allocator.hpp"
+				RelativePath="..\..\..\..\..\..\boost.crypto\boost\crypto\secure_allocator.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\boost.crypto\boost\crypto\sha1.hpp"
+				RelativePath="..\..\..\..\..\..\boost.crypto\boost\crypto\sha1.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\boost.crypto\boost\crypto\detail\sha1_ctx.hpp"
+				RelativePath="..\..\..\..\..\..\boost.crypto\boost\crypto\detail\sha1_ctx.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\boost.crypto\boost\crypto\sha2.hpp"
+				RelativePath="..\..\..\..\..\..\boost.crypto\boost\crypto\sha2.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\boost.crypto\boost\crypto\detail\sha2_ctx.hpp"
+				RelativePath="..\..\..\..\..\..\boost.crypto\boost\crypto\detail\sha2_ctx.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\boost.crypto\boost\crypto\detail\test_utils.hpp"
+				RelativePath="..\..\..\..\..\..\boost.crypto\boost\crypto\detail\test_utils.hpp"
 				>
 			</File>
 		</Filter>

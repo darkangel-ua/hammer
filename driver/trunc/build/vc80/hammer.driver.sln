@@ -2,8 +2,15 @@
 Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual Studio 2005
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hammer.driver", "hammer.driver.vcproj", "{195B68C6-E5D1-4686-B0BF-68D1ADDC3C35}"
+	ProjectSection(ProjectDependencies) = postProject
+		{0DCEA4FE-0623-4640-B163-A3696F843307} = {0DCEA4FE-0623-4640-B163-A3696F843307}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hammer.core", "..\..\..\..\core\trunc\build\vc80\hammer.core.vcproj", "{0DCEA4FE-0623-4640-B163-A3696F843307}"
+	ProjectSection(ProjectDependencies) = postProject
+		{8C5A1353-9046-4D77-81B6-843ECDB6DA61} = {8C5A1353-9046-4D77-81B6-843ECDB6DA61}
+		{17C567E2-0640-4ECB-AE6B-5B215AA4B7B6} = {17C567E2-0640-4ECB-AE6B-5B215AA4B7B6}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libantlr3c", "..\..\..\..\core\trunc\build\vc80\libantlr3c.vcproj", "{8C5A1353-9046-4D77-81B6-843ECDB6DA61}"
 EndProject

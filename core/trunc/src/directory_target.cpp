@@ -1,10 +1,10 @@
 #include "stdafx.h"
-#include "directory_target.h"
-#include "main_target.h"
-#include "meta_target.h"
-#include "project.h"
-#include "engine.h"
-#include "types.h"
+#include <hammer/core/directory_target.h>
+#include <hammer/core/main_target.h>
+#include <hammer/core/meta_target.h>
+#include <hammer/core/project.h>
+#include <hammer/core/engine.h>
+#include <hammer/core/types.h>
 #include <stdexcept>
 #include <boost/date_time/posix_time/conversion.hpp>
 

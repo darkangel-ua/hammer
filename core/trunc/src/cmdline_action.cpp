@@ -1,6 +1,6 @@
 #include "stdafx.h"
-#include "cmdline_action.h"
-#include "build_environment.h"
+#include <hammer/core/cmdline_action.h>
+#include <hammer/core/build_environment.h>
 #include <iostream>
 #include <fstream>
 

@@ -1,14 +1,14 @@
 #include "stdafx.h"
-#include "testing_generators.h"
-#include "types.h"
-#include "engine.h"
-#include "generator_registry.h"
-#include "testing_run_action.h"
-#include "product_argument_writer.h"
-#include "source_argument_writer.h"
-#include "shared_lib_dirs_writer.h"
-#include "free_feature_arg_writer.h"
-#include "feature_registry.h"
+#include <hammer/core/testing_generators.h>
+#include <hammer/core/types.h>
+#include <hammer/core/engine.h>
+#include <hammer/core/generator_registry.h>
+#include <hammer/core/testing_run_action.h>
+#include <hammer/core/product_argument_writer.h>
+#include <hammer/core/source_argument_writer.h>
+#include <hammer/core/shared_lib_dirs_writer.h>
+#include <hammer/core/free_feature_arg_writer.h>
+#include <hammer/core/feature_registry.h>
 
 using namespace boost;
 

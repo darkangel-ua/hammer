@@ -1,7 +1,7 @@
 #include "stdafx.h"
-#include "shared_lib_dirs_writer.h"
-#include "collect_nodes.h"
-#include "basic_target.h"
+#include <hammer/core/shared_lib_dirs_writer.h>
+#include <hammer/core/collect_nodes.h>
+#include <hammer/core/basic_target.h>
 
 namespace hammer{
 

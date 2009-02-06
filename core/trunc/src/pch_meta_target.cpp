@@ -1,12 +1,12 @@
 #include "stdafx.h"
-#include "pch_meta_target.h"
-#include "types.h"
-#include "project.h"
-#include "engine.h"
-#include "pch_main_target.h"
-#include "feature_registry.h"
-#include "feature.h"
-#include "feature_set.h"
+#include <hammer/core/pch_meta_target.h>
+#include <hammer/core/types.h>
+#include <hammer/core/project.h>
+#include <hammer/core/engine.h>
+#include <hammer/core/pch_main_target.h>
+#include <hammer/core/feature_registry.h>
+#include <hammer/core/feature.h>
+#include <hammer/core/feature_set.h>
 
 namespace hammer
 {

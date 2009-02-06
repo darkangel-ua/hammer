@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "subversion_scm_client.h"
+#include <hammer/core/subversion_scm_client.h>
 #define BOOST_PROCESS_HERE
 #include <boost/process.hpp>
 

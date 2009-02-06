@@ -1,6 +1,6 @@
 #include "stdafx.h"
-#include "mkdir_action.h"
-#include "build_environment.h"
+#include <hammer/core/mkdir_action.h>
+#include <hammer/core/build_environment.h>
 #include "fs_helpers.h"
 
 namespace hammer{

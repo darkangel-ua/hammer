@@ -1,7 +1,7 @@
 #include "stdafx.h"
-#include "builder.h"
-#include "build_action.h"
-#include "basic_target.h"
+#include <hammer/core/builder.h>
+#include <hammer/core/build_action.h>
+#include <hammer/core/basic_target.h>
 
 namespace hammer{
 

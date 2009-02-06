@@ -1,13 +1,13 @@
 #include "stdafx.h"
-#include "copy_main_target.h"
-#include "feature_set.h"
-#include "feature.h"
-#include "basic_meta_target.h"
-#include "directory_target.h"
-#include "type_registry.h"
-#include "meta_target.h"
-#include "project.h"
-#include "engine.h"
+#include <hammer/core/copy_main_target.h>
+#include <hammer/core/feature_set.h>
+#include <hammer/core/feature.h>
+#include <hammer/core/basic_meta_target.h>
+#include <hammer/core/directory_target.h>
+#include <hammer/core/type_registry.h>
+#include <hammer/core/meta_target.h>
+#include <hammer/core/project.h>
+#include <hammer/core/engine.h>
 
 namespace hammer{
 

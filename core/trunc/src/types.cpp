@@ -1,9 +1,9 @@
 #include "stdafx.h"
-#include "types.h"
-#include "type.h"
+#include <hammer/core/types.h>
+#include <hammer/core/type.h>
 #include <boost/assign/list_of.hpp>
 #include <vector>
-#include "type_registry.h"
+#include <hammer/core/type_registry.h>
 
 using namespace std;
 using namespace boost::assign;

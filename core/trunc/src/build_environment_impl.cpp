@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "build_environment_impl.h"
+#include <hammer/core/build_environment_impl.h>
 #include <boost/filesystem/operations.hpp>
 #include <boost/process.hpp>
 #include <boost/guid.hpp>

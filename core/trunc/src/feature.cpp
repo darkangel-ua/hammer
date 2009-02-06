@@ -1,6 +1,6 @@
 #include "stdafx.h"
-#include "feature.h"
-#include "subfeature.h"
+#include <hammer/core/feature.h>
+#include <hammer/core/subfeature.h>
 #include <algorithm>
 
 using namespace std;

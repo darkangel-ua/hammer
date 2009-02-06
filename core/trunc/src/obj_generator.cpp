@@ -1,10 +1,10 @@
 #include "stdafx.h"
-#include "obj_generator.h"
-#include "types.h"
-#include "engine.h"
-#include "type_registry.h"
-#include "basic_target.h"
-#include "type.h"
+#include <hammer/core/obj_generator.h>
+#include <hammer/core/types.h>
+#include <hammer/core/engine.h>
+#include <hammer/core/type_registry.h>
+#include <hammer/core/basic_target.h>
+#include <hammer/core/type.h>
 
 namespace hammer
 {

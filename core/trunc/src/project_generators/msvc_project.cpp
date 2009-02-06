@@ -1,21 +1,21 @@
 #include "stdafx.h"
-#include "msvc_project.h"
-#include "../../main_target.h"
-#include "../../meta_target.h"
-#include "../../project.h"
-#include "../../engine.h"
-#include "../../type_registry.h"
-#include "../../types.h"
-#include "../../type.h"
-#include "../../feature.h"
-#include "../../feature_def.h"
-#include "../../feature_registry.h"
-#include "../../fs_helpers.h"
-#include "../../pch_main_target.h"
-#include "../../build_environment.h"
-#include "../../fs_argument_writer.h"
-#include "../../free_feature_arg_writer.h"
-#include "../../source_argument_writer.h"
+#include <hammer/core/project_generators/msvc_project.h>
+#include <hammer/core/main_target.h>
+#include <hammer/core/meta_target.h>
+#include <hammer/core/project.h>
+#include <hammer/core/engine.h>
+#include <hammer/core/type_registry.h>
+#include <hammer/core/types.h>
+#include <hammer/core/type.h>
+#include <hammer/core/feature.h>
+#include <hammer/core/feature_def.h>
+#include <hammer/core/feature_registry.h>
+#include "../fs_helpers.h"
+#include <hammer/core/pch_main_target.h>
+#include <hammer/core/build_environment.h>
+#include <hammer/core/fs_argument_writer.h>
+#include <hammer/core/free_feature_arg_writer.h>
+#include <hammer/core/source_argument_writer.h>
 
 using namespace std;
    

@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "header_lib_target.h"
+#include <hammer/core/header_lib_target.h>
 
 namespace hammer{
 

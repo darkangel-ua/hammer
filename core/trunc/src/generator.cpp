@@ -1,13 +1,13 @@
 #include "stdafx.h"
-#include "generator.h"
-#include "type.h"
-#include "basic_target.h"
-#include "main_target.h"
-#include "meta_target.h"
-#include "generated_target.h"
-#include "engine.h"
-#include "np_helpers.h"
-#include "build_action.h"
+#include <hammer/core/generator.h>
+#include <hammer/core/type.h>
+#include <hammer/core/basic_target.h>
+#include <hammer/core/main_target.h>
+#include <hammer/core/meta_target.h>
+#include <hammer/core/generated_target.h>
+#include <hammer/core/engine.h>
+#include <hammer/core/np_helpers.h>
+#include <hammer/core/build_action.h>
 
 namespace hammer{
 

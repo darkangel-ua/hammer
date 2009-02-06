@@ -1,6 +1,6 @@
 #include "stdafx.h"
-#include "source_target.h"
-#include "engine.h"
+#include <hammer/core/source_target.h>
+#include <hammer/core/engine.h>
 
 namespace hammer{
 

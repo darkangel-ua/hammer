@@ -1,6 +1,6 @@
 #pragma once
-#include "../../build_node.h"
-#include "../../location.h"
+#include <hammer/core/build_node.h>
+#include <hammer/core/location.h>
 #include <boost/noncopyable.hpp>
 
 namespace boost

@@ -1,9 +1,9 @@
 #include "stdafx.h"
 #include <boost/ptr_container/ptr_vector.hpp>
-#include "requirements_decl.h"
-#include "feature_set.h"
-#include "feature.h"
-#include "feature_registry.h"
+#include <hammer/core/requirements_decl.h>
+#include <hammer/core/feature_set.h>
+#include <hammer/core/feature.h>
+#include <hammer/core/feature_registry.h>
 
 namespace hammer{
 

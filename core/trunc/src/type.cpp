@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "type.h"
+#include <hammer/core/type.h>
 #include <boost/format.hpp>
 #include <algorithm>
 #include <cassert>

@@ -1,6 +1,6 @@
 #include "stdafx.h"
-#include "toolset_manager.h"
-#include "toolset.h"
+#include <hammer/core/toolset_manager.h>
+#include <hammer/core/toolset.h>
 
 namespace hammer
 {

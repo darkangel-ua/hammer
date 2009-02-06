@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "project_requirements_decl.h"
+#include <hammer/core/project_requirements_decl.h>
 
 namespace hammer
 {

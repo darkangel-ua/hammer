@@ -1,10 +1,10 @@
 #include "stdafx.h"
-#include "source_argument_writer.h"
-#include "build_node.h"
-#include "basic_target.h"
-#include "type.h"
+#include <hammer/core/source_argument_writer.h>
+#include <hammer/core/build_node.h>
+#include <hammer/core/basic_target.h>
+#include <hammer/core/type.h>
 #include "fs_helpers.h"
-#include "build_environment.h"
+#include <hammer/core/build_environment.h>
 
 namespace hammer{
 

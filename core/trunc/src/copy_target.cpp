@@ -1,7 +1,7 @@
 #include "stdafx.h"
-#include "copy_target.h"
+#include <hammer/core/copy_target.h>
 #include <cassert>
-#include "copy_main_target.h"
+#include <hammer/core/copy_main_target.h>
 
 namespace hammer{
 

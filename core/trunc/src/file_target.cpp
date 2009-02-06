@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #include <boost/filesystem/operations.hpp>
 #include <boost/date_time/posix_time/conversion.hpp>
-#include "file_target.h"
-#include "main_target.h"
+#include <hammer/core/file_target.h>
+#include <hammer/core/main_target.h>
 
 namespace hammer
 {

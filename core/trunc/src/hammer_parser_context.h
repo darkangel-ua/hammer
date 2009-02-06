@@ -5,8 +5,8 @@
 #include <string>
 #include <stack>
 #include <map>
-#include "call_resolver.h"
-#include "feature_def.h"
+#include <hammer/core/call_resolver.h>
+#include <hammer/core/feature_def.h>
 
 namespace hammer
 {

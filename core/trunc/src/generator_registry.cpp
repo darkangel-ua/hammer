@@ -1,10 +1,10 @@
 #include "stdafx.h"
-#include "generator_registry.h"
+#include <hammer/core/generator_registry.h>
 #include <stdexcept>
-#include "main_target.h"
-#include "type.h"
+#include <hammer/core/main_target.h>
+#include <hammer/core/type.h>
 #include <boost/format.hpp>
-#include "feature_set.h"
+#include <hammer/core/feature_set.h>
 
 using namespace std;
 using namespace boost;

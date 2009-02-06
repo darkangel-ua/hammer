@@ -1,9 +1,9 @@
 #include "stdafx.h"
-#include "project.h"
-#include "engine.h"
-#include "feature_registry.h"
-#include "feature_set.h"
-#include "feature.h"
+#include <hammer/core/project.h>
+#include <hammer/core/engine.h>
+#include <hammer/core/feature_registry.h>
+#include <hammer/core/feature_set.h>
+#include <hammer/core/feature.h>
 
 using namespace std;
 

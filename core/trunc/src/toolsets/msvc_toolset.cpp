@@ -1,22 +1,22 @@
 #include "stdafx.h"
-#include "msvc_toolset.h"
+#include <hammer/core/toolsets/msvc_toolset.h>
 #include <boost/assign/list_of.hpp>
-#include "../generator.h"
-#include "../types.h"
-#include "../engine.h"
-#include "../type_registry.h"
-#include "../generator_registry.h"
-#include "../static_lib_generator.h"
-#include "../exe_and_shared_lib_generator.h"
-#include "../header_lib_generator.h"
-#include "../feature_set.h"
-#include "../feature_registry.h"
-#include "../pch_generator.h"
-#include "../cmdline_action.h"
-#include "../fs_argument_writer.h"
-#include "../source_argument_writer.h"
-#include "../product_argument_writer.h"
-#include "../free_feature_arg_writer.h"
+#include <hammer/core/generator.h>
+#include <hammer/core/types.h>
+#include <hammer/core/engine.h>
+#include <hammer/core/type_registry.h>
+#include <hammer/core/generator_registry.h>
+#include <hammer/core/static_lib_generator.h>
+#include <hammer/core/exe_and_shared_lib_generator.h>
+#include <hammer/core/header_lib_generator.h>
+#include <hammer/core/feature_set.h>
+#include <hammer/core/feature_registry.h>
+#include <hammer/core/pch_generator.h>
+#include <hammer/core/cmdline_action.h>
+#include <hammer/core/fs_argument_writer.h>
+#include <hammer/core/source_argument_writer.h>
+#include <hammer/core/product_argument_writer.h>
+#include <hammer/core/free_feature_arg_writer.h>
 
 using namespace boost::assign;
 using namespace std;

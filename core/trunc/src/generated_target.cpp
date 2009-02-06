@@ -1,6 +1,6 @@
 #include "stdafx.h"
-#include "generated_target.h"
-#include "main_target.h"
+#include <hammer/core/generated_target.h>
+#include <hammer/core/main_target.h>
 
 namespace hammer{
 

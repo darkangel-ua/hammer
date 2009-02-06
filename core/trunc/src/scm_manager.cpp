@@ -1,6 +1,6 @@
 #include "stdafx.h"
-#include "scm_manager.h"
-#include "subversion_scm_client.h"
+#include <hammer/core/scm_manager.h>
+#include <hammer/core/subversion_scm_client.h>
 
 using namespace std;
 

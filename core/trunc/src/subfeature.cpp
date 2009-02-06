@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "subfeature.h"
+#include <hammer/core/subfeature.h>
 
 namespace hammer{
 

@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "parser.h"
+#include <hammer/core/parser.h>
 #include "hammer_parser_context.h"
 #include <antlr3recognizersharedstate.h>
 #include "non_buffered_token_stream.h"

@@ -1,20 +1,20 @@
 #include "stdafx.h"
-#include "copy_generator.h"
-#include "engine.h"
-#include "type_registry.h"
+#include <hammer/core/copy_generator.h>
+#include <hammer/core/engine.h>
+#include <hammer/core/type_registry.h>
 #include <boost/assign/list_of.hpp>
-#include "types.h"
-#include "copy_main_target.h"
-#include "copy_target.h"
-#include "generated_target.h"
+#include <hammer/core/types.h>
+#include <hammer/core/copy_main_target.h>
+#include <hammer/core/copy_target.h>
+#include <hammer/core/generated_target.h>
 #include <set>
-#include "types.h"
-#include "build_action.h"
-#include "type.h"
-#include "build_environment.h"
-#include "fs_helpers.h"
-#include "product_argument_writer.h"
-#include "collect_nodes.h"
+#include <hammer/core/types.h>
+#include <hammer/core/build_action.h>
+#include <hammer/core/type.h>
+#include <hammer/core/build_environment.h>
+#include <hammer/core/fs_helpers.h>
+#include <hammer/core/product_argument_writer.h>
+#include <hammer/core/collect_nodes.h>
 
 using namespace boost::assign;
 

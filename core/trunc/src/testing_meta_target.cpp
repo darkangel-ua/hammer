@@ -1,10 +1,10 @@
 #include "stdafx.h"
-#include "testing_meta_target.h"
-#include "project.h"
-#include "engine.h"
-#include "main_target.h"
-#include "feature_set.h"
-#include "feature.h"
+#include <hammer/core/testing_meta_target.h>
+#include <hammer/core/project.h>
+#include <hammer/core/engine.h>
+#include <hammer/core/main_target.h>
+#include <hammer/core/feature_set.h>
+#include <hammer/core/feature.h>
 
 namespace hammer{
 

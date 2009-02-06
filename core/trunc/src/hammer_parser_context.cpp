@@ -1,12 +1,12 @@
 #include "stdafx.h"
 #include "hammer_parser_context.h"
-#include "engine.h"
-#include "feature.h"
-#include "requirements_decl.h"
-#include "project_requirements_decl.h"
-#include "sources_decl.h"
+#include <hammer/core/engine.h>
+#include <hammer/core/feature.h>
+#include <hammer/core/requirements_decl.h>
+#include <hammer/core/project_requirements_decl.h>
+#include <hammer/core/sources_decl.h>
 #include "non_buffered_token_stream.h"
-#include "feature_registry.h"
+#include <hammer/core/feature_registry.h>
 
 using namespace std;
 

@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "targets_argument_writer.h"
+#include <hammer/core/targets_argument_writer.h>
 
 namespace hammer{
 

@@ -1,10 +1,10 @@
 #include "stdafx.h"
-#include "copy_meta_target.h"
-#include "copy_main_target.h"
-#include "project.h"
-#include "engine.h"
-#include "type_registry.h"
-#include "types.h"
+#include <hammer/core/copy_meta_target.h>
+#include <hammer/core/copy_main_target.h>
+#include <hammer/core/project.h>
+#include <hammer/core/engine.h>
+#include <hammer/core/type_registry.h>
+#include <hammer/core/types.h>
 
 namespace hammer{
 

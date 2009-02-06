@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "cmdline_builder.h"
+#include <hammer/core/cmdline_builder.h>
 #include <boost/range/iterator_range.hpp>
 #include <boost/spirit/core.hpp>
 #include <boost/spirit/utility/lists.hpp>

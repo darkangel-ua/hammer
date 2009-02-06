@@ -1,9 +1,9 @@
 #include "stdafx.h"
-#include "feature_registry.h"
+#include <hammer/core/feature_registry.h>
 #include <boost/checked_delete.hpp>
-#include "feature_set.h"
-#include "feature.h"
-#include "subfeature.h"
+#include <hammer/core/feature_set.h>
+#include <hammer/core/feature.h>
+#include <hammer/core/subfeature.h>
 #include <list>
 #include <map>
 #include <cassert>

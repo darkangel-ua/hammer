@@ -1,8 +1,8 @@
 #include "stdafx.h"
-#include "fs_argument_writer.h"
-#include "feature_set.h"
-#include "build_node.h"
-#include "feature.h"
+#include <hammer/core/fs_argument_writer.h>
+#include <hammer/core/feature_set.h>
+#include <hammer/core/build_node.h>
+#include <hammer/core/feature.h>
 
 namespace hammer{
 

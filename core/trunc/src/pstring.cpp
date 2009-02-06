@@ -1,6 +1,6 @@
 #include "stdafx.h"
-#include "pstring.h"
-#include "pool.h"
+#include <hammer/core/pstring.h>
+#include <hammer/core/pool.h>
 #include <string.h>
 #include <iostream>
 

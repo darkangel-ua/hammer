@@ -1,13 +1,13 @@
 #include "stdafx.h"
-#include "msvc_solution.h"
+#include <hammer/core/project_generators/msvc_solution.h>
 #include <boost/guid.hpp>
-#include "msvc_project.h"
+#include <hammer/core/project_generators/msvc_project.h>
 #include <boost/ptr_container/ptr_map.hpp>
 #include <vector>
-#include "../../main_target.h"
-#include "../../engine.h"
-#include "../../meta_target.h"
-#include "../../fs_helpers.h"
+#include <hammer/core/main_target.h>
+#include <hammer/core/engine.h>
+#include <hammer/core/meta_target.h>
+#include "../fs_helpers.h"
 #include <boost/filesystem/fstream.hpp>
 #include <set>
 

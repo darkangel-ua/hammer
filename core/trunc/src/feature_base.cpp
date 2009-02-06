@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "feature_base.h"
+#include <hammer/core/feature_base.h>
 #include <cassert>
 
 namespace hammer{

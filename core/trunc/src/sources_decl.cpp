@@ -1,6 +1,6 @@
 #include "stdafx.h"
-#include "sources_decl.h"
-#include "feature_set.h"
+#include <hammer/core/sources_decl.h>
+#include <hammer/core/feature_set.h>
 
 #include <vector>
 

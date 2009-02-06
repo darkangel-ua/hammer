@@ -1,7 +1,7 @@
 #include "stdafx.h"
-#include "type_registry.h"
-#include "type.h"
-#include "types.h"
+#include <hammer/core/type_registry.h>
+#include <hammer/core/type.h>
+#include <hammer/core/types.h>
 
 using namespace std;
 

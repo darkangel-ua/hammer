@@ -1,8 +1,8 @@
 #include "stdafx.h"
-#include "np_helpers.h"
-#include "pstring.h"
-#include "type.h"
-#include "feature_set.h"
+#include <hammer/core/np_helpers.h>
+#include <hammer/core/pstring.h>
+#include <hammer/core/type.h>
+#include <hammer/core/feature_set.h>
 #include <boost/crypto/md5.hpp>
 
 using namespace std;

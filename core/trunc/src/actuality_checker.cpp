@@ -1,7 +1,7 @@
 #include "stdafx.h"
-#include "actuality_checker.h"
-#include "timestamp_info.h"
-#include "basic_target.h"
+#include <hammer/core/actuality_checker.h>
+#include <hammer/core/timestamp_info.h>
+#include <hammer/core/basic_target.h>
 
 using namespace boost::date_time;
 using namespace boost::posix_time;

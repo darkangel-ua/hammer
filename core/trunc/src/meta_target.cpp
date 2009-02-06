@@ -1,15 +1,15 @@
 #include "stdafx.h"
-#include "meta_target.h"
-#include "project.h"
-#include "engine.h"
-#include "type_registry.h"
-#include "source_target.h"
-#include "main_target.h"
-#include "feature_set.h"
-#include "feature_registry.h"
-#include "feature.h"
-#include "location.h"
-#include "requirements_decl.h"
+#include <hammer/core/meta_target.h>
+#include <hammer/core/project.h>
+#include <hammer/core/engine.h>
+#include <hammer/core/type_registry.h>
+#include <hammer/core/source_target.h>
+#include <hammer/core/main_target.h>
+#include <hammer/core/feature_set.h>
+#include <hammer/core/feature_registry.h>
+#include <hammer/core/feature.h>
+#include <hammer/core/location.h>
+#include <hammer/core/requirements_decl.h>
 
 using namespace std;
 

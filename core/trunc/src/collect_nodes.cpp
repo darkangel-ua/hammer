@@ -1,7 +1,7 @@
 #include "stdafx.h"
-#include "collect_nodes.h"
-#include "generator.h"
-#include "basic_target.h"
+#include <hammer/core/collect_nodes.h>
+#include <hammer/core/generator.h>
+#include <hammer/core/basic_target.h>
 
 using namespace std;
 

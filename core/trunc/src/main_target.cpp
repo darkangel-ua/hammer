@@ -1,13 +1,13 @@
 #include "stdafx.h"
-#include "main_target.h"
-#include "meta_target.h"
-#include "project.h"
-#include "engine.h"
-#include "generator_registry.h"
-#include "build_node.h"
-#include "directory_target.h"
+#include <hammer/core/main_target.h>
+#include <hammer/core/meta_target.h>
+#include <hammer/core/project.h>
+#include <hammer/core/engine.h>
+#include <hammer/core/generator_registry.h>
+#include <hammer/core/build_node.h>
+#include <hammer/core/directory_target.h>
 #include <boost/crypto/md5.hpp>
-#include "feature_set.h"
+#include <hammer/core/feature_set.h>
 
 using namespace std;
 

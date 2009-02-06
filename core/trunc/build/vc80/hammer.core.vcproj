@@ -41,7 +41,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/EHsc /MP"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\build;&quot;..\..\..\..\..\libantlr3c-3.1.1\include&quot;;..\..\..\..\..\boost.guid;..\..\..\..\..\boost.process;..\..\..\..\..\boost_1_36_0;..\..\..\..\..\boost.crypto"
+				AdditionalIncludeDirectories="..\..\src\build;&quot;..\..\..\..\..\libantlr3c-3.1.1\include&quot;;..\..\..\..\..\boost.guid;..\..\..\..\..\boost.process;..\..\..\..\..\boost_1_36_0;..\..\..\..\..\boost.crypto;..\..\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB"
 				MinimalRebuild="true"
 				ExceptionHandling="1"
@@ -108,7 +108,7 @@
 				Optimization="3"
 				InlineFunctionExpansion="2"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="..\..\src\build;&quot;..\..\..\..\..\libantlr3c-3.1.1\include&quot;;..\..\..\..\..\boost.guid;..\..\..\..\..\boost.process;..\..\..\..\..\boost_1_36_0;..\..\..\..\..\boost.crypto"
+				AdditionalIncludeDirectories="..\..\src\build;&quot;..\..\..\..\..\libantlr3c-3.1.1\include&quot;;..\..\..\..\..\boost.guid;..\..\..\..\..\boost.process;..\..\..\..\..\boost_1_36_0;..\..\..\..\..\boost.crypto;..\..\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="2"
@@ -409,15 +409,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\msvc_generator.cpp"
+				RelativePath="..\..\src\project_generators\msvc_project.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\project_generators\msvc\msvc_project.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\project_generators\msvc\msvc_solution.cpp"
+				RelativePath="..\..\src\project_generators\msvc_solution.cpp"
 				>
 			</File>
 			<File
@@ -596,367 +592,367 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\src\actuality_checker.h"
+				RelativePath="..\..\include\hammer\core\actuality_checker.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\alias_meta_target.h"
+				RelativePath="..\..\include\hammer\core\alias_meta_target.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\argument_writer.h"
+				RelativePath="..\..\include\hammer\core\argument_writer.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\basic_target.h"
+				RelativePath="..\..\include\hammer\core\basic_meta_target.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\build_action.h"
+				RelativePath="..\..\include\hammer\core\basic_target.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\build_environment.h"
+				RelativePath="..\..\include\hammer\core\build_action.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\build_environment_impl.h"
+				RelativePath="..\..\include\hammer\core\build_environment.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\build_node.h"
+				RelativePath="..\..\include\hammer\core\build_environment_impl.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\builder.h"
+				RelativePath="..\..\include\hammer\core\build_node.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\call_resolver.h"
+				RelativePath="..\..\include\hammer\core\builder.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\cmdline_action.h"
+				RelativePath="..\..\include\hammer\core\call_resolver.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\cmdline_builder.h"
+				RelativePath="..\..\include\hammer\core\cmdline_action.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\collect_nodes.h"
+				RelativePath="..\..\include\hammer\core\cmdline_builder.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\copy_generator.h"
+				RelativePath="..\..\include\hammer\core\collect_nodes.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\copy_main_target.h"
+				RelativePath="..\..\include\hammer\core\copy_generator.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\copy_meta_target.h"
+				RelativePath="..\..\include\hammer\core\copy_main_target.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\copy_target.h"
+				RelativePath="..\..\include\hammer\core\copy_meta_target.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\directory_target.h"
+				RelativePath="..\..\include\hammer\core\copy_target.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\engine.h"
+				RelativePath="..\..\include\hammer\core\directory_target.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\exe_and_shared_lib_generator.h"
+				RelativePath="..\..\include\hammer\core\engine.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\feature.h"
+				RelativePath="..\..\include\hammer\core\exe_and_shared_lib_generator.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\feature_attributes.h"
+				RelativePath="..\..\include\hammer\core\feature.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\feature_base.h"
+				RelativePath="..\..\include\hammer\core\feature_attributes.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\feature_def.h"
+				RelativePath="..\..\include\hammer\core\feature_base.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\feature_def_base.h"
+				RelativePath="..\..\include\hammer\core\feature_def.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\feature_registry.h"
+				RelativePath="..\..\include\hammer\core\feature_def_base.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\feature_set.h"
+				RelativePath="..\..\include\hammer\core\feature_registry.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\file_target.h"
+				RelativePath="..\..\include\hammer\core\feature_set.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\free_feature_arg_writer.h"
+				RelativePath="..\..\include\hammer\core\file_target.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\fs_argument_writer.h"
+				RelativePath="..\..\include\hammer\core\free_feature_arg_writer.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\fs_helpers.h"
+				RelativePath="..\..\include\hammer\core\fs_argument_writer.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\generated_target.h"
+				RelativePath="..\..\include\hammer\core\fs_helpers.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\generator.h"
+				RelativePath="..\..\include\hammer\core\generated_target.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\generator_registry.h"
+				RelativePath="..\..\include\hammer\core\generator.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\hammer_parser_context.h"
+				RelativePath="..\..\include\hammer\core\generator_registry.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\build\hammer_walker.h"
+				RelativePath="..\..\include\hammer\core\hammer_lexer_context.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\hammer_walker_context.h"
+				RelativePath="..\..\include\hammer\core\hammer_parser_context.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\hammer_walker_impl.h"
+				RelativePath="..\..\include\hammer\core\hammer_walker_context.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\build\hammerLexer.h"
+				RelativePath="..\..\include\hammer\core\hammer_walker_impl.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\build\hammerParser.h"
+				RelativePath="..\..\include\hammer\core\header_lib_generator.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\header_lib_generator.h"
+				RelativePath="..\..\include\hammer\core\header_lib_main_target.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\header_lib_main_target.h"
+				RelativePath="..\..\include\hammer\core\header_lib_meta_target.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\header_lib_meta_target.h"
+				RelativePath="..\..\include\hammer\core\header_lib_target.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\header_lib_target.h"
+				RelativePath="..\..\include\hammer\core\lib_meta_target.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\lib_meta_target.h"
+				RelativePath="..\..\include\hammer\core\location.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\location.h"
+				RelativePath="..\..\include\hammer\core\main_target.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\main_target.h"
+				RelativePath="..\..\include\hammer\core\meta_target.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\meta_target.h"
+				RelativePath="..\..\include\hammer\core\mkdir_action.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\mkdir_action.h"
+				RelativePath="..\..\include\hammer\core\project_generators\msvc_project.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\msvc_generator.h"
+				RelativePath="..\..\include\hammer\core\project_generators\msvc_solution.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\project_generators\msvc\msvc_project.h"
+				RelativePath="..\..\include\hammer\core\toolsets\msvc_toolset.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\project_generators\msvc\msvc_solution.h"
+				RelativePath="..\..\include\hammer\core\non_buffered_token_stream.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\toolsets\msvc_toolset.h"
+				RelativePath="..\..\include\hammer\core\np_helpers.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\non_buffered_token_stream.h"
+				RelativePath="..\..\include\hammer\core\obj_generator.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\np_helpers.h"
+				RelativePath="..\..\include\hammer\core\parser.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\obj_generator.h"
+				RelativePath="..\..\include\hammer\core\pch_generator.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\parser.h"
+				RelativePath="..\..\include\hammer\core\pch_main_target.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\pch_generator.h"
+				RelativePath="..\..\include\hammer\core\pch_meta_target.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\pch_main_target.h"
+				RelativePath="..\..\include\hammer\core\pool.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\pch_meta_target.h"
+				RelativePath="..\..\include\hammer\core\product_argument_writer.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\pool.h"
+				RelativePath="..\..\include\hammer\core\project.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\product_argument_writer.h"
+				RelativePath="..\..\include\hammer\core\project_requirements_decl.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\project.h"
+				RelativePath="..\..\include\hammer\core\pstring.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\project_requirements_decl.h"
+				RelativePath="..\..\include\hammer\core\requirements_decl.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\pstring.h"
+				RelativePath="..\..\include\hammer\core\scm_client.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\requirements_decl.h"
+				RelativePath="..\..\include\hammer\core\scm_info.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\scm_client.h"
+				RelativePath="..\..\include\hammer\core\scm_manager.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\scm_manager.h"
+				RelativePath="..\..\include\hammer\core\searched_lib_main_target.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\searched_lib_main_target.h"
+				RelativePath="..\..\include\hammer\core\searched_lib_target.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\searched_lib_target.h"
+				RelativePath="..\..\include\hammer\core\shared_lib_dirs_writer.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\shared_lib_dirs_writer.h"
+				RelativePath="..\..\include\hammer\core\source_argument_writer.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\source_argument_writer.h"
+				RelativePath="..\..\include\hammer\core\source_decl.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\source_decl.h"
+				RelativePath="..\..\include\hammer\core\source_target.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\source_target.h"
+				RelativePath="..\..\include\hammer\core\sources_decl.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\sources_decl.h"
+				RelativePath="..\..\include\hammer\core\static_lib_generator.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\static_lib_generator.h"
+				RelativePath="..\..\include\hammer\core\stdafx.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\stdafx.h"
+				RelativePath="..\..\include\hammer\core\subfeature.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\subfeature.h"
+				RelativePath="..\..\include\hammer\core\subfeature_def.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\subfeature_def.h"
+				RelativePath="..\..\include\hammer\core\subversion_scm_client.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\subversion_scm_client.h"
+				RelativePath="..\..\include\hammer\core\targets_argument_writer.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\targets_argument_writer.h"
+				RelativePath="..\..\include\hammer\core\testing_generators.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\testing_generators.h"
+				RelativePath="..\..\include\hammer\core\testing_meta_target.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\testing_meta_target.h"
+				RelativePath="..\..\include\hammer\core\testing_run_action.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\testing_run_action.h"
+				RelativePath="..\..\include\hammer\core\timestamp_info.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\timestamp_info.h"
+				RelativePath="..\..\include\hammer\core\toolset.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\toolset_manager.h"
+				RelativePath="..\..\include\hammer\core\toolset_manager.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\type.h"
+				RelativePath="..\..\include\hammer\core\type.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\type_registry.h"
+				RelativePath="..\..\include\hammer\core\type_registry.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\typed_meta_target.h"
+				RelativePath="..\..\include\hammer\core\type_tag.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\types.h"
+				RelativePath="..\..\include\hammer\core\typed_meta_target.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\wildcard.hpp"
+				RelativePath="..\..\include\hammer\core\types.h"
 				>
 			</File>
 		</Filter>

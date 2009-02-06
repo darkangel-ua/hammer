@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "call_resolver.h"
+#include <hammer/core/call_resolver.h>
 
 namespace hammer{
 

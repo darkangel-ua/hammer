@@ -1,6 +1,6 @@
 #include "stdafx.h"
-#include "testing_run_action.h"
-#include "build_environment.h"
+#include <hammer/core/testing_run_action.h>
+#include <hammer/core/build_environment.h>
 #include <sstream>
 #include <fstream>
 

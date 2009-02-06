@@ -1,6 +1,6 @@
 #include "stdafx.h"
-#include "build_node.h"
-#include "basic_target.h"
+#include <hammer/core/build_node.h>
+#include <hammer/core/basic_target.h>
 
 #include <cassert>
 #include <algorithm>

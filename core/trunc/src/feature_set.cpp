@@ -1,14 +1,14 @@
 #include "stdafx.h"
-#include "feature_set.h"
-#include "feature_registry.h"
-#include "feature.h"
+#include <hammer/core/feature_set.h>
+#include <hammer/core/feature_registry.h>
+#include <hammer/core/feature.h>
 #include <iterator>
 #include <stdexcept>
 #include <sstream>
-#include "sources_decl.h"
+#include <hammer/core/sources_decl.h>
 #include <boost/spirit/core.hpp>
 #include <boost/spirit/utility/lists.hpp>
-#include "subfeature.h"
+#include <hammer/core/subfeature.h>
 
 using namespace std;
 

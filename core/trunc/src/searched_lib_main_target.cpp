@@ -1,15 +1,15 @@
 #include "stdafx.h"
 #include <stdexcept>
-#include "searched_lib_main_target.h"
-#include "meta_target.h"
-#include "project.h"
-#include "engine.h"
-#include "type_registry.h"
-#include "types.h"
-#include "file_target.h"
-#include "feature_set.h"
-#include "feature.h"
-#include "searched_lib_target.h"
+#include <hammer/core/searched_lib_main_target.h>
+#include <hammer/core/meta_target.h>
+#include <hammer/core/project.h>
+#include <hammer/core/engine.h>
+#include <hammer/core/type_registry.h>
+#include <hammer/core/types.h>
+#include <hammer/core/file_target.h>
+#include <hammer/core/feature_set.h>
+#include <hammer/core/feature.h>
+#include <hammer/core/searched_lib_target.h>
 
 namespace hammer{
 

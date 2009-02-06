@@ -1,8 +1,8 @@
 #include "stdafx.h"
-#include "build_action.h"
-#include "build_node.h"
-#include "basic_target.h"
-#include "build_environment.h"
+#include <hammer/core/build_action.h>
+#include <hammer/core/build_node.h>
+#include <hammer/core/basic_target.h>
+#include <hammer/core/build_environment.h>
 
 using namespace std;
 

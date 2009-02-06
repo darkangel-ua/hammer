@@ -1,16 +1,16 @@
 #pragma once
 
-#include "../../location.h"
+#include <hammer/core/location.h>
 #include <vector>
 #include <utility>
-#include "../../feature_set.h"
-#include "../../pstring.h"
+#include <hammer/core/feature_set.h>
+#include <hammer/core/pstring.h>
 #include <boost/guid.hpp>
 #include <boost/intrusive_ptr.hpp>
-#include "../../build_node.h"
+#include <hammer/core/build_node.h>
 #include <boost/shared_ptr.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
-#include "../../cmdline_builder.h"
+#include <hammer/core/cmdline_builder.h>
 
 namespace hammer
 {

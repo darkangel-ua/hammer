@@ -1,11 +1,11 @@
 #include "stdafx.h"
-#include "free_feature_arg_writer.h"
-#include "build_node.h"
-#include "feature_set.h"
-#include "feature_def.h"
-#include "feature.h"
-#include "basic_meta_target.h"
-#include "build_environment.h"
+#include <hammer/core/free_feature_arg_writer.h>
+#include <hammer/core/build_node.h>
+#include <hammer/core/feature_set.h>
+#include <hammer/core/feature_def.h>
+#include <hammer/core/feature.h>
+#include <hammer/core/basic_meta_target.h>
+#include <hammer/core/build_environment.h>
 #include "fs_helpers.h"
 
 namespace hammer{

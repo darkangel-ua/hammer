@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;..\..\..\libantlr3c-3.1.1\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\..\..\libantlr3c-3.1.1\include&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
 				MinimalRebuild="true"
 				ExceptionHandling="1"
@@ -107,7 +107,7 @@
 				Optimization="3"
 				InlineFunctionExpansion="2"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="&quot;..\..\..\libantlr3c-3.1.1\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\..\..\libantlr3c-3.1.1\include&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -153,103 +153,103 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\src\antlr3baserecognizer.c"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\src\antlr3baserecognizer.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\src\antlr3basetree.c"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\src\antlr3basetree.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\src\antlr3basetreeadaptor.c"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\src\antlr3basetreeadaptor.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\src\antlr3bitset.c"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\src\antlr3bitset.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\src\antlr3collections.c"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\src\antlr3collections.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\src\antlr3commontoken.c"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\src\antlr3commontoken.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\src\antlr3commontree.c"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\src\antlr3commontree.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\src\antlr3commontreeadaptor.c"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\src\antlr3commontreeadaptor.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\src\antlr3commontreenodestream.c"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\src\antlr3commontreenodestream.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\src\antlr3convertutf.c"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\src\antlr3convertutf.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\src\antlr3cyclicdfa.c"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\src\antlr3cyclicdfa.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\src\antlr3debughandlers.c"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\src\antlr3debughandlers.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\src\antlr3encodings.c"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\src\antlr3encodings.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\src\antlr3exception.c"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\src\antlr3exception.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\src\antlr3filestream.c"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\src\antlr3filestream.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\src\antlr3inputstream.c"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\src\antlr3inputstream.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\src\antlr3intstream.c"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\src\antlr3intstream.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\src\antlr3lexer.c"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\src\antlr3lexer.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\src\antlr3parser.c"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\src\antlr3parser.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\src\antlr3rewritestreams.c"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\src\antlr3rewritestreams.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\src\antlr3string.c"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\src\antlr3string.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\src\antlr3stringstream.c"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\src\antlr3stringstream.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\src\antlr3tokenstream.c"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\src\antlr3tokenstream.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\src\antlr3treeparser.c"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\src\antlr3treeparser.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\src\antlr3ucs2inputstream.c"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\src\antlr3ucs2inputstream.c"
 				>
 			</File>
 		</Filter>
@@ -259,127 +259,127 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\include\antlr3.h"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\include\antlr3.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\include\antlr3baserecognizer.h"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\include\antlr3baserecognizer.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\include\antlr3basetree.h"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\include\antlr3basetree.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\include\antlr3basetreeadaptor.h"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\include\antlr3basetreeadaptor.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\include\antlr3bitset.h"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\include\antlr3bitset.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\include\antlr3collections.h"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\include\antlr3collections.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\include\antlr3commontoken.h"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\include\antlr3commontoken.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\include\antlr3commontree.h"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\include\antlr3commontree.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\include\antlr3commontreeadaptor.h"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\include\antlr3commontreeadaptor.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\include\antlr3commontreenodestream.h"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\include\antlr3commontreenodestream.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\include\antlr3convertutf.h"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\include\antlr3convertutf.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\include\antlr3cyclicdfa.h"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\include\antlr3cyclicdfa.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\include\antlr3debugeventlistener.h"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\include\antlr3debugeventlistener.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\include\antlr3defs.h"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\include\antlr3defs.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\include\antlr3encodings.h"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\include\antlr3encodings.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\include\antlr3errors.h"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\include\antlr3errors.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\include\antlr3exception.h"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\include\antlr3exception.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\include\antlr3filestream.h"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\include\antlr3filestream.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\include\antlr3input.h"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\include\antlr3input.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\include\antlr3interfaces.h"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\include\antlr3interfaces.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\include\antlr3intstream.h"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\include\antlr3intstream.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\include\antlr3lexer.h"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\include\antlr3lexer.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\include\antlr3memory.h"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\include\antlr3memory.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\include\antlr3parser.h"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\include\antlr3parser.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\include\antlr3parsetree.h"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\include\antlr3parsetree.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\include\antlr3recognizersharedstate.h"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\include\antlr3recognizersharedstate.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\include\antlr3rewritestreams.h"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\include\antlr3rewritestreams.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\include\antlr3string.h"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\include\antlr3string.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\include\antlr3stringstream.h"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\include\antlr3stringstream.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\include\antlr3tokenstream.h"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\include\antlr3tokenstream.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\libantlr3c-3.1.1\include\antlr3treeparser.h"
+				RelativePath="..\..\..\..\..\..\libantlr3c-3.1.1\include\antlr3treeparser.h"
 				>
 			</File>
 		</Filter>

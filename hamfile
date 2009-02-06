@@ -1,4 +1,4 @@
 project hammer ;
 
-alias core : trunc/build ;
-alias driver : trunc/driver/build ;
+use-project core : core ;
+use-project driver : driver ;

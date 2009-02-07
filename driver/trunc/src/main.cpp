@@ -6,24 +6,23 @@
 #include <boost/bind.hpp>
 
 #include <iostream>
-#include "../../../core/trunc/src/engine.h"
-#include "../../../core/trunc/src/feature_set.h"
-#include "../../../core/trunc/src/feature_registry.h"
-#include "../../../core/trunc/src/type_registry.h"
-#include "../../../core/trunc/src/basic_target.h"
-#include "../../../core/trunc/src/main_target.h"
-#include "../../../core/trunc/src/meta_target.h"
-#include "../../../core/trunc/src/project_generators/msvc/msvc_solution.h"
-#include "../../../core/trunc/src/msvc_generator.h"
-#include "../../../core/trunc/src/copy_generator.h"
-#include "../../../core/trunc/src/testing_generators.h"
-#include "../../../core/trunc/src/build_environment_impl.h"
-#include "../../../core/trunc/src/builder.h"
-#include "../../../core/trunc/src/actuality_checker.h"
-#include "../../../core/trunc/src/generator_registry.h"
+#include <hammer/core/engine.h>
+#include <hammer/core/feature_set.h>
+#include <hammer/core/feature_registry.h>
+#include <hammer/core/type_registry.h>
+#include <hammer/core/basic_target.h>
+#include <hammer/core/main_target.h>
+#include <hammer/core/meta_target.h>
+#include <hammer/core/project_generators/msvc_solution.h>
+#include <hammer/core/copy_generator.h>
+#include <hammer/core/testing_generators.h>
+#include <hammer/core/build_environment_impl.h>
+#include <hammer/core/builder.h>
+#include <hammer/core/actuality_checker.h>
+#include <hammer/core/generator_registry.h>
 
-#include "../../../core/trunc/src/toolsets/msvc_toolset.h"
-#include "../../../core/trunc/src/toolset_manager.h"
+#include <hammer/core/toolsets/msvc_toolset.h>
+#include <hammer/core/toolset_manager.h>
 
 #include "user_config_location.h"
 

@@ -23,7 +23,7 @@
 #include <boost/filesystem/convenience.hpp>
 #include <boost/logic/tribool.hpp>
 #include <hammer/core/scm_manager.h>
-#include "fs_helpers.h"
+#include <hammer/core/fs_helpers.h>
 #include <hammer/core/header_lib_meta_target.h>
 #include <hammer/core/pch_meta_target.h>
 #include <hammer/core/copy_meta_target.h>

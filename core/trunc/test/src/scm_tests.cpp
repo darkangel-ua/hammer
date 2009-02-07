@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "enviroment.h"
-#include <hammer/src/engine.h>
-#include <hammer/src/feature_registry.h>
+#include <hammer/core/engine.h>
+#include <hammer/core/feature_registry.h>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/process.hpp>

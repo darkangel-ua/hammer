@@ -4,10 +4,6 @@
 #include <boost/noncopyable.hpp>
 #include <boost/filesystem/path.hpp>
 
-#  include "build/hammerLexer.h"
-#  include "build/hammerParser.h"
-#  include "build/hammer_walker.h"
-
 namespace hammer
 {
    struct hammer_walker_context;
@@ -22,12 +18,8 @@ namespace hammer
          ~parser();
 
       private:
-         engine* engine_;
-         pANTLR3_INPUT_STREAM input_;
-         phammerLexer lexer_;
-         pANTLR3_COMMON_TOKEN_STREAM tstream_;
-         phammerParser parser_;
-         hammerParser_rules_return langAST_;
+         struct impl_t;
+         impl_t* impl_;
 
          void reset();
    };

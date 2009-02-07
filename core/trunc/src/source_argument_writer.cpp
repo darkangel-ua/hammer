@@ -3,7 +3,7 @@
 #include <hammer/core/build_node.h>
 #include <hammer/core/basic_target.h>
 #include <hammer/core/type.h>
-#include "fs_helpers.h"
+#include <hammer/core/fs_helpers.h>
 #include <hammer/core/build_environment.h>
 
 namespace hammer{

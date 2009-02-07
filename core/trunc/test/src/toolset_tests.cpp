@@ -1,16 +1,16 @@
 #include "stdafx.h"
 #include "enviroment.h"
-#include <hammer/src/engine.h>
-#include <hammer/src/feature_registry.h>
-#include <hammer/src/basic_target.h>
-#include <hammer/src/actuality_checker.h>
-#include <hammer/src/build_environment.h>
-#include <hammer/src/builder.h>
-#include <hammer/src/build_action.h>
-#include <hammer/src/feature_set.h>
+#include <hammer/core/engine.h>
+#include <hammer/core/feature_registry.h>
+#include <hammer/core/basic_target.h>
+#include <hammer/core/actuality_checker.h>
+#include <hammer/core/build_environment.h>
+#include <hammer/core/builder.h>
+#include <hammer/core/build_action.h>
+#include <hammer/core/feature_set.h>
 
-#include <hammer/src/toolset_manager.h>
-#include <hammer/src/toolsets/msvc_toolset.h>
+#include <hammer/core/toolset_manager.h>
+#include <hammer/core/toolsets/msvc_toolset.h>
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/fstream.hpp>

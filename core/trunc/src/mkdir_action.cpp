@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include <hammer/core/mkdir_action.h>
 #include <hammer/core/build_environment.h>
-#include "fs_helpers.h"
+#include <hammer/core/fs_helpers.h>
 
 namespace hammer{
 

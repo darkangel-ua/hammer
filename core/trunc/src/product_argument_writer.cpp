@@ -4,7 +4,7 @@
 #include <hammer/core/basic_target.h>
 #include <hammer/core/type.h>
 #include <hammer/core/build_environment.h>
-#include "fs_helpers.h"
+#include <hammer/core/fs_helpers.h>
 #include <hammer/core/main_target.h>
 
 namespace hammer{

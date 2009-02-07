@@ -10,7 +10,7 @@
 #include <hammer/core/feature.h>
 #include <hammer/core/feature_def.h>
 #include <hammer/core/feature_registry.h>
-#include "../fs_helpers.h"
+#include <hammer/core/fs_helpers.h>
 #include <hammer/core/pch_main_target.h>
 #include <hammer/core/build_environment.h>
 #include <hammer/core/fs_argument_writer.h>

@@ -1,9 +1,9 @@
 #include "stdafx.h"
 #include "enviroment.h"
-#include <hammer/src/feature.h>
-#include <hammer/src/subfeature.h>
-#include <hammer/src/feature_registry.h>
-#include <hammer/src/pool.h>
+#include <hammer/core/feature.h>
+#include <hammer/core/subfeature.h>
+#include <hammer/core/feature_registry.h>
+#include <hammer/core/pool.h>
 
 using namespace hammer;
 using namespace std;

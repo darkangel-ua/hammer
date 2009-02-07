@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "fs_helpers.h"
+#include <hammer/core/fs_helpers.h>
 
 namespace hammer
 {

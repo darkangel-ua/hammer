@@ -7,7 +7,7 @@
 #include <hammer/core/main_target.h>
 #include <hammer/core/engine.h>
 #include <hammer/core/meta_target.h>
-#include "../fs_helpers.h"
+#include <hammer/core/fs_helpers.h>
 #include <boost/filesystem/fstream.hpp>
 #include <set>
 

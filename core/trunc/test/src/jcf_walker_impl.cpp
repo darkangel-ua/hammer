@@ -1,16 +1,16 @@
 #include "stdafx.h"
 #include "jcf_walker_impl.h"
-#include <hammer/src/project.h>
-#include <hammer/src/main_target.h>
+#include <hammer/core/project.h>
+#include <hammer/core/main_target.h>
 #include <iostream>
-#include <hammer/src/engine.h>
-#include <hammer/src/type_registry.h>
-#include <hammer/src/type.h>
-#include <hammer/src/feature.h>
-#include <hammer/src/feature_set.h>
-#include <hammer/src/feature_registry.h>
-#include <hammer/src/fs_helpers.h>
-#include <hammer/src/meta_target.h>
+#include <hammer/core/engine.h>
+#include <hammer/core/type_registry.h>
+#include <hammer/core/type.h>
+#include <hammer/core/feature.h>
+#include <hammer/core/feature_set.h>
+#include <hammer/core/feature_registry.h>
+#include <hammer/core/fs_helpers.h>
+#include <hammer/core/meta_target.h>
 
 using namespace hammer;
 using namespace std;

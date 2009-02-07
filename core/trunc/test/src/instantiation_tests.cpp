@@ -2,10 +2,10 @@
 #include <boost/test/auto_unit_test.hpp>
 #include <boost/filesystem/path.hpp>
 #include "enviroment.h"
-#include <hammer/src/engine.h>
+#include <hammer/core/engine.h>
 #include "jcf_parser.h"
-#include <hammer/src/feature_registry.h>
-#include <hammer/src/feature_set.h>
+#include <hammer/core/feature_registry.h>
+#include <hammer/core/feature_set.h>
 #include <iostream>
 
 using namespace hammer;

@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include <hammer/core/hammer_walker_impl.h>
+#include "hammer_walker_impl.h"
 #include <hammer/core/hammer_walker_context.h>
 #include <hammer/core/engine.h>
 #include <memory>

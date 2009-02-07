@@ -6,7 +6,7 @@
 #include <hammer/core/feature.h>
 #include <hammer/core/basic_meta_target.h>
 #include <hammer/core/build_environment.h>
-#include "fs_helpers.h"
+#include <hammer/core/fs_helpers.h>
 
 namespace hammer{
 

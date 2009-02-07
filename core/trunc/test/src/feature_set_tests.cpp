@@ -1,9 +1,9 @@
 #include "stdafx.h"
 #include "enviroment.h"
-#include <hammer/src/feature_registry.h>
-#include <hammer/src/feature_set.h>
-#include <hammer/src/feature.h>
-#include <hammer/src/pool.h>
+#include <hammer/core/feature_registry.h>
+#include <hammer/core/feature_set.h>
+#include <hammer/core/feature.h>
+#include <hammer/core/pool.h>
 #include <boost/assign/list_of.hpp>
 
 using namespace hammer;

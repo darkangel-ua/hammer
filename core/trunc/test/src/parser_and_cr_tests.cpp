@@ -3,10 +3,10 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/bind.hpp>
 #include <stdexcept>
-#include <hammer/src/call_resolver.h>
-#include <hammer/src/engine.h>
-#include <hammer/src/parser.h>
-#include <hammer/src/hammer_walker_context.h>
+#include <hammer/core/call_resolver.h>
+#include <hammer/core/engine.h>
+#include <hammer/core/parser.h>
+#include <hammer/core/hammer_walker_context.h>
 #include <boost/filesystem/operations.hpp>
 
 boost::filesystem::path test_data_path;

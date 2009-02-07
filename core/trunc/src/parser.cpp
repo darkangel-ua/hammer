@@ -4,10 +4,31 @@
 #include <antlr3recognizersharedstate.h>
 #include "non_buffered_token_stream.h"
 
+#include "build/hammerLexer.h"
+#include "build/hammerParser.h"
+#include "build/hammer_walker.h"
+
 using namespace std;
 
 
 namespace hammer{
+
+   struct parser::impl_t
+   {
+      impl_t(engine* e) 
+         : engine_(e), input_(0), lexer_(0),
+           tstream_(0), parser_(0)
+      {
+         memset(&langAST_, 0, sizeof(langAST_));
+      }
+
+      engine* engine_;
+      pANTLR3_INPUT_STREAM input_;
+      phammerLexer lexer_;
+      pANTLR3_COMMON_TOKEN_STREAM tstream_;
+      phammerParser parser_;
+      hammerParser_rules_return langAST_;
+   };
 
    static void displayRecognitionError(pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_UINT8 * tokenNames)
    {
@@ -17,15 +38,14 @@ namespace hammer{
       ctx->base_displayRecognitionError(recognizer, tokenNames);
    }
 
-   parser::parser(engine* e) : engine_(e), input_(0), lexer_(0),
-                               tstream_(0), parser_(0)
+   parser::parser(engine* e) : impl_(new impl_t(e))
    {
-      memset(&langAST_, 0, sizeof(langAST_));
    }
    
    parser::~parser()
    {
       reset();
+      delete impl_;
    }
 
    bool parser::parse(const boost::filesystem::path& file_name)
@@ -43,51 +63,51 @@ namespace hammer{
 
       reset();
 
-      input_	= antlr3AsciiFileStreamNew((pANTLR3_UINT8)file_name);
-      lexer_ = hammerLexerNew(input_);
+      impl_->input_ = antlr3AsciiFileStreamNew((pANTLR3_UINT8)file_name);
+      impl_->lexer_ = hammerLexerNew(impl_->input_);
 //      tstream_ = antlr3CommonTokenStreamSourceNew(ANTLR3_SIZE_HINT, TOKENSOURCE(lexer_));
-      tstream_ = non_buffered_token_stream::create(ANTLR3_SIZE_HINT, TOKENSOURCE(lexer_));
-      parser_ = hammerParserNew(tstream_);
+      impl_->tstream_ = non_buffered_token_stream::create(ANTLR3_SIZE_HINT, TOKENSOURCE(impl_->lexer_));
+      impl_->parser_ = hammerParserNew(impl_->tstream_);
       details::hammer_parser_context ctx;
-      ctx.base_displayRecognitionError = parser_->pParser->rec->displayRecognitionError;
-      ctx.token_stream_ = static_cast<non_buffered_token_stream*>(tstream_->super);
-      ctx.token_stream_->ctx_.input_ = input_;
-      ctx.token_stream_->ctx_.lexer_ = lexer_->pLexer;
-      parser_->pParser->rec->displayRecognitionError = &displayRecognitionError;
-      lexer_->pLexer->super = &static_cast<non_buffered_token_stream*>(tstream_->super)->ctx_;
-      ctx.engine_ = engine_;
-      parser_->pParser->super = &ctx;
-      langAST_ = parser_->rules(parser_);
+      ctx.base_displayRecognitionError = impl_->parser_->pParser->rec->displayRecognitionError;
+      ctx.token_stream_ = static_cast<non_buffered_token_stream*>(impl_->tstream_->super);
+      ctx.token_stream_->ctx_.input_ = impl_->input_;
+      ctx.token_stream_->ctx_.lexer_ = impl_->lexer_->pLexer;
+      impl_->parser_->pParser->rec->displayRecognitionError = &displayRecognitionError;
+      impl_->lexer_->pLexer->super = &static_cast<non_buffered_token_stream*>(impl_->tstream_->super)->ctx_;
+      ctx.engine_ = impl_->engine_;
+      impl_->parser_->pParser->super = &ctx;
+      impl_->langAST_ = impl_->parser_->rules(impl_->parser_);
 //      pANTLR3_STRING s = langAST_.tree->toStringTree(langAST_.tree);
       return ctx.error_count_ == 0;
    }
    
    void parser::reset()
    {
-      if (parser_)
-         parser_->free(parser_);
-      parser_ = 0;
-      if (tstream_)
-         tstream_->free(tstream_);
-      tstream_ = 0;
-      if (lexer_)
-         lexer_->free(lexer_);
-      lexer_ = 0;
-      if (input_)
-         input_->close(input_);
-      input_ = 0;
+      if (impl_->parser_)
+         impl_->parser_->free(impl_->parser_);
+      impl_->parser_ = 0;
+      if (impl_->tstream_)
+         impl_->tstream_->free(impl_->tstream_);
+      impl_->tstream_ = 0;
+      if (impl_->lexer_)
+         impl_->lexer_->free(impl_->lexer_);
+      impl_->lexer_ = 0;
+      if (impl_->input_)
+         impl_->input_->close(impl_->input_);
+      impl_->input_ = 0;
    }                 
 
    void parser::walk(hammer_walker_context* ctx)
    {
       // if parsed empty file than tree will be null
-      if (!langAST_.tree)
+      if (!impl_->langAST_.tree)
          return;
 
       pANTLR3_COMMON_TREE_NODE_STREAM nodes;
       phammer_walker          hammer_walker;
 
-      nodes	= antlr3CommonTreeNodeStreamNewTree(langAST_.tree, ANTLR3_SIZE_HINT); // sIZE HINT WILL SOON BE DEPRECATED!!
+      nodes	= antlr3CommonTreeNodeStreamNewTree(impl_->langAST_.tree, ANTLR3_SIZE_HINT); // sIZE HINT WILL SOON BE DEPRECATED!!
       hammer_walker = hammer_walkerNew(nodes);
       hammer_walker->pTreeParser->super = ctx;
       hammer_walker->project(hammer_walker);

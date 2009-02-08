@@ -1,5 +1,5 @@
 project hammer.core : requirements <character-set>multi-byte 
-                                   <library>/boost/ptr_container/<version>1.34.1 ;
+                                   <library>/boost/ptr_container/<version>1.36.0 ;
 
 pch stdafx : ../src/stdafx.cpp ../src/stdafx.h ;
 explicit stdafx ;
@@ -19,7 +19,7 @@ obj without_pch
     ../src/dos_wildcard.cpp
     ../src/build/hammer_walker.c
    :
-    <use>/boost/regex
+    <use>/boost/regex/<version>1.36.0
     <use>/libantlr3c/<version>3.1.1 
    ;
 explicit without_pch ;
@@ -33,18 +33,24 @@ lib hammer.core
     [ rglob ../src/*.h : stdafx.h ]
     [ rglob ../src/project_generators/*.cpp ]
     /libantlr3c/<version>3.1.1
-    /boost/function_types
-    /boost/filesystem/<version>1.34.1
-    /boost/guid
-    /boost/regex
-    /boost/assign
-    /boost/process
-    /boost/format
+    @/boost/function_types/<version>1.36.0
+    @/boost/smart_ptr/<version>1.36.0
+    /boost/filesystem/<version>1.36.0
+    /boost/sandbox/guid
+    /boost/regex/<version>1.36.0
+    /boost/assign/<version>1.36.0
+    /boost/sandbox/process
+    /boost/format/<version>1.36.0
+    /boost/unordered/<version>1.36.0
+    /boost/tribool/<version>1.36.0
+    /boost/spirit/<version>1.36.0
+    /boost/sandbox/crypto
+    /boost/tokenizer/<version>1.36.0
+    /boost/multi_index/<version>1.36.0
    :
-    <include>../src/
+    @<include>../include
     <link>static
    :
    :
-    <use>/boost/ptr_container
-    <use>/boost/function_types
+    <use>/boost/ptr_container/<version>1.36.0
    ;

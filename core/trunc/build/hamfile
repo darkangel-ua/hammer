@@ -19,7 +19,7 @@ obj without_pch
     ../src/dos_wildcard.cpp
     ../src/build/hammer_walker.c
    :
-    <use>/boost/regex/<version>1.36.0
+    <use>/boost/regex/<version>1.36.0/<link>static
     <use>/libantlr3c/<version>3.1.1 
    ;
 explicit without_pch ;
@@ -29,19 +29,18 @@ lib hammer.core
     stdafx
     parser_and_lexer
     without_pch
-    [ glob ../src/*.cpp : stdafx.cpp dos_wildcard.cpp ]
+    [ rglob ../src/*.cpp : stdafx.cpp dos_wildcard.cpp ]
     [ rglob ../src/*.h : stdafx.h ]
-    [ rglob ../src/project_generators/*.cpp ]
     /libantlr3c/<version>3.1.1
     @/boost/function_types/<version>1.36.0
     @/boost/smart_ptr/<version>1.36.0
-    /boost/filesystem/<version>1.36.0
-    /boost/sandbox/guid
-    /boost/regex/<version>1.36.0
+    @/boost/filesystem/<version>1.36.0/<link>static
+    @/boost/sandbox/guid
+    /boost/regex/<version>1.36.0/<link>static
     /boost/assign/<version>1.36.0
     /boost/sandbox/process
     /boost/format/<version>1.36.0
-    /boost/unordered/<version>1.36.0
+    @/boost/unordered/<version>1.36.0
     /boost/tribool/<version>1.36.0
     /boost/spirit/<version>1.36.0
     /boost/sandbox/crypto

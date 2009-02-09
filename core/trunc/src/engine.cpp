@@ -16,7 +16,6 @@
 #include <boost/assign/std/vector.hpp>
 #include <boost/format.hpp>
 #include <hammer/core/generator_registry.h>
-#include <hammer/core/msvc_generator.h>
 #include <hammer/core/project_requirements_decl.h>
 #include "wildcard.hpp"
 #include <boost/filesystem/operations.hpp>

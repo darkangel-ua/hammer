@@ -1,8 +1,9 @@
 exe hammer : 
              [ glob ../src/*.cpp ]
              [ glob ../src/*.h ]
-             /boost/program_options/<link>static
-             /boost/filesystem/<version>1.34.1/<link>static
-             /boost/format
-             /hammer//core/<link>static
+             /boost/program_options/<version>1.36.0/<link>static
+             /boost/filesystem/<version>1.36.0/<link>static
+             /boost/format/<version>1.36.0
+             /boost/regex/<version>1.36.0/<link>static
+             /hammer/core/<link>static
            ;

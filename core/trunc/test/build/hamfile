@@ -1,0 +1,32 @@
+pch pch 
+   : 
+    ../src/stdafx.cpp 
+    ../src/stdafx.h 
+   : 
+    <use>/boost/test//utf/<version>1.36.0/<link>static
+   ;
+explicit pch ;
+
+obj without_pch 
+   : 
+    [ glob ../src/build/*.c ]
+   :
+    <use>/libantlr3c/<version>3.1.1
+   ;
+explicit without_pch ;
+
+exe hammer.core.test
+   :
+    pch
+    [ glob ../src/*.cpp : stdafx.cpp ]
+    [ glob ../src/*.h : stdafx.h ]
+    [ glob ../src/build/*.h ]
+    without_pch
+    /hammer/core/<link>static
+    /boost/assign/<version>1.36.0
+    /boost/regex/<version>1.36.0
+    /libantlr3c/<version>3.1.1
+    /boost/sandbox/process
+   :
+    <use>/boost/test//utf/<version>1.36.0/<link>static
+   ;

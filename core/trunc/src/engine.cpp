@@ -177,9 +177,11 @@ void engine::resolve_project_alias(resolved_project_symlinks_t& symlinks,
    if (i != symlink_storage.end())
    {
       ++first; // eat head and leave tail
-      if (!i->second->aliases_data_.empty())
-         symlinks.push_back(resolved_project_symlink_t(make_location(first, last), i->second->aliases_data_));
       resolve_project_alias(symlinks, first, last, i->second->project_symlinks_);
+      // We walk to see most longer alias and returns alias data for founded.
+      // Only from one node.
+      if (symlinks.empty() && !i->second->aliases_data_.empty())
+         symlinks.push_back(resolved_project_symlink_t(make_location(first, last), i->second->aliases_data_));
    }
 }
 

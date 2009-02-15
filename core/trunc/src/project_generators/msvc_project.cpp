@@ -16,6 +16,8 @@
 #include <hammer/core/fs_argument_writer.h>
 #include <hammer/core/free_feature_arg_writer.h>
 #include <hammer/core/source_argument_writer.h>
+#include <boost/crypto/md5.hpp>
+#include <iostream>
 
 using namespace std;
    
@@ -85,19 +87,23 @@ static const string compiller_option_format_string(
 static const string linker_option_format_string(
    "            AdditionalDependencies=\"$(additional_libraries)\"\n"
    "            AdditionalLibraryDirectories=\"$(additional_libraries_dirs)\"\n"
-   "            GenerateDebugInformation=\"$(debug_info)\"\n");
+   "            GenerateDebugInformation=\"$(debug_info)\"\n"
+   "            LinkIncremental=\"$(incremental_linking)\"\n");
 
 msvc_project::msvc_project(engine& e, 
                            const location_t& output_dir, 
+                           const std::string& solution_configuration_name,
                            const boost::guid& uid) 
    : 
     engine_(&e), 
     uid_(uid),
     output_dir_(output_dir),
     project_output_dir_(output_dir_),
+    solution_configuration_name_(solution_configuration_name),
     searched_lib_(engine_->get_type_registry().get(types::SEARCHED_LIB)),
     obj_type_(engine_->get_type_registry().get(types::OBJ)),
     pch_type_(engine_->get_type_registry().get(types::PCH)),
+    copied_type_(engine_->get_type_registry().get(types::COPIED)),
     configuration_options_(configuration_option_format_string),
     compiller_options_(compiller_option_format_string),
     linker_options_(linker_option_format_string)
@@ -191,12 +197,21 @@ msvc_project::msvc_project(engine& e,
    link_debug_info->add("<debug-symbols>on", "true").
                     add("<debug-symbols>off", "false");
    linker_options_ += link_debug_info;
+
+   boost::shared_ptr<fs_argument_writer> incremental_linking(new fs_argument_writer("incremental_linking", engine_->feature_registry()));
+   incremental_linking->add("<debug-symbols>on", "2").
+                        add("<debug-symbols>off", "1");
+   linker_options_ += incremental_linking;
 }
 
-static std::string make_variant_name(const feature_set& fs)
+static std::string make_variant_name(const main_target& mt)
 {
-   const feature& f = fs.get("variant");
-   return f.value().to_string();
+   ostringstream s;
+   dump_for_hash(s, mt.properties());
+   boost::crypto::md5 md5(s.str());
+
+   const feature& f = mt.properties().get("variant");
+   return f.value().to_string() + '-' + md5.to_string();
 }
 
 void msvc_project::add_variant(boost::intrusive_ptr<const build_node> node)
@@ -208,16 +223,16 @@ void msvc_project::add_variant(boost::intrusive_ptr<const build_node> node)
    v->properties_ = &t->properties();
    v->node_ = node;
    v->target_ = node->products_[0]->mtarget();
-   v->name_ = make_variant_name(t->properties());
+   v->name_ = make_variant_name(*v->target_);
    v->owner_ = this;
    variants_.push_back(v);
    if (id_.empty())
    {
       meta_target_ = naked_variant->target_->meta_target();
-      project_output_dir_ = output_dir() / name().to_string();
+      project_output_dir_ = output_dir() / name();
       project_output_dir_.normalize();
       id_ = project_output_dir().string();
-      full_project_name_ = project_output_dir() / (name().to_string() + ".vcproj");
+      full_project_name_ = project_output_dir() / (name() + ".vcproj");
       meta_target_relative_to_output_ = relative_path(meta_target_->location(), project_output_dir());
       meta_target_relative_to_output_.normalize();
    }
@@ -232,11 +247,16 @@ void msvc_project::fill_filters()
    filter_t::types_t header_types;
    header_types.push_back(&engine_->get_type_registry().get(types::H));
    files_.push_back(filter_t(header_types, "Header Files", "{93995380-89BD-4b04-88EB-625FBE52EBFB}"));
+
+   filter_t::types_t copied_types;
+   copied_types.push_back(&copied_type_);
+   files_.push_back(filter_t(copied_types, "Files to copy"));
+
 }
 
-const pstring& msvc_project::name() const
+const std::string msvc_project::name() const
 {
-   return variants_.front().target_->meta_target()->name();
+   return variants_.front().target_->meta_target()->name().to_string();
 }
 
 void msvc_project::write_header(ostream& s) const
@@ -266,6 +286,7 @@ configuration_types::value msvc_project::resolve_configuration_type(const varian
    const type& static_lib_type = engine_->get_type_registry().get(types::STATIC_LIB);
    const type& shared_lib_type = engine_->get_type_registry().get(types::SHARED_LIB);
    const type& header_lib_type = engine_->get_type_registry().get(types::HEADER_LIB);
+
    if (v.target_->type().equal_or_derived_from(exe_type))
       return configuration_types::exe;
    else
@@ -275,8 +296,11 @@ configuration_types::value msvc_project::resolve_configuration_type(const varian
          if (v.target_->type().equal_or_derived_from(shared_lib_type))
             return configuration_types::shared_lib;
          else
-            if (v.target_->type().equal_or_derived_from(header_lib_type))
+            if (v.target_->type().equal_or_derived_from(header_lib_type) ||
+                v.target_->type().equal_or_derived_from(copied_type_))
+            {
                return configuration_types::utility;
+            }
             else
                throw std::runtime_error("[msvc_project] Can't resolve configurations type '" + v.target_->type().tag().name() + "'.");
 } 
@@ -301,7 +325,7 @@ void msvc_project::write_configurations(std::ostream& s) const
       configuration_types::value cfg_type = resolve_configuration_type(*i);
       s << "      <Configuration\n"
            "         Name=\"" << i->name_ << "|Win32\"\n"
-           "         OutputDirectory=\"$(SolutionDir)$(ConfigurationName)\"\n"
+           "         OutputDirectory=\"$(SolutionDir)" << solution_configuration_name_ << "\"\n"
            "         IntermediateDirectory=\"$(ConfigurationName)\"\n"
            "         ConfigurationType=\"" << cfg_type << "\"\n";
 
@@ -384,10 +408,15 @@ struct less_target
 
 void msvc_project::filter_t::write(write_context& ctx, const std::string& path_prefix) const
 {
+   if (files_.empty())
+      return;
+
    ctx.output_ << "         <Filter\n"
-                  "            Name=\"" << name << "\"\n"
-                  "            Filter=\"cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx\"\n"
-                  "            UniqueIdentifier=\"" << uid << "\">\n";
+                  "            Name=\"" << name << "\"";
+   if (!uid.empty())
+      ctx.output_ << "\n            UniqueIdentifier=\"" << uid << "\">\n";
+   else
+      ctx.output_ << ">\n";
 
    // FIXME: this trick used only for test to stabilize order of sources in project file
    typedef std::map<const basic_target*, boost::reference_wrapper<const file_with_cfgs_t>, less_target> stabilized_t;

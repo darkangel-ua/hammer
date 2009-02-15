@@ -1,1 +1,20 @@
 test <toolset>msvc/<variant>debug
+[mkdir] './.hammer/bin/test/d90a6109a8779412f4a5fd9fdd9a1262'
+[mkdir] './.hammer/bin/test.test/d90a6109a8779412f4a5fd9fdd9a1262'
+[run shell command]: 'call "vcvars32.bat" >nul'
+[run shell command]: 'cl.exe /c /nologo /Od /Ob0 /W3 /GR /MDd /EHs    ".\main.cpp" -Fo".\.hammer\bin\test.test\d90a6109a8779412f4a5fd9fdd9a1262\main.obj"'
+[mkdir] './lib1/.hammer/bin/lib1/cb0f31912b4f8c8f19cd34b8734868c0'
+[run shell command]: 'call "vcvars32.bat" >nul'
+[run shell command]: 'cl.exe /c /nologo /Od /Ob0 /W3 /GR /MDd /EHs    ".\lib1\lib1.cpp" -Fo".\lib1\.hammer\bin\lib1\cb0f31912b4f8c8f19cd34b8734868c0\lib1.obj"'
+[run shell command]: 'call "vcvars32.bat" >nul'
+[run shell command]: 'if exist ".\lib1\.hammer\bin\lib1\cb0f31912b4f8c8f19cd34b8734868c0\lib1-cb0f31912b4f8c8f19cd34b8734868c0.lib" DEL ".\lib1\.hammer\bin\lib1\cb0f31912b4f8c8f19cd34b8734868c0\lib1-cb0f31912b4f8c8f19cd34b8734868c0.lib"
+lib.exe /nologo "@.\lib1\.hammer\bin\lib1\cb0f31912b4f8c8f19cd34b8734868c0\lib1-cb0f31912b4f8c8f19cd34b8734868c0.lib.rsp"'
+[run shell command]: 'call "vcvars32.bat" >nul'
+[run shell command]: 'link.exe /nologo /DEBUG /subsystem:console  /out:".\.hammer\bin\test.test\d90a6109a8779412f4a5fd9fdd9a1262\test.test.exe" .\.hammer\bin\test.test\d90a6109a8779412f4a5fd9fdd9a1262\main.obj .\lib1\.hammer\bin\lib1\cb0f31912b4f8c8f19cd34b8734868c0\lib1-cb0f31912b4f8c8f19cd34b8734868c0.lib  
+if %ERRORLEVEL% NEQ 0 EXIT %ERRORLEVEL%
+if exist ".\.hammer\bin\test.test\d90a6109a8779412f4a5fd9fdd9a1262\test.test.exe.manifest" (mt.exe -nologo -manifest ".\.hammer\bin\test.test\d90a6109a8779412f4a5fd9fdd9a1262\test.test.exe.manifest" "-outputresource:.\.hammer\bin\test.test\d90a6109a8779412f4a5fd9fdd9a1262\test.test.exe")'
+[run shell command]: '@SET PATH=%PATH%;
+@.\.hammer\bin\test.test\d90a6109a8779412f4a5fd9fdd9a1262\test.test.exe 
+'
+[write_tag_file] filename ='.\.hammer\bin\test\d90a6109a8779412f4a5fd9fdd9a1262\test.test_output', content = ''
+[write_tag_file] filename ='.\.hammer\bin\test\d90a6109a8779412f4a5fd9fdd9a1262\test.run_passed', content = 'passed'

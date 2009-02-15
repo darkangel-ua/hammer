@@ -416,10 +416,21 @@ BOOST_FIXTURE_TEST_CASE(local_generation, generator_tests)
    BOOST_REQUIRE_NO_THROW(run_generators(msvc_solution::generation_mode::LOCAL));
    check();
 }
+*/
 
 BOOST_FIXTURE_TEST_CASE(exe_and_static_lib, generator_tests)
 {
    test_name_ = "exe_and_static_lib";
+   load();
+   BOOST_REQUIRE_NO_THROW(instantiate("test"));
+   BOOST_REQUIRE_NO_THROW(run_generators());
+   check();
+}
+
+/*
+BOOST_FIXTURE_TEST_CASE(copy_target, generator_tests)
+{
+   test_name_ = "copy_target";
    load();
    BOOST_REQUIRE_NO_THROW(instantiate("test"));
    BOOST_REQUIRE_NO_THROW(run_generators());

@@ -45,7 +45,11 @@ namespace hammer
 
             typedef boost::ptr_vector<variant> variants_t;
 
-            msvc_project(engine& e, const location_t& output_dir, const boost::guid& uid = boost::guid::create());
+            msvc_project(engine& e, 
+                         const location_t& output_dir, 
+                         const std::string& solution_configuration_name,
+                         const boost::guid& uid = boost::guid::create());
+
             void add_variant(boost::intrusive_ptr<const build_node> node);
             bool has_variant(const main_target* v) const;
             void generate();
@@ -58,7 +62,7 @@ namespace hammer
             location_t full_project_name() const { return full_project_name_; } // путь относительно meta_target проекта и имя файла проекта
             const location_t& output_dir() const { return output_dir_; }
             const location_t& project_output_dir() const { return project_output_dir_; }
-            const pstring& name() const;
+            const std::string name() const;
             const variants_t& variants() const { return variants_; }
             
          private:
@@ -99,8 +103,9 @@ namespace hammer
                file_config_t file_config;  // для каждого варианта своя basic_target со своими свойствами
             };
 
-            struct filter_t
+            class filter_t
             {
+               public:   
                   typedef std::vector<const type*> types_t;
 
                   std::string name;
@@ -109,12 +114,16 @@ namespace hammer
 
                   filter_t(const types_t& t, 
                            const std::string& name,
-                           const std::string& uid) : types_(t), name(name), uid(uid) {}
+                           const std::string& uid = std::string()) 
+                     : types_(t), name(name), uid(uid) 
+                  {}
+
                   void write(write_context& ctx, const std::string& path_prefix) const;
                   bool accept(const type* t) const;
                   void insert(const boost::intrusive_ptr<build_node>& node,
                               const basic_target* t, 
                               const variant& v);
+                  virtual ~filter_t() {}
 
                private:
                   types_t types_;
@@ -133,10 +142,12 @@ namespace hammer
             location_t output_dir_;
             location_t project_output_dir_;
             location_t meta_target_relative_to_output_;
+            std::string solution_configuration_name_;
             
             const type& searched_lib_;
             const type& obj_type_;
             const type& pch_type_;
+            const type& copied_type_;
             cmdline_builder configuration_options_;
             cmdline_builder compiller_options_;
             cmdline_builder linker_options_;

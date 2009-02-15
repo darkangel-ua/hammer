@@ -28,6 +28,7 @@
 #include <hammer/core/copy_meta_target.h>
 #include <hammer/core/testing_meta_target.h>
 #include <hammer/core/toolset_manager.h>
+#include <hammer/core/default_output_location_strategy.h>
 
 using namespace std;
 namespace fs = boost::filesystem;
@@ -93,6 +94,7 @@ engine::engine()
 
    scm_manager_.reset(new scm_manager);
    toolset_manager_.reset(new hammer::toolset_manager);
+   output_location_strategy_.reset(new default_output_location_strategy);
 }
 
 project* engine::get_upper_project(const location_t& project_path)
@@ -1133,6 +1135,14 @@ engine::loaded_projects_t::select_best_alternative(const pstring& target_name,
    post_process(result);
 
    return result.front();
+}
+
+void engine::output_location_strategy(boost::shared_ptr<hammer::output_location_strategy>& strategy)
+{
+   if (!strategy)
+      output_location_strategy_.reset(new default_output_location_strategy);
+   else
+      output_location_strategy_ = strategy;
 }
 
 }

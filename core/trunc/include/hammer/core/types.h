@@ -23,7 +23,6 @@ namespace hammer
       extern const type_tag DLL_MANIFEST;
       extern const type_tag UNKNOWN;
       extern const type_tag COPIED;
-      extern const type_tag COPIED_TAG;
       extern const type_tag TESTING_OUTPUT;
       extern const type_tag TESTING_RUN_PASSED;
 

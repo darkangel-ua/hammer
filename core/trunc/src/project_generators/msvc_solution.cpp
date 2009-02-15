@@ -8,6 +8,7 @@
 #include <hammer/core/engine.h>
 #include <hammer/core/meta_target.h>
 #include <hammer/core/fs_helpers.h>
+#include <hammer/core/feature.h>
 #include <boost/filesystem/fstream.hpp>
 #include <set>
 
@@ -27,6 +28,7 @@ struct msvc_solution::impl_t
 {
    typedef msvc_project::dependencies_t dependencies_t;
    typedef boost::ptr_map<const meta_target*, msvc_project> projects_t;
+   typedef std::vector<std::string> variant_names_t;
 
    impl_t(msvc_solution* owner, const project& source_project, 
           const location_t& output_path,
@@ -52,6 +54,7 @@ struct msvc_solution::impl_t
    location_t output_location_;
    std::string name_; // solution name;
    generation_mode::value generation_mode_;
+   std::vector<std::string> variant_names_;
 
    mutable projects_t projects_;
 };
@@ -80,7 +83,7 @@ void impl_t::generate_dependencies(impl_t::dependencies_t::const_iterator first,
           !i->second->has_variant(*first)))
       {
          
-         auto_ptr<msvc_project> p_guard(new msvc_project(engine_, project_output_dir(*(**first).build_node()), owner_->generate_id()));
+         auto_ptr<msvc_project> p_guard(new msvc_project(engine_, project_output_dir(*(**first).build_node()), variant_names_.front(), owner_->generate_id()));
          msvc_project* p = p_guard.get();
          p->add_variant((**first).build_node());
          p->generate();
@@ -166,7 +169,14 @@ msvc_solution::~msvc_solution()
 
 void msvc_solution::add_target(boost::intrusive_ptr<const build_node> node)
 {
-   std::auto_ptr<msvc_project> p_guarg(new msvc_project(impl_->engine_, impl_->project_output_dir(*node), generate_id()));
+   if (!impl_->projects_.empty())
+      throw std::runtime_error("MSVC solution generator can handle only one top level target.");
+
+   impl_->variant_names_.push_back(node->products_[0]->mtarget()->properties().get("variant").value().to_string());
+   std::auto_ptr<msvc_project> p_guarg(new msvc_project(impl_->engine_, 
+                                                        impl_->project_output_dir(*node), 
+                                                        impl_->variant_names_.front(), 
+                                                        generate_id()));
    msvc_project* p = p_guarg.get();
    p->add_variant(node);
    impl_->projects_.insert(&p->meta_target(), p_guarg);
@@ -208,21 +218,20 @@ void msvc_solution::write() const
       sorted_projects.push_back(i->second);
 
    sort(sorted_projects.begin(), sorted_projects.end(), less_by_name);
-   set<string> variant_names;
    for(sorted_projects_t::const_iterator i = sorted_projects.begin(), last = sorted_projects.end(); i != last; ++i)
    {
       (**i).write();
       impl_->write_project_section(f, **i);
-      typedef msvc_project::variants_t::const_iterator viter;
-      for(viter v = (*i)->variants().begin(), vlast = (*i)->variants().end(); v != vlast; ++v)
-         variant_names.insert(v->name_);
    }
    
    f << "Global\n"
      << "\tGlobalSection(SolutionConfigurationPlatforms) = preSolution\n";
-   for(set<string>::const_iterator i = variant_names.begin(), last = variant_names.end(); i != last; ++i)
+   
+   for(impl_t::variant_names_t::const_iterator i = impl_->variant_names_.begin(), last = impl_->variant_names_.end(); i != last; ++i)
       f << "\t\t" << *i << "|Win32" << " = " << *i << "|Win32\n";
-   f << "EndGlobalSection\n";
+   
+   f << "\tEndGlobalSection\n" 
+     << "EndGlobal\n";
 }
 
 boost::guid msvc_solution::generate_id() const

@@ -8,6 +8,7 @@
 #include <hammer/core/directory_target.h>
 #include <boost/crypto/md5.hpp>
 #include <hammer/core/feature_set.h>
+#include <hammer/core/output_location_strategy.h>
 
 using namespace std;
 
@@ -74,13 +75,7 @@ void main_target::add_additional_dependencies(hammer::build_node& generated_node
 const location_t& main_target::intermediate_dir() const
 {
    if (intermediate_dir_.empty())
-   {
-      ostringstream s;
-      dump_for_hash(s, properties());
-      boost::crypto::md5 md5(s.str());
-      
-      intermediate_dir_ = meta_target()->project()->location() / ".hammer/bin" / name().to_string() / md5.to_string();
-   }
+      intermediate_dir_ = meta_target()->project()->engine()->output_location_strategy().compute_output_location(*this);
 
    return intermediate_dir_;
 }

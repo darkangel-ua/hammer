@@ -46,6 +46,7 @@ lib hammer.core
     /boost/sandbox/crypto
     /boost/tokenizer/<version>1.36.0
     /boost/multi_index/<version>1.36.0
+    /boost/iostreams/<version>1.36.0/<link>static
    :
     @<include>../include
     <link>static

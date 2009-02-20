@@ -28,6 +28,7 @@
 #include <hammer/core/copy_meta_target.h>
 #include <hammer/core/testing_meta_target.h>
 #include <hammer/core/toolset_manager.h>
+#include <hammer/core/scaner_manager.h>
 #include <hammer/core/default_output_location_strategy.h>
 
 using namespace std;
@@ -94,6 +95,7 @@ engine::engine()
 
    scm_manager_.reset(new scm_manager);
    toolset_manager_.reset(new hammer::toolset_manager);
+   scanner_manager_.reset(new hammer::scanner_manager);
    output_location_strategy_.reset(new default_output_location_strategy);
 }
 

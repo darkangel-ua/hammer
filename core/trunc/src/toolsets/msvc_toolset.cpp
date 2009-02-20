@@ -332,13 +332,14 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
 
 }
 
-msvc_toolset::msvc_8_0_data msvc_toolset::resolve_8_0_data(const location_t* toolset_home) const
+msvc_toolset::msvc_8_0_data msvc_toolset::resolve_8_0_data(const location_t* toolset_home_) const
 {
-   if (toolset_home == NULL)
-      throw std::runtime_error("msvc-8.0 toolset doesn't have auto configuration");
+   location_t toolset_home;
+   if (toolset_home_ == NULL)
+      toolset_home = "c:\\Program Files\\Microsoft Visual Studio 8\\VC";
 
    msvc_8_0_data result;
-   result.setup_script_ = *toolset_home / "bin/vcvars32.bat";
+   result.setup_script_ = toolset_home / "bin/vcvars32.bat";
    result.compiler_ = "cl.exe";
    result.librarian_ = "lib.exe";
    result.linker_ = "link.exe";

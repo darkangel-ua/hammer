@@ -28,42 +28,43 @@ const type_tag COPIED("COPIED");
 const type_tag TESTING_OUTPUT("TESTING_OUTPUT");
 const type_tag TESTING_RUN_PASSED("TESTING_RUN_PASSED");
 
-   void register_standart_types(type_registry& tr)
-   {
-      const type tCPP(CPP, type::suffixes_t(list_of(".cpp")(".cc")));
-      const type tC(C, ".c");
-      const type tH(H, type::suffixes_t(list_of(".h")(".hpp")));
-      const type tOBJ(OBJ, ".obj");
-      const type tPCH(PCH, ".pch");
-      const type tSHARED_LIB(SHARED_LIB, ".dll");
-      const type tSTATIC_LIB(STATIC_LIB, ".lib");
-      const type tIMPORT_LIB(IMPORT_LIB, ".lib");
-      const type tSEARCHED_LIB(SEARCHED_LIB, "");
-      const type tHEADER_LIB(HEADER_LIB, type::suffixes_t());
-      const type tEXE(EXE, ".exe");
-      const type tEXE_MANIFEST(EXE_MANIFEST, ".exe.manifest");
-      const type tDLL_MANIFEST(DLL_MANIFEST, ".dll.manifest");
-      const type tUNKNOWN(UNKNOWN, "");
-      const type tCOPIED(COPIED, "");
-      const type tTESTING_OUTPUT(TESTING_OUTPUT, ".test_output");
-      const type tTESTING_RUN_PASSED(TESTING_RUN_PASSED, ".run_passed");
-      
-      tr.insert(tCPP);
-      tr.insert(tC);
-      tr.insert(tH);
-      tr.insert(tOBJ);
-      tr.insert(tPCH);
-      tr.insert(tSHARED_LIB);
-      tr.insert(tSTATIC_LIB);
-      tr.insert(tIMPORT_LIB);
-      tr.insert(tSEARCHED_LIB);
-      tr.insert(tHEADER_LIB);
-      tr.insert(tEXE);
-      tr.insert(tEXE_MANIFEST);
-      tr.insert(tDLL_MANIFEST);
-      tr.insert(tUNKNOWN);
-      tr.insert(tCOPIED);
-      tr.insert(tTESTING_OUTPUT);
-      tr.insert(tTESTING_RUN_PASSED);
-   }
+void register_standart_types(type_registry& tr)
+{
+   const type tCPP(CPP, type::suffixes_t(list_of(".cpp")(".cc")));
+   const type tC(C, ".c");
+   const type tH(H, type::suffixes_t(list_of(".h")(".hpp")));
+   const type tOBJ(OBJ, ".obj");
+   const type tPCH(PCH, ".pch");
+   const type tSHARED_LIB(SHARED_LIB, ".dll");
+   const type tSTATIC_LIB(STATIC_LIB, ".lib");
+   const type tIMPORT_LIB(IMPORT_LIB, ".lib");
+   const type tSEARCHED_LIB(SEARCHED_LIB, "");
+   const type tHEADER_LIB(HEADER_LIB, type::suffixes_t());
+   const type tEXE(EXE, ".exe");
+   const type tEXE_MANIFEST(EXE_MANIFEST, ".exe.manifest");
+   const type tDLL_MANIFEST(DLL_MANIFEST, ".dll.manifest");
+   const type tUNKNOWN(UNKNOWN, "");
+   const type tCOPIED(COPIED, "");
+   const type tTESTING_OUTPUT(TESTING_OUTPUT, ".test_output");
+   const type tTESTING_RUN_PASSED(TESTING_RUN_PASSED, ".run_passed");
+   
+   tr.insert(tCPP);
+   tr.insert(tC);
+   tr.insert(tH);
+   tr.insert(tOBJ);
+   tr.insert(tPCH);
+   tr.insert(tSHARED_LIB);
+   tr.insert(tSTATIC_LIB);
+   tr.insert(tIMPORT_LIB);
+   tr.insert(tSEARCHED_LIB);
+   tr.insert(tHEADER_LIB);
+   tr.insert(tEXE);
+   tr.insert(tEXE_MANIFEST);
+   tr.insert(tDLL_MANIFEST);
+   tr.insert(tUNKNOWN);
+   tr.insert(tCOPIED);
+   tr.insert(tTESTING_OUTPUT);
+   tr.insert(tTESTING_RUN_PASSED);
+}
+
 }}

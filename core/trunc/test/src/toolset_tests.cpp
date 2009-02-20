@@ -155,7 +155,7 @@ void toolset_test::do_test(const string& name)
          generated_nodes.insert(generated_nodes.end(), n.begin(), n.end());
       }
 
-      actuality_checker checker;
+      actuality_checker checker(engine_);
       checker.check(generated_nodes);
 
       test_build_environment environment(output_file, project_path);

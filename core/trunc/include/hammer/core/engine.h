@@ -23,6 +23,7 @@ namespace hammer
    class scm_manager;
    class scm_client;
    class toolset_manager;
+   class scanner_manager;
    class output_location_strategy;
 
    class engine : boost::noncopyable
@@ -43,6 +44,8 @@ namespace hammer
          hammer::feature_registry& feature_registry() { return *feature_registry_; }
          hammer::call_resolver& call_resolver() { return resolver_; }
          hammer::toolset_manager& toolset_manager() { return *toolset_manager_; }
+         hammer::scanner_manager& scanner_manager() { return *scanner_manager_; }
+         const hammer::scanner_manager& scanner_manager() const { return *scanner_manager_; }
          hammer::output_location_strategy& output_location_strategy() { return *output_location_strategy_; }
          void output_location_strategy(boost::shared_ptr<hammer::output_location_strategy>& strategy);
          ~engine();
@@ -132,6 +135,7 @@ namespace hammer
          boost::shared_ptr<generator_registry> generators_;
          boost::shared_ptr<scm_manager> scm_manager_;
          boost::shared_ptr<hammer::toolset_manager> toolset_manager_;
+         boost::shared_ptr<hammer::scanner_manager> scanner_manager_;
          boost::shared_ptr<hammer::output_location_strategy> output_location_strategy_;
 
          use_project_data_t use_project_data_;

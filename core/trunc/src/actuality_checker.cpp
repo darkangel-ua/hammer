@@ -2,6 +2,9 @@
 #include <hammer/core/actuality_checker.h>
 #include <hammer/core/timestamp_info.h>
 #include <hammer/core/basic_target.h>
+#include <hammer/core/scaner.h>
+#include <hammer/core/scaner_manager.h>
+#include <hammer/core/engine.h>
 
 using namespace boost::date_time;
 using namespace boost::posix_time;
@@ -16,6 +19,18 @@ std::size_t actuality_checker::check(nodes_t& nodes)
       result += check(max_node_time, **i);
 
    return result;
+}
+
+scanner_context& actuality_checker::get_scanner_context(const type& t, const scanner& s)
+{
+   scanner_contexts_t::const_iterator i = scanner_contexts_.find(&t);
+   if (i == scanner_contexts_.end())
+   {
+      scanner_contexts_.insert(std::make_pair(&t, boost::shared_ptr<scanner_context>(s.create_context())));
+      return get_scanner_context(t, s);
+   }
+   else
+      return *i->second;
 }
 
 std::size_t actuality_checker::check(boost::posix_time::ptime& max_target_time, build_node& node)
@@ -44,6 +59,21 @@ std::size_t actuality_checker::check(boost::posix_time::ptime& max_target_time, 
       }
 
       products_max_time = (std::max)(products_max_time, time_info.timestamp_);
+
+      const scanner* scanner = engine_.scanner_manager().find((**i).type());
+      if (scanner != NULL)
+      {
+         ptime scanner_timestamp = scanner->process((**i), get_scanner_context((**i).type(), *scanner));
+         
+         // scanner say can't find some dependencies?
+         if (scanner_timestamp == neg_infin)
+         {
+            products_max_time = neg_infin;
+            break;
+         }
+
+         products_max_time = (std::max)(products_max_time, scanner_timestamp);
+      }
    }
    
    if (products_max_time == neg_infin)

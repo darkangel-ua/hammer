@@ -120,9 +120,10 @@ feature_set* feature_set::join(const feature_set& rhs) const
    return result;
 }
 
-void feature_set::join(const feature_set& rhs)
+feature_set& feature_set::join(const feature_set& rhs)
 {
    join_impl(this, rhs);
+   return *this;
 }
 
 feature_set* feature_set::clone() const

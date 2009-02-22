@@ -147,4 +147,9 @@ bool sources_decl::empty() const
    return impl_->values_.empty();
 }
 
+std::size_t sources_decl::size() const
+{
+   return impl_->values_.size();
+}
+
 }

@@ -38,6 +38,7 @@ namespace hammer
          void clear();
          void unique();
          bool empty() const;
+         std::size_t size() const;
 
       private:
          struct impl_t;

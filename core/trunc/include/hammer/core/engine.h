@@ -180,6 +180,10 @@ namespace hammer
                          requirements_decl* fs, 
                          feature_set* default_build, 
                          requirements_decl* usage_requirements);
+         void version_alias_rule(project* p, 
+                                 pstring& name, 
+                                 pstring& version, 
+                                 sources_decl* sources);
          void test_suite_rule(project* p, 
                               pstring& name, 
                               sources_decl& sources, 

@@ -37,7 +37,7 @@ namespace hammer
          feature_set* join(const feature_set& rhs) const;
          feature_set& join(feature* f);
          feature_set& join(const char* name, const char* value);
-         void join(const feature_set& v);
+         feature_set& join(const feature_set& v);
          feature_set* clone() const;
          void copy_propagated(const feature_set& rhs);
          void erase_all(const std::string& feature_name);

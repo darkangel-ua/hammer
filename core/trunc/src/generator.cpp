@@ -74,7 +74,8 @@ generator::construct(const type& target_type,
          pstring new_name = make_name(engine_->pstring_pool(), 
                                       *composite_target_name, 
                                       *i->type_,
-                                      i->need_tag_ ? &props : NULL);
+                                      i->need_tag_ ? &props : NULL,
+                                      i->need_tag_ ? &owner : NULL);
          result->products_.push_back(new generated_target(&owner, 
                                                           new_name, 
                                                           i->type_, &props));
@@ -89,7 +90,8 @@ generator::construct(const type& target_type,
                                    t->name(), 
                                    t->type(), 
                                    target_type, 
-                                   producable_types().front().need_tag_ ? &props : NULL);
+                                   producable_types().front().need_tag_ ? &props : NULL,
+                                   producable_types().front().need_tag_ ? &owner : NULL);
       assert(sources.size() == 1);
       
       boost::intrusive_ptr<build_node> result(new build_node);

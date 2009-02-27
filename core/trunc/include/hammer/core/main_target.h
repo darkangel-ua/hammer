@@ -5,6 +5,7 @@
 #include "pstring.h"
 #include "location.h"
 #include <vector>
+#include <iosfwd>
 
 namespace hammer
 {
@@ -33,9 +34,12 @@ namespace hammer
          virtual build_nodes_t generate();
          const location_t& intermediate_dir() const;
          boost::intrusive_ptr<const hammer::build_node> build_node() const { return build_node_; }
+         std::string version() const;
+         const std::string& hash() const;
 
       protected:
          virtual void add_additional_dependencies(hammer::build_node& generated_node) const;
+         virtual void additional_hash_string_data(std::ostream& s) const;
 
       private:
          const hammer::meta_target* meta_target_;

@@ -8,7 +8,9 @@
 #include <hammer/core/directory_target.h>
 #include <boost/crypto/md5.hpp>
 #include <hammer/core/feature_set.h>
+#include <hammer/core/feature.h>
 #include <hammer/core/output_location_strategy.h>
+#include <set>
 
 using namespace std;
 
@@ -88,6 +90,28 @@ const location_t& main_target::location() const
 void main_target::timestamp_info_impl() const
 {
    throw std::logic_error("[main_target][FIXME] - this is bad target hierarchy");
+}
+
+std::string main_target::version() const
+{
+   feature_set::const_iterator i = properties().find("version");
+   if (i != properties().end())
+      return (**i).value().to_string();
+   else
+      return string();
+}
+
+void main_target::additional_hash_string_data(std::ostream& s) const
+{
+   typedef set<const main_target*> main_target_sources_t;
+   
+   main_target_sources_t main_target_sources;
+   for(sources_t::const_iterator i = sources_.begin(), last = sources_.end(); i != last; ++i)
+      if (this != (**i).mtarget())
+         main_target_sources.insert((**i).mtarget());
+   
+   for(main_target_sources_t::const_iterator i = main_target_sources.begin(), last = main_target_sources.end(); i != last; ++i)
+      s << (**i).hash_string();
 }
 
 }

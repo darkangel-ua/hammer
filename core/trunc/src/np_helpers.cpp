@@ -3,22 +3,34 @@
 #include <hammer/core/pstring.h>
 #include <hammer/core/type.h>
 #include <hammer/core/feature_set.h>
+#include <hammer/core/feature.h>
+#include <hammer/core/basic_target.h>
 #include <boost/crypto/md5.hpp>
 
 using namespace std;
 
 namespace hammer{
 
-static string compute_hash(const feature_set& features)
+static string compute_hash(const feature_set& features, const main_target& mt)
 {
-   return boost::crypto::md5(dump_for_hash(features)).to_string();
+   return basic_target::hash_string(features, mt);
+}
+
+static string get_version(const feature_set& properties)
+{
+   feature_set::const_iterator i = properties.find("version");
+   if (i != properties.end())
+      return (**i).value().to_string();
+   else
+      return string();
 }
 
 pstring make_name(pool& p, 
                   const pstring& source_name, 
                   const type& source_type, 
                   const type& target_type,
-                  const feature_set* target_properties)
+                  const feature_set* target_properties,
+                  const main_target* owner)
 {
    const std::string& source_suffix = source_type.suffix_for(source_name.to_string()); // FIXME: Here is conversion from pstring to string
    // find leaf in source name to leave only filename
@@ -28,7 +40,13 @@ pstring make_name(pool& p,
 
    std::string hash_suffix;
    if (target_properties != NULL)
-      hash_suffix = '-' + compute_hash(*target_properties);
+   {
+      string version = get_version(*target_properties);
+      if (!version.empty())
+         hash_suffix = '-' + version;
+
+      hash_suffix += '-' + compute_hash(*target_properties, *owner);
+   }
  
    return pstring(p, std::string(source_name.begin() + slash_pos, source_name.begin() + (source_name.size() - source_suffix.size())) + hash_suffix + *target_type.suffixes().begin());
 }
@@ -36,7 +54,8 @@ pstring make_name(pool& p,
 pstring make_name(pool& p, 
                   const pstring& source_name, 
                   const type& target_type,
-                  const feature_set* target_properties)
+                  const feature_set* target_properties,
+                  const main_target* owner)
 {
    if (target_type.suffixes().empty())
       return source_name;
@@ -44,7 +63,13 @@ pstring make_name(pool& p,
    {
       std::string hash_suffix;
       if (target_properties != NULL)
-         hash_suffix = '-' + compute_hash(*target_properties);
+      {
+         string version = get_version(*target_properties);
+         if (!version.empty())
+            hash_suffix = '-' + version;
+
+         hash_suffix += '-' + compute_hash(*target_properties, *owner);
+      }
 
       return pstring(p, source_name.to_string() + hash_suffix + *target_type.suffixes().begin());
    }

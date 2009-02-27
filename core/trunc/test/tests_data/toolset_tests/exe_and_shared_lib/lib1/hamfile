@@ -1,1 +1,9 @@
-lib lib1 : lib1.cpp : <link>shared <define>LIB1_EXPORTS : : <include>. ;
+lib lib1 
+   : 
+    lib1.cpp 
+   : 
+    @<include>.
+    <link>shared 
+    <define>LIB1_EXPORTS
+    <version>1.0
+   ;

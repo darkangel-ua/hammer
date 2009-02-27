@@ -16,7 +16,6 @@
 #include <hammer/core/fs_argument_writer.h>
 #include <hammer/core/free_feature_arg_writer.h>
 #include <hammer/core/source_argument_writer.h>
-#include <boost/crypto/md5.hpp>
 #include <iostream>
 
 using namespace std;
@@ -206,12 +205,8 @@ msvc_project::msvc_project(engine& e,
 
 static std::string make_variant_name(const main_target& mt)
 {
-   ostringstream s;
-   dump_for_hash(s, mt.properties());
-   boost::crypto::md5 md5(s.str());
-
    const feature& f = mt.properties().get("variant");
-   return f.value().to_string() + '-' + md5.to_string();
+   return f.value().to_string() + '-' + mt.hash_string();
 }
 
 void msvc_project::add_variant(boost::intrusive_ptr<const build_node> node)
@@ -256,7 +251,11 @@ void msvc_project::fill_filters()
 
 const std::string msvc_project::name() const
 {
-   return variants_.front().target_->meta_target()->name().to_string();
+   string version = variants_.front().target_->version();
+   if (version.empty())
+      return variants_.front().target_->meta_target()->name().to_string();
+   else
+      return variants_.front().target_->meta_target()->name().to_string() + '-' + version;
 }
 
 void msvc_project::write_header(ostream& s) const

@@ -52,11 +52,14 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
    e.feature_registry().get_def("toolset").get_subfeature("version").extend_legal_values("8.0");
    
    {
-      feature_attributes fa;
+      feature_attributes fa = {0};
       fa.propagated = true;
       feature_def debug_store("debug-store", list_of("object")("database"), fa);
       e.feature_registry().add_def(debug_store);
    }
+
+   feature_set* generator_condition = e.feature_registry().make_set();
+   generator_condition->join("toolset", "msvc-8.0");
 
    cmdline_builder setup_vars("call \"" + config_data.setup_script_.native_file_string() + "\" >nul");
    shared_ptr<source_argument_writer> static_lib_sources(new source_argument_writer("static_lib_sources", e.get_type_registry().get(types::STATIC_LIB)));
@@ -131,7 +134,7 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
       generator::producable_types_t target;
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::CPP), 1, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::OBJ)));
-      auto_ptr<generator> g(new generator(e, "msvc.cpp.compiler", source, target, false));
+      auto_ptr<generator> g(new generator(e, "msvc.cpp.compiler", source, target, false, generator_condition));
       g->action(obj_action);
       e.generators().insert(g);
    }
@@ -152,6 +155,7 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
 
       feature_set* constraints = e.feature_registry().make_set();
       constraints->join("__pch", "");
+      constraints->join(*generator_condition);
       auto_ptr<generator> g(new pch_generator(e, "msvc.cpp-pch.compiler", source, target, true, constraints));
       
       e.generators().insert(g);
@@ -175,7 +179,7 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
       generator::producable_types_t target;
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::C), 1, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::OBJ)));
-      auto_ptr<generator> g(new generator(e, "msvc.c.compiler", source, target, false));
+      auto_ptr<generator> g(new generator(e, "msvc.c.compiler", source, target, false, generator_condition));
       g->action(obj_action);
       e.generators().insert(g);
    }
@@ -196,6 +200,7 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
 
       feature_set* constraints = e.feature_registry().make_set();
       constraints->join("__pch", "");
+      constraints->join(*generator_condition);
       auto_ptr<generator> g(new pch_generator(e, "msvc.c-pch.compiler", source, target, true, constraints));
       
       e.generators().insert(g);
@@ -216,6 +221,7 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
       e.generators().insert(g);
    }
 
+   // ... -> EXE
    { 
       shared_ptr<source_argument_writer> obj_sources(new source_argument_writer("obj_sources", e.get_type_registry().get(types::OBJ)));
       shared_ptr<product_argument_writer> exe_product(new product_argument_writer("exe_product", e.get_type_registry().get(types::EXE)));
@@ -245,11 +251,12 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::HEADER_LIB), 0, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::EXE)));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::EXE_MANIFEST)));
-      auto_ptr<generator> g(new exe_and_shared_lib_generator(e, "msvc.exe.linker", source, target, true));
+      auto_ptr<generator> g(new exe_and_shared_lib_generator(e, "msvc.exe.linker", source, target, true, generator_condition));
       g->action(exe_action);
       e.generators().insert(g);
    }
 
+   // ... -> STATIC_LIB
    { 
       shared_ptr<source_argument_writer> obj_sources(new source_argument_writer("obj_sources", e.get_type_registry().get(types::OBJ)));
       shared_ptr<product_argument_writer> static_lib_product(new product_argument_writer("static_lib_product", e.get_type_registry().get(types::STATIC_LIB)));
@@ -273,11 +280,12 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::H), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::HEADER_LIB), 0, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::STATIC_LIB), true));
-      auto_ptr<generator> g(new static_lib_generator(e, "msvc.static_lib.linker", source, target, true));
+      auto_ptr<generator> g(new static_lib_generator(e, "msvc.static_lib.linker", source, target, true, generator_condition));
       g->action(static_lib_action);
       e.generators().insert(g);
    }
 
+   // ... -> SHARED_LIB IMPORT_LIB
    { 
       shared_ptr<source_argument_writer> obj_sources(new source_argument_writer("obj_sources", e.get_type_registry().get(types::OBJ)));
       shared_ptr<product_argument_writer> import_lib_product(new product_argument_writer("import_lib_product", e.get_type_registry().get(types::IMPORT_LIB)));
@@ -312,11 +320,12 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
       target.push_back(generator::produced_type(e.get_type_registry().get(types::IMPORT_LIB), true));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::DLL_MANIFEST), true));
 
-      auto_ptr<generator> g(new exe_and_shared_lib_generator(e, "msvc.shared_lib.linker", source, target, true));
+      auto_ptr<generator> g(new exe_and_shared_lib_generator(e, "msvc.shared_lib.linker", source, target, true, generator_condition));
       g->action(shared_lib_action);
       e.generators().insert(g);
    }
 
+   // ... -> HEADER_LIB
    { 
       generator::consumable_types_t source;
       generator::producable_types_t target;

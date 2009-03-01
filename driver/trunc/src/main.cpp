@@ -23,6 +23,7 @@
 #include <hammer/core/types.h>
 
 #include <hammer/core/toolsets/msvc_toolset.h>
+#include <hammer/core/toolsets/gcc_toolset.h>
 #include <hammer/core/toolset_manager.h>
 #include <hammer/core/scaner_manager.h>
 #include <hammer/core/c_scanner.h>
@@ -81,15 +82,51 @@ namespace
       return desc;
    }
 
-   void resolve_arguments(const vector<string>& build_request_options, vector<string>& targets, 
-                          feature_set* build_request)
+   static feature* try_resolve_implicit_feature(feature_registry& fr, feature_def& fd, const std::string& value)
+   {
+      string::size_type p = value.find('-');
+      if (p != string::npos)
+      {
+         string main_feature(value.substr(0, p));
+         string subfeature(value.substr(p + 1, value.size() - p - 1));
+         if (!fd.is_legal_value(main_feature))
+            return NULL;
+         if (!fd.find_subfeature_for_value(subfeature))
+            return NULL;
+      }
+      else
+      {
+         if (!fd.is_legal_value(value))
+            return NULL;
+      }
+
+      return fr.create_feature(fd.name(), value);
+   }
+   
+   static feature* try_resolve_implicit_feature(feature_registry& fr, const std::string& value)
+   {
+      feature* result = try_resolve_implicit_feature(fr, fr.get_def("toolset"), value);
+      if (result != NULL)
+         return result;
+
+      return try_resolve_implicit_feature(fr, fr.get_def("variant"), value);
+   }
+
+   void resolve_arguments(vector<string>& targets, feature_set* build_request, 
+                          feature_registry& fr, const vector<string>& build_request_options)
    {
       typedef vector<string>::const_iterator iter;
       for(iter i = build_request_options.begin(), last = build_request_options.end(); i != last; ++i)
       {
          string::size_type p = i->find('=');
          if (p == string::npos)
-            targets.push_back(*i);
+         {
+            feature* posible_implicit_feature = try_resolve_implicit_feature(fr, *i);
+            if (posible_implicit_feature != NULL)
+               build_request->join(posible_implicit_feature);
+            else
+               targets.push_back(*i);
+         }
          else
          {
             string feature_name(i->begin(), i->begin() + p);
@@ -305,6 +342,7 @@ int main(int argc, char** argv)
          cout << "...Registering known toolsets... ";
 
       engine.toolset_manager().add_toolset(auto_ptr<toolset>(new msvc_toolset));
+      engine.toolset_manager().add_toolset(auto_ptr<toolset>(new gcc_toolset));
 
       if (opts.debug_level_ > 0)
          cout << "Done\n";
@@ -327,14 +365,16 @@ int main(int argc, char** argv)
             cout << "Done\n";
       }
 
-      build_request->join("toolset", "msvc");
-      build_request->join("variant", "debug");
-
       if (vm.count("generate-projects-locally"))
          opts.generate_projects_localy_ = true;
 
       if (vm.count("build-request"))
-         resolve_arguments(vm["build-request"].as<vector<string> >(), targets, build_request);
+         resolve_arguments(targets, build_request, engine.feature_registry(), vm["build-request"].as<vector<string> >());
+
+      if (build_request->find("toolset") == build_request->end())
+         build_request->join("toolset", "msvc");
+      if (build_request->find("variant") == build_request->end())
+         build_request->join("variant", "debug");
 
       if (opts.debug_level_ > 0)
          cout << "...Loading project at '" << fs::current_path() << "'... ";

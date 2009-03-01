@@ -111,7 +111,7 @@ void main_target::additional_hash_string_data(std::ostream& s) const
          main_target_sources.insert((**i).mtarget());
    
    for(main_target_sources_t::const_iterator i = main_target_sources.begin(), last = main_target_sources.end(); i != last; ++i)
-      s << (**i).hash_string();
+      s << (**i).name() << (**i).hash_string();
 }
 
 }

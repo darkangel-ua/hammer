@@ -1,7 +1,7 @@
 #if !defined(h_4600a2af_9f05_4199_bb10_2b42d6ca6b22)
 #define h_4600a2af_9f05_4199_bb10_2b42d6ca6b22
 
-#include "../toolset.h"
+#include <hammer/core/toolset.h>
 
 namespace hammer
 {

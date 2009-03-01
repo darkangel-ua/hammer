@@ -5,7 +5,7 @@
 #  define LIB1_API
 #else
 #  if defined(LIB1_EXPORTS)
-#     if defined(_MSC_VER)
+#     if defined(_MSC_VER) || defined(__MINGW32__)
 #        define LIB1_API __declspec(dllexport)
 #     endif
 #     if defined(__BORLANDC__)
@@ -15,7 +15,7 @@
 #        define LIB1_API
 #     endif
 #  else
-#     if defined(_MSC_VER)
+#     if defined(_MSC_VER) || defined(__MINGW32__)
 #        define LIB1_API __declspec(dllimport)
 #     endif
 #     if defined(__BORLANDC__)

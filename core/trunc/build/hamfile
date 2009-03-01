@@ -49,6 +49,7 @@ lib hammer.core
     /boost/iostreams/<version>1.36.0/<link>static
    :
     @<include>../include
+    <include>./src/toolsets
     <link>static
    :
    :

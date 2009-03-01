@@ -360,8 +360,13 @@ namespace hammer{
 
    feature* feature_registry::create_feature(const std::string& name, const std::string& value)
    {
-      if (find_def(name.c_str()))
+      const feature_def* posible_feature = find_def(name.c_str());
+
+      if (posible_feature != NULL &&
+          posible_feature->is_legal_value(value))
+      {
          return simply_create_feature(name, value);
+      }
 
       typedef boost::tokenizer<boost::char_separator<char>, const char*> tokenizer;
       tokenizer tok(value.c_str(), value.c_str() + value.size(), 

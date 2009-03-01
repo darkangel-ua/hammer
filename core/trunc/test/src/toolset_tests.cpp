@@ -11,6 +11,7 @@
 
 #include <hammer/core/toolset_manager.h>
 #include <hammer/core/toolsets/msvc_toolset.h>
+#include <hammer/core/toolsets/gcc_toolset.h>
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/fstream.hpp>
@@ -42,7 +43,9 @@ class toolset_test : public setuped_engine
       toolset_test() : setuped_engine(false)
       {
          engine_.toolset_manager().add_toolset(auto_ptr<toolset>(new test_msvc_toolset));
+         engine_.toolset_manager().add_toolset(auto_ptr<toolset>(new gcc_toolset));
          engine_.toolset_manager().init_toolset(engine_, "msvc", "8.0");
+         engine_.toolset_manager().init_toolset(engine_, "gcc", "");
       }
 
       void do_test(const string& name);

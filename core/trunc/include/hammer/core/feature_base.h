@@ -1,4 +1,5 @@
-#pragma once
+#if !defined(h_039e543d_03a7_4517_bda4_4618e0db9794)
+#define h_039e543d_03a7_4517_bda4_4618e0db9794
 
 #include "pstring.h"
 #include <boost/noncopyable.hpp>
@@ -54,3 +55,5 @@ namespace hammer
          generated_data generated_data_;
    };
 }
+
+#endif //h_039e543d_03a7_4517_bda4_4618e0db9794

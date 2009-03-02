@@ -1,4 +1,5 @@
-#pragma once
+#if !defined(h_4cde44ed_2451_446d_990c_324d6bb4e8d8)
+#define h_4cde44ed_2451_446d_990c_324d6bb4e8d8
 
 #include <hammer/core/location.h>
 #include <vector>
@@ -165,3 +166,5 @@ namespace hammer
       };
    }
 }
+
+#endif //h_4cde44ed_2451_446d_990c_324d6bb4e8d8

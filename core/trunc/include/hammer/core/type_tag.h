@@ -1,4 +1,5 @@
-#pragma once
+#if !defined(h_6ce02cfc_cbaf_4b9b_986f_463f51485c44)
+#define h_6ce02cfc_cbaf_4b9b_986f_463f51485c44
 
 #include <string>
 
@@ -16,3 +17,5 @@ namespace hammer
          std::string name_;
    };
 }
+
+#endif //h_6ce02cfc_cbaf_4b9b_986f_463f51485c44

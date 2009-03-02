@@ -1,4 +1,5 @@
-#pragma once
+#if !defined(h_3dcf9183_f968_48a5_8918_ede56e1495c5)
+#define h_3dcf9183_f968_48a5_8918_ede56e1495c5
 
 #include "main_target.h"
 
@@ -29,3 +30,5 @@ namespace hammer
          const basic_target* pch_product_;
    };
 }
+
+#endif //h_3dcf9183_f968_48a5_8918_ede56e1495c5

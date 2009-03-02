@@ -1,4 +1,5 @@
-#pragma once
+#if !defined(h_42ecd05c_91a6_419a_8239_38d16d85b381)
+#define h_42ecd05c_91a6_419a_8239_38d16d85b381
 
 #include <vector>
 #include <string>
@@ -33,3 +34,5 @@ namespace hammer
          std::string default_;
    };
 }
+
+#endif //h_42ecd05c_91a6_419a_8239_38d16d85b381

@@ -1,4 +1,5 @@
-#pragma once
+#if !defined(h_295945d1_c56e_43fa_ad45_659b96d6bd21)
+#define h_295945d1_c56e_43fa_ad45_659b96d6bd21
 
 #include "feature_def_base.h"
 
@@ -13,3 +14,5 @@ namespace hammer
                                  feature_attributes fdtype = feature_attributes());
    };
 }
+
+#endif //h_295945d1_c56e_43fa_ad45_659b96d6bd21

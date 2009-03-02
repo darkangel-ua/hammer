@@ -1,4 +1,6 @@
-#pragma once
+#if !defined(h_65ecc706_d1d8_4208_a8ce_4e372daffafa)
+#define h_65ecc706_d1d8_4208_a8ce_4e372daffafa
+
 #include "generator.h"
 
 namespace hammer
@@ -24,3 +26,5 @@ namespace hammer
          const type& obj_type_;
    };
 }
+
+#endif //h_65ecc706_d1d8_4208_a8ce_4e372daffafa

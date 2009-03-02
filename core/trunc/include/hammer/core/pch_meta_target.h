@@ -1,4 +1,5 @@
-#pragma once
+#if !defined(h_0aada422_e54f_43f6_b5e9_782c376a5d02)
+#define h_0aada422_e54f_43f6_b5e9_782c376a5d02
 
 #include "meta_target.h"
 
@@ -23,3 +24,5 @@ namespace hammer
          mutable main_target* last_constructed_main_target_;
    };
 }
+
+#endif //h_0aada422_e54f_43f6_b5e9_782c376a5d02

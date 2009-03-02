@@ -1,4 +1,6 @@
-#pragma once
+#if !defined(h_01e69c62_3501_486a_b7d0_faccef6a4390)
+#define h_01e69c62_3501_486a_b7d0_faccef6a4390
+
 #include <hammer/core/build_node.h>
 #include <hammer/core/location.h>
 #include <boost/noncopyable.hpp>
@@ -40,3 +42,5 @@ namespace hammer
       };
    }
 }
+
+#endif //h_01e69c62_3501_486a_b7d0_faccef6a4390

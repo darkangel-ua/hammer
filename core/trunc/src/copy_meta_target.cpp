@@ -15,7 +15,7 @@ copy_meta_target::copy_meta_target(hammer::project* p, const pstring& name,
 {
 }
 
-main_target* copy_meta_target::construct_main_target(const feature_set* properties) const
+main_target* copy_meta_target::construct_main_target(const main_target* owner, const feature_set* properties) const
 {
    main_target* mt = new copy_main_target(this, 
                                           name(), 

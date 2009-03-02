@@ -178,7 +178,13 @@ generator_registry::construct(const main_target* mt) const
       intrusive_ptr<build_node> s(generated_sources.back());
       generated_sources.pop_back();
       for(main_viable_generators_t::iterator i = main_viable_generators.begin(), last = main_viable_generators.end(); i != last; ++i)
+      {
          i->all_consumed_= i->all_consumed_ && transform_to_consumable(*i->generator_, *i->generator_, s, &i->transformed_sources_, mt->properties(), *mt);
+         if (i->all_consumed_ == false)
+         {
+            cout << "foo";
+         }
+      }
    }
 
    // search for ONE good generator that consume all sources

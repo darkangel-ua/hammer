@@ -8,6 +8,7 @@
 
 namespace hammer
 {
+
 obj_generator::obj_generator(hammer::engine& e,
                              const std::string& name,
                              const consumable_types_t& source_types,
@@ -20,6 +21,7 @@ obj_generator::obj_generator(hammer::engine& e,
 
 }
 
+// Move to result only OBJ targets and skip any others
 std::vector<boost::intrusive_ptr<build_node> >
 obj_generator::construct(const type& target_type, 
                          const feature_set& props,
@@ -28,31 +30,17 @@ obj_generator::construct(const type& target_type,
                          const pstring* composite_target_name,
                          const main_target& owner) const
 {
-   boost::intrusive_ptr<build_node> result(new build_node);
-   result->down_ = sources;
-   result->targeting_type_ = &obj_type_;
+   typedef std::vector<boost::intrusive_ptr<build_node> > build_sources_t;
 
-   // discard all other types except OBJ and 
-   // FIXME: this snipped copy pasted from generator.cpp. Need to refactor in more generic way
-   typedef std::vector<boost::intrusive_ptr<build_node> >::const_iterator iter;
-   for(iter i = sources.begin(), last = sources.end(); i != last; ++i)
+   std::vector<boost::intrusive_ptr<build_node> > result;
+
+   for(build_sources_t::const_iterator i = sources.begin(); i != sources.end(); ++i)
    {
-      bool node_added = false;
-      for(build_node::targets_t::const_iterator p_i = (**i).products_.begin(), p_last = (**i).products_.end(); p_i != p_last; ++p_i)
-      {
-         if ((**p_i).type().equal_or_derived_from(obj_type_))
-         {
-            result->sources_.push_back(build_node::source_t(*p_i, *i));
-            if (!node_added)
-            {
-               result->down_.push_back(*i);
-               node_added = true;
-            }
-         }
-      }
+      if ((**i).targeting_type_->equal_or_derived_from(obj_type_))
+         result.push_back(*i);
    }
-   
-   return std::vector<boost::intrusive_ptr<build_node> >(1, result);
+
+   return result;
 }
 
 }

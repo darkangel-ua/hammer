@@ -43,7 +43,7 @@ namespace hammer
                                   std::vector<basic_target*>* result, 
                                   feature_set* usage_requirements) const;
 
-         void set_explicit(bool v) { is_explicit_ = true; }
+         void set_explicit(bool v) { is_explicit_ = v; }
          bool is_explicit() const { return is_explicit_; }
 
       protected:

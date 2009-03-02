@@ -145,7 +145,7 @@ namespace hammer{
       project()->engine()->feature_registry().add_defaults(mt_fs);
       project()->local_feature_registry().add_defaults(mt_fs);
 
-      main_target* mt = construct_main_target(mt_fs); // construct_main_target may construct main_target with different properties PCH is example
+      main_target* mt = construct_main_target(owner, mt_fs); // construct_main_target may construct main_target with different properties PCH is example
       mt_fs = mt->properties().clone(); // FIXME ref semantic required
 
       if (!meta_targets.empty())
@@ -153,9 +153,14 @@ namespace hammer{
                                   *local_usage_requirements, meta_targets, 
                                   *build_request_for_dependencies, *mt);
       
+      sources_decl dependencies_from_instantiations;
+      extract_dependencies(dependencies_from_instantiations, *local_usage_requirements);
+      split_sources(&simple_targets, &dependency_meta_targets, dependencies_from_instantiations, *build_request_for_dependencies);
+
+      feature_set* ignored_dependencies_usage_requirements = project()->engine()->feature_registry().make_set();      
       if (!dependency_meta_targets.empty())
          instantiate_meta_targets(simple_targets, instantiated_dependency_meta_targets, 
-                                 *local_usage_requirements, dependency_meta_targets, 
+                                 *ignored_dependencies_usage_requirements, dependency_meta_targets,
                                  *build_request_for_dependencies, *mt);
 
       
@@ -174,14 +179,15 @@ namespace hammer{
       mt->dependencies(instantiated_dependency_meta_targets);
       
       transfer_public_sources(*usage_requirements, sources(), project()->engine()->feature_registry());
-      compute_usage_requirements(*usage_requirements, *mt_fs, *local_usage_requirements);
+      compute_usage_requirements(*usage_requirements, *mt_fs, *local_usage_requirements, owner);
       
       result->push_back(mt);
    }
 
    void meta_target::compute_usage_requirements(feature_set& result, 
                                                 const feature_set& full_build_request,
-                                                const feature_set& computed_usage_requirements) const
+                                                const feature_set& computed_usage_requirements,
+                                                const main_target* owner) const
    {
       this->usage_requirements().eval(full_build_request, &result);
    }

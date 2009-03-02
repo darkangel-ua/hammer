@@ -74,10 +74,15 @@ void main_target::add_additional_dependencies(hammer::build_node& generated_node
    generated_node.dependencies_.push_back(int_dir_node);
 }
 
+location_t main_target::intermediate_dir_impl() const
+{
+   return meta_target()->project()->engine()->output_location_strategy().compute_output_location(*this);
+}
+
 const location_t& main_target::intermediate_dir() const
 {
    if (intermediate_dir_.empty())
-      intermediate_dir_ = meta_target()->project()->engine()->output_location_strategy().compute_output_location(*this);
+      intermediate_dir_ = intermediate_dir_impl();
 
    return intermediate_dir_;
 }

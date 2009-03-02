@@ -21,13 +21,14 @@ header_lib_meta_target::header_lib_meta_target(hammer::project* p, const pstring
 
 void header_lib_meta_target::compute_usage_requirements(feature_set& result, 
                                                         const feature_set& full_build_request,
-                                                        const feature_set& computed_usage_requirements) const
+                                                        const feature_set& computed_usage_requirements,
+                                                        const main_target* owner) const
 {
-   meta_target::compute_usage_requirements(result, full_build_request, computed_usage_requirements);
+   meta_target::compute_usage_requirements(result, full_build_request, computed_usage_requirements, owner);
    result.join(computed_usage_requirements);
 }
 
-main_target* header_lib_meta_target::construct_main_target(const feature_set* properties) const
+main_target* header_lib_meta_target::construct_main_target(const main_target* owner, const feature_set* properties) const
 {
    main_target* mt = new header_lib_main_target(this, 
                                                 name(), 

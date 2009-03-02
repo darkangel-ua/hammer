@@ -20,7 +20,7 @@ lib_meta_target::lib_meta_target(hammer::project* p,
 {
 }
 
-main_target* lib_meta_target::construct_main_target(const feature_set* properties) const
+main_target* lib_meta_target::construct_main_target(const main_target* owner, const feature_set* properties) const
 {
    main_target* result = 0;
    // check for searched lib

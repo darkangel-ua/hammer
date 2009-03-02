@@ -16,6 +16,7 @@
 #include <hammer/core/fs_argument_writer.h>
 #include <hammer/core/free_feature_arg_writer.h>
 #include <hammer/core/source_argument_writer.h>
+#include <hammer/core/pch_argument_writer.h>
 #include <iostream>
 
 using namespace std;
@@ -43,26 +44,6 @@ namespace
       
       private:
          location_t current_dir_;
-   };
-
-   class pch_argument_writer : public argument_writer
-   {
-      public:
-         pch_argument_writer(const std::string& name) : argument_writer(name) {}
-         virtual pch_argument_writer* clone() const { return new pch_argument_writer(*this); }
-
-      protected:   
-         virtual void write_impl(std::ostream& output, const build_node& node, const build_environment& environment) const
-         {
-            const feature_set& build_request = node.build_request();
-            feature_set::const_iterator pch_iter = build_request.find("pch");
-            if (pch_iter == build_request.end() || (**pch_iter).value() == "off")
-               return;
-          
-            const pch_main_target* pch_target = static_cast<const pch_main_target*>((**pch_iter).get_generated_data().target_);
-            location_t pch_header(pch_target->pch_header().name().to_string());
-            output << pch_header.leaf();
-         }
    };
 }
 
@@ -268,7 +249,7 @@ void msvc_project::write_header(ostream& s) const
         "   ProjectGUID=\"" << boost::guid::showbraces << uid_ << "\"\n"
         "   RootNamespace=\"" << name() << "\"\n"
         "   Keyword=\"Win32Proj\">\n"
-        "	<Platforms>\n"
+        "       <Platforms>\n"
         "       <Platform Name=\"Win32\"/>\n"
         "   </Platforms>\n"
         "   <ToolFiles/>\n";

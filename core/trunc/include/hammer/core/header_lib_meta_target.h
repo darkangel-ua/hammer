@@ -14,8 +14,9 @@ namespace hammer
       protected:
          virtual void compute_usage_requirements(feature_set& result, 
                                                  const feature_set& full_build_request,
-                                                 const feature_set& computed_usage_requirements) const;
-         virtual main_target* construct_main_target(const feature_set* properties) const;
+                                                 const feature_set& computed_usage_requirements,
+                                                 const main_target* owner) const;
+         virtual main_target* construct_main_target(const main_target* owner, const feature_set* properties) const;
    };
 }
 

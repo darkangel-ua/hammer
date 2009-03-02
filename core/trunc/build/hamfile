@@ -2,17 +2,19 @@ project hammer.core : requirements <character-set>multi-byte
                                    <library>/boost/ptr_container/<version>1.36.0 ;
 
 pch stdafx : ../src/stdafx.cpp ../src/stdafx.h ;
-explicit stdafx ;
 
 obj parser_and_lexer
    : 
     ../src/build/hammerParser.c 
     ../src/build/hammerLexer.c 
    : 
-    <cflags>/TP 
-    <use>/libantlr3c/<version>3.1.1 
+    <toolset>msvc:<cflags>/TP 
+    <toolset>gcc:<cflags>"-x c++"
+    <use>/libantlr3c/<version>3.1.1
+    <use>/boost/function_types/<version>1.36.0
+    <use>/boost/exception/<version>1.36.0 
+    <include>../include
    ;
-explicit parser_and_lexer ;
 
 obj without_pch 
    :
@@ -20,9 +22,9 @@ obj without_pch
     ../src/build/hammer_walker.c
    :
     <use>/boost/regex/<version>1.36.0/<link>static
+    <use>/boost/filesystem/<version>1.36.0/<link>static
     <use>/libantlr3c/<version>3.1.1 
    ;
-explicit without_pch ;
 
 lib hammer.core 
    : 
@@ -49,7 +51,7 @@ lib hammer.core
     /boost/iostreams/<version>1.36.0/<link>static
    :
     @<include>../include
-    <include>./src/toolsets
+    <include>../src
     <link>static
    :
    :

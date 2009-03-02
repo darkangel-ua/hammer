@@ -22,7 +22,7 @@ namespace hammer
          const hammer::type& type() const { return *type_; }
 
       protected:
-         virtual main_target* construct_main_target(const feature_set* properties) const;
+         virtual main_target* construct_main_target(const main_target* owner, const feature_set* properties) const;
 
      private:
         const hammer::type* type_;

@@ -9,6 +9,7 @@
 #include <hammer/core/feature.h>
 #include <hammer/core/parser.h>
 #include <boost/bind.hpp>
+#include <hammer/core/obj_meta_target.h>
 #include <hammer/core/lib_meta_target.h>
 #include <hammer/core/typed_meta_target.h>
 #include <hammer/core/alias_meta_target.h>
@@ -620,9 +621,8 @@ void engine::exe_rule(project* p, std::vector<pstring>& name, sources_decl& sour
 void engine::obj_rule(project* p, pstring& name, sources_decl& sources, requirements_decl* requirements,
                       feature_set* default_build, requirements_decl* usage_requirements)
 {
-   auto_ptr<basic_meta_target> mt(new typed_meta_target(p, name, requirements ? *requirements : requirements_decl(), 
-                                                        usage_requirements ? *usage_requirements : requirements_decl(), 
-                                                        get_type_registry().get(types::OBJ)));
+   auto_ptr<basic_meta_target> mt(new obj_meta_target(p, name, requirements ? *requirements : requirements_decl(), 
+                                                      usage_requirements ? *usage_requirements : requirements_decl()));
    mt->sources(sources);
    p->add_target(mt);
 }

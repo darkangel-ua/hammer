@@ -30,12 +30,13 @@ namespace hammer
          // test a : main.cpp stdafx /boost/regex ;
          // To build stdafx target we need specify /boost/regex in stdafx sources too. But this is stupid double typing.
          virtual sources_decl compute_additional_sources(const main_target& owner) const;
-         virtual main_target* construct_main_target(const feature_set* properties) const = 0;
-         // compute usage requirements from target usage requirements and 
-         // usage requirements that was calculated during instantiation meta targets from sources
+         virtual main_target* construct_main_target(const main_target* owner, const feature_set* properties) const = 0;
+         // compute usage requirements from this main target's usage requirements and 
+         // usage requirements that was calculated during instantiation source meta targets
          virtual void compute_usage_requirements(feature_set& result, 
                                                  const feature_set& full_build_request,
-                                                 const feature_set& computed_usage_requirements) const;
+                                                 const feature_set& computed_usage_requirements,
+                                                 const main_target* owner) const;
          
       private:
          void instantiate_meta_targets(sources_decl& simple_targets,

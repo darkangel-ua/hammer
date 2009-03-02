@@ -40,6 +40,7 @@ namespace hammer
       protected:
          virtual void add_additional_dependencies(hammer::build_node& generated_node) const;
          virtual void additional_hash_string_data(std::ostream& s) const;
+         virtual location_t intermediate_dir_impl() const;
 
       private:
          const hammer::meta_target* meta_target_;

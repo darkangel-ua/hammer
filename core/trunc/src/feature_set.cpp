@@ -315,10 +315,11 @@ void dump_for_hash(std::ostream& s, const feature_set& fs)
    for(feature_set::const_iterator i = fs.begin(), last = fs.end(); i != last; ++i)
    {
       if (!((**i).attributes().free || 
-            (**i).attributes().incidental) ||
+            (**i).attributes().incidental ||
             (**i).attributes().path || 
             (**i).attributes().dependency ||
-            (**i).attributes().generated)
+            (**i).attributes().generated ||
+            (**i).attributes().composite))
       {
          features.push_back(*i);
       }
@@ -330,10 +331,9 @@ void dump_for_hash(std::ostream& s, const feature_set& fs)
    for(features_t::const_iterator i = features.begin(), last = features.end(); i != last; ++i)
    {
       if (!first)
-      {
-         s << '/';
+         s << ' ';
+      else
          first = false;
-      }
 
       dump_for_hash(s, **i);
    }

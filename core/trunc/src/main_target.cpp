@@ -115,8 +115,22 @@ void main_target::additional_hash_string_data(std::ostream& s) const
       if (this != (**i).mtarget())
          main_target_sources.insert((**i).mtarget());
    
+   vector<string> hashes;
    for(main_target_sources_t::const_iterator i = main_target_sources.begin(), last = main_target_sources.end(); i != last; ++i)
-      s << (**i).name() << (**i).hash_string();
+      hashes.push_back((**i).name().to_string() + '-' + (**i).hash_string());
+
+   sort(hashes.begin(), hashes.end());
+   
+   bool first = true;
+   for(vector<string>::const_iterator i = hashes.begin(), last = hashes.end(); i != last; ++i)
+   {
+      if (!first)
+         s << ' ';
+      else
+         first = false;
+
+      s << *i;
+   }
 }
 
 }

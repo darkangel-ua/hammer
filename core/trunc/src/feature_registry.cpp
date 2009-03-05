@@ -392,7 +392,7 @@ namespace hammer{
       return simply_create_feature(name, value);
    }
 
-   void feature_registry::add_defaults(feature_set* s)
+   feature_set* feature_registry::add_defaults(feature_set* s)
    {
       typedef impl_t::defs_t::const_iterator iter;
       for(iter i = impl_->defs_.begin(), last = impl_->defs_.end(); i != last; ++i)
@@ -405,6 +405,8 @@ namespace hammer{
             s->join(create_feature(i->first, i->second.get_default()));
          }
       }
+
+      return s;
    }
 
    feature_def& feature_registry::get_def(const std::string& name)

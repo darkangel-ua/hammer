@@ -16,7 +16,8 @@ void output_dir_argument_writer::write_impl(std::ostream& output,
    if (node.products_.empty())
       return;
 
-   location_t output_dir = relative_path(node.products_.front()->mtarget()->intermediate_dir(), environment.current_directory());
+//   location_t output_dir = relative_path(node.products_.front()->mtarget()->intermediate_dir(), environment.current_directory());
+   location_t output_dir = relative_path(node.products_.front()->mtarget()->intermediate_dir(), node.products_.front()->mtarget()->location());
    output_dir.normalize();
    output << output_dir.native_file_string();
 }

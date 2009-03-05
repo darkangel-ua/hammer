@@ -58,8 +58,6 @@ namespace{
                           node.sources_.front().source_target_->name().to_string();
       destination.normalize();
       source.normalize();
-      destination = relative_path(destination, environment.current_directory());
-      source = relative_path(source, environment.current_directory()); 
       environment.copy(source, destination);
 
       return true;

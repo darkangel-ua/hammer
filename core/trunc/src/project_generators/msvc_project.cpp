@@ -30,8 +30,8 @@ namespace
       public:
          fake_environment(const location_t& cur_dir) : current_dir_(cur_dir) {}
 
-         virtual bool run_shell_commands(const std::vector<std::string>& cmds) const { return true; }
-         virtual bool run_shell_commands(std::string& captured_output, const std::vector<std::string>& cmds) const { return true; }
+         virtual bool run_shell_commands(const std::vector<std::string>& cmds, const location_t& working_dir) const { return true; }
+         virtual bool run_shell_commands(std::string& captured_output, const std::vector<std::string>& cmds, const location_t& working_dir) const { return true; }
          virtual const location_t& current_directory() const { return current_dir_; }
          virtual void create_directories(const location_t& dir_to_create) const {};
          virtual void remove(const location_t& p) const {};

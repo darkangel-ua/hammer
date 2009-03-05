@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include <hammer/core/fs_helpers.h>
+#include <boost/scoped_array.hpp>
 
 namespace hammer
 {
@@ -55,5 +56,25 @@ boost::filesystem::path relative_path(boost::filesystem::path p,
    return final; 
 
 }
+
+#if defined(_WIN32)
+#include <windows.h>
+boost::filesystem::wpath to_wide(boost::filesystem::path& narrow_path)
+{
+   if (narrow_path.empty())
+      return boost::filesystem::wpath();
+
+   std::string p(narrow_path.string());
+   boost::scoped_array<wchar_t> buf(new wchar_t[p.size() * 2 + 50]);
+   int res = MultiByteToWideChar(CP_OEMCP, 0, p.c_str(), p.size(), buf.get(), p.size() * 2 + 50);
+   if (res == 0)
+      throw std::runtime_error("Can't convert narrow path '" + p + "'to wide.");
+
+   return boost::filesystem::wpath(buf.get(), buf.get() + res);
+}
+#else
+#error "Not supported platform"
+#endif
+
 
 }

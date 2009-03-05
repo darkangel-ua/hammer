@@ -27,7 +27,8 @@ void product_argument_writer::write_impl(std::ostream& output, const build_node&
       if ((**i).type().equal_or_derived_from(this->source_type()))
       {
          // FIXME: по идее именно сдесь лучше всего вычислять суфикс для продукта, а не на стадии генераторов
-         location_t product_path = relative_path((**i).mtarget()->intermediate_dir(), environment.current_directory()) / (**i).name().to_string();
+//         location_t product_path = relative_path((**i).mtarget()->intermediate_dir(), environment.current_directory()) / (**i).name().to_string();
+         location_t product_path = relative_path((**i).mtarget()->intermediate_dir(), (**i).mtarget()->location()) / (**i).name().to_string();
          output << product_path.native_file_string();
          break;
       }

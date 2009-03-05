@@ -7,6 +7,7 @@
 #include <hammer/core/basic_meta_target.h>
 #include <hammer/core/build_environment.h>
 #include <hammer/core/fs_helpers.h>
+#include <hammer/core/main_target.h>
 
 namespace hammer{
 
@@ -38,11 +39,14 @@ void free_feature_arg_writer::write_impl(std::ostream& output, const build_node&
 
       if (feature_def_.attributes().path)
       {
+         if(node.products_.empty()) 
+            throw std::runtime_error("[free_feature_arg_writer] Can't write path feature for node without probucts.");
+
          location_t include_path((**i).get_path_data().target_->location() / (**i).value().to_string());
-         include_path.normalize();
-         include_path = relative_path(include_path, environment.current_directory());
-         include_path.normalize();
-         output << prefix_ << include_path.native_file_string() << suffix_ << delimiter_;
+          include_path.normalize();
+          include_path = relative_path(include_path, node.products_.front()->mtarget()->location());
+          include_path.normalize();
+          output << prefix_ << include_path.native_file_string() << suffix_ << delimiter_;
       }
       else
          output << prefix_ << (**i).value() << suffix_ << delimiter_;

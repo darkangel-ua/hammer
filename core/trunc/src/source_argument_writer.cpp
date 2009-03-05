@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include <hammer/core/source_argument_writer.h>
 #include <hammer/core/build_node.h>
-#include <hammer/core/basic_target.h>
+#include <hammer/core/main_target.h>
 #include <hammer/core/type.h>
 #include <hammer/core/fs_helpers.h>
 #include <hammer/core/build_environment.h>
@@ -9,8 +9,9 @@
 namespace hammer{
 
 source_argument_writer::source_argument_writer(const std::string& name, 
-                                               const type& t)
-   : targets_argument_writer(name, t)
+                                               const type& t,
+                                               bool write_full_path)
+   : targets_argument_writer(name, t), write_full_path_(write_full_path)
 {
 }
 
@@ -31,9 +32,19 @@ void source_argument_writer::write_impl(std::ostream& output, const build_node& 
          else
             first = false;
 
-         location_t source_path = relative_path(i->source_target_->location(), environment.current_directory()) / i->source_target_->name().to_string();
-         source_path.normalize();
-         output << source_path.native_file_string();
+         if (write_full_path_)
+         {
+            location_t source_path = i->source_target_->location() / i->source_target_->name().to_string();
+            source_path.normalize();
+            output << source_path.native_file_string();
+         }
+         else
+         {
+            location_t source_path = relative_path(i->source_target_->location(), i->source_target_->mtarget()->location());
+            source_path.normalize();
+            source_path /= i->source_target_->name().to_string();
+            output << source_path.native_file_string();
+         }
       }
    }
 }

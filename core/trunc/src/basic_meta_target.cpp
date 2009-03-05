@@ -183,7 +183,7 @@ void basic_meta_target::instantiate(const main_target* owner,
    if (is_cachable(owner))
    {
       for(instantiation_cache_t::const_iterator i = instantiation_cache_.begin(), last = instantiation_cache_.end(); i != last; ++i)
-         if (*i->build_request_ == build_request)
+         if (i->build_request_->compatible_with(build_request))
          {
             result->insert(result->end(), i->instantiated_targets_.begin(), i->instantiated_targets_.end());
             usage_requirements->join(*i->computed_usage_requirements_);

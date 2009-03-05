@@ -30,7 +30,8 @@ void pch_argument_writer::write_impl(std::ostream& output, const build_node& nod
       {
          const pch_main_target* pch_target = static_cast<const pch_main_target*>((**pch_iter).get_generated_data().target_);
          location_t pch_product_location(pch_target->pch_product().location() / pch_target->pch_product().name().to_string());
-         location_t output_path = relative_path(pch_product_location, environment.current_directory());
+//         location_t output_path = relative_path(pch_product_location, environment.current_directory());
+         location_t output_path = relative_path(pch_product_location, pch_target->location());
          output_path.normalize();
 
          output << prefix_ << output_path.native_file_string() << suffix_;

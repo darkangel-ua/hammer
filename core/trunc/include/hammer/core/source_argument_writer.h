@@ -8,11 +8,14 @@ namespace hammer
    class source_argument_writer : public targets_argument_writer
    {
       public:
-         source_argument_writer(const std::string& name, const type& t);
+         source_argument_writer(const std::string& name, const type& t, bool write_full_path = false);
          virtual argument_writer* clone() const;
 
       protected:
          virtual void write_impl(std::ostream& output, const build_node& node, const build_environment& environment) const;
+      
+      private:
+         bool write_full_path_;
    };
 }
 

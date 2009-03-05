@@ -7,6 +7,7 @@ namespace hammer
 {
    class build_node;
    class build_environment;
+   class basic_target;
 
    class build_action
    {

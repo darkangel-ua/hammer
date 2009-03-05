@@ -224,6 +224,33 @@ bool feature_set::operator == (const feature_set& rhs) const
    return true;
 }
 
+bool feature_set::compatible_with(const feature_set& rhs) const
+{
+   if (this == &rhs)
+      return true;
+
+   const feature_set* rhs_p = &rhs;
+   const feature_set* lhs_p = this;
+   
+   if (size() < rhs.size())
+      swap(lhs_p, rhs_p);
+
+   for(features_t::const_iterator i = lhs_p->begin(), last = lhs_p->end(); i != last; ++i)
+      if (rhs_p->find(**i) == rhs_p->end())
+         if ((**i).attributes().free ||
+             (**i).attributes().generated ||
+             (**i).attributes().undefined_ ||
+             (**i).attributes().no_defaults)
+         {
+            return false;
+         }
+         else
+            if ((**i).definition().get_default() != (**i).value().to_string())
+               return false;
+
+   return true;
+}
+
 void feature_set::clear()
 {
    features_.clear();

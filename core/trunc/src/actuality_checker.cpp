@@ -63,7 +63,7 @@ std::size_t actuality_checker::check(boost::posix_time::ptime& max_target_time, 
       const scanner* scanner = engine_.scanner_manager().find((**i).type());
       if (scanner != NULL)
       {
-         ptime scanner_timestamp = scanner->process((**i), get_scanner_context((**i).type(), *scanner));
+         ptime scanner_timestamp = scanner->process(**i, get_scanner_context((**i).type(), *scanner));
          
          // scanner say can't find some dependencies?
          if (scanner_timestamp == neg_infin)

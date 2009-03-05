@@ -1,12 +1,15 @@
 #include "stdafx.h"
 #include <hammer/core/build_environment_impl.h>
+#include <hammer/core/fs_helpers.h>
 #include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/fstream.hpp>
 #include <boost/process.hpp>
 #include <boost/guid.hpp>
 #include <fstream>
 #include <iterator>
 
 namespace bp = boost::process;
+namespace fs = boost::filesystem;
 using namespace std;
 
 namespace hammer{
@@ -17,20 +20,26 @@ build_environment_impl::build_environment_impl(const location_t& cur_dir)
 
 }
 
-bool build_environment_impl::run_shell_commands(std::string* captured_output, const std::vector<std::string>& cmds) const
+bool build_environment_impl::run_shell_commands(std::string* captured_output, 
+                                                const std::vector<std::string>& cmds, 
+                                                const location_t& working_dir) const
 {
    string tmp_file_name(boost::guid::create().to_string() + ".cmd");
+   location_t full_tmp_file_name(working_dir / tmp_file_name);
+
    try
    {
-      ofstream f(tmp_file_name.c_str());
+      {
+         std::auto_ptr<ostream> f(create_output_file(full_tmp_file_name.native_file_string().c_str(), std::ios_base::out));
 
-      for(vector<string>::const_iterator i = cmds.begin(), last = cmds.end(); i != last; ++i)
-         f << *i << '\n';
-      f.close();
+         for(vector<string>::const_iterator i = cmds.begin(), last = cmds.end(); i != last; ++i)
+            *f << *i << '\n';
+      }
 
       bp::launcher launcher;
       launcher.set_stdin_behavior(bp::inherit_stream);
-      
+      launcher.set_work_directory(working_dir.native_file_string());
+
       if (captured_output != NULL)
       {
          launcher.set_stdout_behavior(bp::redirect_stream);
@@ -55,35 +64,44 @@ bool build_environment_impl::run_shell_commands(std::string* captured_output, co
       bp::status st = shell_action_child.wait();
 
       if (st.exit_status() != 0)
-         dump_shell_command(std::cerr, tmp_file_name);
+         dump_shell_command(std::cerr, full_tmp_file_name);
 
-      boost::filesystem::remove(tmp_file_name);
+      boost::filesystem::remove(to_wide(full_tmp_file_name));
       
       return st.exit_status() == 0;
    }
    catch(...)
    {
-      dump_shell_command(std::cerr, tmp_file_name);
-      boost::filesystem::remove(tmp_file_name);
+      dump_shell_command(std::cerr, full_tmp_file_name);
+      boost::filesystem::remove(to_wide(full_tmp_file_name));
       return false;
    }
 }
 
-bool build_environment_impl::run_shell_commands(const std::vector<std::string>& cmds) const
+bool build_environment_impl::run_shell_commands(const std::vector<std::string>& cmds, 
+                                                const location_t& working_dir) const
 {
-   return run_shell_commands(NULL, cmds);
+   return run_shell_commands(NULL, cmds, working_dir);
 }
 
-bool build_environment_impl::run_shell_commands(std::string& captured_output, const std::vector<std::string>& cmds) const
+bool build_environment_impl::run_shell_commands(std::string& captured_output, 
+                                                const std::vector<std::string>& cmds, 
+                                                const location_t& working_dir) const
 {
-   return run_shell_commands(&captured_output, cmds);
+   return run_shell_commands(&captured_output, cmds, working_dir);
 }
 
-void build_environment_impl::dump_shell_command(std::ostream& s, const std::string& content_file_name) const
+static std::auto_ptr<std::istream> open_input_stream(const location_t& full_content_file_name)
 {
-   ifstream f(content_file_name.c_str());
+   std::auto_ptr<istream> f(new ifstream((L"\\\\?\\" + to_wide(location_t(full_content_file_name)).native_file_string()).c_str()));
+   return f;
+}
+
+void build_environment_impl::dump_shell_command(std::ostream& s, const location_t& full_content_file_name) const
+{
+   std::auto_ptr<istream> f(open_input_stream(full_content_file_name));
    s << '\n';
-   std::copy(istreambuf_iterator<char>(f), istreambuf_iterator<char>(), ostreambuf_iterator<char>(s));
+   std::copy(istreambuf_iterator<char>(*f), istreambuf_iterator<char>(), ostreambuf_iterator<char>(s));
    s << '\n';
 }
 
@@ -102,9 +120,9 @@ void build_environment_impl::remove(const location_t& p) const
    boost::filesystem::remove(p);
 }
 
-void build_environment_impl::copy(const location_t& source, const location_t& destination) const
+void build_environment_impl::copy(const location_t& full_source_path, const location_t& full_destination_path) const
 {
-   boost::filesystem::copy_file(source, destination);
+   boost::filesystem::copy_file(full_source_path, full_destination_path);
 }
 
 bool build_environment_impl::write_tag_file(const std::string& filename, const std::string& content) const
@@ -121,10 +139,16 @@ bool build_environment_impl::write_tag_file(const std::string& filename, const s
 
 std::auto_ptr<ostream> build_environment_impl::create_output_file(const char* filename, ios_base::_Openmode mode) const
 {
+   location_t full_filename_path(filename);
+   if (!full_filename_path.has_root_path())
+      full_filename_path = current_directory() / full_filename_path;
+
+   full_filename_path.normalize();
    std::auto_ptr<ofstream> f(new ofstream);
    f->exceptions(ios_base::badbit | ios_base::eofbit | ios_base::failbit);
-   f->open(filename, mode);
-
+   wstring unc_path(L"\\\\?\\" + to_wide(location_t(full_filename_path)).native_file_string());
+   f->open(unc_path.c_str(), mode);
+   
    return f;
 }
 

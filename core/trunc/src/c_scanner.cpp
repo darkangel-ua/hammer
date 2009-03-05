@@ -213,7 +213,13 @@ boost::posix_time::ptime c_scanner::process(const basic_target& t,
    target_path.normalize();
 
    const c_scanner_context::include_files_dirs_t& include_files_dirs = context.get_include_files_dirs(t.properties());
-   return context.calculate_timestamp(context.get_dir_node(target_path), t.name().to_string(), include_files_dirs, t.properties());
+   ptime result = context.calculate_timestamp(context.get_dir_node(target_path), t.name().to_string(), include_files_dirs, t.properties());
+
+   // Since our scanner is not perfect we just not report 'something not founded' errors
+   if (result == neg_infin)
+      return ptime(boost::gregorian::date(1900, 01, 01));
+   else
+      return result;
 }
 
 std::auto_ptr<scanner_context> c_scanner::create_context() const

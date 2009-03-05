@@ -22,7 +22,8 @@ namespace hammer
                                  const std::string& subfeature_name, 
                                  const std::string& subfeature_value);
 
-         void add_defaults(feature_set* s);
+         // returns s, just for convenient usage
+         feature_set* add_defaults(feature_set* s);
          const feature_def* find_def(const char* feature_name) const;
          // find definition for complex names such as os-version where version is subfeature
          const feature_def* find_def_from_full_name(const char* feature_name) const;

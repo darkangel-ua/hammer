@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include <hammer/core/cmdline_action.h>
 #include <hammer/core/build_environment.h>
+#include <hammer/core/build_node.h>
+#include <hammer/core/main_target.h>
 #include <iostream>
 #include <fstream>
 
@@ -16,10 +18,14 @@ cmdline_action& cmdline_action::operator +=(const cmdline_builder& b)
 
 bool cmdline_action::execute_impl(const build_node& node, const build_environment& environment) const
 {
+   if (node.products_.empty())
+      throw std::runtime_error("[cmdline_action] Can't run command for node without products.");
+
    if (rsp_builder_.get() != NULL)
    {
-      string rsp_file_name(target_tag(node, environment) + ".rsp");
-      auto_ptr<ostream> rsp_stream(environment.create_output_file(rsp_file_name.c_str(), ios_base::trunc));
+      location_t rsp_file_path(node.products_.front()->mtarget()->location() / (target_tag(node, environment) + ".rsp"));
+      rsp_file_path.normalize();
+      auto_ptr<ostream> rsp_stream(environment.create_output_file(rsp_file_path.native_file_string().c_str(), ios_base::trunc));
       rsp_builder_->write(*rsp_stream, node, environment);
    }
 
@@ -38,7 +44,10 @@ bool cmdline_action::run_shell_commands(const std::vector<std::string>& commands
                                         const build_node& node, 
                                         const build_environment& environment) const
 {
-   return environment.run_shell_commands(commands);
+   if (node.products_.empty())
+      throw std::runtime_error("[cmdline_action] Can't run command for node without products.");
+
+   return environment.run_shell_commands(commands, node.products_.front()->mtarget()->location());
 }
 
 std::string cmdline_action::target_tag(const build_node& node, const build_environment& environment) const

@@ -24,7 +24,7 @@ namespace hammer
          const type& hard_resolve_from_target_name(const pstring& name) const;
          const type& get(const type_tag& tag) const;
          const type* find(const type_tag& tag) const;
-         void insert(const type& t);
+         const type& insert(const type& t);
          ~type_registry();
 
       private:

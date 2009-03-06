@@ -28,11 +28,13 @@ namespace
    class fake_environment : public build_environment
    {
       public:
-         fake_environment(const location_t& cur_dir) : current_dir_(cur_dir) {}
+         fake_environment(const location_t& project_output_dir) 
+            : project_output_dir_(project_output_dir)
+         {}
 
          virtual bool run_shell_commands(const std::vector<std::string>& cmds, const location_t& working_dir) const { return true; }
          virtual bool run_shell_commands(std::string& captured_output, const std::vector<std::string>& cmds, const location_t& working_dir) const { return true; }
-         virtual const location_t& current_directory() const { return current_dir_; }
+         virtual const location_t& current_directory() const { return project_output_dir_; }
          virtual void create_directories(const location_t& dir_to_create) const {};
          virtual void remove(const location_t& p) const {};
          virtual void copy(const location_t& source, const location_t& destination) const {};
@@ -41,9 +43,37 @@ namespace
          { 
             return std::auto_ptr<std::ostream>(new ostringstream);
          }
+
+         virtual location_t working_directory(const basic_target& t) const
+         {
+            return project_output_dir_;
+         }
       
       private:
-         location_t current_dir_;
+         location_t project_output_dir_;
+   };
+
+   class searched_lib_argument_writer : public source_argument_writer
+   {
+      public:
+         searched_lib_argument_writer(const std::string& name, 
+                                      const type& static_lib_type, 
+                                      const type& searched_lib_type) 
+            : source_argument_writer(name, static_lib_type, true),
+              static_lib_type_(static_lib_type),
+              searched_lib_type_(searched_lib_type)
+         {}
+
+      protected:
+         virtual bool accept(const basic_target& source) const
+         {
+            return source.type().equal_or_derived_from(this->source_type()) &&
+                   source.mtarget()->type().equal_or_derived_from(searched_lib_type_);
+         }
+      
+      private:
+         const type& static_lib_type_;
+         const type& searched_lib_type_;
    };
 }
 
@@ -65,7 +95,7 @@ static const string compiller_option_format_string(
    "            PrecompiledHeaderThrough=\"$(pch_header)\"\n");
 
 static const string linker_option_format_string(
-   "            AdditionalDependencies=\"$(additional_libraries)\"\n"
+   "            AdditionalDependencies=\"$(additional_libraries) $(additional_searched_libraries)\"\n"
    "            AdditionalLibraryDirectories=\"$(additional_libraries_dirs)\"\n"
    "            GenerateDebugInformation=\"$(debug_info)\"\n"
    "            LinkIncremental=\"$(incremental_linking)\"\n");
@@ -166,6 +196,12 @@ msvc_project::msvc_project(engine& e,
        new source_argument_writer("additional_libraries", 
                                   e.get_type_registry().get(types::SEARCHED_LIB)));
    linker_options_ += additional_libraries;
+
+   boost::shared_ptr<searched_lib_argument_writer> additional_searched_libraries(
+       new searched_lib_argument_writer("additional_searched_libraries", 
+                                        e.get_type_registry().get(types::STATIC_LIB),
+                                        e.get_type_registry().get(types::SEARCHED_LIB)));
+   linker_options_ += additional_searched_libraries;
 
    boost::shared_ptr<free_feature_arg_writer> additional_libraries_dirs(
        new free_feature_arg_writer("additional_libraries_dirs", 

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include <hammer/core/build_environment_impl.h>
 #include <hammer/core/fs_helpers.h>
+#include <hammer/core/main_target.h>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/process.hpp>
@@ -150,6 +151,11 @@ std::auto_ptr<ostream> build_environment_impl::create_output_file(const char* fi
    f->open(unc_path.c_str(), mode);
    
    return f;
+}
+
+location_t build_environment_impl::working_directory(const basic_target& t) const
+{
+   return t.mtarget()->location();
 }
 
 }

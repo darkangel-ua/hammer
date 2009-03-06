@@ -103,7 +103,7 @@ namespace hammer{
          throw runtime_error("Can't find type with tag '" + tag.name() + "'");
    }
 
-   void type_registry::insert(const type& a_t)
+   const type& type_registry::insert(const type& a_t)
    {
       std::auto_ptr<type> t(a_t.clone(*this));
       // FIXME: This is due bug in ptr_container insert method
@@ -117,8 +117,7 @@ namespace hammer{
                types_by_suffix_.insert(make_pair(*i, t.get()));
          }
 
-         t.release();
-         return;
+         return *t.release();
       }
       else
          throw std::runtime_error("[type_registry] Can't add type '" + t->tag().name() + "' twice");

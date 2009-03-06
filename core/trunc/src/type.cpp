@@ -9,13 +9,25 @@ using namespace std;
 namespace hammer{
 
 type::type(const type_tag& tag, const std::string& suffix)
-   : tag_(tag), suffixes_(1, suffix)
+   : tag_(tag), suffixes_(1, suffix), base_(NULL)
+{
+
+}
+
+type::type(const type_tag& tag, const std::string& suffix, const type& base)
+   : tag_(tag), suffixes_(1, suffix), base_(&base)
 {
 
 }
 
 type::type(const type_tag& tag, const suffixes_t& suffixes)
-   : tag_(tag), suffixes_(suffixes)
+   : tag_(tag), suffixes_(suffixes), base_(NULL)
+{
+
+}
+
+type::type(const type_tag& tag, const suffixes_t& suffixes, const type& base)
+   : tag_(tag), suffixes_(suffixes), base_(&base)
 {
 
 }
@@ -34,7 +46,13 @@ bool type::equal_or_derived_from(const type& rhs) const
    if (owner_ != rhs.owner_)
       return equal(rhs);
    
-   return this == &rhs;
+   if (this == &rhs)
+      return true;
+   else
+      if (base() != NULL)
+         return base()->equal_or_derived_from(rhs);
+      else
+         return false;
 }
 
 const std::string& type::suffix_for(const std::string& s) const
@@ -52,8 +70,11 @@ const std::string& type::suffix_for(const std::string& s) const
 
 std::auto_ptr<type> type::clone(const type_registry& tr) const
 {
-   std::auto_ptr<type> result(new type(tag(), suffixes()));
-   result->owner_ = & tr;
+   if (base() != NULL && base()->owner_ != &tr)
+      throw std::logic_error("[type] Can't clone because base type is not registered in owner.");
+
+   std::auto_ptr<type> result(base() == NULL ? new type(tag(), suffixes()) : new type(tag(), suffixes(), *base()));
+   result->owner_ = &tr;
    return result;
 }
 

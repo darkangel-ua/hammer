@@ -20,12 +20,17 @@ argument_writer* source_argument_writer::clone() const
    return new source_argument_writer(*this);
 }
 
+bool source_argument_writer::accept(const basic_target& source) const
+{
+   return  source.type().equal_or_derived_from(this->source_type());
+}
+
 void source_argument_writer::write_impl(std::ostream& output, const build_node& node, const build_environment& environment) const
 {
    bool first = true;
    for(build_node::sources_t::const_iterator i = node.sources_.begin(), last = node.sources_.end(); i != last; ++i)
    {
-      if (i->source_target_->type().equal_or_derived_from(this->source_type()))
+      if (accept(*i->source_target_))
       {
          if (!first)
             output << ' ';

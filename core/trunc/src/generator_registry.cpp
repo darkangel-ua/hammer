@@ -47,7 +47,7 @@ generator_registry::find_viable_generators(const type& t,
 
       for(generator::producable_types_t::const_iterator j = i->second->producable_types().begin(), j_last = i->second->producable_types().end(); j != j_last; ++j)
       {
-         if (j->type_->equal_or_derived_from(t))
+         if (t.equal_or_derived_from(*j->type_))
          {
             int generator_rank = i->second->constraints() != NULL ? compute_rank(build_properties, *i->second->constraints())
                                                                   : 0;
@@ -178,13 +178,7 @@ generator_registry::construct(const main_target* mt) const
       intrusive_ptr<build_node> s(generated_sources.back());
       generated_sources.pop_back();
       for(main_viable_generators_t::iterator i = main_viable_generators.begin(), last = main_viable_generators.end(); i != last; ++i)
-      {
          i->all_consumed_= i->all_consumed_ && transform_to_consumable(*i->generator_, *i->generator_, s, &i->transformed_sources_, mt->properties(), *mt);
-         if (i->all_consumed_ == false)
-         {
-            cout << "foo";
-         }
-      }
    }
 
    // search for ONE good generator that consume all sources

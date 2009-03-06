@@ -13,6 +13,7 @@ namespace hammer
       extern const type_tag H;
       extern const type_tag OBJ;
       extern const type_tag PCH;
+      extern const type_tag LIB;
       extern const type_tag SHARED_LIB;
       extern const type_tag IMPORT_LIB;
       extern const type_tag STATIC_LIB;

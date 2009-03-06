@@ -196,7 +196,7 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
       feature_set* constraints = e.feature_registry().make_set();
       constraints->join("__pch", "");
       constraints->join(*generator_condition);
-      auto_ptr<generator> g(new pch_generator(e, "msvc.cpp-pch.compiler", source, target, true, constraints));
+      auto_ptr<generator> g(new pch_generator(e, "msvc.c++-pch.compiler", source, target, true, constraints));
       g->action(obj_action);
       e.generators().insert(g);
    }
@@ -215,7 +215,7 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
       obj_cmd += obj_product;
       obj_cmd += output_dir;
 
-      auto_ptr<cmdline_action> obj_action(new cmdline_action("compile-c-c", obj_product));
+      auto_ptr<cmdline_action> obj_action(new cmdline_action("compile-c", obj_product));
       *obj_action += setup_vars;
       *obj_action += obj_cmd;
       generator::consumable_types_t source;

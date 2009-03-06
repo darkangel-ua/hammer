@@ -90,6 +90,27 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
    shared_ptr<free_feature_arg_writer> includes(new free_feature_arg_writer("includes", e.feature_registry().get_def("include"), "-I\"", "\""));
    shared_ptr<free_feature_arg_writer> defines(new free_feature_arg_writer("defines", e.feature_registry().get_def("define"), "-D"));
 
+   // C -> OBJ
+   {
+      shared_ptr<source_argument_writer> c_input(new source_argument_writer("c_input", e.get_type_registry().get(types::C)));
+      cmdline_builder obj_cmd(install_data.compiler_.native_file_string() + 
+                              " -x c -c $(cflags) $(includes) $(defines) \"$(c_input)\" -o \"$(obj_product)\"");
+      obj_cmd += cflags;
+      obj_cmd += c_input;
+      obj_cmd += includes;
+      obj_cmd += defines;
+      obj_cmd += obj_product;
+      auto_ptr<cmdline_action> obj_action(new cmdline_action("compile-c", obj_product));
+      *obj_action += obj_cmd;
+      generator::consumable_types_t source;
+      generator::producable_types_t target;
+      source.push_back(generator::consumable_type(e.get_type_registry().get(types::C), 1, 0));
+      target.push_back(generator::produced_type(e.get_type_registry().get(types::OBJ)));
+      auto_ptr<generator> g(new generator(e, "gcc.c.compiler", source, target, false, generator_condition));
+      g->action(obj_action);
+      e.generators().insert(g);
+   }
+
    // CPP -> OBJ
    {
       shared_ptr<source_argument_writer> cpp_input(new source_argument_writer("cpp_input", e.get_type_registry().get(types::CPP)));
@@ -101,7 +122,7 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
       obj_cmd += includes;
       obj_cmd += defines;
       obj_cmd += obj_product;
-      auto_ptr<cmdline_action> obj_action(new cmdline_action("compile-c-c++", obj_product));
+      auto_ptr<cmdline_action> obj_action(new cmdline_action("compile-c++", obj_product));
       *obj_action += obj_cmd;
       generator::consumable_types_t source;
       generator::producable_types_t target;
@@ -132,6 +153,7 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
       generator::producable_types_t target;
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::OBJ), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::STATIC_LIB), 0, 0));
+      source.push_back(generator::consumable_type(e.get_type_registry().get(types::IMPORT_LIB), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::SHARED_LIB), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::SEARCHED_LIB), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::H), 0, 0));
@@ -158,6 +180,7 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
       generator::producable_types_t target;
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::OBJ), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::STATIC_LIB), 0, 0));
+      source.push_back(generator::consumable_type(e.get_type_registry().get(types::IMPORT_LIB), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::SEARCHED_LIB), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::H), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::HEADER_LIB), 0, 0));
@@ -191,6 +214,7 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::H), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::HEADER_LIB), 0, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::SHARED_LIB), true));
+      target.push_back(generator::produced_type(e.get_type_registry().get(types::IMPORT_LIB), true));
 
       auto_ptr<generator> g(new exe_and_shared_lib_generator(e, "gcc.shared_lib.linker", source, target, true, generator_condition));
       g->action(shared_lib_action);

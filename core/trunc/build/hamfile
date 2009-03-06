@@ -1,7 +1,9 @@
 project hammer.core : requirements <character-set>multi-byte 
                                    <library>/boost/ptr_container/<version>1.36.0 ;
 
-pch stdafx : ../src/stdafx.cpp ../src/stdafx.h ;
+pch stdafx : ../src/stdafx.cpp ../src/stdafx.h : <toolset>msvc ;
+alias stdafx ;
+explicit stdafx ;
 
 obj parser_and_lexer
    : 

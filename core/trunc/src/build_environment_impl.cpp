@@ -16,7 +16,7 @@ using namespace std;
 namespace hammer{
 
 build_environment_impl::build_environment_impl(const location_t& cur_dir)
-   : current_directory_(cur_dir)
+   : current_directory_(cur_dir), cache_directory_(cur_dir / ".hammer/bin")
 {
 
 }
@@ -156,6 +156,11 @@ std::auto_ptr<ostream> build_environment_impl::create_output_file(const char* fi
 location_t build_environment_impl::working_directory(const basic_target& t) const
 {
    return t.mtarget()->location();
+}
+
+const location_t* build_environment_impl::cache_directory() const
+{
+   return &cache_directory_;
 }
 
 }

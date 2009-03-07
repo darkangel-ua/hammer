@@ -1,7 +1,7 @@
 feature.feature undef : : free ;
 feature.feature define : : free ;
 feature.feature include : : free path ; 
-feature.feature toolset : : propagated ;
+feature.feature toolset : : propagated no-defaults ;
 feature.subfeature toolset : version ; 
 feature.feature link : shared static ;
 feature.feature runtime-link : shared static ;
@@ -30,9 +30,9 @@ feature.feature exception-handling : on off ;
 feature.feature asynch-exceptions : off on ;  
 feature.feature extern-c-nothrow : off on ;
 feature.feature debug-symbols : on off ;
-feature.feature destination : : path no-checks incidental ;       # for copy rule
-feature.feature recursive : on off : optional ;                   # for copy rule
-feature.feature type-to-copy : : free ;                           # for copy rule
+feature.feature destination : : path no-checks incidental no-defaults ;       # for copy rule
+feature.feature recursive : on off : optional no-defaults ;                   # for copy rule
+feature.feature type-to-copy : : free no-defaults ;                           # for copy rule
 feature.feature pch : off create use : generated ;
 
 # testing support

@@ -5,6 +5,8 @@
 #include <hammer/core/hashed_location.h>
 #include <vector>
 #include <utility>
+#include <boost/date_time/posix_time/ptime.hpp>
+#include <boost/weak_ptr.hpp>
 
 namespace hammer
 {
@@ -18,12 +20,16 @@ namespace hammer
 
          c_scanner() : scanner("C scanner") {}
          virtual boost::posix_time::ptime process(const basic_target& t, 
-                                                   scanner_context& context) const;
-         virtual std::auto_ptr<scanner_context> create_context() const;
+                                                  scanner_context& context) const;
+         virtual boost::shared_ptr<scanner_context> create_context(const build_environment& env) const;
       
       protected:
-         virtual included_files_t extract_includes(const location_t& file, 
-                                                   const c_scanner_context& context) const;
+         // WARNING! Implementation is required to cache extracted data
+         virtual const included_files_t& extract_includes(const location_t& file, 
+                                                          const boost::posix_time::ptime& file_timestamp, 
+                                                          const c_scanner_context& context) const;
+      private:
+         mutable boost::weak_ptr<scanner_context> context_;
    };
 }
 

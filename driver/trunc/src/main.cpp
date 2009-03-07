@@ -244,7 +244,8 @@ namespace
 
    void run_build(nodes_t& nodes, bool only_up_to_date_check, engine& e)
    {
-      actuality_checker checker(e);
+      build_environment_impl build_environment(fs::current_path());
+      actuality_checker checker(e, build_environment);
       cout << "...checking targets for update... ";
       size_t target_to_update_count = checker.check(nodes);
       cout << "Done\n";
@@ -259,7 +260,6 @@ namespace
       }
 
       cout << "...updating " << target_to_update_count << " targets...\n";
-      build_environment_impl build_environment(fs::current_path());
       builder builder(build_environment);
       builder.build(nodes);
 
@@ -332,8 +332,9 @@ int main(int argc, char** argv)
       if (opts.debug_level_ > 0)
          cout << "...Installing scanners... ";
 
-      engine.scanner_manager().register_scanner(engine.get_type_registry().get(types::CPP), boost::shared_ptr<scanner>(new c_scanner));
-      engine.scanner_manager().register_scanner(engine.get_type_registry().get(types::C), boost::shared_ptr<scanner>(new c_scanner));
+      boost::shared_ptr<scanner> c_scaner(new hammer::c_scanner);
+      engine.scanner_manager().register_scanner(engine.get_type_registry().get(types::CPP), c_scaner);
+      engine.scanner_manager().register_scanner(engine.get_type_registry().get(types::C), c_scaner);
 
       if (opts.debug_level_ > 0)
          cout << "Done\n";

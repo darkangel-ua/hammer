@@ -26,7 +26,7 @@ scanner_context& actuality_checker::get_scanner_context(const type& t, const sca
    scanner_contexts_t::const_iterator i = scanner_contexts_.find(&t);
    if (i == scanner_contexts_.end())
    {
-      scanner_contexts_.insert(std::make_pair(&t, boost::shared_ptr<scanner_context>(s.create_context())));
+      scanner_contexts_.insert(std::make_pair(&t, boost::shared_ptr<scanner_context>(s.create_context(env_))));
       return get_scanner_context(t, s);
    }
    else

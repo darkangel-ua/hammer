@@ -3,21 +3,71 @@
 #include <hammer/core/scaner_context.h>
 #include <boost/unordered_map.hpp>
 #include <boost/ptr_container/ptr_unordered_map.hpp>
+#include <boost/scoped_ptr.hpp>
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature.h>
 #include <hammer/core/basic_meta_target.h>
 #include <hammer/core/basic_target.h>
+#include <hammer/core/build_environment.h>
+#include <hammer/core/hashed_location_serialization.h>
 #include <boost/date_time/posix_time/ptime.hpp>
+#include <boost/date_time/posix_time/time_serialize.hpp>
 #include <boost/date_time/posix_time/conversion.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/regex.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/iostreams/device/mapped_file.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/serialization/split_member.hpp>
+#include <boost/serialization/collections_save_imp.hpp>
+#include <boost/serialization/collections_load_imp.hpp>
+#include <boost/serialization/utility.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/filesystem/fstream.hpp>
 
 using namespace std;
 using namespace boost::posix_time;
+namespace fs = boost::filesystem;
 
 namespace hammer{
+
+struct c_scanner_cache
+{
+   struct item
+   {
+      template<class Archive>
+      void serialize(Archive & ar, const unsigned int version)
+      {
+         ar & timestamp_ & included_files_;
+      }
+
+      boost::posix_time::ptime timestamp_;
+      c_scanner::included_files_t included_files_;
+   };
+
+   BOOST_SERIALIZATION_SPLIT_MEMBER()
+   template<class Archive>
+   void save(Archive & ar, const unsigned int version) const
+   {
+      boost::serialization::stl::save_collection<Archive, items_t>(ar, items_);
+   }
+
+   template<class Archive>
+   void load(Archive & ar, const unsigned int version)
+   {
+      boost::serialization::stl::load_collection<
+         Archive,
+         items_t,
+         boost::serialization::stl::archive_input_map<Archive, items_t>,
+         boost::serialization::stl::no_reserve_imp<items_t> 
+      >(ar, items_);
+   }
+
+   typedef boost::unordered_map<hashed_location, item> items_t;
+   items_t items_;
+};
+
 struct c_scanner_context : public scanner_context
 {
    struct node;
@@ -47,20 +97,29 @@ struct c_scanner_context : public scanner_context
 
       hashed_location file_path_;
       ptime timestamp_;
-      c_scanner::included_files_t included_files_;
+      const c_scanner::included_files_t* included_files_;
       variants_t variants_;
    };
 
    typedef boost::ptr_unordered_map<const feature_set*, include_files_dirs_t> include_files_dirs_cache_t;
-   include_files_dirs_cache_t include_files_dirs_cache_;
-   dir_nodes_t nodes_;
-   const c_scanner& owner_;
-   boost::regex pattern_;
 
-   c_scanner_context(const c_scanner& owner) 
+   c_scanner_context(const c_scanner& owner,
+                     const build_environment& env) 
       : owner_(owner), 
-        pattern_("^\\s*#\\s*include\\s*(?:(?:\"([^\"]+)\")|(?:<([^>]+)>))") 
-   {}
+        pattern_("^\\s*#\\s*include\\s*(?:(?:\"([^\"]+)\")|(?:<([^>]+)>))"),
+        env_(env),
+        cache_(new c_scanner_cache),
+        cache_is_valid_(false)
+   {
+      if (env.cache_directory() != NULL)
+         try_load_cache();
+   }
+   
+   c_scanner_context::~c_scanner_context()
+   {
+      if (env_.cache_directory() != NULL && cache_is_valid_ == false)
+         try_save_cache();
+   }
 
    const include_files_dirs_t& get_include_files_dirs(const feature_set& properties);
 
@@ -74,7 +133,52 @@ struct c_scanner_context : public scanner_context
                              const include_files_dirs_t& include_files_dirs,
                              const feature_set& properties);
    dir_node& get_dir_node(const location_t& path);
+   void try_load_cache();
+   void try_save_cache();
+
+   include_files_dirs_cache_t include_files_dirs_cache_;
+   dir_nodes_t nodes_;
+   const c_scanner& owner_;
+   boost::regex pattern_;
+   const build_environment& env_;
+   mutable boost::scoped_ptr<c_scanner_cache> cache_;
+   mutable bool cache_is_valid_;
+   c_scanner::included_files_t empty_included_files_;
 };
+
+void c_scanner_context::try_load_cache()
+{
+   try
+   {
+      location_t cache_file_path(*env_.cache_directory() / "c_scanner.cache");
+      if (exists(cache_file_path))
+      {
+         fs::ifstream f(cache_file_path, std::ios_base::binary);
+         if (!f)
+            return;
+
+         boost::archive::binary_iarchive ar(f);
+         ar >> *cache_;
+         cache_is_valid_ = true;
+      }
+   }
+   catch(...)
+   {
+      cache_.reset(new c_scanner_cache);
+   }
+}
+
+void c_scanner_context::try_save_cache()
+{
+   try
+   {
+      fs::create_directories(*env_.cache_directory());
+      fs::ofstream f(*env_.cache_directory() / "c_scanner.cache", std::ios_base::trunc | std::ios_base::binary);
+      boost::archive::binary_oarchive ar(f);
+      ar << *cache_;
+   }
+   catch(...) {}
+}
 
 c_scanner_context::dir_node& c_scanner_context::get_dir_node(const location_t& path)
 {
@@ -132,7 +236,7 @@ ptime c_scanner_context::calculate_timestamp(dir_node& dir,
          i->second->variants_.insert(make_pair(&properties, v));
          ptime included_files_timestamp = calculate_timestamp(dir,
                                                               file_path,
-                                                              i->second->included_files_, 
+                                                              *i->second->included_files_, 
                                                               include_files_dirs, 
                                                               properties);
          node::variant& v_ref = i->second->variants_.find(&properties)->second;
@@ -148,17 +252,19 @@ ptime c_scanner_context::calculate_timestamp(dir_node& dir,
       location_t full_file_path = dir.dir_ / file_path.location();
       if (exists(full_file_path))
       {
-         new_node->included_files_ = owner_.extract_includes(full_file_path, *this);
          v.timestamp_ = boost::posix_time::from_time_t(last_write_time(full_file_path));
+         new_node->included_files_ = &owner_.extract_includes(full_file_path, v.timestamp_, *this);
          new_node->timestamp_ = v.timestamp_;
       }
+      else
+         new_node->included_files_ = &empty_included_files_;
 
       v.build_properties_ = &properties;
       new_node->variants_.insert(make_pair(&properties, v));
       dir.nodes_.insert(make_pair(file_path, new_node));
       ptime included_files_timestamp = calculate_timestamp(dir,
                                                            file_path,
-                                                           new_node->included_files_, 
+                                                           *new_node->included_files_, 
                                                            include_files_dirs, 
                                                            properties);
       node::variant& v_ref = new_node->variants_.find(&properties)->second;
@@ -222,29 +328,52 @@ boost::posix_time::ptime c_scanner::process(const basic_target& t,
       return result;
 }
 
-std::auto_ptr<scanner_context> c_scanner::create_context() const
+boost::shared_ptr<scanner_context> c_scanner::create_context(const build_environment& env) const
 {
-   return std::auto_ptr<scanner_context>(new c_scanner_context(*this));
+   boost::shared_ptr<scanner_context> result = context_.lock();   
+   if (!result)
+   {
+      result.reset(new c_scanner_context(*this, env));
+      context_ = result;
+   }
+
+   return result;
 }
 
-c_scanner::included_files_t c_scanner::extract_includes(const location_t& file, 
-                                                        const c_scanner_context& context) const
+const c_scanner::included_files_t& 
+c_scanner::extract_includes(const location_t& file, 
+                            const ptime& file_timestamp, 
+                            const c_scanner_context& context) const
 {
-   included_files_t result;
+   c_scanner_cache::items_t::iterator cache_item = context.cache_->items_.find(file);
+   if (cache_item != context.cache_->items_.end() && cache_item->second.timestamp_ == file_timestamp)
+      return cache_item->second.included_files_;
+
    boost::iostreams::mapped_file_source in(file.native_file_string());
    // FIXME: May be we should complain about this?
    if (in)
    {
+      c_scanner_cache::item new_cache_item;
+
       for(boost::cregex_iterator i(in.data(), in.data() + in.size(), context.pattern_), last = boost::cregex_iterator(); i != last; ++i)
       {
          if ((*i)[1].matched)
-           result.push_back(make_pair(location_t((*i)[1]), false));
+            new_cache_item.included_files_.push_back(make_pair(location_t((*i)[1]), false));
          else
-            result.push_back(make_pair(location_t((*i)[2]), true));
+            new_cache_item.included_files_.push_back(make_pair(location_t((*i)[2]), true));
       }
+      
+      new_cache_item.timestamp_ = file_timestamp;
+      if (cache_item == context.cache_->items_.end())
+         cache_item = context.cache_->items_.insert(make_pair(file, new_cache_item)).first;
+      else
+         cache_item->second = new_cache_item;
+      context.cache_is_valid_ = false;
+      
+      return cache_item->second.included_files_;
    }
-
-   return result;
+   else
+      return context.empty_included_files_;
 }
 
 }

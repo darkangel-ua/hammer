@@ -48,6 +48,9 @@ namespace
          {
             return project_output_dir_;
          }
+         
+         const location_t* cache_directory() const { return NULL; }
+
       
       private:
          location_t project_output_dir_;

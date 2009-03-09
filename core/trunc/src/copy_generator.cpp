@@ -58,6 +58,10 @@ namespace{
                           node.sources_.front().source_target_->name().to_string();
       destination.normalize();
       source.normalize();
+      
+      if (exists(destination))
+         environment.remove(destination);
+
       environment.copy(source, destination);
 
       return true;

@@ -160,6 +160,7 @@ location_t build_environment_impl::working_directory(const basic_target& t) cons
 
 const location_t* build_environment_impl::cache_directory() const
 {
+   return NULL;
    return &cache_directory_;
 }
 

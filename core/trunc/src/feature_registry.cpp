@@ -362,8 +362,9 @@ namespace hammer{
    {
       const feature_def* posible_feature = find_def(name.c_str());
 
-      if (posible_feature != NULL &&
-          posible_feature->is_legal_value(value))
+      if (posible_feature != NULL && 
+          (posible_feature->attributes().free ||
+           posible_feature->is_legal_value(value)))
       {
          return simply_create_feature(name, value);
       }

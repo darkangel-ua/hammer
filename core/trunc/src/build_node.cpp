@@ -22,4 +22,9 @@ const feature_set& build_node::build_request() const
    return products_.front()->properties(); 
 }
 
+void build_node::up_to_date(boost::tribool::value_t v) 
+{ 
+   up_to_date_ = v; 
+}
+
 }

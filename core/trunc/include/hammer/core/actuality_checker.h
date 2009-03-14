@@ -27,7 +27,8 @@ namespace hammer
          const engine& engine_;
          const build_environment& env_;
 
-         std::size_t check(boost::posix_time::ptime& max_target_time, build_node& node);
+         // returns 'true' if node needs to be updated
+         bool check(boost::posix_time::ptime& max_target_time, std::size_t& nodes_to_update, build_node& node);
          scanner_context& get_scanner_context(const type& t, const scanner& s);
    };
 }

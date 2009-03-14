@@ -314,21 +314,26 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
       shared_ptr<product_argument_writer> import_lib_product(new product_argument_writer("import_lib_product", e.get_type_registry().get(types::IMPORT_LIB)));
       shared_ptr<product_argument_writer> shared_lib_product(new product_argument_writer("shared_lib_product", e.get_type_registry().get(types::SHARED_LIB)));
       shared_ptr<product_argument_writer> dll_manifest_product(new product_argument_writer("dll_manifest_product", e.get_type_registry().get(types::DLL_MANIFEST)));
-      cmdline_builder shared_lib_cmd(config_data.linker_.native_file_string() + " /DLL /nologo $(link_flags) $(user_link_flags) $(searched_lib_searched_dirs) /out:\"$(shared_lib_product)\" /IMPLIB:\"$(import_lib_product)\" $(obj_sources) $(static_lib_sources) $(searched_lib_sources) $(import_lib_sources)\n"
+      cmdline_builder shared_lib_cmd(config_data.linker_.native_file_string() + " \"@$(shared_lib_product).rsp\"\n"
                                      "if %ERRORLEVEL% NEQ 0 EXIT %ERRORLEVEL%\n"
                                      "if exist \"$(dll_manifest_product)\" (" + config_data.manifest_tool_.native_file_string() + " -nologo -manifest \"$(dll_manifest_product)\" \"-outputresource:$(shared_lib_product)\")");
-      shared_lib_cmd += link_flags;
-      shared_lib_cmd += user_link_flags;
-      shared_lib_cmd += searched_lib_searched_dirs;
-      shared_lib_cmd += obj_sources;
-      shared_lib_cmd += static_lib_sources;
-      shared_lib_cmd += searched_lib_sources;
-      shared_lib_cmd += import_lib_sources;
-      shared_lib_cmd += import_lib_product;
+      
       shared_lib_cmd += shared_lib_product;
       shared_lib_cmd += dll_manifest_product;
 
-      auto_ptr<cmdline_action> shared_lib_action(new cmdline_action("link-shared-lib", shared_lib_product));
+      cmdline_builder shared_lib_rsp(" /nologo /DLL $(link_flags) $(user_link_flags) $(searched_lib_searched_dirs) /out:\"$(shared_lib_product)\" /IMPLIB:\"$(import_lib_product)\" $(obj_sources) $(static_lib_sources) $(searched_lib_sources) $(import_lib_sources)");
+      shared_lib_rsp += link_flags;
+      shared_lib_rsp += user_link_flags;
+      shared_lib_rsp += searched_lib_searched_dirs;
+      shared_lib_rsp += obj_sources;
+      shared_lib_rsp += static_lib_sources;
+      shared_lib_rsp += searched_lib_sources;
+      shared_lib_rsp += import_lib_sources;
+      shared_lib_rsp += import_lib_product;
+      shared_lib_rsp += shared_lib_product;
+      shared_lib_rsp += dll_manifest_product;
+
+      auto_ptr<cmdline_action> shared_lib_action(new cmdline_action("link-shared-lib", shared_lib_product, shared_lib_rsp));
       *shared_lib_action += setup_vars;
       *shared_lib_action += shared_lib_cmd;
 

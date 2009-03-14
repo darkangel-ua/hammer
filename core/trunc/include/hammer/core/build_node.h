@@ -3,6 +3,8 @@
 
 #include <vector>
 #include <boost/intrusive_ptr.hpp>
+#include <boost/logic/tribool.hpp>
+#include <boost/date_time/posix_time/ptime.hpp>
 
 namespace hammer
 {
@@ -31,12 +33,21 @@ namespace hammer
          typedef std::vector<const basic_target*> targets_t;
          typedef std::vector<boost::intrusive_ptr<build_node> > nodes_t;
 
-         build_node() : up_(0), targeting_type_(0), ref_counter_(0), up_to_date_(false), action_(NULL) {}
+         build_node() 
+            : up_(0), 
+              targeting_type_(0), 
+              ref_counter_(0), 
+              up_to_date_(boost::indeterminate), 
+              action_(NULL) 
+         {}
 
          const basic_target* find_product(const basic_target* t) const;
          
-         bool up_to_date() const { return up_to_date_; }
-         void up_to_date(bool v) { up_to_date_ = v; }
+         boost::tribool::value_t up_to_date() const { return up_to_date_.value; }
+         void up_to_date(boost::tribool::value_t v);
+         
+         void timestamp(const boost::posix_time::ptime v) { timestamp_ = v; }
+         const boost::posix_time::ptime& timestamp() const { return timestamp_; }
          
          const build_action* action() const { return action_; }
          void action(const build_action* a) { action_ = a; }
@@ -52,7 +63,8 @@ namespace hammer
          mutable unsigned long ref_counter_;
       
       private:
-         bool up_to_date_;
+         boost::tribool up_to_date_;
+         boost::posix_time::ptime timestamp_;
          const build_action* action_;
    };
 

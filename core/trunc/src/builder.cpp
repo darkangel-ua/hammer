@@ -39,7 +39,7 @@ bool builder::build(build_node& node)
       if (const build_action* action = node.action())
       {
          bool result = action->execute(node, environment_);
-         node.up_to_date(result);
+         node.up_to_date(result ? boost::tribool::true_value : boost::tribool::false_value);
          return result;
       }
    

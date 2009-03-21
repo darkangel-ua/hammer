@@ -15,9 +15,21 @@ pch_meta_target::pch_meta_target(hammer::project* p, const pstring& name,
                                  const requirements_decl& req, 
                                  const requirements_decl& usage_req)
   : meta_target(p, name, req, usage_req), 
-    last_constructed_main_target_(NULL)
+    last_constructed_main_target_(NULL),
+    last_instantiation_owner_(NULL)
 {
    set_explicit(true);
+}
+
+bool pch_meta_target::is_cachable(const main_target* owner) const 
+{ 
+   if (last_instantiation_owner_ == NULL)
+      last_instantiation_owner_ = owner;
+   else
+      if (last_instantiation_owner_ != owner)
+         throw std::runtime_error("Using pch target in to different places is not allowed.");
+
+   return true;
 }
 
 main_target* pch_meta_target::construct_main_target(const main_target* owner, const feature_set* properties) const

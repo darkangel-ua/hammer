@@ -18,10 +18,11 @@ namespace hammer
                                                  const feature_set& full_build_request,
                                                  const feature_set& computed_usage_requirements,
                                                  const main_target* owner) const;
-         virtual bool is_cachable(const main_target* owner) const { return false; }
+         virtual bool is_cachable(const main_target* owner) const;
 
       private:
          mutable main_target* last_constructed_main_target_;
+         mutable const main_target* last_instantiation_owner_;
    };
 }
 

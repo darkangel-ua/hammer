@@ -4,6 +4,7 @@
 #include <boost/format.hpp>
 #include <boost/regex.hpp>
 #include <boost/bind.hpp>
+#include <boost/unordered_set.hpp>
 
 #include <iostream>
 #include <hammer/core/engine.h>
@@ -27,6 +28,7 @@
 #include <hammer/core/toolset_manager.h>
 #include <hammer/core/scaner_manager.h>
 #include <hammer/core/c_scanner.h>
+#include <hammer/core/generic_batcher.h>
 
 #include "user_config_location.h"
 
@@ -43,15 +45,20 @@ namespace
    struct hammer_options
    {
       hammer_options() : generate_projects_localy_(false), 
+                         only_up_to_date_check_(false),
+                         disable_batcher_(false),
                          hammer_output_dir_(".hammer"),
                          debug_level_(0)
       {}
 
       vector<string> build_request_options_;
       bool generate_projects_localy_;
+      bool only_up_to_date_check_;
+      bool disable_batcher_;
       std::string hammer_output_dir_;
       std::string hammer_install_dir_;
       int debug_level_;
+      std::string just_one_source_;
    };
 
    po::positional_options_description build_request_options;
@@ -69,7 +76,9 @@ namespace
          ("generate-projects-locally,l", "when generating build script makes them in one place")
          ("hammer-out", po::value<std::string>(&opts.hammer_output_dir_), "specify where hammer will place all its generated output")
          ("install-dir", po::value<std::string>(&opts.hammer_install_dir_), "specify where hammer was installed")
-         ("debug,d", po::value<int>(&opts.debug_level_), "specify verbosity level");
+         ("debug,d", po::value<int>(&opts.debug_level_), "specify verbosity level")
+         ("disable-batcher", "do not build many sources at once")
+         ("just-one-source,s", po::value<string>(&opts.just_one_source_), "build unconditionally specified source");
 
       return desc;
    }
@@ -242,28 +251,116 @@ namespace
       }
    }
 
-   void run_build(nodes_t& nodes, bool only_up_to_date_check, engine& e)
+   typedef boost::unordered_set<const build_node*> visited_nodes_t;
+   typedef boost::unordered_set<const meta_target*> top_targets_t;
+   
+   // first is signaled that we found source, second - found node to rebuild
+   pair<bool, bool> find_node_for_source_name(nodes_t& result,
+                                              visited_nodes_t& visited_nodes, 
+                                              const boost::intrusive_ptr<build_node>& node,
+                                              const pstring& source_name,
+                                              const top_targets_t& top_targets)
    {
-      build_environment_impl build_environment(fs::current_path());
-      actuality_checker checker(e, build_environment);
-      cout << "...checking targets for update... ";
-      size_t target_to_update_count = checker.check(nodes);
-      cout << "Done\n";
- 
-      if (only_up_to_date_check)
-         return;
+      if (top_targets.find(node->products_owner().meta_target()) == top_targets.end())
+         return make_pair(false, false);
 
-      if (target_to_update_count == 0)
+      if (visited_nodes.find(node.get()) != visited_nodes.end())
+         return make_pair(false, false);
+
+      if (node->sources_.empty() && node->products_.size() == 1)
       {
-         cout << "...nothing to update...\n";
-         return;
+         if (node->products_.front()->name() == source_name)
+            return make_pair(true, false);
+         else
+            return make_pair(false, false);
       }
 
-      cout << "...updating " << target_to_update_count << " targets...\n";
-      builder builder(build_environment);
-      builder.build(nodes);
+      visited_nodes.insert(node.get());
 
-      cout << "...updated " << target_to_update_count << " targets...\n";
+      for(nodes_t::const_iterator i = node->down_.begin(), last = node->down_.end(); i != last; ++i)
+      {
+         pair<bool, bool> r = find_node_for_source_name(result, visited_nodes, *i, source_name, top_targets);
+
+         if (r.first && r.second)
+         {
+            visited_nodes.erase(node.get());
+            return r;
+         }
+
+         if (r.first)
+            if (node->is_composite())
+            {
+               result.push_back(*i);
+               visited_nodes.erase(node.get());
+               return make_pair(true, true);
+            }
+            else
+            {
+               visited_nodes.erase(node.get());
+               return r;
+            }
+      }
+
+      visited_nodes.erase(node.get());
+      return make_pair(false, false);
+   }
+
+   nodes_t find_nodes_for_source_name(const nodes_t& nodes, const pstring& source_name)
+   {
+      typedef boost::unordered_set<const meta_target*> top_targets_t;
+      top_targets_t top_targets;
+      for(nodes_t::const_iterator i = nodes.begin(), last = nodes.end(); i != last; ++i)
+         top_targets.insert((**i).products_owner().meta_target());
+
+      visited_nodes_t visited_nodes;
+      nodes_t result;
+      for(nodes_t::const_iterator i = nodes.begin(), last = nodes.end(); i != last; ++i)
+         find_node_for_source_name(result, visited_nodes, *i, source_name, top_targets);
+      
+      return result;
+   }
+
+   void run_build(nodes_t& nodes, 
+                  engine& e, 
+                  hammer_options opts)
+   {
+      build_environment_impl build_environment(fs::current_path());
+      
+      if (opts.just_one_source_.empty())
+      {
+         actuality_checker checker(e, build_environment);
+         cout << "...checking targets for update... ";
+         size_t target_to_update_count = checker.check(nodes);
+         cout << "Done.\n";
+
+         if (opts.only_up_to_date_check_)
+            return;
+
+         if (target_to_update_count == 0)
+         {
+            cout << "...nothing to update...\n";
+            return;
+         }
+
+         if (!opts.disable_batcher_)
+         {
+            cout << "...running batcher... ";
+            generic_batcher::process(nodes);
+            cout << "Done.\n";
+         }
+
+         cout << "...updating " << target_to_update_count << " targets...\n";
+         builder builder(build_environment);
+         builder.build(nodes);
+         cout << "...updated " << target_to_update_count << " targets...\n";
+      }
+      else
+      {
+         cout << "...updating source '" << opts.just_one_source_ << "'...\n";
+         builder builder(build_environment, true);
+         builder.build(find_nodes_for_source_name(nodes, pstring(e.pstring_pool(), opts.just_one_source_)));
+         cout << "...updated source '" << opts.just_one_source_ << "'...\n";
+      }
    }
 
    terminate_function old_terminate_function;
@@ -368,6 +465,12 @@ int main(int argc, char** argv)
 
       if (vm.count("generate-projects-locally"))
          opts.generate_projects_localy_ = true;
+      
+      if (vm.count("up-to-date-check"))
+         opts.only_up_to_date_check_ = true;
+
+      if (vm.count("disable-batcher"))
+         opts.disable_batcher_ = true;
 
       if (vm.count("build-request"))
          resolve_arguments(targets, build_request, engine.feature_registry(), vm["build-request"].as<vector<string> >());
@@ -422,7 +525,7 @@ int main(int argc, char** argv)
       if (vm.count("generate-msvc-8.0-solution"))
          generate_msvc80_solution(nodes, project_to_build);
       else
-         run_build(nodes, vm.count("up-to-date-check") != 0, engine);
+         run_build(nodes, engine, opts);
 
       return 0;
    }

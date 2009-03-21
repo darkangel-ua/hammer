@@ -41,14 +41,14 @@ void source_argument_writer::write_impl(std::ostream& output, const build_node& 
          {
             location_t source_path = i->source_target_->location() / i->source_target_->name().to_string();
             source_path.normalize();
-            output << source_path.native_file_string();
+            output << '"' << source_path.native_file_string() << '"'; 
          }
          else
          {
             location_t source_path = relative_path(i->source_target_->location(), i->source_target_->mtarget()->location());
             source_path.normalize();
             source_path /= i->source_target_->name().to_string();
-            output << source_path.native_file_string();
+            output << '"' << source_path.native_file_string() << '"';
          }
       }
    }

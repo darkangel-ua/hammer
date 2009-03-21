@@ -4,6 +4,7 @@
 #include <hammer/core/main_target.h>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/fstream.hpp>
+#include <boost/regex.hpp>
 #include <boost/process.hpp>
 #include <boost/guid.hpp>
 #include <fstream>
@@ -119,6 +120,18 @@ void build_environment_impl::create_directories(const location_t& dir_to_create)
 void build_environment_impl::remove(const location_t& p) const
 {
    boost::filesystem::remove(p);
+}
+
+void build_environment_impl::remove_file_by_pattern(const location_t& dir, const std::string& pattern) const
+{
+   boost::regex rpattern(pattern);
+   typedef fs::directory_iterator iter;
+   for(iter i = iter(dir), last = iter(); i != last; ++i)
+   {
+      fs::file_status st = i->status();
+      if (!is_directory(st) && boost::regex_match(i->path().filename(), rpattern))
+         remove(i->path());
+   }
 }
 
 void build_environment_impl::copy(const location_t& full_source_path, const location_t& full_destination_path) const

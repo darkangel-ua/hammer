@@ -106,10 +106,11 @@ nodes_t copy_generator::construct(const type& target_type,
    result.reserve(collected_nodes.size());
    for(build_node::sources_t::const_iterator i = collected_nodes.begin(), last = collected_nodes.end(); i != last; ++i)
    {
-      boost::intrusive_ptr<build_node> new_node(new build_node);
+      boost::intrusive_ptr<build_node> new_node(new build_node(owner, false));
       new_node->targeting_type_ = &target_type;
       new_node->action(action());
       new_node->sources_.push_back(*i);
+      new_node->down_.push_back(i->source_node_);
 
       copy_target* new_target = new copy_target(&owner, i->source_target_->name(), &target_type, &props);
       new_node->products_.push_back(new_target);

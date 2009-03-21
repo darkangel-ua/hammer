@@ -19,6 +19,7 @@ namespace hammer
          virtual const location_t& current_directory() const = 0;
          virtual void create_directories(const location_t& dir_to_create) const = 0;
          virtual void remove(const location_t& p) const = 0;
+         virtual void remove_file_by_pattern(const location_t& dir, const std::string& pattern) const = 0;
          virtual void copy(const location_t& full_source_path, const location_t& full_destination_path) const = 0;
          virtual bool write_tag_file(const std::string& filename, const std::string& content) const = 0;
          virtual std::auto_ptr<std::ostream> create_output_file(const char* filename, std::ios_base::_Openmode mode) const = 0;

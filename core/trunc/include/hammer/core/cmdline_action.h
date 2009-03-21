@@ -13,9 +13,9 @@ namespace hammer
       public:
          template<typename T>
          cmdline_action(const std::string& name, 
-                        boost::shared_ptr<T>& target_writer)
-         : build_action(name),
-           target_writer_(shared_static_cast<argument_writer>(target_writer))
+                        const boost::shared_ptr<T>& target_writer)
+            : build_action(name),
+              target_writer_(boost::shared_static_cast<argument_writer>(target_writer))
          {
          }
 

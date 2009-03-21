@@ -9,6 +9,7 @@
 namespace hammer
 {
    class basic_target; 
+   class main_target; 
    class type;
    class build_action;
    class feature_set;
@@ -33,11 +34,13 @@ namespace hammer
          typedef std::vector<const basic_target*> targets_t;
          typedef std::vector<boost::intrusive_ptr<build_node> > nodes_t;
 
-         build_node() 
-            : up_(0), 
+         build_node(const main_target& products_owner, bool composite) 
+            : products_owner_(&products_owner),
+              is_composite_(composite),
+              up_(0), 
               targeting_type_(0), 
               ref_counter_(0), 
-              up_to_date_(boost::indeterminate), 
+              up_to_date_(boost::indeterminate),
               action_(NULL) 
          {}
 
@@ -53,6 +56,8 @@ namespace hammer
          void action(const build_action* a) { action_ = a; }
 
          const feature_set& build_request() const;
+         const main_target& products_owner() const { return *products_owner_; }
+         bool is_composite() const { return is_composite_; }
 
          boost::intrusive_ptr<build_node> up_; // owner of that node. Not used yet
          nodes_t down_;                        // all sources that came into node
@@ -63,6 +68,8 @@ namespace hammer
          mutable unsigned long ref_counter_;
       
       private:
+         const main_target* products_owner_;
+         bool is_composite_;
          boost::tribool up_to_date_;
          boost::posix_time::ptime timestamp_;
          const build_action* action_;

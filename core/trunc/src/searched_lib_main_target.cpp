@@ -25,7 +25,7 @@ searched_lib_main_target::searched_lib_main_target(const hammer::meta_target* mt
 std::vector<boost::intrusive_ptr<hammer::build_node> > 
 searched_lib_main_target::generate()
 {
-   boost::intrusive_ptr<hammer::build_node> result(new hammer::build_node);
+   boost::intrusive_ptr<hammer::build_node> result(new hammer::build_node(*this, true));
    feature_set::const_iterator i = properties().find("file");
    if (i != properties().end())
    {

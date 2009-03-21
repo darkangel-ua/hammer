@@ -48,7 +48,7 @@ generator::construct(const type& target_type,
 {
    if (!t)
    {
-      boost::intrusive_ptr<build_node> result(new build_node);
+      boost::intrusive_ptr<build_node> result(new build_node(owner, composite_));
       result->action(action());
 
       typedef std::vector<boost::intrusive_ptr<build_node> >::const_iterator iter;
@@ -94,7 +94,7 @@ generator::construct(const type& target_type,
                                    producable_types().front().need_tag_ ? &owner : NULL);
       assert(sources.size() == 1);
       
-      boost::intrusive_ptr<build_node> result(new build_node);
+      boost::intrusive_ptr<build_node> result(new build_node(owner, composite_));
       result->action(action());
 
       result->sources_.push_back(build_node::source_t(t, sources.front()));

@@ -2,6 +2,7 @@
 #define h_ee7eef40_46e2_4a70_bb84_999ada9c5565
 
 #include <string>
+#include <boost/shared_ptr.hpp>
 
 namespace hammer
 {
@@ -17,6 +18,9 @@ namespace hammer
          bool execute(const build_node& node, const build_environment& environment) const;
          virtual std::string target_tag(const build_node& node, const build_environment& environment) const = 0;
 
+         void batched_action(const boost::shared_ptr<build_action>& ba) { batched_action_ = ba; }
+         const build_action* batched_action() const { return batched_action_.get(); }
+
          virtual ~build_action();
 
       protected:
@@ -25,6 +29,7 @@ namespace hammer
       
       private:
          std::string name_;
+         boost::shared_ptr<build_action> batched_action_;
    };
 }
 

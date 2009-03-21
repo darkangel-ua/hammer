@@ -20,6 +20,7 @@
 #include <hammer/core/free_feature_arg_writer.h>
 #include <hammer/core/pch_argument_writer.h>
 #include <hammer/core/output_dir_argument_writer.h>
+#include <hammer/core/batched_cmdline_action.h>
 
 using namespace boost::assign;
 using namespace std;
@@ -136,8 +137,12 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
    // CPP -> OBJ
    {
       cmdline_builder obj_cmd(config_data.compiler_.native_file_string() + 
-                              " /c /nologo $(cflags) $(cppflags) $(user_cxx_flags) $(includes) $(undefines) $(defines) $(use_pch_header) $(use_pch_product) \"$(cpp_input)\""
-                              " -Fo\"$(obj_product)\" -Fd\"$(output_dir)\\vc.pdb\"");
+                              " /c /nologo $(cflags) $(cppflags) $(user_cxx_flags) $(includes) $(undefines) $(defines) $(use_pch_header) $(use_pch_product) $(cpp_input)"
+                              " /Fo\"$(obj_product)\" /Fd\"$(output_dir)\\vc.pdb\"");
+
+      cmdline_builder batched_obj_cmd(config_data.compiler_.native_file_string() + 
+                                      " /c /nologo $(cflags) $(cppflags) $(user_cxx_flags) $(includes) $(undefines) $(defines) $(use_pch_header) $(use_pch_product) $(cpp_input)"
+                                      " /Fo\"$(output_dir)\\\\\" /Fd\"$(output_dir)\\vc.pdb\"");
       obj_cmd += cflags;
       obj_cmd += cppflags;
       obj_cmd += user_cxx_flags;
@@ -147,11 +152,22 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
       obj_cmd += defines;
       obj_cmd += use_pch_header;
       obj_cmd += use_pch_product;
-      obj_cmd += obj_product;
       obj_cmd += output_dir;
+      
+      batched_obj_cmd.writers(obj_cmd.writers());
+
+      obj_cmd += obj_product;
+
       auto_ptr<cmdline_action> obj_action(new cmdline_action("compile-c++", obj_product));
       *obj_action += setup_vars;
       *obj_action += obj_cmd;
+
+      boost::shared_ptr<batched_cmdline_action> batched_obj_action(new batched_cmdline_action("batched compile-c++"));
+      *batched_obj_action += setup_vars;
+      *batched_obj_action += batched_obj_cmd;
+
+      obj_action->batched_action(batched_obj_action);
+
       generator::consumable_types_t source;
       generator::producable_types_t target;
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::CPP), 1, 0));
@@ -164,8 +180,8 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
    // CPP + H -> PCH + OBJ
    {
       cmdline_builder obj_cmd(config_data.compiler_.native_file_string() + 
-                              " /c /nologo $(create_pch_header) $(cflags) $(cppflags) $(user_cxx_flags) $(includes) $(undefines) $(defines) \"$(cpp_input)\""
-                              " -Fo\"$(obj_product)\" -Fp\"$(pch_product)\" -Fd\"$(output_dir)\\vc.pdb\"");
+                              " /c /nologo $(create_pch_header) $(cflags) $(cppflags) $(user_cxx_flags) $(includes) $(undefines) $(defines) $(cpp_input)"
+                              " /Fo\"$(obj_product)\" /Fp\"$(pch_product)\" /Fd\"$(output_dir)\\vc.pdb\"");
       obj_cmd += cflags;
       obj_cmd += cppflags;
       obj_cmd += user_cxx_flags;
@@ -205,7 +221,7 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
    {
       shared_ptr<source_argument_writer> c_source(new source_argument_writer("c_source", e.get_type_registry().get(types::C)));
       cmdline_builder obj_cmd(config_data.compiler_.native_file_string() + 
-                              " /c /TC /nologo $(cflags) $(user_c_flags) $(includes) $(undefines) $(defines) \"$(c_source)\" -Fo\"$(obj_product)\" -Fd\"$(output_dir)\\vc.pdb\"");
+                              " /c /TC /nologo $(cflags) $(user_c_flags) $(includes) $(undefines) $(defines) $(c_source) /Fo\"$(obj_product)\" /Fd\"$(output_dir)\\vc.pdb\"");
       obj_cmd += cflags;
       obj_cmd += user_c_flags;
       obj_cmd += c_source;

@@ -18,7 +18,7 @@ namespace hammer{
 
    std::vector<boost::intrusive_ptr<build_node> > source_target::generate()
    {
-      boost::intrusive_ptr<build_node> result(new build_node);
+      boost::intrusive_ptr<build_node> result(new build_node(*mtarget(), false));
       result->products_.push_back(this);
       result->targeting_type_ = &this->type();
       return std::vector<boost::intrusive_ptr<build_node> >(1, result);

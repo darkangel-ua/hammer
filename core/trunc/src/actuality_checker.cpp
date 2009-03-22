@@ -33,13 +33,14 @@ scanner_context& actuality_checker::get_scanner_context(const type& t, const sca
       return *i->second;
 }
 
-static void mark_to_update_sources(build_node& node, const main_target& products_owner)
+static void mark_to_update_sources(build_node& node, std::size_t& nodes_to_update, const main_target& products_owner)
 {
    for(build_node::nodes_t::iterator i = node.down_.begin(), last = node.down_.end(); i != last; ++i)
       if (&(**i).products_owner() == &products_owner)
       {
          (**i).up_to_date(boost::tribool::false_value);
-         mark_to_update_sources(**i, products_owner);
+         mark_to_update_sources(**i, nodes_to_update, products_owner);
+         ++nodes_to_update;
       }
 }
 
@@ -54,21 +55,35 @@ bool actuality_checker::check(boost::posix_time::ptime& max_target_time, std::si
          return true;
    }
 
-   bool some_need_to_be_updated = false;
-   ptime sources_max_time(neg_infin);
-   for(build_node::sources_t::const_iterator i = node.sources_.begin(), last = node.sources_.end(); i != last; ++i)
-      some_need_to_be_updated = check(sources_max_time, nodes_to_update, *i->source_node_) || some_need_to_be_updated;
-
    // check for dependencies
    bool dependency_need_to_be_updated = false;
+   ptime dependency_max_time(neg_infin);
    for(build_node::nodes_t::const_iterator i = node.dependencies_.begin(), last = node.dependencies_.end(); i != last; ++i)
-      dependency_need_to_be_updated = check(sources_max_time, nodes_to_update, **i) || dependency_need_to_be_updated;
+      dependency_need_to_be_updated = check(dependency_max_time, nodes_to_update, **i) || dependency_need_to_be_updated;
 
    if (dependency_need_to_be_updated)
-      mark_to_update_sources(node, node.products_owner());
+      mark_to_update_sources(node, nodes_to_update, node.products_owner());
+   
+   ptime sources_max_time(neg_infin);
+   bool some_need_to_be_updated = dependency_need_to_be_updated;
+   for(build_node::sources_t::const_iterator i = node.sources_.begin(), last = node.sources_.end(); i != last; ++i)
+   {
+      // we skip direct sources that is dependency too. Good example is pch header that can be found in dependency and direct sources
+      // we need this because when pch header has been rebuilt sources must be rebuild too.
+      if (node.dependencies_.empty() ||
+          find(node.dependencies_.begin(), node.dependencies_.end(), i->source_node_) == node.dependencies_.end())
+      {
+         some_need_to_be_updated = check(sources_max_time, nodes_to_update, *i->source_node_) || some_need_to_be_updated;
+      }
+   }
 
-   some_need_to_be_updated = some_need_to_be_updated || dependency_need_to_be_updated;
+   if (!dependency_need_to_be_updated &&
+       sources_max_time < dependency_max_time)
+   {
+      mark_to_update_sources(node, nodes_to_update, node.products_owner());
+   }
 
+   sources_max_time = (std::max)(sources_max_time, dependency_max_time);
    ptime products_max_time(boost::date_time::neg_infin);
    for(build_node::targets_t::const_iterator i = node.products_.begin(), last = node.products_.end(); i != last; ++i)
    {

@@ -350,7 +350,7 @@ bool c_scanner_context::load_directory(const hashed_location& dir, dir_node_t& c
             auto_ptr<dir_node_t> new_dir_node(new dir_node_t);
             dir_node_t* new_cur_dir_node = new_dir_node.get();
             const hashed_location* element = get_cached_location(i->path().filename()).first;
-            const hashed_location* full_dir_path = get_cached_location(dir.location() / i->path().filename() / ".").first;
+            const hashed_location* full_dir_path = get_cached_location(dir.location().parent_path() / i->path().filename() / ".").first;
             new_dir_node->full_dir_path_ = full_dir_path;
             cur_dir_node.nodes_.insert(element, new_dir_node);
             

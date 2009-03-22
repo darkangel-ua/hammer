@@ -10,8 +10,11 @@ namespace hammer{
 
 source_argument_writer::source_argument_writer(const std::string& name, 
                                                const type& t,
-                                               bool write_full_path)
-   : targets_argument_writer(name, t), write_full_path_(write_full_path)
+                                               bool write_full_path,
+                                               const std::string& quoting_string)
+   : targets_argument_writer(name, t), 
+     write_full_path_(write_full_path),
+     quoting_string_(quoting_string)
 {
 }
 
@@ -41,14 +44,14 @@ void source_argument_writer::write_impl(std::ostream& output, const build_node& 
          {
             location_t source_path = i->source_target_->location() / i->source_target_->name().to_string();
             source_path.normalize();
-            output << '"' << source_path.native_file_string() << '"'; 
+            output << quoting_string_ << source_path.native_file_string() << quoting_string_; 
          }
          else
          {
             location_t source_path = relative_path(i->source_target_->location(), i->source_target_->mtarget()->location());
             source_path.normalize();
             source_path /= i->source_target_->name().to_string();
-            output << '"' << source_path.native_file_string() << '"';
+            output << quoting_string_ << source_path.native_file_string() << quoting_string_;
          }
       }
    }

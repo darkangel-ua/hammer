@@ -99,7 +99,7 @@ static const string compiller_option_format_string(
    "            PrecompiledHeaderThrough=\"$(pch_header)\"\n");
 
 static const string linker_option_format_string(
-   "            AdditionalDependencies=\"$(additional_libraries) $(additional_searched_libraries)\"\n"
+   "            AdditionalDependencies='$(additional_libraries) $(additional_searched_libraries)'\n"
    "            AdditionalLibraryDirectories=\"$(additional_libraries_dirs)\"\n"
    "            GenerateDebugInformation=\"$(debug_info)\"\n"
    "            LinkIncremental=\"$(incremental_linking)\"\n");

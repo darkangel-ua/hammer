@@ -33,6 +33,16 @@ scanner_context& actuality_checker::get_scanner_context(const type& t, const sca
       return *i->second;
 }
 
+static void mark_to_update_sources(build_node& node, const main_target& products_owner)
+{
+   for(build_node::nodes_t::iterator i = node.down_.begin(), last = node.down_.end(); i != last; ++i)
+      if (&(**i).products_owner() == &products_owner)
+      {
+         (**i).up_to_date(boost::tribool::false_value);
+         mark_to_update_sources(**i, products_owner);
+      }
+}
+
 bool actuality_checker::check(boost::posix_time::ptime& max_target_time, std::size_t& nodes_to_update, build_node& node)
 {
    if (node.up_to_date() != boost::tribool::indeterminate_value)
@@ -50,8 +60,14 @@ bool actuality_checker::check(boost::posix_time::ptime& max_target_time, std::si
       some_need_to_be_updated = check(sources_max_time, nodes_to_update, *i->source_node_) || some_need_to_be_updated;
 
    // check for dependencies
+   bool dependency_need_to_be_updated = false;
    for(build_node::nodes_t::const_iterator i = node.dependencies_.begin(), last = node.dependencies_.end(); i != last; ++i)
-      some_need_to_be_updated = check(sources_max_time, nodes_to_update, **i) || some_need_to_be_updated;
+      dependency_need_to_be_updated = check(sources_max_time, nodes_to_update, **i) || dependency_need_to_be_updated;
+
+   if (dependency_need_to_be_updated)
+      mark_to_update_sources(node, node.products_owner());
+
+   some_need_to_be_updated = some_need_to_be_updated || dependency_need_to_be_updated;
 
    ptime products_max_time(boost::date_time::neg_infin);
    for(build_node::targets_t::const_iterator i = node.products_.begin(), last = node.products_.end(); i != last; ++i)

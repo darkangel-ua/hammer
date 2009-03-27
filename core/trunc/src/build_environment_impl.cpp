@@ -68,7 +68,7 @@ bool build_environment_impl::run_shell_commands(std::string* captured_output,
       if (st.exit_status() != 0)
          dump_shell_command(std::cerr, full_tmp_file_name);
 
-      boost::filesystem::remove(to_wide(full_tmp_file_name));
+      remove(full_tmp_file_name);
       
       return st.exit_status() == 0;
    }

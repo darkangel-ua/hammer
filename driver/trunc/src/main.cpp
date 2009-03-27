@@ -446,7 +446,7 @@ int main(int argc, char** argv)
       if (opts.debug_level_ > 0)
          cout << "Done\n";
 
-//      engine.call_resolver().insert("use-toolset", boost::function<void (project*, pstring&, pstring&, pstring*)>(boost::bind(use_toolset_rule, _1, boost::ref(engine), _2, _3, _4)));
+      engine.call_resolver().insert("use-toolset", boost::function<void (project*, pstring&, pstring&, pstring*)>(boost::bind(use_toolset_rule, _1, boost::ref(engine), _2, _3, _4)));
 
       location_t user_config_script = get_user_config_location();
       if (user_config_script.empty() || !exists(user_config_script))

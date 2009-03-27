@@ -115,7 +115,7 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
    {
       shared_ptr<source_argument_writer> cpp_input(new source_argument_writer("cpp_input", e.get_type_registry().get(types::CPP)));
       cmdline_builder obj_cmd(install_data.compiler_.native_file_string() + 
-                              " -c -ftemplate-depth-128 $(cflags) $(user_cxx_flags) $(includes) $(defines) \"$(cpp_input)\" -o \"$(obj_product)\"");
+                              " -c -ftemplate-depth-128 $(cflags) $(user_cxx_flags) $(includes) $(defines) $(cpp_input) -o \"$(obj_product)\"");
       obj_cmd += cflags;
       obj_cmd += user_cxx_flags;
       obj_cmd += cpp_input;

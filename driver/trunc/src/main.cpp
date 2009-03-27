@@ -482,10 +482,10 @@ int main(int argc, char** argv)
 
 #if defined(_WIN32)
       if (build_request->find("toolset") == build_request->end())
-         build_request->join("toolset", "msvc");\
+         build_request->join("toolset", "msvc");
 #else
       if (build_request->find("toolset") == build_request->end())
-         build_request->join("toolset", "gcc");\
+         build_request->join("toolset", "gcc");
 #endif
 
       if (build_request->find("variant") == build_request->end())

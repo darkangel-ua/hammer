@@ -480,8 +480,14 @@ int main(int argc, char** argv)
       if (vm.count("build-request"))
          resolve_arguments(targets, build_request, engine.feature_registry(), vm["build-request"].as<vector<string> >());
 
+#if defined(_WIN32)
       if (build_request->find("toolset") == build_request->end())
-         build_request->join("toolset", "msvc");
+         build_request->join("toolset", "msvc");\
+#else
+      if (build_request->find("toolset") == build_request->end())
+         build_request->join("toolset", "gcc");\
+#endif
+
       if (build_request->find("variant") == build_request->end())
          build_request->join("variant", "debug");
 

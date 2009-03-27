@@ -403,6 +403,10 @@ int main(int argc, char** argv)
       }
       
       fs::path startup_script_dir("./");
+#if !defined(_WIN32)
+      startup_script_dir = "/usr/lib/hammer";
+#endif
+
       if (vm.count("install-dir"))
          startup_script_dir = opts.hammer_install_dir_;
       

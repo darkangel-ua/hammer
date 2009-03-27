@@ -11,7 +11,7 @@ namespace hammer
    {
       public:
          source_argument_writer(const std::string& name, 
-                                const type& t, 
+                                const target_type& t, 
                                 bool write_full_path = false,
                                 const std::string& quoting_string = "\"");
          virtual argument_writer* clone() const;

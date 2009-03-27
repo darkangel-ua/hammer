@@ -14,7 +14,7 @@ header_lib_meta_target::header_lib_meta_target(hammer::project* p, const pstring
                                                const requirements_decl& usage_requirements)
    : typed_meta_target(p, name, requirements, 
                        usage_requirements, 
-                       p->engine()->get_type_registry().get(types::HEADER_LIB))
+                       p->get_engine()->get_type_registry().get(types::HEADER_LIB))
 {
 
 }
@@ -34,7 +34,7 @@ main_target* header_lib_meta_target::construct_main_target(const main_target* ow
                                                 name(), 
                                                 &type(), 
                                                 properties,
-                                                project()->engine()->targets_pool());
+                                                get_engine()->targets_pool());
    return mt;
 }
 

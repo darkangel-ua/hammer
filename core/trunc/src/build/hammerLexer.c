@@ -102,7 +102,7 @@ static ANTLR3_UCHAR	lit_1[]  = { 0x5C, 0x22,  ANTLR3_STRING_TERMINATOR};
 #define	    GETLINE()				LEXER->getLine(LEXER)
 #define	    GETTEXT()				LEXER->getText(LEXER)
 #define	    GETCHARPOSITIONINLINE() LEXER->getCharPositionInLine(LEXER)
-#define	    EMIT()					LEXSTATE->type = _type; LEXER->emit(LEXER)
+#define	    EMIT()					LEXSTATE->target_type = _type; LEXER->emit(LEXER)
 #define	    EMITNEW(t)				LEXER->emitNew(LEXER, t)
 #define	    MATCHC(c)				LEXER->matchc(LEXER, c)
 #define	    MATCHS(s)				LEXER->matchs(LEXER, s)

@@ -60,7 +60,7 @@ namespace hammer
          const targets_t& targets() const { return targets_; }
          const basic_meta_target* find_target(const pstring& name) const;
          basic_meta_target* find_target(const pstring& name);
-         hammer::engine* engine() const { return engine_; }
+         hammer::engine* get_engine() const { return engine_; }
          const location_t& intermediate_dir() const { return intermediate_dir_; }
          feature_registry& local_feature_registry() const { return local_feature_registry_; }
          bool is_root() const { return is_root_; }

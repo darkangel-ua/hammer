@@ -8,11 +8,11 @@ namespace hammer
    class copy_main_target : public main_target
    {
       public:
-         typedef std::vector<const hammer::type*> types_t;
+         typedef std::vector<const target_type*> types_t;
 
          copy_main_target(const hammer::meta_target* mt, 
                           const pstring& name, 
-                          const hammer::type* t, 
+                          const target_type* t, 
                           const feature_set* props,
                           pool& p);
          const location_t& destination() const { return destination_; }

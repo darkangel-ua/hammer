@@ -4,7 +4,7 @@
 #include <hammer/core/engine.h>
 #include <hammer/core/type_registry.h>
 #include <hammer/core/basic_target.h>
-#include <hammer/core/type.h>
+#include <hammer/core/target_type.h>
 
 namespace hammer
 {
@@ -23,7 +23,7 @@ obj_generator::obj_generator(hammer::engine& e,
 
 // Move to result only OBJ targets and skip any others
 std::vector<boost::intrusive_ptr<build_node> >
-obj_generator::construct(const type& target_type, 
+obj_generator::construct(const target_type& type_to_construct, 
                          const feature_set& props,
                          const std::vector<boost::intrusive_ptr<build_node> >& sources,
                          const basic_target* t,

@@ -17,7 +17,7 @@ searched_lib_main_target::searched_lib_main_target(const hammer::meta_target* mt
                                                    const pstring& name, 
                                                    const feature_set* props,
                                                    pool& p)
-     : main_target(mt, name, &mt->project()->engine()->get_type_registry().get(types::SEARCHED_LIB), props, p)
+     : main_target(mt, name, &mt->get_engine()->get_type_registry().get(types::SEARCHED_LIB), props, p)
 {
 
 }
@@ -29,7 +29,7 @@ searched_lib_main_target::generate()
    feature_set::const_iterator i = properties().find("file");
    if (i != properties().end())
    {
-      engine* e = mtarget()->meta_target()->project()->engine();
+      engine* e = get_engine();
       basic_target* t = new file_target(this, (**i).value(), &e->get_type_registry().hard_resolve_from_target_name((**i).value()), &properties());
       result->products_.push_back(t);
       result->targeting_type_ = &this->type();
@@ -37,7 +37,7 @@ searched_lib_main_target::generate()
    else
    {
       i = properties().find("name");
-      engine* e = mtarget()->meta_target()->project()->engine();
+      engine* e = get_engine();
       basic_target* t = new searched_lib_target(this, (**i).value(), &e->get_type_registry().get(types::SEARCHED_LIB), &properties());
       result->products_.push_back(t);
       result->targeting_type_ = &this->type();

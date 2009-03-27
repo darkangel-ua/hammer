@@ -16,16 +16,16 @@ namespace hammer
                        const feature_set* c = 0);
          
          virtual std::vector<boost::intrusive_ptr<build_node> >
-            construct(const type& target_type, 
+            construct(const target_type& type_to_construct, 
                       const feature_set& props,
                       const std::vector<boost::intrusive_ptr<build_node> >& sources,
                       const basic_target* t,
                       const pstring* composite_target_name,
                       const main_target& owner) const;
       private:
-         const type& c_type_;
-         const type& cpp_type_;
-         const type& h_type_;
+         const target_type& c_type_;
+         const target_type& cpp_type_;
+         const target_type& h_type_;
    };
 }
 

@@ -5,12 +5,12 @@
 
 namespace hammer
 {
-   class type; 
+   class target_type; 
    class shared_lib_dirs_writer : public argument_writer
    {
       public:
          shared_lib_dirs_writer(const std::string& name,
-                                const type& shared_lib_type) 
+                                const target_type& shared_lib_type) 
             : argument_writer(name),
               shared_lib_type_(shared_lib_type)
          {}
@@ -22,7 +22,7 @@ namespace hammer
                                  const build_node& node, 
                                  const build_environment& environment) const;
       private:
-         const type& shared_lib_type_;
+         const target_type& shared_lib_type_;
    };
 }
 #endif //h_33a5604a_4dc7_4db3_a49d_6e49e5c11d3d

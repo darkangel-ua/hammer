@@ -18,7 +18,7 @@ namespace hammer
    class feature_set;
    class source_target;
    class basic_target;
-   class type;
+   class target_type;
    class engine;
    class meta_target;
    class main_target;
@@ -70,7 +70,7 @@ namespace hammer
             struct write_context
             {
                write_context(std::ostream& s,
-                             const type& h_type,
+                             const target_type& h_type,
                              build_environment& environment,
                              const cmdline_builder& compiller_options) 
                   : output_(s), h_type_(h_type),
@@ -78,7 +78,7 @@ namespace hammer
                     compiller_options_(compiller_options)
                {}
 
-               const type& h_type_;
+               const target_type& h_type_;
                std::ostream& output_;
                build_environment& environment_;
                const cmdline_builder& compiller_options_;
@@ -107,7 +107,7 @@ namespace hammer
             class filter_t
             {
                public:   
-                  typedef std::vector<const type*> types_t;
+                  typedef std::vector<const target_type*> types_t;
 
                   std::string name;
                   std::string uid;
@@ -120,7 +120,7 @@ namespace hammer
                   {}
 
                   void write(write_context& ctx, const std::string& path_prefix) const;
-                  bool accept(const type* t) const;
+                  bool accept(const target_type* t) const;
                   void insert(const boost::intrusive_ptr<build_node>& node,
                               const basic_target* t, 
                               const variant& v);
@@ -145,10 +145,10 @@ namespace hammer
             location_t meta_target_relative_to_output_;
             std::string solution_configuration_name_;
             
-            const type& searched_lib_;
-            const type& obj_type_;
-            const type& pch_type_;
-            const type& copied_type_;
+            const target_type& searched_lib_;
+            const target_type& obj_type_;
+            const target_type& pch_type_;
+            const target_type& copied_type_;
             cmdline_builder configuration_options_;
             cmdline_builder compiller_options_;
             cmdline_builder linker_options_;

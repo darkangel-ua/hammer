@@ -21,7 +21,7 @@ std::size_t actuality_checker::check(nodes_t& nodes)
    return result;
 }
 
-scanner_context& actuality_checker::get_scanner_context(const type& t, const scanner& s)
+scanner_context& actuality_checker::get_scanner_context(const target_type& t, const scanner& s)
 {
    scanner_contexts_t::const_iterator i = scanner_contexts_.find(&t);
    if (i == scanner_contexts_.end())

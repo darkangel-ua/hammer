@@ -10,7 +10,7 @@ namespace hammer
       public:
          header_lib_main_target(const hammer::meta_target* mt, 
                                 const pstring& name, 
-                                const hammer::type* t, 
+                                const target_type* t, 
                                 const feature_set* props,
                                 pool& p);
       

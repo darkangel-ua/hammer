@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include <hammer/core/generator.h>
-#include <hammer/core/type.h>
+#include <hammer/core/target_type.h>
 #include <hammer/core/basic_target.h>
 #include <hammer/core/main_target.h>
 #include <hammer/core/meta_target.h>
@@ -26,7 +26,7 @@ generator::generator(hammer::engine& e,
 
 }
 
-bool generator::is_consumable(const type& t) const
+bool generator::is_consumable(const target_type& t) const
 {
    if (consumable_types().empty())
       return true;
@@ -39,7 +39,7 @@ bool generator::is_consumable(const type& t) const
 }
  
 std::vector<boost::intrusive_ptr<build_node> >
-generator::construct(const type& target_type, 
+generator::construct(const target_type& type_to_construct, 
                      const feature_set& props,
                      const std::vector<boost::intrusive_ptr<build_node> >& sources,
                      const basic_target* t,
@@ -81,7 +81,7 @@ generator::construct(const type& target_type,
                                                           i->type_, &props));
       }
 
-      result->targeting_type_ = &target_type;
+      result->targeting_type_ = &type_to_construct;
       return std::vector<boost::intrusive_ptr<build_node> >(1, result);
    }
    else
@@ -89,7 +89,7 @@ generator::construct(const type& target_type,
       pstring new_name = make_name(engine_->pstring_pool(), 
                                    t->name(), 
                                    t->type(), 
-                                   target_type, 
+                                   type_to_construct, 
                                    producable_types().front().need_tag_ ? &props : NULL,
                                    producable_types().front().need_tag_ ? &owner : NULL);
       assert(sources.size() == 1);
@@ -100,7 +100,7 @@ generator::construct(const type& target_type,
       result->sources_.push_back(build_node::source_t(t, sources.front()));
       result->down_.push_back(sources.front());
       result->products_.push_back(new generated_target(&owner, new_name, producable_types().front().type_, &props));
-      result->targeting_type_ = &target_type;
+      result->targeting_type_ = &type_to_construct;
       return std::vector<boost::intrusive_ptr<build_node> >(1, result);
   }
 }

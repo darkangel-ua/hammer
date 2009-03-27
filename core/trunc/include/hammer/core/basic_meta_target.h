@@ -11,6 +11,7 @@ namespace hammer
 {
    class feature_set;
    class project;
+   class engine;
    class basic_target;
    class main_target;
    class type_registry;
@@ -24,7 +25,8 @@ namespace hammer
                            const requirements_decl& usage_req);
          basic_meta_target() {}
          virtual ~basic_meta_target();
-         const hammer::project* project() const { return project_; }
+         const project* get_project() const { return project_; }
+         engine* get_engine() const;
          const pstring& name() const { return name_; }
          void name(const pstring& v) { name_ = v; }
          void sources(const sources_decl& s);

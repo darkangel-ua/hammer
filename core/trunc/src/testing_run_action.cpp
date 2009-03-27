@@ -23,7 +23,7 @@ bool testing_run_action::run_shell_commands(const std::vector<std::string>& comm
    string run_tag_name(target_tag(node, environment));
    
    string output;
-   bool result = environment.run_shell_commands(output, commands, node.products_.front()->mtarget()->location());
+   bool result = environment.run_shell_commands(output, commands, node.products_.front()->get_main_target()->location());
    if (result)
    {
       environment.write_tag_file(output_name.str(), output);

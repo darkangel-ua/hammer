@@ -67,7 +67,7 @@ engine::engine()
    resolver_.insert("rglob", boost::function<sources_decl (project*, std::vector<pstring>&, std::vector<pstring>*)>(boost::bind(&engine::glob_rule, this, _1, _2, _3, true)));
    resolver_.insert("explicit", boost::function<void (project*, const pstring&)>(boost::bind(&engine::explicit_rule, this, _1, _2)));
    resolver_.insert("use-project", boost::function<void (project*, const pstring&, const pstring&, feature_set*)>(boost::bind(&engine::use_project_rule, this, _1, _2, _3, _4)));
-   resolver_.insert("repository", boost::function<void (project*, const pstring&, feature_set*)>(boost::bind(&engine::repository_rule, this, _1, _2, _3)));
+//   resolver_.insert("repository", boost::function<void (project*, const pstring&, feature_set*)>(boost::bind(&engine::repository_rule, this, _1, _2, _3)));
 
    {
       feature_attributes ft = {0}; ft.free = 1;
@@ -818,7 +818,8 @@ void engine::test_suite_rule(project* p,
                              sources_decl& sources, 
                              sources_decl* propagated_sources)
 {
-   sources_decl& real_propagated_sources = (propagated_sources == NULL ? sources_decl() : *propagated_sources);
+   sources_decl empty_source;
+   sources_decl& real_propagated_sources = (propagated_sources == NULL ? empty_source : *propagated_sources);
    feature_set* additional_sources_set = feature_registry_->make_set();
    for(sources_decl::const_iterator i = real_propagated_sources.begin(), last = real_propagated_sources.end(); i != last; ++i)
    {
@@ -1069,7 +1070,7 @@ void engine::loaded_projects_t::post_process(project::selected_targets_t& result
 
    // Check for targets with same name. They already have same symbolic names so we should check names.
    using namespace boost::logic;
-   engine& e = *result.front().target_->project()->engine();
+   engine& e = *result.front().target_->get_engine();
    std::sort(result.begin(), result.end(), targets_by_name);
    project::selected_targets_t::iterator 
       first = result.begin(), 

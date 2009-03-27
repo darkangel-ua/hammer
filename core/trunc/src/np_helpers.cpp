@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include <hammer/core/np_helpers.h>
 #include <hammer/core/pstring.h>
-#include <hammer/core/type.h>
+#include <hammer/core/target_type.h>
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature.h>
 #include <hammer/core/basic_target.h>
@@ -27,8 +27,8 @@ static string get_version(const feature_set& properties)
 
 pstring make_name(pool& p, 
                   const pstring& source_name, 
-                  const type& source_type, 
-                  const type& target_type,
+                  const target_type& source_type, 
+                  const target_type& type,
                   const feature_set* target_properties,
                   const main_target* owner)
 {
@@ -48,12 +48,12 @@ pstring make_name(pool& p,
       hash_suffix += '-' + compute_hash(*target_properties, *owner);
    }
  
-   return pstring(p, std::string(source_name.begin() + slash_pos, source_name.begin() + (source_name.size() - source_suffix.size())) + hash_suffix + *target_type.suffixes().begin());
+   return pstring(p, std::string(source_name.begin() + slash_pos, source_name.begin() + (source_name.size() - source_suffix.size())) + hash_suffix + *type.suffixes().begin());
 }
 
 pstring make_name(pool& p, 
                   const pstring& source_name, 
-                  const type& target_type,
+                  const target_type& target_type,
                   const feature_set* target_properties,
                   const main_target* owner)
 {
@@ -76,7 +76,7 @@ pstring make_name(pool& p,
 }
 
 pstring cut_suffix(pool& p, const pstring& source_name,
-                   const type& source_type)
+                   const target_type& source_type)
 {
    return pstring(p, std::string(source_name.begin(), source_name.begin() + (source_name.size() - source_type.suffix_for(source_name.to_string()).size()))); // FIXME: Here is conversion from pstring to string
 }

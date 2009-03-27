@@ -10,7 +10,7 @@
 #include <set>
 #include <hammer/core/types.h>
 #include <hammer/core/build_action.h>
-#include <hammer/core/type.h>
+#include <hammer/core/target_type.h>
 #include <hammer/core/build_environment.h>
 #include <hammer/core/fs_helpers.h>
 #include <hammer/core/product_argument_writer.h>
@@ -24,7 +24,7 @@ namespace{
    class copy_action : public build_action
    {
       public:
-         copy_action(const type& tag_type) 
+         copy_action(const target_type& tag_type) 
             : build_action("copy file"),
               tag_writer_("", tag_type)
          {}
@@ -85,7 +85,7 @@ copy_generator::copy_generator(hammer::engine& e)
 typedef std::vector<boost::intrusive_ptr<build_node> > nodes_t;
 typedef std::set<const build_node*> visited_nodes_t;
 
-nodes_t copy_generator::construct(const type& target_type, 
+nodes_t copy_generator::construct(const target_type& type_to_construct, 
                                   const feature_set& props,
                                   const nodes_t& sources,
                                   const basic_target* t,
@@ -107,12 +107,12 @@ nodes_t copy_generator::construct(const type& target_type,
    for(build_node::sources_t::const_iterator i = collected_nodes.begin(), last = collected_nodes.end(); i != last; ++i)
    {
       boost::intrusive_ptr<build_node> new_node(new build_node(owner, false));
-      new_node->targeting_type_ = &target_type;
+      new_node->targeting_type_ = &type_to_construct;
       new_node->action(action());
       new_node->sources_.push_back(*i);
       new_node->down_.push_back(i->source_node_);
 
-      copy_target* new_target = new copy_target(&owner, i->source_target_->name(), &target_type, &props);
+      copy_target* new_target = new copy_target(&owner, i->source_target_->name(), &type_to_construct, &props);
       new_node->products_.push_back(new_target);
 
       result.push_back(new_node);

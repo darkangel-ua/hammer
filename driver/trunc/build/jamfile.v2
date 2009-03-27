@@ -1,0 +1,8 @@
+exe hammer : 
+             [ glob ../src/*.cpp ]
+             [ glob ../src/*.h ]
+             /boost/program_options
+             /boost/filesystem
+             /boost/regex
+             /hammer/core//hammer_core
+           ;

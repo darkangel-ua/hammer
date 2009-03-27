@@ -11,9 +11,12 @@
 
 namespace hammer
 {
-   class type;
+   class target_type;
    class feature_set;
    class main_target;
+   class meta_target;
+   class engine;
+   class project;
 
    class basic_target : public boost::noncopyable
    {
@@ -21,16 +24,21 @@ namespace hammer
          typedef std::vector<boost::intrusive_ptr<build_node> > build_nodes_t;
 
          basic_target(const main_target* mt, const pstring& name, 
-                      const type* t, const feature_set* f) 
-                     : main_target_(mt), name_(name), 
-                       type_(t), features_(f)
+                      const target_type* t, const feature_set* f) 
+                     : main_target_(mt),  
+                       type_(t), 
+                       name_(name),
+                       features_(f)
          {};
 
          const pstring& name() const { return name_; }
-         const hammer::type& type() const { return *type_; }
+         const target_type& type() const { return *type_; }
          const feature_set& properties() const { return *features_; }
          void properties(const feature_set* p);
-         const hammer::main_target* mtarget() const { return main_target_; }
+         const main_target* get_main_target() const { return main_target_; }
+         const meta_target* get_meta_target() const;
+         const project* get_project() const;
+         engine* get_engine() const;
          
          virtual build_nodes_t generate() = 0;
          const timestamp_info_t& timestamp_info(timestamp_info_t::getter_policy_t how_to_get = timestamp_info_t::just_get) const;
@@ -50,7 +58,7 @@ namespace hammer
 
       private:
          const main_target* main_target_;
-         const hammer::type* type_;
+         const target_type* type_;
          pstring name_;
          const feature_set* features_;
          std::vector<basic_target*> dependencies_;

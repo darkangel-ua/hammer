@@ -5,7 +5,7 @@
 
 namespace hammer
 {
-   class type;
+   class target_type;
 
    class typed_meta_target : public meta_target
    {
@@ -14,18 +14,18 @@ namespace hammer
                            const pstring& name, 
                            const requirements_decl& req, 
                            const requirements_decl& usage_req,
-                           const hammer::type& t) :  
+                           const target_type& t) :  
             meta_target(p, name, req, usage_req), type_(&t)
          {
          }
          
-         const hammer::type& type() const { return *type_; }
+         const target_type& type() const { return *type_; }
 
       protected:
          virtual main_target* construct_main_target(const main_target* owner, const feature_set* properties) const;
 
      private:
-        const hammer::type* type_;
+        const target_type* type_;
    };
 }
 

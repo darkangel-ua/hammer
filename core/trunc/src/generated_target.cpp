@@ -5,13 +5,13 @@
 namespace hammer{
 
 generated_target::generated_target(const main_target* mt, const pstring& n, 
-                                   const hammer::type* t, const feature_set* f) : file_target(mt, n, t, f)
+                                   const target_type* t, const feature_set* f) : file_target(mt, n, t, f)
 {
 }
 
 const location_t& generated_target::location() const
 {
-   return mtarget()->intermediate_dir();
+   return get_main_target()->intermediate_dir();
 }
 
 std::vector<boost::intrusive_ptr<build_node> > generated_target::generate()

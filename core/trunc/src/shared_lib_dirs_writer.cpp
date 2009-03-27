@@ -11,7 +11,7 @@ void shared_lib_dirs_writer::write_impl(std::ostream& output,
 {
    build_node::sources_t collected_nodes;
    std::set<const build_node*> visited_nodes;
-   std::vector<const hammer::type*> types_to_collect(1, &shared_lib_type_);
+   std::vector<const hammer::target_type*> types_to_collect(1, &shared_lib_type_);
    // FIXME: const problems...
    std::vector<boost::intrusive_ptr<build_node> > sources(1, boost::intrusive_ptr<build_node>(const_cast<build_node*>(&node)));
  

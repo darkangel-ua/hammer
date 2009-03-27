@@ -31,7 +31,7 @@ namespace hammer{
                                               const feature_set& build_request,
                                               const main_target& owner_for_new_targets) const
    {
-      feature_set& local_usage_requirements = *project()->engine()->feature_registry().make_set();
+      feature_set& local_usage_requirements = *get_engine()->feature_registry().make_set();
       basic_meta_target::instantiate_meta_targets(meta_targets, build_request, &owner_for_new_targets, 
                                                   &instantiated_meta_targets, &local_usage_requirements);
 
@@ -59,7 +59,7 @@ namespace hammer{
       meta_targets_t ignored_meta_targets;
       split_sources(&ignored_simple_targets, &ignored_meta_targets, sources_from_usage, build_request);
       std::vector<basic_target*> ignored_instantiated_meta_targets;
-      feature_set* local_usage_requirements = project()->engine()->feature_registry().make_set();
+      feature_set* local_usage_requirements = get_engine()->feature_registry().make_set();
       basic_meta_target::instantiate_meta_targets(ignored_meta_targets, build_request, &owner_for_new_targets, 
                                                   &ignored_instantiated_meta_targets, local_usage_requirements);
 
@@ -78,7 +78,7 @@ namespace hammer{
          split_sources(&simple_targets, &meta_targets, sources_from_usage_requirements, build_request);
          if (!meta_targets.empty())
          {
-            feature_set* local_usage_requirements = project()->engine()->feature_registry().make_set();
+            feature_set* local_usage_requirements = get_engine()->feature_registry().make_set();
             instantiate_meta_targets(simple_targets, instantiated_meta_targets, 
                                      *local_usage_requirements, meta_targets,
                                      build_request, owner_for_new_targets);
@@ -120,8 +120,8 @@ namespace hammer{
       feature_set* mt_fs = build_request.clone();
       requirements().eval(build_request, mt_fs, usage_requirements);
 
-      feature_set* local_usage_requirements = project()->engine()->feature_registry().make_set();
-      feature_set* build_request_for_dependencies = project()->engine()->feature_registry().make_set();
+      feature_set* local_usage_requirements = get_engine()->feature_registry().make_set();
+      feature_set* build_request_for_dependencies = get_engine()->feature_registry().make_set();
       build_request_for_dependencies->copy_propagated(build_request);
       build_request_for_dependencies->copy_propagated(*mt_fs);
 
@@ -142,8 +142,8 @@ namespace hammer{
       split_sources(&simple_targets, &meta_targets, additional_sources, *build_request_for_dependencies);
       split_sources(&simple_targets, &dependency_meta_targets, dependencies_from_requierements, *build_request_for_dependencies);
       
-      project()->engine()->feature_registry().add_defaults(mt_fs);
-      project()->local_feature_registry().add_defaults(mt_fs);
+      get_engine()->feature_registry().add_defaults(mt_fs);
+      get_project()->local_feature_registry().add_defaults(mt_fs);
 
       main_target* mt = construct_main_target(owner, mt_fs); // construct_main_target may construct main_target with different properties PCH is example
       mt_fs = mt->properties().clone(); // FIXME ref semantic required
@@ -157,7 +157,7 @@ namespace hammer{
       extract_dependencies(dependencies_from_instantiations, *local_usage_requirements);
       split_sources(&simple_targets, &dependency_meta_targets, dependencies_from_instantiations, *build_request_for_dependencies);
 
-      feature_set* ignored_dependencies_usage_requirements = project()->engine()->feature_registry().make_set();      
+      feature_set* ignored_dependencies_usage_requirements = get_engine()->feature_registry().make_set();      
       if (!dependency_meta_targets.empty())
          instantiate_meta_targets(simple_targets, instantiated_dependency_meta_targets, 
                                  *ignored_dependencies_usage_requirements, dependency_meta_targets,
@@ -178,7 +178,7 @@ namespace hammer{
       mt->sources(instantiated_meta_targets);
       mt->dependencies(instantiated_dependency_meta_targets);
       
-      transfer_public_sources(*usage_requirements, sources(), project()->engine()->feature_registry());
+      transfer_public_sources(*usage_requirements, sources(), get_engine()->feature_registry());
       compute_usage_requirements(*usage_requirements, *mt_fs, *local_usage_requirements, owner);
       
       result->push_back(mt);

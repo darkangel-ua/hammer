@@ -5,7 +5,7 @@
 #include <hammer/core/meta_target.h>
 #include <hammer/core/project.h>
 #include <hammer/core/engine.h>
-#include <hammer/core/type.h>
+#include <hammer/core/target_type.h>
 #include <hammer/core/output_location_strategy.h>
 
 namespace hammer
@@ -14,7 +14,7 @@ namespace hammer
 pch_main_target::pch_main_target(const hammer::meta_target* mt, 
                                  const main_target& owner,
                                  const pstring& name, 
-                                 const hammer::type* t, 
+                                 const target_type* t, 
                                  const feature_set* props,
                                  pool& p)
                                 : 
@@ -29,10 +29,10 @@ pch_main_target::pch_main_target(const hammer::meta_target* mt,
 std::vector<boost::intrusive_ptr<build_node> > 
 pch_main_target::generate()
 {
-   const hammer::type& cpp_type = meta_target()->project()->engine()->get_type_registry().get(types::CPP);
-   const hammer::type& c_type = meta_target()->project()->engine()->get_type_registry().get(types::C);
-   const hammer::type& h_type = meta_target()->project()->engine()->get_type_registry().get(types::H);
-   const hammer::type& pch_type = meta_target()->project()->engine()->get_type_registry().get(types::PCH);
+   const hammer::target_type& cpp_type = get_engine()->get_type_registry().get(types::CPP);
+   const hammer::target_type& c_type = get_engine()->get_type_registry().get(types::C);
+   const hammer::target_type& h_type = get_engine()->get_type_registry().get(types::H);
+   const hammer::target_type& pch_type = get_engine()->get_type_registry().get(types::PCH);
    
    typedef std::vector<boost::intrusive_ptr<hammer::build_node> > result_t; 
 
@@ -65,7 +65,7 @@ pch_main_target::generate()
 
 location_t pch_main_target::intermediate_dir_impl() const
 {
-   return meta_target()->project()->engine()->output_location_strategy().compute_output_location(owner_);
+   return get_engine()->output_location_strategy().compute_output_location(owner_);
 }
 
 }

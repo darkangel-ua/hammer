@@ -23,7 +23,7 @@ bool cmdline_action::execute_impl(const build_node& node, const build_environmen
 
    if (rsp_builder_.get() != NULL)
    {
-      location_t rsp_file_path(node.products_.front()->mtarget()->location() / (target_tag(node, environment) + ".rsp"));
+      location_t rsp_file_path(node.products_.front()->get_main_target()->location() / (target_tag(node, environment) + ".rsp"));
       rsp_file_path.normalize();
       auto_ptr<ostream> rsp_stream(environment.create_output_file(rsp_file_path.native_file_string().c_str(), ios_base::trunc));
       rsp_builder_->write(*rsp_stream, node, environment);
@@ -47,7 +47,7 @@ bool cmdline_action::run_shell_commands(const std::vector<std::string>& commands
    if (node.products_.empty())
       throw std::runtime_error("[cmdline_action] Can't run command for node without products.");
 
-   return environment.run_shell_commands(commands, node.products_.front()->mtarget()->location());
+   return environment.run_shell_commands(commands, node.products_.front()->get_main_target()->location());
 }
 
 std::string cmdline_action::target_tag(const build_node& node, const build_environment& environment) const

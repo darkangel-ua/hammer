@@ -18,7 +18,7 @@ namespace hammer{
 
 main_target::main_target(const hammer::meta_target* mt, 
                          const pstring& name, 
-                         const hammer::type* t, 
+                         const hammer::target_type* t, 
                          const feature_set* props,
                          pool& p)
    : basic_target(this, name, t, props), meta_target_(mt),
@@ -55,7 +55,7 @@ main_target::generate()
       return generate_cache_;
    else
    {
-      std::vector<boost::intrusive_ptr<hammer::build_node> >  result(meta_target_->project()->engine()->generators().construct(this));
+      std::vector<boost::intrusive_ptr<hammer::build_node> >  result(get_engine()->generators().construct(this));
       build_node_ = result.front();
       generate_and_add_dependencies(*build_node_);
       add_additional_dependencies(*build_node_);
@@ -76,7 +76,7 @@ void main_target::add_additional_dependencies(hammer::build_node& generated_node
 
 location_t main_target::intermediate_dir_impl() const
 {
-   return meta_target()->project()->engine()->output_location_strategy().compute_output_location(*this);
+   return get_engine()->output_location_strategy().compute_output_location(*this);
 }
 
 const location_t& main_target::intermediate_dir() const
@@ -89,7 +89,7 @@ const location_t& main_target::intermediate_dir() const
 
 const location_t& main_target::location() const
 {
-   return meta_target()->project()->location();
+   return meta_target_->location();
 }
 
 void main_target::timestamp_info_impl() const
@@ -112,8 +112,8 @@ void main_target::additional_hash_string_data(std::ostream& s) const
    
    main_target_sources_t main_target_sources;
    for(sources_t::const_iterator i = sources_.begin(), last = sources_.end(); i != last; ++i)
-      if (this != (**i).mtarget())
-         main_target_sources.insert((**i).mtarget());
+      if (this != (**i).get_main_target())
+         main_target_sources.insert((**i).get_main_target());
    
    vector<string> hashes;
    for(main_target_sources_t::const_iterator i = main_target_sources.begin(), last = main_target_sources.end(); i != last; ++i)

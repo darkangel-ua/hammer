@@ -12,7 +12,7 @@ main_target* typed_meta_target::construct_main_target(const main_target* owner, 
                                      name(), 
                                      type_, 
                                      properties,
-                                     project()->engine()->targets_pool());
+                                     get_engine()->targets_pool());
    return mt;
 }
 

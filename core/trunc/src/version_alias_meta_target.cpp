@@ -20,14 +20,14 @@ version_aliase_meta_target::version_aliase_meta_target(hammer::project* p,
    : alias_meta_target(p, name, sources_decl(), requirements_decl(), requirements_decl())
 {
    requirements_decl reqs;
-   reqs.add(*p->engine()->feature_registry().create_feature("version", version.to_string()));
+   reqs.add(*get_engine()->feature_registry().create_feature("version", version.to_string()));
    requirements(reqs);
 
-   feature_set* props = p->engine()->feature_registry().make_set();
+   feature_set* props = get_engine()->feature_registry().make_set();
    props->join("version", version.begin());
 
    sources_decl src;
-   source_decl s(sources != NULL ? *sources->begin() : make_default_source(*p->engine(), version));
+   source_decl s(sources != NULL ? *sources->begin() : make_default_source(*get_engine(), version));
    s.properties(s.properties() == NULL ? props : &s.properties()->join(*props));
    src.push_back(s);
    this->sources(src);

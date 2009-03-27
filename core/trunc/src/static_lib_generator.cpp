@@ -3,7 +3,7 @@
 #include <hammer/core/engine.h>
 #include <hammer/core/type_registry.h>
 #include <hammer/core/types.h>
-#include <hammer/core/type.h>
+#include <hammer/core/target_type.h>
 #include <hammer/core/basic_target.h>
 
 namespace hammer{
@@ -22,7 +22,7 @@ static_lib_generator::static_lib_generator(hammer::engine& e,
 }
 
 std::vector<boost::intrusive_ptr<build_node> >
-static_lib_generator::construct(const type& target_type, 
+static_lib_generator::construct(const target_type& type_to_construct, 
                                 const feature_set& props,
                                 const std::vector<boost::intrusive_ptr<build_node> >& sources,
                                 const basic_target* t,
@@ -46,7 +46,7 @@ static_lib_generator::construct(const type& target_type,
          ++i;
    }
 
-   std::vector<boost::intrusive_ptr<build_node> > result(generator::construct(target_type, props, modified_sources, t, name, owner));
+   std::vector<boost::intrusive_ptr<build_node> > result(generator::construct(type_to_construct, props, modified_sources, t, name, owner));
    result.insert(result.end(), extracted_products.begin(), extracted_products.end());
    return result;
 }

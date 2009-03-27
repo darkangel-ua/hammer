@@ -13,7 +13,7 @@ namespace hammer{
 
 copy_main_target::copy_main_target(const hammer::meta_target* mt, 
                                    const pstring& name, 
-                                   const hammer::type* t, 
+                                   const target_type* t, 
                                    const feature_set* props,
                                    pool& p)
    : main_target(mt, name, t, props, p),
@@ -26,7 +26,7 @@ copy_main_target::copy_main_target(const hammer::meta_target* mt,
    destination_ = (**d).get_path_data().target_->location() / (**d).value().to_string();
    destination_.normalize();
 
-   const type_registry& tr = mt->project()->engine()->get_type_registry();
+   const type_registry& tr = get_engine()->get_type_registry();
    for(feature_set::const_iterator i = props->find("type-to-copy"), last = props->end(); i != last; i = props->find(i + 1, "type-to-copy"))
       types_to_copy_.push_back(&tr.get(type_tag((**i).value().to_string())));
 

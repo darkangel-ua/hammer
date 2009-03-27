@@ -19,9 +19,9 @@ main_target* copy_meta_target::construct_main_target(const main_target* owner, c
 {
    main_target* mt = new copy_main_target(this, 
                                           name(), 
-                                          &project()->engine()->get_type_registry().get(types::COPIED), 
+                                          &get_engine()->get_type_registry().get(types::COPIED), 
                                           properties,
-                                          project()->engine()->targets_pool());
+                                          get_engine()->targets_pool());
    return mt;
 }
 

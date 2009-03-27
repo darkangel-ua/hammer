@@ -9,7 +9,7 @@ namespace hammer
    {
       public:
          copy_target(const main_target* mt, const pstring& name,
-                     const hammer::type* t, const feature_set* f);
+                     const target_type* t, const feature_set* f);
          virtual const location_t& location() const;
    };
 }

@@ -2,14 +2,14 @@
 #include <hammer/core/source_argument_writer.h>
 #include <hammer/core/build_node.h>
 #include <hammer/core/main_target.h>
-#include <hammer/core/type.h>
+#include <hammer/core/target_type.h>
 #include <hammer/core/fs_helpers.h>
 #include <hammer/core/build_environment.h>
 
 namespace hammer{
 
 source_argument_writer::source_argument_writer(const std::string& name, 
-                                               const type& t,
+                                               const target_type& t,
                                                bool write_full_path,
                                                const std::string& quoting_string)
    : targets_argument_writer(name, t), 
@@ -48,7 +48,7 @@ void source_argument_writer::write_impl(std::ostream& output, const build_node& 
          }
          else
          {
-            location_t source_path = relative_path(i->source_target_->location(), i->source_target_->mtarget()->location());
+            location_t source_path = relative_path(i->source_target_->location(), i->source_target_->get_main_target()->location());
             source_path.normalize();
             source_path /= i->source_target_->name().to_string();
             output << quoting_string_ << source_path.native_file_string() << quoting_string_;

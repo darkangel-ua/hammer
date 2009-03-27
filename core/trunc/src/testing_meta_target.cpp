@@ -12,7 +12,7 @@ testing_meta_target::testing_meta_target(hammer::project* p,
                                          const pstring& name, 
                                          const requirements_decl& req, 
                                          const requirements_decl& usage_req,
-                                         const hammer::type& t)
+                                         const hammer::target_type& t)
    : typed_meta_target(p, name, req, usage_req, t)
 {
 

@@ -10,7 +10,7 @@
 
 namespace hammer
 {
-   class type;
+   class target_type;
    class feature_set;
 
    class type_registry : public boost::noncopyable
@@ -18,18 +18,18 @@ namespace hammer
       public:
          type_registry();
          // FIXME: resolve_from_name should have other name
-         const type* resolve_from_suffix(const char* first, const char* last) const;
-         const type* resolve_from_suffix(const std::string& suffix) const;
-         const type* resolve_from_target_name(const pstring& name) const;
-         const type& hard_resolve_from_target_name(const pstring& name) const;
-         const type& get(const type_tag& tag) const;
-         const type* find(const type_tag& tag) const;
-         const type& insert(const type& t);
+         const target_type* resolve_from_suffix(const char* first, const char* last) const;
+         const target_type* resolve_from_suffix(const std::string& suffix) const;
+         const target_type* resolve_from_target_name(const pstring& name) const;
+         const target_type& hard_resolve_from_target_name(const pstring& name) const;
+         const target_type& get(const type_tag& tag) const;
+         const target_type* find(const type_tag& tag) const;
+         const target_type& insert(const target_type& t);
          ~type_registry();
 
       private:
-         typedef boost::ptr_map<type_tag, type> types_t;
-         typedef std::multimap<std::string, type*> types_by_suffix_t;
+         typedef boost::ptr_map<type_tag, target_type> types_t;
+         typedef std::multimap<std::string, target_type*> types_by_suffix_t;
 
          types_t types_;
          types_by_suffix_t types_by_suffix_;

@@ -15,7 +15,7 @@ namespace hammer
    class toolset_manager
    {
       public:
-         void add_toolset(std::auto_ptr<toolset>& t);
+         void add_toolset(std::auto_ptr<toolset> t);
          void init_toolset(engine& e, 
                            const std::string& toolset_name, 
                            const std::string& toolset_version,

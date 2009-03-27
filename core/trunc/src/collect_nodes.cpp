@@ -13,7 +13,7 @@ typedef std::set<const build_node*> visited_nodes_t;
 void collect_nodes(build_node::sources_t& result, 
                    std::set<const build_node*>& visited_nodes,
                    const std::vector<boost::intrusive_ptr<build_node> >& sources, 
-                   const std::vector<const hammer::type*>& types_to_collect,
+                   const std::vector<const target_type*>& types_to_collect,
                    bool recursive)
 {
    nodes_t new_sources;
@@ -32,7 +32,7 @@ void collect_nodes(build_node::sources_t& result,
 
       for(build_node::targets_t::const_iterator p = (**i).products_.begin(), p_last = (**i).products_.end(); p != p_last; ++p)
       {
-         vector<const type*>::const_iterator t = std::find(types_to_collect.begin(), types_to_collect.end(), &(**p).type());
+         vector<const target_type*>::const_iterator t = std::find(types_to_collect.begin(), types_to_collect.end(), &(**p).type());
          if (t != types_to_collect.end())
             result.push_back(build_node::source_t(*p, *i));
       }

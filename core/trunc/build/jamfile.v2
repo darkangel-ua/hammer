@@ -1,0 +1,54 @@
+project hammer.core : requirements
+                         <use>/boost
+                         <include>../include
+ ;
+
+lib parser
+   : 
+    ../src/build/hammerParser.c
+   : 
+    <toolset>msvc:<cflags>/TP 
+    <toolset>gcc:<cflags>"-x c++"
+    <use>/libantlr3c
+    <use>/boost/date_time
+   ;
+explicit parser ;
+
+lib lexer
+   : 
+    ../src/build/hammerLexer.c 
+   : 
+    <toolset>msvc:<cflags>/TP 
+    <toolset>gcc:<cflags>"-x c++"
+    <use>/libantlr3c
+    <include>../include
+   ;
+explicit lexer ;
+
+lib hammer_core 
+   : 
+    parser 
+    lexer
+    [ glob ../src/project_generators/*.cpp ]
+    [ glob ../src/toolsets/*.cpp ]
+    [ glob ../src/*.cpp ]
+    [ glob ../src/*.h ] 
+    ../src/build/hammer_walker.c
+    /libantlr3c
+    /boost/date_time
+    /boost/filesystem
+    /boost/regex
+    /boost/sandbox/process
+    /boost/sandbox/crypto
+    /boost/sandbox/guid
+    /boost/serialization
+    /boost/thread
+    /boost/iostreams
+   :
+    <include>../include
+    <include>../src
+    <link>static
+   :
+   :
+    <include>../include
+   ;

@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include <hammer/core/types.h>
-#include <hammer/core/type.h>
+#include <hammer/core/target_type.h>
 #include <boost/assign/list_of.hpp>
 #include <vector>
 #include <hammer/core/type_registry.h>
@@ -31,24 +31,29 @@ const type_tag TESTING_RUN_PASSED("TESTING_RUN_PASSED");
 
 void register_standart_types(type_registry& tr)
 {
-   const type& tCPP = tr.insert(type(CPP, type::suffixes_t(list_of(".cpp")(".cc"))));
-   const type& tC = tr.insert(type(C, ".c"));
-   const type& tH = tr.insert(type(H, type::suffixes_t(list_of(".h")(".hpp"))));
-   const type& tOBJ = tr.insert(type(OBJ, ".obj"));
-   const type& tPCH = tr.insert(type(PCH, ".pch"));
-   const type& tLIB = tr.insert(type(LIB, ""));
-   const type& tSHARED_LIB = tr.insert(type(SHARED_LIB, ".dll", tLIB));
-   const type& tSTATIC_LIB = tr.insert(type(STATIC_LIB, ".lib", tLIB));
-   const type& tIMPORT_LIB = tr.insert(type(IMPORT_LIB, ".lib", tSTATIC_LIB));
-   const type& tSEARCHED_LIB = tr.insert(type(SEARCHED_LIB, "", tLIB));
-   const type& tHEADER_LIB = tr.insert(type(HEADER_LIB, type::suffixes_t()));
-   const type& tEXE = tr.insert(type(EXE, ".exe"));
-   const type& tEXE_MANIFEST = tr.insert(type(EXE_MANIFEST, ".exe.manifest"));
-   const type& tDLL_MANIFEST = tr.insert(type(DLL_MANIFEST, ".dll.manifest"));
-   const type& tUNKNOWN = tr.insert(type(UNKNOWN, ""));
-   const type& tCOPIED = tr.insert(type(COPIED, ""));
-   const type& tTESTING_OUTPUT = tr.insert(type(TESTING_OUTPUT, ".test_output"));
-   const type& tTESTING_RUN_PASSED = tr.insert(type(TESTING_RUN_PASSED, ".run_passed"));
+   vector<string> cpp_suffixes = list_of<string>(".cpp")(".cc");
+   const target_type& tCPP = tr.insert(target_type(CPP, cpp_suffixes));
+   
+   const target_type& tC = tr.insert(target_type(C, ".c"));
+   
+   vector<string> h_suffixes = list_of<string>(".h")(".hpp");
+   const target_type& tH = tr.insert(target_type(H, h_suffixes));
+   
+   const target_type& tOBJ = tr.insert(target_type(OBJ, ".obj"));
+   const target_type& tPCH = tr.insert(target_type(PCH, ".pch"));
+   const target_type& tLIB = tr.insert(target_type(LIB, ""));
+   const target_type& tSHARED_LIB = tr.insert(target_type(SHARED_LIB, ".dll", tLIB));
+   const target_type& tSTATIC_LIB = tr.insert(target_type(STATIC_LIB, ".lib", tLIB));
+   const target_type& tIMPORT_LIB = tr.insert(target_type(IMPORT_LIB, ".lib", tSTATIC_LIB));
+   const target_type& tSEARCHED_LIB = tr.insert(target_type(SEARCHED_LIB, "", tLIB));
+   const target_type& tHEADER_LIB = tr.insert(target_type(HEADER_LIB, target_type::suffixes_t()));
+   const target_type& tEXE = tr.insert(target_type(EXE, ".exe"));
+   const target_type& tEXE_MANIFEST = tr.insert(target_type(EXE_MANIFEST, ".exe.manifest"));
+   const target_type& tDLL_MANIFEST = tr.insert(target_type(DLL_MANIFEST, ".dll.manifest"));
+   const target_type& tUNKNOWN = tr.insert(target_type(UNKNOWN, ""));
+   const target_type& tCOPIED = tr.insert(target_type(COPIED, ""));
+   const target_type& tTESTING_OUTPUT = tr.insert(target_type(TESTING_OUTPUT, ".test_output"));
+   const target_type& tTESTING_RUN_PASSED = tr.insert(target_type(TESTING_RUN_PASSED, ".run_passed"));
 }
 
 }}

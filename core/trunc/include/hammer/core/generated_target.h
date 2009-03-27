@@ -9,7 +9,7 @@ namespace hammer
    {
       public:
          generated_target(const main_target* mt, const pstring& n, 
-                          const hammer::type* t, const feature_set* f);
+                          const target_type* t, const feature_set* f);
          virtual const location_t& location() const;
          virtual std::vector<boost::intrusive_ptr<build_node> > generate();
    };

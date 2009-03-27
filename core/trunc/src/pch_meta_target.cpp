@@ -38,16 +38,16 @@ main_target* pch_meta_target::construct_main_target(const main_target* owner, co
       throw std::runtime_error("pch main target must have owner. Don't try to build pch targets standalone.");
 
    feature_set* modified_properties = properties->clone();
-   feature* create_pch_feature = project()->engine()->feature_registry().create_feature("pch", "create");
+   feature* create_pch_feature = get_engine()->feature_registry().create_feature("pch", "create");
    modified_properties->join(create_pch_feature);
    modified_properties->join("__pch", "");
    
    last_constructed_main_target_ = new pch_main_target(this, 
                                                        *owner,
                                                        name(), 
-                                                       &project()->engine()->get_type_registry().get(types::PCH), 
+                                                       &get_engine()->get_type_registry().get(types::PCH), 
                                                        modified_properties,
-                                                       project()->engine()->targets_pool());
+                                                       get_engine()->targets_pool());
 
    create_pch_feature->get_generated_data().target_ = last_constructed_main_target_;
    return last_constructed_main_target_;
@@ -60,15 +60,15 @@ void pch_meta_target::compute_usage_requirements(feature_set& result,
 {
    // adding pch feature to usage requirements to mark dependent targets as built with pch
    this->usage_requirements().eval(full_build_request, &result);
-   feature* pch_feature = project()->engine()->feature_registry().create_feature("pch", "use");
+   feature* pch_feature = get_engine()->feature_registry().create_feature("pch", "use");
    pch_feature->get_generated_data().target_ = last_constructed_main_target_;
    result.join(pch_feature);
    // add dependency on self to build pch before main target that use it
    if (owner == NULL)
       throw std::runtime_error("pch main target must have owner and cannot be instantiated standalone.");
 
-   feature* self_dependency_feature = project()->engine()->feature_registry().create_feature("dependency", "");
-   for(sources_decl::const_iterator i = owner->meta_target()->sources().begin(), last =  owner->meta_target()->sources().end(); i!= last; ++i)
+   feature* self_dependency_feature = get_engine()->feature_registry().create_feature("dependency", "");
+   for(sources_decl::const_iterator i = owner->get_meta_target()->sources().begin(), last =  owner->get_meta_target()->sources().end(); i!= last; ++i)
       if (i->type() == NULL && // that meta target
           i->target_path() == name()) // FIXME: skip self - should be more intelligent logic
       {
@@ -82,7 +82,7 @@ void pch_meta_target::compute_usage_requirements(feature_set& result,
 sources_decl pch_meta_target::compute_additional_sources(const main_target& owner) const
 {
    sources_decl result;
-   for(sources_decl::const_iterator i = owner.meta_target()->sources().begin(), last =  owner.meta_target()->sources().end(); i!= last; ++i)
+   for(sources_decl::const_iterator i = owner.get_meta_target()->sources().begin(), last =  owner.get_meta_target()->sources().end(); i!= last; ++i)
       if (i->type() == NULL && // that meta target
           i->target_path() != name()) // FIXME: skip self - should be more intelligent logic
       {

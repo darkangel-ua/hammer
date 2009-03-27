@@ -178,7 +178,7 @@ namespace
                        const feature_set& build_request)
    {
       vector<basic_target*> result;
-      feature_set* usage_requirements = project.engine()->feature_registry().make_set();
+      feature_set* usage_requirements = project.get_engine()->feature_registry().make_set();
       for(vector<string>::const_iterator i = targets.begin(), last = targets.end(); i != last; ++i)
       {
          if (is_looks_like_project(*i))
@@ -186,13 +186,13 @@ namespace
             string target_path, target_name;
             
             split_target_path(target_path, target_name, *i);
-            pstring p_target_name(project.engine()->pstring_pool(), target_name);
+            pstring p_target_name(project.get_engine()->pstring_pool(), target_name);
 
-            const hammer::engine::loaded_projects_t& p = project.engine()->load_project(target_path, project);
+            const hammer::engine::loaded_projects_t& p = project.get_engine()->load_project(target_path, project);
             typedef hammer::project::selected_targets_t selected_targets_t;
             selected_targets_t st = target_name.empty() ? p.select_best_alternative(build_request) :
                                                           selected_targets_t(1, p.select_best_alternative(p_target_name, build_request));
-            feature_set* usage_requirements = project.engine()->feature_registry().make_set();
+            feature_set* usage_requirements = project.get_engine()->feature_registry().make_set();
             for(selected_targets_t::const_iterator t = st.begin(), t_last = st.end(); t != t_last; ++t)
             {
                t->target_->instantiate(NULL, build_request, &result, usage_requirements);
@@ -201,7 +201,7 @@ namespace
          }
          else
          {
-            pstring name(project.engine()->pstring_pool(), *i);
+            pstring name(project.get_engine()->pstring_pool(), *i);
             const basic_meta_target* t = project.find_target(name);
             if (t == NULL)
                throw runtime_error((boost::format("Can't find target '%s'.") % *i).str());
@@ -244,7 +244,7 @@ namespace
       for(nodes_t::iterator i = nodes.begin(); i != nodes.end();)
       {
          if ((**i).products_.empty() ||
-             *(**i).products_[0]->mtarget()->meta_target()->project() != project)
+             *(**i).products_[0]->get_project() != project)
             i = nodes.erase(i);
          else
             ++i;
@@ -261,7 +261,7 @@ namespace
                                               const pstring& source_name,
                                               const top_targets_t& top_targets)
    {
-      if (top_targets.find(node->products_owner().meta_target()) == top_targets.end())
+      if (top_targets.find(node->products_owner().get_meta_target()) == top_targets.end())
          return make_pair(false, false);
 
       if (visited_nodes.find(node.get()) != visited_nodes.end())
@@ -310,7 +310,7 @@ namespace
       typedef boost::unordered_set<const meta_target*> top_targets_t;
       top_targets_t top_targets;
       for(nodes_t::const_iterator i = nodes.begin(), last = nodes.end(); i != last; ++i)
-         top_targets.insert((**i).products_owner().meta_target());
+         top_targets.insert((**i).products_owner().get_meta_target());
 
       visited_nodes_t visited_nodes;
       nodes_t result;
@@ -358,17 +358,18 @@ namespace
       {
          cout << "...updating source '" << opts.just_one_source_ << "'...\n";
          builder builder(build_environment, true);
-         builder.build(find_nodes_for_source_name(nodes, pstring(e.pstring_pool(), opts.just_one_source_)));
+         nodes_t source_nodes = find_nodes_for_source_name(nodes, pstring(e.pstring_pool(), opts.just_one_source_));
+         builder.build(source_nodes);
          cout << "...updated source '" << opts.just_one_source_ << "'...\n";
       }
    }
 
-   terminate_function old_terminate_function;
-   void terminate_hander()
-   {
-      cout << "Critical error - terminate handler was invoked\n";
-      old_terminate_function();
-   }
+//    terminate_function old_terminate_function;
+//    void terminate_hander()
+//    {
+//       cout << "Critical error - terminate handler was invoked\n";
+//       old_terminate_function();
+//    }
 
    void use_toolset_rule(project*, engine& e, pstring& toolset_name, pstring& toolset_version, pstring* toolset_home_)
    {
@@ -384,7 +385,7 @@ int main(int argc, char** argv)
 {
    try
    {
-      old_terminate_function = set_terminate(terminate_hander);
+//      old_terminate_function = set_terminate(terminate_hander);
 
       po::options_description desc(options_for_work());
       po::variables_map vm;
@@ -445,7 +446,7 @@ int main(int argc, char** argv)
       if (opts.debug_level_ > 0)
          cout << "Done\n";
 
-      engine.call_resolver().insert("use-toolset", boost::function<void (project*, pstring&, pstring&, pstring*)>(boost::bind(use_toolset_rule, _1, boost::ref(engine), _2, _3, _4)));
+//      engine.call_resolver().insert("use-toolset", boost::function<void (project*, pstring&, pstring&, pstring*)>(boost::bind(use_toolset_rule, _1, boost::ref(engine), _2, _3, _4)));
 
       location_t user_config_script = get_user_config_location();
       if (user_config_script.empty() || !exists(user_config_script))

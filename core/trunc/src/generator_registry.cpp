@@ -2,7 +2,7 @@
 #include <hammer/core/generator_registry.h>
 #include <stdexcept>
 #include <hammer/core/main_target.h>
-#include <hammer/core/type.h>
+#include <hammer/core/target_type.h>
 #include <boost/format.hpp>
 #include <hammer/core/feature_set.h>
 
@@ -31,7 +31,7 @@ static int compute_rank(const feature_set& build_properties, const feature_set& 
 }
 
 generator_registry::viable_generators_t 
-generator_registry::find_viable_generators(const type& t, 
+generator_registry::find_viable_generators(const target_type& t, 
                                            bool allow_composite,
                                            const feature_set& build_properties) const
 {

@@ -177,7 +177,7 @@ struct c_scanner_context : public scanner_context
           try_load_cache();
    }
    
-   c_scanner_context::~c_scanner_context()
+   ~c_scanner_context()
    {
       if (env_.cache_directory() != NULL && cache_is_valid_ == false)
           try_save_cache();
@@ -427,7 +427,7 @@ void c_scanner_context::load_directories_with_suffix(location_t::const_iterator 
                                                      dir_node_t& d_node) const
 {
    const hashed_location* cur_element = get_cached_location(*first).first;
-   iterator_range<dir_nodes_t::iterator> r = d_node.nodes_.equal_range(cur_element);
+   boost::iterator_range<dir_nodes_t::iterator> r = d_node.nodes_.equal_range(cur_element);
    for(dir_nodes_t::iterator i = r.begin(), i_last = r.end(); i != i_last; ++i)
    {
       if (!i->second->loaded_)

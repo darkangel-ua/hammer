@@ -8,7 +8,7 @@ namespace hammer
    class product_argument_writer : public targets_argument_writer
    {
       public:
-         product_argument_writer(const std::string& name, const type& t);
+         product_argument_writer(const std::string& name, const target_type& t);
          virtual argument_writer* clone() const;
 
       protected:

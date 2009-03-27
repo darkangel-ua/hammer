@@ -7,7 +7,7 @@
 namespace hammer
 {
    class feature_set;
-   class type;
+   class target_type;
 
    // FIXME: type should not be determined at constructing time
    // FIXME: source_decl should have method resolve_type for resolving type of source
@@ -18,7 +18,7 @@ namespace hammer
          source_decl() : properties_(NULL), public_(false) {};
          source_decl(const pstring& target_path,
 				         const pstring& target_name,
-                     const type* t, 
+                     const target_type* t, 
                      feature_set* props)
                     :
 			            target_path_(target_path),
@@ -28,7 +28,7 @@ namespace hammer
                      public_(false)
              {}
 			
-         void target_path(const pstring& v, const type* t) { target_path_ = v; type_ = t; }
+         void target_path(const pstring& v, const target_type* t) { target_path_ = v; type_ = t; }
          void target_name(const pstring& v) { target_name_ = v; }
          void set_public(bool v) { public_ = v; }
 
@@ -37,7 +37,7 @@ namespace hammer
 
          const pstring& target_path() const { return target_path_; }
          const pstring& target_name() const { return target_name_; }
-         const hammer::type* type() const { return type_; }
+         const target_type* type() const { return type_; }
          // FIXME. feature_set should be ref counted
          feature_set* properties() const { return properties_; }
          bool is_public() const { return public_; }
@@ -67,7 +67,7 @@ namespace hammer
       private:
          pstring target_path_;
          pstring target_name_;
-         const hammer::type* type_;
+         const target_type* type_;
          
          // FIXME: это должно быть const, но так как нужно делать set_dependency_data приходиться от этого отказываться
          // нужно перевести feature_set и feature на reference counted основу и тогда все будет зашибись

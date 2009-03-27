@@ -6,7 +6,7 @@
 #include <hammer/core/engine.h>
 #include <hammer/core/type_registry.h>
 #include <hammer/core/types.h>
-#include <hammer/core/type.h>
+#include <hammer/core/target_type.h>
 #include <hammer/core/feature.h>
 #include <hammer/core/feature_def.h>
 #include <hammer/core/feature_registry.h>
@@ -40,7 +40,7 @@ namespace
          virtual void remove_file_by_pattern(const location_t& dir, const std::string& pattern) const {};
          virtual void copy(const location_t& source, const location_t& destination) const {};
          virtual bool write_tag_file(const std::string& filename, const std::string& content) const { return true; }
-         virtual std::auto_ptr<std::ostream> create_output_file(const char* filename, std::ios_base::_Openmode mode) const 
+         virtual std::auto_ptr<std::ostream> create_output_file(const char* filename, std::ios_base::openmode mode) const 
          { 
             return std::auto_ptr<std::ostream>(new ostringstream);
          }
@@ -61,8 +61,8 @@ namespace
    {
       public:
          searched_lib_argument_writer(const std::string& name, 
-                                      const type& static_lib_type, 
-                                      const type& searched_lib_type) 
+                                      const target_type& static_lib_type, 
+                                      const target_type& searched_lib_type) 
             : source_argument_writer(name, static_lib_type, true),
               static_lib_type_(static_lib_type),
               searched_lib_type_(searched_lib_type)
@@ -72,12 +72,12 @@ namespace
          virtual bool accept(const basic_target& source) const
          {
             return source.type().equal_or_derived_from(this->source_type()) &&
-                   source.mtarget()->type().equal_or_derived_from(searched_lib_type_);
+                   source.get_main_target()->type().equal_or_derived_from(searched_lib_type_);
          }
       
       private:
-         const type& static_lib_type_;
-         const type& searched_lib_type_;
+         const target_type& static_lib_type_;
+         const target_type& searched_lib_type_;
    };
 }
 
@@ -238,13 +238,13 @@ void msvc_project::add_variant(boost::intrusive_ptr<const build_node> node)
    const basic_target* t = node->products_[0];
    v->properties_ = &t->properties();
    v->node_ = node;
-   v->target_ = node->products_[0]->mtarget();
+   v->target_ = node->products_[0]->get_main_target();
    v->name_ = make_variant_name(*v->target_);
    v->owner_ = this;
    variants_.push_back(v);
    if (id_.empty())
    {
-      meta_target_ = naked_variant->target_->meta_target();
+      meta_target_ = naked_variant->target_->get_meta_target();
       project_output_dir_ = output_dir() / name();
       project_output_dir_.normalize();
       id_ = project_output_dir().string();
@@ -274,9 +274,9 @@ const std::string msvc_project::name() const
 {
    string version = variants_.front().target_->version();
    if (version.empty())
-      return variants_.front().target_->meta_target()->name().to_string();
+      return variants_.front().target_->get_meta_target()->name().to_string();
    else
-      return variants_.front().target_->meta_target()->name().to_string() + '-' + version;
+      return variants_.front().target_->get_meta_target()->name().to_string() + '-' + version;
 }
 
 void msvc_project::write_header(ostream& s) const
@@ -302,10 +302,10 @@ static void write_bottom(std::ostream& s)
 
 configuration_types::value msvc_project::resolve_configuration_type(const variant& v) const
 {
-   const type& exe_type = engine_->get_type_registry().get(types::EXE);
-   const type& static_lib_type = engine_->get_type_registry().get(types::STATIC_LIB);
-   const type& shared_lib_type = engine_->get_type_registry().get(types::SHARED_LIB);
-   const type& header_lib_type = engine_->get_type_registry().get(types::HEADER_LIB);
+   const target_type& exe_type = engine_->get_type_registry().get(types::EXE);
+   const target_type& static_lib_type = engine_->get_type_registry().get(types::STATIC_LIB);
+   const target_type& shared_lib_type = engine_->get_type_registry().get(types::SHARED_LIB);
+   const target_type& header_lib_type = engine_->get_type_registry().get(types::HEADER_LIB);
 
    if (v.target_->type().equal_or_derived_from(exe_type))
       return configuration_types::exe;
@@ -374,7 +374,7 @@ void msvc_project::write_configurations(std::ostream& s) const
 
 static feature_set* compute_file_conf_properties(const basic_target& target, const msvc_project::variant& v)
 {
-   feature_set* result = v.target_->meta_target()->project()->engine()->feature_registry().make_set();
+   feature_set* result = v.target_->get_engine()->feature_registry().make_set();
    for(feature_set::const_iterator i = target.properties().begin(), last = target.properties().end(); i != last; ++i)
    {
       feature_set::const_iterator f = v.properties_->find(**i);
@@ -484,7 +484,7 @@ void msvc_project::write() const
    write_bottom(f);
 }
 
-bool msvc_project::filter_t::accept(const type* t) const
+bool msvc_project::filter_t::accept(const target_type* t) const
 {
    for(types_t::const_iterator i = types_.begin(), last = types_.end(); i != last; ++i)
    {
@@ -511,7 +511,7 @@ void msvc_project::insert_into_files(const boost::intrusive_ptr<build_node>& nod
                                      const basic_target* t, 
                                      const variant& v)
 {
-   const type* tp = &t->type();
+   const target_type* tp = &t->type();
    for(files_t::iterator fi = files_.begin(), flast = files_.end(); fi != flast; ++fi)
    {
       if (fi->accept(tp))
@@ -527,9 +527,9 @@ void msvc_project::gether_files_impl(const build_node& node, variant& v)
    typedef build_node::sources_t::const_iterator iter;
    for(iter mi = node.sources_.begin(), mlast = node.sources_.end(); mi != mlast; ++mi)
    {
-      if (mi->source_target_->mtarget()->meta_target() == meta_target_ ||
-          mi->source_target_->mtarget()->type().equal_or_derived_from(obj_type_) ||
-          mi->source_target_->mtarget()->type().equal_or_derived_from(pch_type_))
+      if (mi->source_target_->get_meta_target() == meta_target_ ||
+          mi->source_target_->get_main_target()->type().equal_or_derived_from(obj_type_) ||
+          mi->source_target_->get_main_target()->type().equal_or_derived_from(pch_type_))
       {
          insert_into_files(mi->source_node_, mi->source_target_, v);
          if (mi->source_node_)
@@ -537,7 +537,7 @@ void msvc_project::gether_files_impl(const build_node& node, variant& v)
       }
       else
       {
-         if (mi->source_target_->mtarget()->type().equal_or_derived_from(searched_lib_))
+         if (mi->source_target_->get_main_target()->type().equal_or_derived_from(searched_lib_))
          { // this target is searched lib product
             const pstring& file_name = mi->source_target_->name();
             location_t searched_file(mi->source_target_->location().empty() 
@@ -546,7 +546,7 @@ void msvc_project::gether_files_impl(const build_node& node, variant& v)
             searched_file.normalize();
          }
          else
-            dependencies_.push_back(mi->source_target_->mtarget());
+            dependencies_.push_back(mi->source_target_->get_main_target());
       }
    }
 }

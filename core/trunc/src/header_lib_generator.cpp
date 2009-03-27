@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include <hammer/core/header_lib_generator.h>
 #include <hammer/core/types.h>
-#include <hammer/core/type.h>
+#include <hammer/core/target_type.h>
 #include <hammer/core/engine.h>
 #include <hammer/core/type_registry.h>
 #include <hammer/core/header_lib_target.h>
@@ -22,7 +22,7 @@ header_lib_generator::header_lib_generator(hammer::engine& e,
 }
 
 std::vector<boost::intrusive_ptr<build_node> >
-header_lib_generator::construct(const type& target_type, 
+header_lib_generator::construct(const target_type& type_to_construct, 
                                 const feature_set& props,
                                 const std::vector<boost::intrusive_ptr<build_node> >& sources,
                                 const basic_target* t,
@@ -34,9 +34,9 @@ header_lib_generator::construct(const type& target_type,
 
    // add HEADER_LIB node to result
    boost::intrusive_ptr<build_node> header_lib_node(new build_node(owner, true));
-   header_lib_node->targeting_type_ = &target_type;
+   header_lib_node->targeting_type_ = &type_to_construct;
    result.push_back(header_lib_node);
-   std::auto_ptr<header_lib_target> header_lib_product(new header_lib_target(&owner, *composite_target_name, &target_type, &props));
+   std::auto_ptr<header_lib_target> header_lib_product(new header_lib_target(&owner, *composite_target_name, &type_to_construct, &props));
    header_lib_node->products_.push_back(header_lib_product.get());
    header_lib_product.release();
 

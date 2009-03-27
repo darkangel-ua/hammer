@@ -7,7 +7,7 @@ namespace hammer
 {
    class basic_target;
    class feature_set;
-   class type;
+   class target_type;
    class generated_target;
 
    class meta_target : public basic_meta_target

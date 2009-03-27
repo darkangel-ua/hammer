@@ -95,8 +95,13 @@ bool build_environment_impl::run_shell_commands(std::string& captured_output,
 
 static std::auto_ptr<std::istream> open_input_stream(const location_t& full_content_file_name)
 {
+#if defined(_WIN32)
    std::auto_ptr<istream> f(new ifstream((L"\\\\?\\" + to_wide(location_t(full_content_file_name)).native_file_string()).c_str()));
    return f;
+#else
+   std::auto_ptr<istream> f(new ifstream((full_content_file_name).native_file_string().c_str()));
+   return f;
+#endif
 }
 
 void build_environment_impl::dump_shell_command(std::ostream& s, const location_t& full_content_file_name) const
@@ -151,7 +156,7 @@ bool build_environment_impl::write_tag_file(const std::string& filename, const s
    return true;
 }
 
-std::auto_ptr<ostream> build_environment_impl::create_output_file(const char* filename, ios_base::_Openmode mode) const
+std::auto_ptr<ostream> build_environment_impl::create_output_file(const char* filename, ios_base::openmode mode) const
 {
    location_t full_filename_path(filename);
    if (!full_filename_path.has_root_path())
@@ -160,15 +165,18 @@ std::auto_ptr<ostream> build_environment_impl::create_output_file(const char* fi
    full_filename_path.normalize();
    std::auto_ptr<ofstream> f(new ofstream);
    f->exceptions(ios_base::badbit | ios_base::eofbit | ios_base::failbit);
+#if defined (_WIN32)
    wstring unc_path(L"\\\\?\\" + to_wide(location_t(full_filename_path)).native_file_string());
    f->open(unc_path.c_str(), mode);
-   
-   return f;
+#else
+   f->open(full_filename_path.native_file_string().c_str(), mode);
+#endif
+   return auto_ptr<ostream>(f.release());
 }
 
 location_t build_environment_impl::working_directory(const basic_target& t) const
 {
-   return t.mtarget()->location();
+   return t.get_main_target()->location();
 }
 
 const location_t* build_environment_impl::cache_directory() const

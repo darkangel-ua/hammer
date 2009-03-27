@@ -2,7 +2,7 @@
 #include <hammer/core/pch_generator.h>
 #include <hammer/core/types.h>
 #include <hammer/core/engine.h>
-#include <hammer/core/type.h> 
+#include <hammer/core/target_type.h> 
 
 namespace hammer
 {
@@ -21,7 +21,7 @@ namespace hammer
 }
 
 std::vector<boost::intrusive_ptr<build_node> >
-pch_generator::construct(const type& target_type, 
+pch_generator::construct(const target_type& type_to_construct, 
                          const feature_set& props,
                          const std::vector<boost::intrusive_ptr<build_node> >& sources,
                          const basic_target* t,
@@ -33,7 +33,7 @@ pch_generator::construct(const type& target_type,
    sources_t modified_sources;
    for(sources_t::const_iterator i = sources.begin(), last = sources.end(); i != last; ++i)
    {
-      const type* t = (**i).targeting_type_;
+      const target_type* t = (**i).targeting_type_;
       if (t->equal_or_derived_from(c_type_) ||
           t->equal_or_derived_from(cpp_type_) ||
           t->equal_or_derived_from(h_type_))
@@ -42,7 +42,7 @@ pch_generator::construct(const type& target_type,
       }
    }
 
-   return generator::construct(target_type, props, modified_sources, t, composite_target_name, owner);
+   return generator::construct(type_to_construct, props, modified_sources, t, composite_target_name, owner);
 }
 
 }

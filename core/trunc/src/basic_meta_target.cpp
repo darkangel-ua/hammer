@@ -3,7 +3,7 @@
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature.h>
 #include <hammer/core/requirements_decl.h>
-#include <hammer/core/type.h>
+#include <hammer/core/target_type.h>
 #include <hammer/core/project.h>
 #include <hammer/core/engine.h>
 #include <hammer/core/type_registry.h>
@@ -43,7 +43,7 @@ void basic_meta_target::add_sources(const sources_decl& s)
 
 const location_t& basic_meta_target::location() const 
 {
-   return project()->location();
+   return get_project()->location();
 }
 
 void basic_meta_target::instantiate_simple_targets(const sources_decl& targets, 
@@ -51,14 +51,14 @@ void basic_meta_target::instantiate_simple_targets(const sources_decl& targets,
                                                    const main_target& owner, 
                                                    std::vector<basic_target*>* result) const
 {
-   const type_registry& tr = project_->engine()->get_type_registry();
+   const type_registry& tr = get_engine()->get_type_registry();
    for(sources_decl::const_iterator i = targets.begin(), last = targets.end(); i != last; ++i)
    {
-      const hammer::type* tp = i->type();
+      const hammer::target_type* tp = i->type();
       if (tp == 0)
          throw std::runtime_error("Can't resolve type from source '" + i->target_path().to_string() + "'.");
 
-      source_target* st = new(project_->engine()) source_target(&owner, i->target_path(), tp, &owner.properties());
+      source_target* st = new(get_engine()) source_target(&owner, i->target_path(), tp, &owner.properties());
       result->push_back(st);
    }
 }
@@ -84,7 +84,7 @@ void basic_meta_target::split_one_source(sources_decl* simple_targets,
                                          const feature_set& build_request,
                                          const type_registry& tr) const
 {
-   if (const type* t = source.type())
+   if (const target_type* t = source.type())
       simple_targets->push_back(source); 
    else
       resolve_meta_target_source(source, build_request, simple_targets, meta_targets);
@@ -93,7 +93,7 @@ void basic_meta_target::split_one_source(sources_decl* simple_targets,
 void basic_meta_target::split_sources(sources_decl* simple_targets, meta_targets_t* meta_targets,
                                       const sources_decl& sources, const feature_set& build_request) const
 {
-   const type_registry& tr = project_->engine()->get_type_registry();
+   const type_registry& tr = get_engine()->get_type_registry();
    for(sources_decl::const_iterator i = sources.begin(), last = sources.end(); i != last; ++i)
       split_one_source(simple_targets, meta_targets, *i, build_request, tr);
 }      
@@ -121,7 +121,7 @@ void basic_meta_target::resolve_meta_target_source(const source_decl& source,
    }
 
 	// source has target_name_ only when it was explicitly requested (./foo//bar) where target_name_ == "bar"
-   engine::loaded_projects_t suitable_projects = project_->engine()->load_project(source.target_path().to_string(), *project_);
+   engine::loaded_projects_t suitable_projects = get_engine()->load_project(source.target_path().to_string(), *project_);
    if (source.target_name().empty()) 
    {
       try
@@ -166,7 +166,7 @@ basic_meta_target::~basic_meta_target()
 const feature_set& basic_meta_target::resolve_undefined_features(const feature_set& fs) const
 {
    const feature_set* without_undefined = fs.has_undefined_features() 
-                                             ? project()->try_resolve_local_features(fs)
+                                             ? get_project()->try_resolve_local_features(fs)
                                              : &fs;
    if (without_undefined->has_undefined_features())
       throw std::runtime_error("Target '" + name().to_string() + "' at location '" +
@@ -192,7 +192,7 @@ void basic_meta_target::instantiate(const main_target* owner,
 
       cached_instantiation_data_t cache_item;
       cache_item.build_request_ = &build_request;
-      cache_item.computed_usage_requirements_ = project()->engine()->feature_registry().make_set();
+      cache_item.computed_usage_requirements_ = get_engine()->feature_registry().make_set();
 
       instantiate_impl(owner, 
                        build_request, 
@@ -210,6 +210,11 @@ void basic_meta_target::instantiate(const main_target* owner,
                     build_request, 
                     result, 
                     usage_requirements);
+}
+
+engine* basic_meta_target::get_engine() const
+{
+   return project_->get_engine();
 }
 
 }

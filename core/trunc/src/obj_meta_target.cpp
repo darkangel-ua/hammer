@@ -16,7 +16,7 @@ obj_meta_target::obj_meta_target(hammer::project* p,
                        name, 
                        req, 
                        usage_req, 
-                       p->engine()->get_type_registry().get(types::OBJ))
+                       p->get_engine()->get_type_registry().get(types::OBJ))
 {
    set_explicit(true);
 }
@@ -28,7 +28,7 @@ main_target* obj_meta_target::construct_main_target(const main_target* owner, co
                               name(), 
                               &type(), 
                               properties,
-                              project()->engine()->targets_pool());
+                              get_engine()->targets_pool());
 
 }
 

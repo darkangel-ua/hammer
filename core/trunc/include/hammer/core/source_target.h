@@ -7,7 +7,7 @@
 namespace hammer
 {
    class main_target;
-   class type;
+   class target_type;
    class engine;
    class feature_set;
 
@@ -15,9 +15,7 @@ namespace hammer
    {
       public:  
          source_target(const main_target* mt, const pstring& name, 
-                       const hammer::type* t, const feature_set* f);
-         void* operator new(size_t size, engine* e);
-         void operator delete(void* mem, engine*) {};
+                       const target_type* t, const feature_set* f);
          virtual std::vector<boost::intrusive_ptr<build_node> > generate();
    };
 }

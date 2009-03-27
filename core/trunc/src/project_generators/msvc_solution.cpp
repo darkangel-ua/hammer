@@ -35,7 +35,7 @@ struct msvc_solution::impl_t
           generation_mode::value mode) 
       : owner_(owner), 
         source_project_(source_project),
-        engine_(*source_project.engine()), 
+        engine_(*source_project.get_engine()), 
         output_location_(output_path),
         generation_mode_(mode)
    {
@@ -77,7 +77,7 @@ void impl_t::generate_dependencies(impl_t::dependencies_t::const_iterator first,
    dependencies_t dependencies;
    for(; first != last; ++first)
    {
-      projects_t::const_iterator i = projects_.find((**first).meta_target());
+      projects_t::const_iterator i = projects_.find((**first).get_meta_target());
       if (i == projects_.end() ||
          (i != projects_.end() &&
           !i->second->has_variant(*first)))
@@ -126,7 +126,7 @@ void msvc_solution::impl_t::write_project_section(ostream& os, const msvc_projec
    typedef msvc_project::dependencies_t::const_iterator iter;
    for(iter i = sorted_dependencies.begin(), last = sorted_dependencies.end(); i != last; ++i)
    {
-      projects_t::const_iterator p = projects_.find((**i).meta_target());
+      projects_t::const_iterator p = projects_.find((**i).get_meta_target());
       if (p == projects_.end())
          throw std::logic_error("Found target that is unknown to solution.");
       os << "\t\t{" << p->second->guid() << "} = {" << p->second->guid() << "}\n";
@@ -146,7 +146,7 @@ location_t msvc_solution::impl_t::project_output_dir(const build_node& node) con
       case generation_mode::NON_LOCAL:
       {
          location_t suffix = relative_path(output_location_, source_project_.location());
-         location_t result = node.products_[0]->mtarget()->location() / suffix;
+         location_t result = node.products_[0]->get_main_target()->location() / suffix;
          result.normalize();
          return result;
       }
@@ -172,7 +172,7 @@ void msvc_solution::add_target(boost::intrusive_ptr<const build_node> node)
    if (!impl_->projects_.empty())
       throw std::runtime_error("MSVC solution generator can handle only one top level target.");
 
-   impl_->variant_names_.push_back(node->products_[0]->mtarget()->properties().get("variant").value().to_string());
+   impl_->variant_names_.push_back(node->products_[0]->get_main_target()->properties().get("variant").value().to_string());
    std::auto_ptr<msvc_project> p_guarg(new msvc_project(impl_->engine_, 
                                                         impl_->project_output_dir(*node), 
                                                         impl_->variant_names_.front(), 

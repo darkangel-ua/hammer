@@ -1,14 +1,14 @@
 #include "stdafx.h"
 #include <hammer/core/scaner_manager.h>
 #include <boost/unordered_map.hpp>
-#include <hammer/core/type.h>
+#include <hammer/core/target_type.h>
 #include <hammer/core/scaner.h>
 
 namespace hammer{
 
 struct scanner_manager::impl_t
 {
-   typedef boost::unordered_map<const type*, 
+   typedef boost::unordered_map<const target_type*, 
                                 boost::shared_ptr<scanner> > scanners_t;
    scanners_t scanners_;
 };
@@ -19,7 +19,7 @@ scanner_manager::scanner_manager()
 
 }
 
-void scanner_manager::register_scanner(const type& t, const boost::shared_ptr<scanner>& scanner)
+void scanner_manager::register_scanner(const target_type& t, const boost::shared_ptr<scanner>& scanner)
 {
    if (const hammer::scanner* s = find(t))
       throw std::runtime_error("Scanner '" + s->name() + "' for type '" + t.tag().name() + "' already registered.");
@@ -27,7 +27,7 @@ void scanner_manager::register_scanner(const type& t, const boost::shared_ptr<sc
    impl_->scanners_.insert(std::make_pair(&t, scanner));
 }
 
-const scanner* scanner_manager::find(const type& t) const
+const scanner* scanner_manager::find(const target_type& t) const
 {
    impl_t::scanners_t::const_iterator i = impl_->scanners_.find(&t);
    if (i == impl_->scanners_.end())
@@ -36,7 +36,7 @@ const scanner* scanner_manager::find(const type& t) const
       return i->second.get();
 }
 
-const scanner& scanner_manager::get(const type& t) const
+const scanner& scanner_manager::get(const target_type& t) const
 {
    const scanner* result = find(t);
    if (result == NULL)

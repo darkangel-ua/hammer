@@ -8,7 +8,8 @@ namespace hammer{
 
 scm_manager::scm_manager()
 {
-   scm_clients_.insert(string("svn"), new subversion_scm_client);
+   std::auto_ptr<scm_client> new_client(new subversion_scm_client);
+   scm_clients_.insert(string("svn"), new_client);
 }
 
 const scm_client* scm_manager::find(const std::string& id) const

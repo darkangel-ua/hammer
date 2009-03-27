@@ -22,7 +22,7 @@ namespace hammer
          generators_t generators_;
 
          viable_generators_t 
-            find_viable_generators(const type& t, 
+            find_viable_generators(const target_type& t, 
                                    bool allow_composite,
                                    const feature_set& build_properties) const;
 

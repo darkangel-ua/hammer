@@ -8,6 +8,11 @@ namespace hammer
    class hashed_location : private location_t
    {
       public:
+         hashed_location(const hashed_location& l) 
+            : location_t(l.location()), 
+              hash_(boost::hash_value(l.location().string())) 
+         {}
+
          hashed_location(const location_t& l) 
             : location_t(l), 
               hash_(boost::hash_value(l.string())) 
@@ -27,11 +32,8 @@ namespace hammer
       private:
          std::size_t hash_;
    };
-}
 
-namespace boost
-{
-   inline std::size_t hash_value(const hammer::hashed_location& hl)
+   inline std::size_t hash_value(const hashed_location& hl)
    {
       return hl.hash();
    }

@@ -6,16 +6,16 @@
 
 namespace hammer
 {
-   class type;
+   class target_type;
 
    class targets_argument_writer : public argument_writer
    {
       public:
-         targets_argument_writer(const std::string& name, const type& t);
-         const type& source_type() const { return *source_type_; }
+         targets_argument_writer(const std::string& name, const target_type& t);
+         const target_type& source_type() const { return *source_type_; }
 
       private:
-         const type* source_type_;
+         const target_type* source_type_;
    };
 }
 

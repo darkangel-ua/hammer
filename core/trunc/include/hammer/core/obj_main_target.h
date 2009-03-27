@@ -11,7 +11,7 @@ namespace hammer
          obj_main_target(const hammer::meta_target* mt,
                          const main_target& owner,
                          const pstring& name, 
-                         const hammer::type* t, 
+                         const target_type* t, 
                          const feature_set* props,
                          pool& p);
 

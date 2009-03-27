@@ -13,7 +13,7 @@ namespace hammer
                             boost::shared_ptr<T>& target_writer,
                             boost::shared_ptr<T>& output_writer)
          : cmdline_action(name, target_writer),
-           output_writer_(shared_static_cast<argument_writer>(output_writer))
+           output_writer_(boost::shared_static_cast<argument_writer>(output_writer))
          {
          }
       

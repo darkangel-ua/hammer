@@ -21,7 +21,7 @@ namespace hammer
 
          main_target(const meta_target* mt, 
                      const pstring& name, 
-                     const hammer::type* t, 
+                     const target_type* t, 
                      const feature_set* props,
                      pool& p);
 
@@ -30,7 +30,7 @@ namespace hammer
          const sources_t& sources() const { return sources_; }
          void dependencies(const dependencies_t& deps);
          const dependencies_t& dependencies() const { return dependencies_; }
-         const hammer::meta_target* meta_target() const { return meta_target_; }
+         const hammer::meta_target* get_meta_target() const { return meta_target_; }
          virtual build_nodes_t generate();
          const location_t& intermediate_dir() const;
          boost::intrusive_ptr<const hammer::build_node> build_node() const { return build_node_; }

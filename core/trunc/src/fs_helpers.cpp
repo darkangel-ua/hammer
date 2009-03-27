@@ -59,7 +59,7 @@ boost::filesystem::path relative_path(boost::filesystem::path p,
 
 #if defined(_WIN32)
 #include <windows.h>
-boost::filesystem::wpath to_wide(boost::filesystem::path& narrow_path)
+boost::filesystem::wpath to_wide(const boost::filesystem::path& narrow_path)
 {
    if (narrow_path.empty())
       return boost::filesystem::wpath();
@@ -73,7 +73,10 @@ boost::filesystem::wpath to_wide(boost::filesystem::path& narrow_path)
    return boost::filesystem::wpath(buf.get(), buf.get() + res);
 }
 #else
-#error "Not supported platform"
+boost::filesystem::wpath to_wide(const boost::filesystem::path& narrow_path)
+{
+   throw std::runtime_error("Non windows platforms should not invoke 'to_wide'. Posible broken build of hammer.core");
+}
 #endif
 
 

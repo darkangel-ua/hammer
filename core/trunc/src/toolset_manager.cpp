@@ -5,7 +5,7 @@
 namespace hammer
 {
 
-void toolset_manager::add_toolset(std::auto_ptr<toolset>& t)
+void toolset_manager::add_toolset(std::auto_ptr<toolset> t)
 {
    if (!toolsets_.insert(make_pair(t->name(), boost::shared_ptr<toolset>(t.get()))).second)
       throw std::runtime_error("Toolset '" + t->name() + "' already registered");

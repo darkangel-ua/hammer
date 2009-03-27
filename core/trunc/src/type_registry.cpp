@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include <hammer/core/type_registry.h>
-#include <hammer/core/type.h>
+#include <hammer/core/target_type.h>
 #include <hammer/core/types.h>
 
 using namespace std;
@@ -42,7 +42,7 @@ namespace hammer{
    }
 
    // FIXME: need totally rewrite this logic in very efficiently way because it calls many times
-   const type* type_registry::resolve_from_target_name(const pstring& name) const
+   const target_type* type_registry::resolve_from_target_name(const pstring& name) const
    {
       for(types_t::const_iterator i = types_.begin(), last = types_.end(); i != last; ++i)
       {
@@ -50,7 +50,7 @@ namespace hammer{
          if (i->second->suffixes().empty())
             continue;
          
-         for(type::suffixes_t::const_iterator j = i->second->suffixes().begin(), j_last = i->second->suffixes().end(); j != j_last; ++j)
+         for(target_type::suffixes_t::const_iterator j = i->second->suffixes().begin(), j_last = i->second->suffixes().end(); j != j_last; ++j)
          {
             string::size_type p = rfind(name, *j);//s_name.rfind(j->c_str());
             if (p != string::npos && 
@@ -62,21 +62,21 @@ namespace hammer{
       return 0;
    }
 
-   const type& type_registry::hard_resolve_from_target_name(const pstring& name) const
+   const target_type& type_registry::hard_resolve_from_target_name(const pstring& name) const
    {
-      const type* t = resolve_from_target_name(name);
+      const target_type* t = resolve_from_target_name(name);
       if (t == NULL)
          throw std::runtime_error("Can't resolve type from target name '" + name.to_string() + "'.");
       
       return *t;
    }
 
-   const type* type_registry::resolve_from_suffix(const char* first, const char* last) const
+   const target_type* type_registry::resolve_from_suffix(const char* first, const char* last) const
    {
       return resolve_from_suffix(string(first, last));
    }
 
-   const type* type_registry::resolve_from_suffix(const std::string& suffix) const
+   const target_type* type_registry::resolve_from_suffix(const std::string& suffix) const
    {
       types_by_suffix_t::const_iterator i = types_by_suffix_.find(suffix);
       if (i != types_by_suffix_.end())
@@ -85,7 +85,7 @@ namespace hammer{
          throw runtime_error("Can't find type with suffix '" + suffix + "'");
    }
 
-   const type* type_registry::find(const type_tag& tag) const
+   const target_type* type_registry::find(const type_tag& tag) const
    {
       types_t::const_iterator i = types_.find(tag);
       if (i != types_.end())
@@ -94,18 +94,18 @@ namespace hammer{
          return NULL;
    }
 
-   const type& type_registry::get(const type_tag& tag) const
+   const target_type& type_registry::get(const type_tag& tag) const
    {
-      const type* result = find(tag);
+      const target_type* result = find(tag);
       if (result != NULL)
          return *result;
       else
          throw runtime_error("Can't find type with tag '" + tag.name() + "'");
    }
 
-   const type& type_registry::insert(const type& a_t)
+   const target_type& type_registry::insert(const target_type& a_t)
    {
-      std::auto_ptr<type> t(a_t.clone(*this));
+      std::auto_ptr<target_type> t(a_t.clone(*this));
       // FIXME: This is due bug in ptr_container insert method
       type_tag tag(t->tag());
       pair<types_t::iterator, bool> i = types_.insert(tag, t.get());
@@ -113,7 +113,7 @@ namespace hammer{
       {
          if (!t->suffixes().empty())
          {
-            for(type::suffixes_t::const_iterator i = t->suffixes().begin(), last = t->suffixes().end(); i != last; ++i)
+            for(target_type::suffixes_t::const_iterator i = t->suffixes().begin(), last = t->suffixes().end(); i != last; ++i)
                types_by_suffix_.insert(make_pair(*i, t.get()));
          }
 

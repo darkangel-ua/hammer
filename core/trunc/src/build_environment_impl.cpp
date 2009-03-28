@@ -54,9 +54,18 @@ bool build_environment_impl::run_shell_commands(std::string* captured_output,
          launcher.set_stderr_behavior(bp::inherit_stream);
       }
 
+#if defined(_WIN32)
       bp::command_line cmdline = bp::command_line("cmd.exe");
       cmdline.argument("/Q").argument("/C").argument("call " + tmp_file_name);
+#else
+      const char* shell_cmd = getenv("SHELL");
+      if (shell_cmd == NULL)
+         throw std::runtime_error("Can't find SHELL environment variable.");
+      bp::command_line cmdline = bp::command_line(shell_cmd);
+      cmdline.argument(tmp_file_name);
+#endif      
       bp::child shell_action_child = launcher.start(cmdline);
+
       
       if (captured_output != NULL)
          std::copy(istreambuf_iterator<char>(shell_action_child.get_stdout()), 

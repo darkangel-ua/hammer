@@ -85,6 +85,7 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
 
    shared_ptr<free_feature_arg_writer> user_link_flags(new free_feature_arg_writer("user_link_flags", e.feature_registry().get_def("linkflags")));
    shared_ptr<free_feature_arg_writer> user_cxx_flags(new free_feature_arg_writer("user_cxx_flags", e.feature_registry().get_def("cxxflags")));
+   shared_ptr<free_feature_arg_writer> user_c_flags(new free_feature_arg_writer("user_c_flags", e.feature_registry().get_def("cflags")));
    shared_ptr<free_feature_arg_writer> user_archive_flags(new free_feature_arg_writer("user_archive_flags", e.feature_registry().get_def("archiveflags")));
 
    shared_ptr<free_feature_arg_writer> includes(new free_feature_arg_writer("includes", e.feature_registry().get_def("include"), "-I\"", "\""));
@@ -94,8 +95,9 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
    {
       shared_ptr<source_argument_writer> c_input(new source_argument_writer("c_input", e.get_type_registry().get(types::C)));
       cmdline_builder obj_cmd(install_data.compiler_.native_file_string() + 
-                              " -x c -c $(cflags) $(includes) $(defines) $(c_input) -o \"$(obj_product)\"");
+                              " -x c -c $(cflags) $(user_c_flags) $(includes) $(defines) $(c_input) -o \"$(obj_product)\"");
       obj_cmd += cflags;
+      obj_cmd += user_c_flags;
       obj_cmd += c_input;
       obj_cmd += includes;
       obj_cmd += defines;

@@ -11,12 +11,12 @@
 
 namespace hammer{
 
-generator::generator(hammer::engine& e, 
+generator::generator(hammer::engine& e,
                      const std::string& name,
                      const consumable_types_t& source_types,
                      const producable_types_t& target_types,
                      bool composite,
-                     const feature_set* c) : 
+                     const feature_set* c) :
    engine_(&e), name_(name), source_types_(source_types),
    target_types_(target_types),
    composite_(composite),
@@ -37,9 +37,9 @@ bool generator::is_consumable(const target_type& t) const
 
    return false;
 }
- 
+
 std::vector<boost::intrusive_ptr<build_node> >
-generator::construct(const target_type& type_to_construct, 
+generator::construct(const target_type& type_to_construct,
                      const feature_set& props,
                      const std::vector<boost::intrusive_ptr<build_node> >& sources,
                      const basic_target* t,
@@ -71,13 +71,13 @@ generator::construct(const target_type& type_to_construct,
 
       for(producable_types_t::const_iterator i = target_types_.begin(), last = target_types_.end(); i != last; ++i)
       {
-         pstring new_name = make_name(engine_->pstring_pool(), 
-                                      *composite_target_name, 
+         pstring new_name = make_name(engine_->pstring_pool(),
+                                      *composite_target_name,
                                       *i->type_,
                                       i->need_tag_ ? &props : NULL,
                                       i->need_tag_ ? &owner : NULL);
-         result->products_.push_back(new generated_target(&owner, 
-                                                          new_name, 
+         result->products_.push_back(new generated_target(&owner,
+                                                          new_name,
                                                           i->type_, &props));
       }
 
@@ -86,14 +86,14 @@ generator::construct(const target_type& type_to_construct,
    }
    else
    {
-      pstring new_name = make_name(engine_->pstring_pool(), 
-                                   t->name(), 
-                                   t->type(), 
-                                   type_to_construct, 
+      pstring new_name = make_name(engine_->pstring_pool(),
+                                   t->name(),
+                                   t->type(),
+                                   type_to_construct,
                                    producable_types().front().need_tag_ ? &props : NULL,
                                    producable_types().front().need_tag_ ? &owner : NULL);
       assert(sources.size() == 1);
-      
+
       boost::intrusive_ptr<build_node> result(new build_node(owner, composite_));
       result->action(action());
 

@@ -24,14 +24,14 @@ static int compute_rank(const feature_set& build_properties, const feature_set& 
    for(feature_set::const_iterator i = constraints.begin(), last = constraints.end(); i != last; ++i)
       if (build_properties.find(**i) != build_properties.end())
          ++rank;
-      else 
+      else
          return -1;
 
    return rank;
 }
 
-generator_registry::viable_generators_t 
-generator_registry::find_viable_generators(const target_type& t, 
+generator_registry::viable_generators_t
+generator_registry::find_viable_generators(const target_type& t,
                                            bool allow_composite,
                                            const feature_set& build_properties) const
 {
@@ -59,9 +59,9 @@ generator_registry::find_viable_generators(const target_type& t,
                rank = generator_rank;
                result.clear();
             }
-            
+
             if (rank == generator_rank)
-               result.push_back(i->second);  
+               result.push_back(i->second);
          }
       }
    }
@@ -70,10 +70,10 @@ generator_registry::find_viable_generators(const target_type& t,
 }
 
 bool
-generator_registry::transform(const generator& target_generator, 
-                              const generator& current_generator, 
+generator_registry::transform(const generator& target_generator,
+                              const generator& current_generator,
                               const basic_target* t,
-                              boost::intrusive_ptr<build_node> target_owner, 
+                              boost::intrusive_ptr<build_node> target_owner,
                               std::vector<boost::intrusive_ptr<build_node> >* result,
                               const feature_set& props,
                               const main_target& owner) const
@@ -99,7 +99,7 @@ generator_registry::transform(const generator& target_generator,
             {
                for(vector<intrusive_ptr<build_node> >::const_iterator r_i = this_result.begin(), r_last = this_result.end(); r_i != r_last; ++r_i)
                   transform_to_consumable(target_generator, current_generator, *r_i, result, props, owner);
-               
+
                return true;
             }
          }
@@ -109,9 +109,9 @@ generator_registry::transform(const generator& target_generator,
    return false;
 }
 
-bool generator_registry::transform_to_consumable(const generator& target_generator, 
+bool generator_registry::transform_to_consumable(const generator& target_generator,
                                                  const generator& current_generator,
-                                                 intrusive_ptr<build_node> t, 
+                                                 intrusive_ptr<build_node> t,
                                                  vector<intrusive_ptr<build_node> >* result,
                                                  const feature_set& props,
                                                  const main_target& owner) const
@@ -133,7 +133,7 @@ bool generator_registry::transform_to_consumable(const generator& target_generat
       else
       {
          bool res = transform(target_generator, current_generator, *i, t, result, props, owner);
-         
+
          if (res)
             some_was_consumed = true;
       }
@@ -146,7 +146,7 @@ namespace
 {
    struct generator_data
    {
-      generator_data(const generator* g) : generator_(g), all_consumed_(true) {} 
+      generator_data(const generator* g) : generator_(g), all_consumed_(true) {}
 
       const generator* generator_;
       vector<intrusive_ptr<build_node> > transformed_sources_;
@@ -189,7 +189,7 @@ generator_registry::construct(const main_target* mt) const
       // FIXME: error messages
       if (has_choosed_generator && i->all_consumed_)
          throw runtime_error("Found more than one transformations from sources to target.");
-      
+
       if (i->all_consumed_)
       {
          choosed_generator = i;
@@ -199,7 +199,7 @@ generator_registry::construct(const main_target* mt) const
 
    // FIXME: error messages
    if (!has_choosed_generator)
-      throw runtime_error((boost::format("Can't find transformation 'sources' -> '%s'.") 
+      throw runtime_error((boost::format("Can't find transformation 'sources' -> '%s'.")
                               % mt->type().tag().name()).str());
 
    std::vector<boost::intrusive_ptr<build_node> > r(choosed_generator->generator_->construct(mt->type(), mt->properties(), choosed_generator->transformed_sources_, 0, &mt->name(), *mt));

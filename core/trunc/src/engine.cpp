@@ -38,7 +38,7 @@ namespace fs = boost::filesystem;
 
 namespace hammer{
 
-engine::engine() 
+engine::engine()
    :  feature_registry_(0)
 {
    type_registry_.reset(new type_registry);
@@ -110,10 +110,10 @@ project* engine::get_upper_project(const location_t& project_path)
 
    if (exists(upper_path / "hamfile"))
       return &load_project(upper_path);
-   
+
    if (exists(upper_path / "hamroot"))
       return &load_project(upper_path);
-   
+
    if (upper_path.has_parent_path())
       return get_upper_project(upper_path);
    else
@@ -122,11 +122,11 @@ project* engine::get_upper_project(const location_t& project_path)
 
 void engine::update_project_scm_info(project& p, const project_alias_data& alias_data) const
 {
-   if (p.scm_info().scm_url_.empty() && 
+   if (p.scm_info().scm_url_.empty() &&
        alias_data.properties_ != NULL) // alias_data.properties_ can be null if no features was specified in use-project rule
    {
-      // добавляем эти свойства в проект чтобы можна было ими воспользоваться при последующих 
-      // материализациях вложенных проектов
+      // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+      // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
       feature_set::const_iterator scm_client_name_feature = alias_data.properties_->find("scm");
       if (scm_client_name_feature != alias_data.properties_->end())
          p.scm_info().scm_client_name_ = (**scm_client_name_feature).value();
@@ -145,7 +145,7 @@ bool engine::materialize_or_load_next_repository()
    repository_data& rep_data = repositories_.front();
    if (repositories_.front().materialized_)
       return false;
-   
+
    project_alias_data alias_data;
    location_t repository_full_location(rep_data.defined_in_project_->location() / rep_data.location_);
    alias_data.location_ = repository_full_location;
@@ -160,7 +160,7 @@ bool engine::materialize_or_load_next_repository()
    rep_data.materialized_ = true;
    repositories_.push_back(rep_data);
    repositories_.pop_front();
-   
+
    return true;
 }
 
@@ -195,7 +195,7 @@ void engine::resolve_project_alias(resolved_project_symlinks_t& symlinks,
 void engine::resolve_project_alias(resolved_project_symlinks_t& symlinks,
                                    const location_t& project_symlink)
 {
-   // пропускаем начальный слеш
+   // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
    resolve_project_alias(symlinks, ++project_symlink.begin(), project_symlink.end(), global_project_links_);
 }
 
@@ -207,7 +207,7 @@ void engine::initial_materialization(const project_alias_data& alias_data) const
    feature_set::const_iterator scm_tag = alias_data.properties_->find("scm");
    if (scm_tag == alias_data.properties_->end())
       throw runtime_error("Can't materialize project because no scm feature specified.");
-   
+
    feature_set::const_iterator scm_uri = alias_data.properties_->find("scm.url");
    if (scm_uri == alias_data.properties_->end())
       throw runtime_error("Can't materialize project because no scm url specified.");
@@ -215,7 +215,7 @@ void engine::initial_materialization(const project_alias_data& alias_data) const
    const hammer::scm_client* scm_client = scm_manager_->find((**scm_tag).value().to_string());
    if (!scm_client)
       throw runtime_error("SCM client '" + (**scm_tag).value().to_string() + "' not supported.");
-   
+
    boost::filesystem::create_directories(alias_data.location_);
    scm_client->checkout(alias_data.location_, (**scm_uri).value().to_string(), false);
 }
@@ -223,7 +223,7 @@ void engine::initial_materialization(const project_alias_data& alias_data) const
 static void materialize_directory(const scm_client& scm_client, location_t dir, bool recursive = true)
 {
    string what_up;
-   while(!exists(dir)) 
+   while(!exists(dir))
    {
       what_up = dir.leaf();
       dir = dir.branch_path();
@@ -232,21 +232,21 @@ static void materialize_directory(const scm_client& scm_client, location_t dir, 
    scm_client.up(dir, what_up, recursive);
 }
 
-engine::loaded_projects_t 
-engine::load_project(location_t project_path, 
+engine::loaded_projects_t
+engine::load_project(location_t project_path,
                      const project& from_project)
 {
    loaded_projects_t result(try_load_project(project_path, from_project));
    if (result.empty())
-      throw std::runtime_error((boost::format("%s(0): error: can't load project '%s'") 
-                                   % from_project.location().native_file_string() 
+      throw std::runtime_error((boost::format("%s(0): error: can't load project '%s'")
+                                   % from_project.location().native_file_string()
                                    % project_path).str());
 
    return result;
 }
 
-engine::loaded_projects_t 
-engine::try_load_project(location_t project_path, 
+engine::loaded_projects_t
+engine::try_load_project(location_t project_path,
                          const project& from_project)
 {
    if (project_path.has_root_path())
@@ -259,7 +259,7 @@ engine::try_load_project(location_t project_path,
          for(resolved_project_symlinks_t::const_iterator i = symlinks.begin(), last = symlinks.end(); i != last; ++i)
             for(project_alias_node::aliases_data_t::const_iterator j = i->symlinks_data_->begin(), j_last = i->symlinks_data_->end(); j != j_last; ++j)
                result += try_load_project(i->tail_, *j);
-         
+
          if (!result.empty())
             return result;
 
@@ -282,15 +282,15 @@ engine::try_load_project(location_t project_path,
 }
 
 engine::loaded_projects_t
-engine::try_load_project(const location_t& tail_path, 
+engine::try_load_project(const location_t& tail_path,
                          const project_alias_data& symlink)
 {
    location_t project_path = symlink.location_;
    if (!exists(project_path))
    {
       // if alias data exists than use it
-      const project* upper_materialized_project = 
-         symlink.properties_ == NULL ? find_upper_materialized_project(project_path) 
+      const project* upper_materialized_project =
+         symlink.properties_ == NULL ? find_upper_materialized_project(project_path)
                                         : NULL;
       if (upper_materialized_project == NULL)
          initial_materialization(symlink);
@@ -306,7 +306,7 @@ engine::try_load_project(const location_t& tail_path,
 
    project& p = load_project(project_path);
    update_project_scm_info(p, symlink);
-  
+
    if (!tail_path.empty())
       return try_load_project(tail_path, p);
    else
@@ -322,7 +322,7 @@ void engine::resolve_use_project(location_t& resolved_use_path, location_t& tail
       resolved_use_path = path_to_resolve;
       return;
    }
-   
+
    use_project_data_t::mapped_type::const_iterator largets_use_iter = i->second.find(*path_to_resolve.begin());
    if (largets_use_iter == i->second.end())
    {
@@ -332,14 +332,14 @@ void engine::resolve_use_project(location_t& resolved_use_path, location_t& tail
    location_t larget_use_path = *path_to_resolve.begin();
    location_t::const_iterator to_resolve_begin = ++path_to_resolve.begin(),
                               to_resolve_end = path_to_resolve.end();
-   
+
    for(;to_resolve_begin != to_resolve_end; ++to_resolve_begin)
    {
       location_t to_resolve = larget_use_path / *to_resolve_begin;
       use_project_data_t::mapped_type::const_iterator next_resolve_iter = i->second.find(to_resolve);
       if (next_resolve_iter == i->second.end())
          break;
-      
+
       larget_use_path = to_resolve;
       largets_use_iter = next_resolve_iter;
    }
@@ -353,7 +353,7 @@ void engine::resolve_use_project(location_t& resolved_use_path, location_t& tail
       tail_path /= *to_resolve_begin;
 }
 
-const project* 
+const project*
 engine::find_upper_materialized_project(const project& p)
 {
    if (!p.scm_info().scm_url_.empty())
@@ -392,7 +392,7 @@ const scm_client* engine::try_resolve_scm_client(const project& p)
    const project* upper_materialized_project = find_upper_materialized_project(p);
    if (upper_materialized_project == NULL)
       return NULL;
-   
+
    return &resolve_scm_client_impl(*upper_materialized_project);
 }
 
@@ -405,13 +405,13 @@ const scm_client& engine::resolve_scm_client(const project& p)
    return resolve_scm_client_impl(*upper_materialized_project);
 }
 
-bool engine::try_materialize_project(const location_t& project_path, 
+bool engine::try_materialize_project(const location_t& project_path,
                                      const project& upper_project)
 {
    const scm_client* scm_client = try_resolve_scm_client(upper_project);
    if (scm_client == NULL)
       return false;
-   
+
    materialize_directory(*scm_client, project_path);
    return true;
 }
@@ -495,7 +495,7 @@ engine::loaded_projects_t engine::try_load_project(location_t project_path)
          project_file = project_path / "hamroot";
          is_top_level = true;
       }
-      else 
+      else
          if (upper_project == NULL)
             upper_project = get_upper_project(project_path);
 
@@ -505,8 +505,8 @@ engine::loaded_projects_t engine::try_load_project(location_t project_path)
       if (!p.parse(project_file.native_file_string().c_str()))
          throw  runtime_error("Can't load project at '"  + project_path.string() + ": parser errors");
 
-      // до того как мы начнем парсить сам проект нужно уже знать все реквизиты предыдущего
-      // и выставить их для этого проекта
+      // пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+      // пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
       if (!is_top_level)
       {
          if (upper_project)
@@ -521,7 +521,7 @@ engine::loaded_projects_t engine::try_load_project(location_t project_path)
       p.walk(&ctx);
       assert(ctx.project_);
       insert(ctx.project_);
-      
+
       // check if project has global link on it and if it has, update scm info
       // This is needed because if we load projects from down to up than if upper projects has
       // use-project /foo : foo ;
@@ -552,15 +552,15 @@ engine::~engine()
 boost::filesystem::path find_root(const boost::filesystem::path& initial_path)
 {
    boost::filesystem::path p(initial_path);
-   
-   while(true) 
+
+   while(true)
    {
       if (p.empty())
          throw runtime_error("Can't find boost-build.jam");
 
       if (exists(p / "boost-build.jam"))
          return p;
-      
+
       p = p.branch_path();
    };
 }
@@ -570,9 +570,9 @@ void engine::project_rule(project* p, std::vector<pstring>& name,
 {
    assert(name.size() == size_t(1));
    p->name(name[0]);
-   
-   // здесь производиться вставка так как на этаме загрузки 
-   // engine уже выставила унаследованные свойства проекта от его родителя
+
+   // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+   // engine пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
    if (req)
    {
       req->requirements().setup_path_data(p);
@@ -589,7 +589,7 @@ void engine::project_rule(project* p, std::vector<pstring>& name,
 void engine::lib_rule(project* p, std::vector<pstring>& name, sources_decl* sources, requirements_decl* requirements,
                       feature_set* default_build, requirements_decl* usage_requirements)
 {
-   auto_ptr<basic_meta_target> mt(new lib_meta_target(p, name.at(0), requirements ? *requirements : requirements_decl(), 
+   auto_ptr<basic_meta_target> mt(new lib_meta_target(p, name.at(0), requirements ? *requirements : requirements_decl(),
                                                       usage_requirements ? *usage_requirements : requirements_decl()));
    if (sources)
       mt->sources(*sources);
@@ -600,7 +600,7 @@ void engine::lib_rule(project* p, std::vector<pstring>& name, sources_decl* sour
 void engine::header_lib_rule(project* p, std::vector<pstring>& name, sources_decl* sources, requirements_decl* requirements,
                              feature_set* default_build, requirements_decl* usage_requirements)
 {
-   auto_ptr<basic_meta_target> mt(new header_lib_meta_target(p, name.at(0), requirements ? *requirements : requirements_decl(), 
+   auto_ptr<basic_meta_target> mt(new header_lib_meta_target(p, name.at(0), requirements ? *requirements : requirements_decl(),
                                                              usage_requirements ? *usage_requirements : requirements_decl()));
    if (sources)
       mt->sources(*sources);
@@ -611,8 +611,8 @@ void engine::header_lib_rule(project* p, std::vector<pstring>& name, sources_dec
 void engine::exe_rule(project* p, std::vector<pstring>& name, sources_decl& sources, requirements_decl* requirements,
                       feature_set* default_build, requirements_decl* usage_requirements)
 {
-   auto_ptr<basic_meta_target> mt(new typed_meta_target(p, name.at(0), requirements ? *requirements : requirements_decl(), 
-                                                        usage_requirements ? *usage_requirements : requirements_decl(), 
+   auto_ptr<basic_meta_target> mt(new typed_meta_target(p, name.at(0), requirements ? *requirements : requirements_decl(),
+                                                        usage_requirements ? *usage_requirements : requirements_decl(),
                                                         get_type_registry().get(types::EXE)));
    mt->sources(sources);
    p->add_target(mt);
@@ -621,7 +621,7 @@ void engine::exe_rule(project* p, std::vector<pstring>& name, sources_decl& sour
 void engine::obj_rule(project* p, pstring& name, sources_decl& sources, requirements_decl* requirements,
                       feature_set* default_build, requirements_decl* usage_requirements)
 {
-   auto_ptr<basic_meta_target> mt(new obj_meta_target(p, name, requirements ? *requirements : requirements_decl(), 
+   auto_ptr<basic_meta_target> mt(new obj_meta_target(p, name, requirements ? *requirements : requirements_decl(),
                                                       usage_requirements ? *usage_requirements : requirements_decl()));
    mt->sources(sources);
    p->add_target(mt);
@@ -630,7 +630,7 @@ void engine::obj_rule(project* p, pstring& name, sources_decl& sources, requirem
 void engine::pch_rule(project* p, pstring& name, sources_decl& sources, requirements_decl* requirements,
                       feature_set* default_build, requirements_decl* usage_requirements)
 {
-   auto_ptr<basic_meta_target> mt(new pch_meta_target(p, name, requirements ? *requirements : requirements_decl(), 
+   auto_ptr<basic_meta_target> mt(new pch_meta_target(p, name, requirements ? *requirements : requirements_decl(),
       usage_requirements ? *usage_requirements : requirements_decl()));
    mt->sources(sources);
    p->add_target(mt);
@@ -640,8 +640,8 @@ void engine::copy_rule(project* p, pstring& name, sources_decl& sources, require
                        feature_set* default_build, requirements_decl* usage_requirements)
 {
    auto_ptr<basic_meta_target> mt(new copy_meta_target(p,
-                                                       name, 
-                                                       requirements ? *requirements : requirements_decl(), 
+                                                       name,
+                                                       requirements ? *requirements : requirements_decl(),
                                                        usage_requirements ? *usage_requirements : requirements_decl()));
    mt->sources(sources);
    p->add_target(mt);
@@ -657,9 +657,9 @@ static feature_attributes resolve_attributes(std::vector<pstring>* attributes)
 {
    typedef std::vector<pstring>::const_iterator iter;
    feature_attributes result = {0};
-   
+
    if (attributes == NULL)
-      return result; 
+      return result;
 
    iter i = find(attributes->begin(), attributes->end(), "propagated");
    if (i != attributes->end())
@@ -676,7 +676,7 @@ static feature_attributes resolve_attributes(std::vector<pstring>* attributes)
    i = find(attributes->begin(), attributes->end(), "path");
    if (i != attributes->end())
       result.path = true;
-   
+
    i = find(attributes->begin(), attributes->end(), "incidental");
    if (i != attributes->end())
       result.incidental = true;
@@ -708,7 +708,7 @@ static feature_attributes resolve_attributes(std::vector<pstring>* attributes)
    return result;
 }
 
-void engine::feature_feature_rule(project* p, std::vector<pstring>& name, 
+void engine::feature_feature_rule(project* p, std::vector<pstring>& name,
                                   std::vector<pstring>* values,
                                   std::vector<pstring>* attributes)
 {
@@ -727,9 +727,9 @@ void engine::feature_feature_rule(project* p, std::vector<pstring>& name,
    feature_registry_->add_def(def);
 }
 
-void engine::feature_subfeature_rule(project* p, 
-                                     pstring& feature_name, 
-                                     pstring& subfeature_name, 
+void engine::feature_subfeature_rule(project* p,
+                                     pstring& feature_name,
+                                     pstring& subfeature_name,
                                      std::vector<pstring>* values,
                                      std::vector<pstring>* attributes)
 {
@@ -745,7 +745,7 @@ void engine::feature_subfeature_rule(project* p,
    feature_registry_->get_def(feature_name.to_string()).add_subfeature(def);
 }
 
-void engine::feature_local_rule(project* p, std::vector<pstring>& name, 
+void engine::feature_local_rule(project* p, std::vector<pstring>& name,
                                 std::vector<pstring>* values,
                                 std::vector<pstring>* attributes)
 {
@@ -786,36 +786,36 @@ void engine::variant_rule(project* p, pstring& variant_name, pstring* base, feat
    }
 }
 
-void engine::alias_rule(project* p, 
-                        pstring& name, 
-                        sources_decl* sources, 
-                        requirements_decl* requirements, 
-                        feature_set* default_build, 
+void engine::alias_rule(project* p,
+                        pstring& name,
+                        sources_decl* sources,
+                        requirements_decl* requirements,
+                        feature_set* default_build,
                         requirements_decl* usage_requirements)
 {
-   auto_ptr<basic_meta_target> mt(new alias_meta_target(p, name, 
-                                                        sources == NULL ? sources_decl() : *sources, 
-                                                        requirements ? *requirements : requirements_decl(), 
+   auto_ptr<basic_meta_target> mt(new alias_meta_target(p, name,
+                                                        sources == NULL ? sources_decl() : *sources,
+                                                        requirements ? *requirements : requirements_decl(),
                                                         usage_requirements ? *usage_requirements : requirements_decl()));
    p->add_target(mt);
 }
 
-void engine::version_alias_rule(project* p, 
-                                pstring& name, 
-                                pstring& version, 
+void engine::version_alias_rule(project* p,
+                                pstring& name,
+                                pstring& version,
                                 sources_decl* sources)
 {
    if (sources != NULL && sources->size() != 1)
       throw std::runtime_error("version-alias can have only one source not many.");
 
-   auto_ptr<basic_meta_target> mt(new version_aliase_meta_target(p, name, 
+   auto_ptr<basic_meta_target> mt(new version_aliase_meta_target(p, name,
                                                                  version, sources));
    p->add_target(mt);
 }
 
-void engine::test_suite_rule(project* p, 
-                             pstring& name, 
-                             sources_decl& sources, 
+void engine::test_suite_rule(project* p,
+                             pstring& name,
+                             sources_decl& sources,
                              sources_decl* propagated_sources)
 {
    sources_decl empty_source;
@@ -834,18 +834,18 @@ void engine::test_suite_rule(project* p,
       else
          i->properties(additional_sources_set);
 
-   auto_ptr<basic_meta_target> mt(new alias_meta_target(p, name, 
-                                                        sources, 
-                                                        requirements_decl(), 
+   auto_ptr<basic_meta_target> mt(new alias_meta_target(p, name,
+                                                        sources,
+                                                        requirements_decl(),
                                                         requirements_decl()));
 
    p->add_target(mt);
 }
 
-sources_decl engine::testing_run_rule(project* p, 
-                                      sources_decl* sources, 
-                                      std::vector<pstring>* args, 
-                                      std::vector<pstring>* input_files, 
+sources_decl engine::testing_run_rule(project* p,
+                                      sources_decl* sources,
+                                      std::vector<pstring>* args,
+                                      std::vector<pstring>* input_files,
                                       requirements_decl* requirements,
                                       pstring* target_name)
 {
@@ -857,13 +857,13 @@ sources_decl engine::testing_run_rule(project* p,
          real_target_name = location_t(sources->begin()->target_path().to_string()).filename();
       else
          throw std::runtime_error("Target must have either sources or target name");
-   
+
    pstring exe_name(pstring_pool(), real_target_name + ".test");
    auto_ptr<basic_meta_target> intermediate_exe(
-      new testing_meta_target(p, 
-                              exe_name, 
-                              requirements != NULL ? *requirements 
-                                                   : requirements_decl(), 
+      new testing_meta_target(p,
+                              exe_name,
+                              requirements != NULL ? *requirements
+                                                   : requirements_decl(),
                               requirements_decl(),
                               get_type_registry().get(types::EXE)));
 
@@ -878,9 +878,9 @@ sources_decl engine::testing_run_rule(project* p,
          run_requirements.add(*this->feature_registry().create_feature("testing.input-file", i->to_string()));
 
    auto_ptr<basic_meta_target> run_target(
-      new typed_meta_target(p, 
-                            pstring(pstring_pool(), real_target_name), 
-                            run_requirements, 
+      new typed_meta_target(p,
+                            pstring(pstring_pool(), real_target_name),
+                            run_requirements,
                             requirements_decl(),
                             get_type_registry().get(types::TESTING_RUN_PASSED)));
 
@@ -888,9 +888,9 @@ sources_decl engine::testing_run_rule(project* p,
    run_sources.push_back(exe_name, get_type_registry());
    run_target->sources(run_sources);
 
-   source_decl run_target_source(run_target->name(), 
-                                 pstring(), 
-                                 NULL /*to signal that this is meta target*/, 
+   source_decl run_target_source(run_target->name(),
+                                 pstring(),
+                                 NULL /*to signal that this is meta target*/,
                                  NULL);
 
    p->add_target(run_target);
@@ -904,13 +904,13 @@ sources_decl engine::testing_run_rule(project* p,
 static void glob_impl(sources_decl& result,
                       const fs::path& searching_path,
                       const fs::path& relative_path,
-                      const boost::dos_wildcard& wildcard,             
+                      const boost::dos_wildcard& wildcard,
                       const std::vector<pstring>* exceptions,
                       engine& e)
 {
    for(fs::directory_iterator i(searching_path), last = fs::directory_iterator(); i != last; ++i)
    {
-      if (!is_directory(*i) && wildcard.match(i->filename()) && 
+      if (!is_directory(*i) && wildcard.match(i->filename()) &&
           !(exceptions != 0 && find(exceptions->begin(), exceptions->end(), i->filename()) != exceptions->end()))
       {
          pstring v(e.pstring_pool(), (relative_path / i->filename()).string());
@@ -922,7 +922,7 @@ static void glob_impl(sources_decl& result,
 static void rglob_impl(sources_decl& result,
                        const fs::path& searching_path,
                        fs::path relative_path,
-                       const boost::dos_wildcard& wildcard,             
+                       const boost::dos_wildcard& wildcard,
                        const std::vector<pstring>* exceptions,
                        engine& e)
 {
@@ -941,8 +941,8 @@ static void rglob_impl(sources_decl& result,
          ++level;
       }
       else
-         if (wildcard.match(i->filename()) && 
-             !(exceptions != 0 && 
+         if (wildcard.match(i->filename()) &&
+             !(exceptions != 0 &&
                find(exceptions->begin(), exceptions->end(), i->filename()) != exceptions->end()))
          {
             pstring v(e.pstring_pool(), (relative_path / i->filename()).string());
@@ -951,7 +951,7 @@ static void rglob_impl(sources_decl& result,
    }
 }
 
-sources_decl engine::glob_rule(project* p, std::vector<pstring>& patterns, 
+sources_decl engine::glob_rule(project* p, std::vector<pstring>& patterns,
                                std::vector<pstring>* exceptions, bool recursive)
 {
    using namespace boost::filesystem;
@@ -965,7 +965,7 @@ sources_decl engine::glob_rule(project* p, std::vector<pstring>& patterns,
       if (mask_pos == string::npos)
          throw runtime_error("[glob] You must specify patterns to match");
       string::size_type separator_pos = pattern.find_last_of("/\\", mask_pos);
-      path relative_path(separator_pos == string::npos ? path() : path(pattern.begin(), 
+      path relative_path(separator_pos == string::npos ? path() : path(pattern.begin(),
                                                                        pattern.begin() + separator_pos));
       path searching_path(p->location() / relative_path);
       boost::dos_wildcard wildcard(string(pattern.begin() + mask_pos, pattern.end()));
@@ -974,7 +974,7 @@ sources_decl engine::glob_rule(project* p, std::vector<pstring>& patterns,
       else
          glob_impl(result, searching_path, relative_path, wildcard, exceptions, *this);
    }
-   
+
    result.unique();
    return result;
 }
@@ -987,7 +987,7 @@ void engine::explicit_rule(project* p, const pstring& target_name)
    target->set_explicit(true);
 }
 
-void engine::use_project_rule(project* p, const pstring& project_id_alias, 
+void engine::use_project_rule(project* p, const pstring& project_id_alias,
                               const pstring& project_location, feature_set* props)
 {
    location_t l(project_id_alias.to_string());
@@ -1022,7 +1022,7 @@ void engine::use_project_rule(project* p, const pstring& project_id_alias,
          else
             project_links_node = &alias_data_home->second->project_symlinks_;
       }
-      
+
       project_alias_data alias_data;
       alias_data.location_ = p->location() / project_location.to_string();
       alias_data.location_.normalize();
@@ -1037,7 +1037,7 @@ void engine::use_project_rule(project* p, const pstring& project_id_alias,
 void engine::repository_rule(project* p, const pstring& a_project_location, feature_set* props)
 {
    location_t project_location(a_project_location.to_string());
-   repositories_t::const_iterator i = find_if(repositories_.begin(), repositories_.end(), 
+   repositories_t::const_iterator i = find_if(repositories_.begin(), repositories_.end(),
                                               boost::bind(&repository_data::location_, _1) == boost::ref(project_location));
    if (i != repositories_.end())
       throw runtime_error((boost::format("Repository with placement at '%s' already defined.") % project_location.string()).str());
@@ -1045,14 +1045,14 @@ void engine::repository_rule(project* p, const pstring& a_project_location, feat
    repositories_.push_back(repository_data(p, project_location, props));
 }
 
-static bool targets_by_name(const project::selected_target& lhs, 
+static bool targets_by_name(const project::selected_target& lhs,
                             const project::selected_target& rhs)
 {
    return lhs.target_->name() < rhs.target_->name();
 }
 
-static bool has_override(engine& e, 
-                         const basic_meta_target& target, 
+static bool has_override(engine& e,
+                         const basic_meta_target& target,
                          const feature_set& build_request)
 {
    feature_set* fs = e.feature_registry().make_set();
@@ -1072,8 +1072,8 @@ void engine::loaded_projects_t::post_process(project::selected_targets_t& result
    using namespace boost::logic;
    engine& e = *result.front().target_->get_engine();
    std::sort(result.begin(), result.end(), targets_by_name);
-   project::selected_targets_t::iterator 
-      first = result.begin(), 
+   project::selected_targets_t::iterator
+      first = result.begin(),
       second = ++result.begin();
    tribool overriden = false;
    for(; second != result.end();)
@@ -1088,7 +1088,7 @@ void engine::loaded_projects_t::post_process(project::selected_targets_t& result
                   throw std::runtime_error("[FIXME] Can't select best alternative from two others");
                else
                   second = result.erase(second);
-               
+
                break;
             }
 
@@ -1101,7 +1101,7 @@ void engine::loaded_projects_t::post_process(project::selected_targets_t& result
                }
                else
                   throw std::runtime_error("[FIXME] Can't select best alternative from two others");
-               
+
                break;
             }
 
@@ -1120,7 +1120,7 @@ void engine::loaded_projects_t::post_process(project::selected_targets_t& result
    }
 }
 
-project::selected_targets_t 
+project::selected_targets_t
 engine::loaded_projects_t::select_best_alternative(const feature_set& build_request) const
 {
    project::selected_targets_t result;
@@ -1138,7 +1138,7 @@ engine::loaded_projects_t::select_best_alternative(const feature_set& build_requ
 }
 
 project::selected_target
-engine::loaded_projects_t::select_best_alternative(const pstring& target_name, 
+engine::loaded_projects_t::select_best_alternative(const pstring& target_name,
                                                    const feature_set& build_request) const
 {
    project::selected_targets_t result;

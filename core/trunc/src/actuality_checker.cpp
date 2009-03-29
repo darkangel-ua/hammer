@@ -63,7 +63,7 @@ bool actuality_checker::check(boost::posix_time::ptime& max_target_time, std::si
 
    if (dependency_need_to_be_updated)
       mark_to_update_sources(node, nodes_to_update, node.products_owner());
-   
+
    ptime sources_max_time(neg_infin);
    bool some_need_to_be_updated = dependency_need_to_be_updated;
    for(build_node::sources_t::const_iterator i = node.sources_.begin(), last = node.sources_.end(); i != last; ++i)
@@ -87,7 +87,7 @@ bool actuality_checker::check(boost::posix_time::ptime& max_target_time, std::si
    ptime products_max_time(boost::date_time::neg_infin);
    for(build_node::targets_t::const_iterator i = node.products_.begin(), last = node.products_.end(); i != last; ++i)
    {
-      const timestamp_info_t& time_info = (**i).timestamp_info();
+	   const timestamp_info_t& time_info = (**i).timestamp_info();
       if (time_info.is_unknown_)
          (**i).timestamp_info(timestamp_info_t::recheck);
 
@@ -104,7 +104,7 @@ bool actuality_checker::check(boost::posix_time::ptime& max_target_time, std::si
       if (scanner != NULL)
       {
          ptime scanner_timestamp = scanner->process(**i, get_scanner_context((**i).type(), *scanner));
-         
+
          // scanner say can't find some dependencies?
          if (scanner_timestamp == neg_infin)
          {
@@ -115,7 +115,7 @@ bool actuality_checker::check(boost::posix_time::ptime& max_target_time, std::si
          products_max_time = (std::max)(products_max_time, scanner_timestamp);
       }
    }
-   
+
    if (products_max_time == neg_infin)
    {
       node.up_to_date(boost::tribool::false_value);
@@ -128,7 +128,7 @@ bool actuality_checker::check(boost::posix_time::ptime& max_target_time, std::si
       ptime this_max_target_time = (std::max)(sources_max_time, products_max_time);
       node.timestamp(this_max_target_time);
       max_target_time = (std::max)(max_target_time, this_max_target_time);
-      
+
       if (sources_max_time > products_max_time ||
           some_need_to_be_updated) // if some sources or dependencies not up to date than result != 0
       {

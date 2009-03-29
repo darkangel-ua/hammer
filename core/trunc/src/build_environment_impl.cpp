@@ -22,8 +22,8 @@ build_environment_impl::build_environment_impl(const location_t& cur_dir)
 
 }
 
-bool build_environment_impl::run_shell_commands(std::string* captured_output, 
-                                                const std::vector<std::string>& cmds, 
+bool build_environment_impl::run_shell_commands(std::string* captured_output,
+                                                const std::vector<std::string>& cmds,
                                                 const location_t& working_dir) const
 {
    string tmp_file_name(boost::guid::create().to_string() + ".cmd");
@@ -63,13 +63,13 @@ bool build_environment_impl::run_shell_commands(std::string* captured_output,
          throw std::runtime_error("Can't find SHELL environment variable.");
       bp::command_line cmdline = bp::command_line(shell_cmd);
       cmdline.argument(tmp_file_name);
-#endif      
+#endif
       bp::child shell_action_child = launcher.start(cmdline);
 
-      
+
       if (captured_output != NULL)
-         std::copy(istreambuf_iterator<char>(shell_action_child.get_stdout()), 
-                   istreambuf_iterator<char>(), 
+         std::copy(istreambuf_iterator<char>(shell_action_child.get_stdout()),
+                   istreambuf_iterator<char>(),
                    back_inserter(*captured_output));
 
       bp::status st = shell_action_child.wait();
@@ -78,7 +78,7 @@ bool build_environment_impl::run_shell_commands(std::string* captured_output,
          dump_shell_command(std::cerr, full_tmp_file_name);
 
       remove(full_tmp_file_name);
-      
+
       return st.exit_status() == 0;
    }
    catch(...)
@@ -89,14 +89,14 @@ bool build_environment_impl::run_shell_commands(std::string* captured_output,
    }
 }
 
-bool build_environment_impl::run_shell_commands(const std::vector<std::string>& cmds, 
+bool build_environment_impl::run_shell_commands(const std::vector<std::string>& cmds,
                                                 const location_t& working_dir) const
 {
    return run_shell_commands(NULL, cmds, working_dir);
 }
 
-bool build_environment_impl::run_shell_commands(std::string& captured_output, 
-                                                const std::vector<std::string>& cmds, 
+bool build_environment_impl::run_shell_commands(std::string& captured_output,
+                                                const std::vector<std::string>& cmds,
                                                 const location_t& working_dir) const
 {
    return run_shell_commands(&captured_output, cmds, working_dir);

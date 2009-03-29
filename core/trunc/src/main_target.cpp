@@ -16,9 +16,9 @@ using namespace std;
 
 namespace hammer{
 
-main_target::main_target(const hammer::meta_target* mt, 
-                         const pstring& name, 
-                         const hammer::target_type* t, 
+main_target::main_target(const hammer::meta_target* mt,
+                         const pstring& name,
+                         const hammer::target_type* t,
                          const feature_set* props,
                          pool& p)
    : basic_target(this, name, t, props), meta_target_(mt),
@@ -48,7 +48,7 @@ void main_target::generate_and_add_dependencies(hammer::build_node& node)
    node.dependencies_.insert(node.dependencies_.end(), result.begin(), result.end());
 }
 
-std::vector<boost::intrusive_ptr<build_node> > 
+std::vector<boost::intrusive_ptr<build_node> >
 main_target::generate()
 {
    if (generate_cache_filled_)
@@ -109,18 +109,18 @@ std::string main_target::version() const
 void main_target::additional_hash_string_data(std::ostream& s) const
 {
    typedef set<const main_target*> main_target_sources_t;
-   
+
    main_target_sources_t main_target_sources;
    for(sources_t::const_iterator i = sources_.begin(), last = sources_.end(); i != last; ++i)
       if (this != (**i).get_main_target())
          main_target_sources.insert((**i).get_main_target());
-   
+
    vector<string> hashes;
    for(main_target_sources_t::const_iterator i = main_target_sources.begin(), last = main_target_sources.end(); i != last; ++i)
       hashes.push_back((**i).name().to_string() + '-' + (**i).hash_string());
 
    sort(hashes.begin(), hashes.end());
-   
+
    bool first = true;
    for(vector<string>::const_iterator i = hashes.begin(), last = hashes.end(); i != last; ++i)
    {

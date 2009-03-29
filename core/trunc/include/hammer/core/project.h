@@ -22,17 +22,23 @@ namespace hammer
       public:
          struct selected_target
          {
-            
             selected_target(const basic_meta_target* t, 
-                            const feature_set* resolved_build_request)
+                            const feature_set* resolved_build_request,
+                            unsigned resolved_build_request_rank)
                            : target_(t),
-                             resolved_build_request_(resolved_build_request)
+                             resolved_build_request_(resolved_build_request),
+                             resolved_build_request_rank_(resolved_build_request_rank)
             {}
-            selected_target() : target_(NULL), resolved_build_request_(NULL) {}
+            
+            selected_target() 
+               : target_(NULL), 
+                 resolved_build_request_(NULL) 
+            {}
 
             const basic_meta_target* target_;
             // == project.try_resolve_local_features(build_request)
             const feature_set* resolved_build_request_; 
+            unsigned resolved_build_request_rank_;
          };
 
          typedef boost::ptr_multimap<const pstring /* target name */, basic_meta_target> targets_t;
@@ -98,8 +104,9 @@ namespace hammer
                                        feature_set* usage_requirements) const;
    };
 
-   // FIXME: This is bad name. Should be is_fully_inside, is_compatible or something like that
-   bool is_alternative_suitable(const feature_set& target_properties, 
+   // -1 == not suitable 
+   // > -1 == suitable with computed rank. Zero IS valid rank
+   int compute_alternative_rank(const feature_set& target_properties, 
                                 const feature_set& build_request);
 
 }

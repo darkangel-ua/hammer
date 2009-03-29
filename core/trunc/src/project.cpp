@@ -51,9 +51,10 @@ basic_meta_target* project::find_target(const pstring& name)
       return i->second;
 }
 
-bool is_alternative_suitable(const feature_set& target_properties, 
+int compute_alternative_rank(const feature_set& target_properties, 
                              const feature_set& build_request)
 {
+   unsigned rank = 0;
    for(feature_set::const_iterator i = target_properties.begin(), last = target_properties.end(); i != last; ++i)
    {
       if (!((**i).attributes().free ||
@@ -64,12 +65,19 @@ bool is_alternative_suitable(const feature_set& target_properties,
          if (f != build_request.end() && 
              (**i).value() != (**f).value())
          {
-            return false;
+            return -1;
+         }
+         else
+         {
+            if ((**i).name() == "override")
+               rank += 10000;
+            else
+               ++rank;
          }
       }
    }
 
-   return true;
+   return rank;
 }
 
 project::selected_target
@@ -82,6 +90,59 @@ project::select_best_alternative(const pstring& target_name,
       throw std::runtime_error("Can't select alternative for target '" + target_name.to_string() + "'.");
 
    return result;
+}
+
+// project::selected_target
+// project::try_select_best_alternative(const pstring& target_name, 
+//                                      const feature_set& build_request_param) const
+// {
+//    const feature_set& build_request = build_request_param.has_undefined_features()
+//                                          ? *try_resolve_local_features(build_request_param) 
+//                                          : build_request_param;         
+// 
+//    boost::iterator_range<targets_t::const_iterator> r = targets_.equal_range(target_name);
+// 
+//    if (r.empty())
+//       throw std::runtime_error("Can't find target '" + target_name.to_string() + "'");
+// 
+//    selected_target result;
+//    bool overriden = false;
+// 
+//    for(targets_t::const_iterator first = begin(r), last = end(r); first != last; ++first)
+//    {
+//       feature_set* fs = engine_->feature_registry().make_set();
+//       first->second->requirements().eval(build_request, fs);
+//       if (is_alternative_suitable(*fs, build_request))
+//       {
+//          if (result.target_ != NULL)
+//          {
+//             feature_set::const_iterator override_iter = fs->find("override");
+//             if (overriden && override_iter != fs->end() ||
+//                 !overriden && override_iter == fs->end())
+//             {
+//                throw std::runtime_error("Can't select alternative for target '" + target_name.to_string() + "' between others[fixme]");
+//             }
+//          }
+// 
+//          result.target_ = first->second;
+//          result.resolved_build_request_ = &build_request;
+//       }
+//    }
+// 
+//    return result;
+// }
+
+static bool s_great(const project::selected_target& lhs, 
+                    const project::selected_target& rhs)
+{
+   return lhs.resolved_build_request_rank_ > rhs.resolved_build_request_rank_;
+}
+
+void error_cannot_choose_alternative(const project::selected_target& first, 
+                                     const project::selected_target& second)
+{
+   // FIXME
+   throw std::runtime_error("Can't select best alternative[FIXME]");
 }
 
 project::selected_target
@@ -97,31 +158,29 @@ project::try_select_best_alternative(const pstring& target_name,
    if (r.empty())
       throw std::runtime_error("Can't find target '" + target_name.to_string() + "'");
 
-   selected_target result;
-   bool overriden = false;
+   vector<selected_target> selected_targets;
 
    for(targets_t::const_iterator first = begin(r), last = end(r); first != last; ++first)
    {
       feature_set* fs = engine_->feature_registry().make_set();
       first->second->requirements().eval(build_request, fs);
-      if (is_alternative_suitable(*fs, build_request))
-      {
-         if (result.target_ != NULL)
-         {
-            feature_set::const_iterator override_iter = fs->find("override");
-            if (overriden && override_iter != fs->end() ||
-                !overriden && override_iter == fs->end())
-            {
-               throw std::runtime_error("Can't select alternative for target '" + target_name.to_string() + "' between others[fixme]");
-            }
-         }
-
-         result.target_ = first->second;
-         result.resolved_build_request_ = &build_request;
-      }
+      int rank = compute_alternative_rank(*fs, build_request);
+      if (rank != -1)
+         selected_targets.push_back(selected_target(first->second, &build_request, rank));
    }
 
-   return result;
+   sort(selected_targets.begin(), selected_targets.end(), s_great);
+   if (selected_targets.empty())
+      return selected_target();
+
+   if (selected_targets.size() == 1)
+      return selected_targets.front();
+   
+   // selected_targets.size() > 1
+   if (selected_targets[0].resolved_build_request_rank_ != selected_targets[1].resolved_build_request_rank_)
+      return selected_targets.front();
+   else
+      error_cannot_choose_alternative(selected_targets[0], selected_targets[1]);
 }
 
 

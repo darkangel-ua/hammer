@@ -54,8 +54,8 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
    toolset_def.get_subfeature("version").extend_legal_values(install_data.version_);
 
    shared_ptr<product_argument_writer> obj_product(new product_argument_writer("obj_product", e.get_type_registry().get(types::OBJ)));
-   shared_ptr<source_argument_writer> static_lib_sources(new source_argument_writer("static_lib_sources", e.get_type_registry().get(types::STATIC_LIB)));
-   shared_ptr<source_argument_writer> shared_lib_sources(new source_argument_writer("shared_lib_sources", e.get_type_registry().get(types::SHARED_LIB)));
+   shared_ptr<source_argument_writer> static_lib_sources(new source_argument_writer("static_lib_sources", e.get_type_registry().get(types::STATIC_LIB), true));
+   shared_ptr<source_argument_writer> shared_lib_sources(new source_argument_writer("shared_lib_sources", e.get_type_registry().get(types::SHARED_LIB), true));
    shared_ptr<source_argument_writer> searched_lib_sources(new source_argument_writer("searched_lib_sources", e.get_type_registry().get(types::SEARCHED_LIB)));
 
    shared_ptr<free_feature_arg_writer> searched_lib_searched_dirs(

@@ -13,7 +13,8 @@ namespace hammer
          source_argument_writer(const std::string& name, 
                                 const target_type& t, 
                                 bool write_full_path = false,
-                                const std::string& quoting_string = "\"");
+                                const std::string& quoting_string = "\"",
+                                const std::string& prefix = std::string());
          virtual argument_writer* clone() const;
 
       protected:
@@ -25,6 +26,7 @@ namespace hammer
       private:
          bool write_full_path_;
          std::string quoting_string_;
+         std::string prefix_;
    };
 }
 

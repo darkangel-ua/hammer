@@ -15,7 +15,7 @@ void subversion_scm_client::checkout(const location_t& path, const std::string& 
    l.set_stdout_behavior(bp::inherit_stream);
    l.set_stderr_behavior(bp::inherit_stream);
 
-   bp::command_line cmd("svn.exe");
+   bp::command_line cmd("svn");
    cmd.argument("checkout");
    
    if (!recursive)
@@ -34,7 +34,7 @@ void subversion_scm_client::up(const location_t& where_up, const std::string& wh
    l.set_stdout_behavior(bp::inherit_stream);
    l.set_stderr_behavior(bp::inherit_stream);
 
-   bp::command_line cmd("svn.exe");
+   bp::command_line cmd("svn");
    cmd.argument("up");
 
    if (!recursive)

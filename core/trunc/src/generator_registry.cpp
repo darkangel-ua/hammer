@@ -165,7 +165,7 @@ generator_registry::construct(const main_target* mt) const
       throw runtime_error("Can't find transformation to '" + mt->type().tag().name() + "'.");
 
    // generate target sources
-   vector<intrusive_ptr<build_node> > generated_sources;
+   build_node::nodes_t generated_sources;
    for(main_target::sources_t::const_iterator i = mt->sources().begin(), last = mt->sources().end(); i != last; ++i)
    {
       std::vector<boost::intrusive_ptr<build_node> > r((**i).generate());
@@ -173,13 +173,9 @@ generator_registry::construct(const main_target* mt) const
    }
 
    // transform all sources using all viable generators
-   while(!generated_sources.empty())
-   {
-      intrusive_ptr<build_node> s(generated_sources.back());
-      generated_sources.pop_back();
+   for(build_node::nodes_t::const_iterator s = generated_sources.begin(), s_last = generated_sources.end(); s != s_last; ++s)
       for(main_viable_generators_t::iterator i = main_viable_generators.begin(), last = main_viable_generators.end(); i != last; ++i)
-         i->all_consumed_= i->all_consumed_ && transform_to_consumable(*i->generator_, *i->generator_, s, &i->transformed_sources_, mt->properties(), *mt);
-   }
+         i->all_consumed_= i->all_consumed_ && transform_to_consumable(*i->generator_, *i->generator_, *s, &i->transformed_sources_, mt->properties(), *mt);
 
    // search for ONE good generator that consume all sources
    bool has_choosed_generator = false;

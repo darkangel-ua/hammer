@@ -82,6 +82,9 @@ namespace hammer
          bool include_composite_generators_; // include composite generators while searching for sources indirect transformations
    };
 
+   // we must not change order in nodes, because if that we use multi_index
+   // because of gcc library ordering we leave only last ocurrancies of some library.
+   // if input is A B C B D then output will be A C B D
    void remove_dups(build_node::nodes_t& nodes);
 }
 

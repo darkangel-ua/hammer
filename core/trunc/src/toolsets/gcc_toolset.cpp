@@ -65,8 +65,8 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
                                   string("\"")));
 
    shared_ptr<fs_argument_writer> cflags(new fs_argument_writer("cflags", e.feature_registry()));
-   cflags->add("<optimization>speed", "/O3").
-           add("<optimization>space", "/Os").
+   cflags->add("<optimization>speed", "-O3").
+           add("<optimization>space", "-Os").
            add("<optimization>off", "-O0").
            add("<inlining>off", "-fno-inline").
            add("<inlining>on", "-Wno-inline").

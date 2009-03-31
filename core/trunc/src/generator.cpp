@@ -120,13 +120,14 @@ void remove_dups(build_node::nodes_t& nodes)
    typedef multi_index_container<node_t, indexed_by<sequenced<>, ordered_unique<identity<node_t> > > > container_t;
    
    container_t c;
-   container_t::nth_index<1>::type idx = c.get<1>();
+   container_t::nth_index<1>::type& idx = c.get<1>();
    for(build_node::nodes_t::const_iterator i = nodes.begin(), last = nodes.end(); i != last; ++i)
       idx.insert(*i);
 
-   build_node::nodes_t result(nodes.size());
-   container_t::nth_index<0>::type idx_0 = c.get<0>();
-   for(build_node::nodes_t::const_iterator i = nodes.begin(), last = nodes.end(); i != last; ++i)
+   build_node::nodes_t result;
+   result.reserve(c.get<0>().size());
+   typedef container_t::nth_index<0>::type idx_0_t;
+   for(idx_0_t::const_iterator i = c.get<0>().begin(), last = c.get<0>().end(); i != last; ++i)
       result.push_back(*i);
    
    nodes.swap(result);

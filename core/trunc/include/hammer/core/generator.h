@@ -82,7 +82,7 @@ namespace hammer
          bool include_composite_generators_; // include composite generators while searching for sources indirect transformations
    };
 
-   void remove_dups(std::vector<boost::intrusive_ptr<build_node> >& nodes);
+   void remove_dups(build_node::nodes_t& nodes);
 }
 
 #endif //h_9b0699bd_cc04_4e19_874b_45c95b909551

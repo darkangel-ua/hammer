@@ -11,7 +11,6 @@
 #include "pool.h"
 #include "call_resolver.h"
 
-
 namespace hammer
 {
    class basic_target;

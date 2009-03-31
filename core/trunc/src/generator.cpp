@@ -8,6 +8,9 @@
 #include <hammer/core/engine.h>
 #include <hammer/core/np_helpers.h>
 #include <hammer/core/build_action.h>
+#include <boost/multi_index_container.hpp>
+#include <boost/multi_index/ordered_index.hpp>
+#include <boost/multi_index/sequenced_index.hpp>
 
 namespace hammer{
 
@@ -109,22 +112,24 @@ generator::~generator()
 
 }
 
-static bool less_by_addr(const boost::intrusive_ptr<build_node>& lhs,
-                         const boost::intrusive_ptr<build_node>& rhs)
+void remove_dups(build_node::nodes_t& nodes)
 {
-   return lhs.get() < rhs.get();
-}
+   // we must not change order in nodes, because if that we use multi_index
+   using namespace boost::multi_index;
+   typedef boost::intrusive_ptr<build_node> node_t;
+   typedef multi_index_container<node_t, indexed_by<sequenced<>, ordered_unique<identity<node_t> > > > container_t;
+   
+   container_t c;
+   container_t::nth_index<1>::type idx = c.get<1>();
+   for(build_node::nodes_t::const_iterator i = nodes.begin(), last = nodes.end(); i != last; ++i)
+      idx.insert(*i);
 
-static bool equal_by_addr(const boost::intrusive_ptr<build_node>& lhs,
-                          const boost::intrusive_ptr<build_node>& rhs)
-{
-   return lhs.get() == rhs.get();
-}
-
-void remove_dups(std::vector<boost::intrusive_ptr<build_node> >& nodes)
-{
-   std::sort(nodes.begin(), nodes.end(), &less_by_addr);
-   nodes.erase(std::unique(nodes.begin(), nodes.end(), &equal_by_addr), nodes.end());
+   build_node::nodes_t result(nodes.size());
+   container_t::nth_index<0>::type idx_0 = c.get<0>();
+   for(build_node::nodes_t::const_iterator i = nodes.begin(), last = nodes.end(); i != last; ++i)
+      result.push_back(*i);
+   
+   nodes.swap(result);
 }
 
 }

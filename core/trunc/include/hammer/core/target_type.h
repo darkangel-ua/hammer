@@ -9,19 +9,38 @@
 namespace hammer
 {
    class type_registry;
+   class feature_set;
+
    class target_type
    {
       public:
-         typedef std::vector<std::string> suffixes_t;
+         struct suffix_def
+         {
+            suffix_def(const std::string& suffix) : suffix_(suffix), condition_(NULL) {}
+            suffix_def(const char* suffix) : suffix_(suffix), condition_(NULL) {}
+            suffix_def(const char* suffix,
+                       const feature_set& condition)
+               : suffix_(suffix),
+                 condition_(&condition)
+            {}
 
-         target_type(const type_tag& tag, const std::string& suffix);
-         target_type(const type_tag& tag, const std::string& suffix, const target_type& base);
+            bool operator == (const suffix_def& rhs) const;
+
+            std::string suffix_;
+            const feature_set* condition_;
+         };
+
+         typedef std::vector<suffix_def> suffixes_t;
+
+         target_type(const type_tag& tag, const suffix_def& suffix);
+         target_type(const type_tag& tag, const suffix_def& suffix, const target_type& base);
          target_type(const type_tag& tag, const suffixes_t& suffixes);
          target_type(const type_tag& tag, const suffixes_t& suffixes, const target_type& base);
          
          const type_tag& tag() const { return tag_; }
          const suffixes_t& suffixes() const { return suffixes_; }
-         const std::string& suffix_for(const std::string& s) const;
+         const std::string& suffix_for(const std::string& s, const feature_set& environment) const;
+         const std::string& suffix_for(const feature_set& environment) const;
          const target_type* base() const { return base_ ; }
 
          bool equal_or_derived_from(const target_type& rhs) const;

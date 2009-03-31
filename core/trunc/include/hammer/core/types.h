@@ -4,6 +4,7 @@
 namespace hammer
 {
    class type_registry;
+   class feature_registry;
    class type_tag;
 
    namespace types
@@ -27,7 +28,7 @@ namespace hammer
       extern const type_tag TESTING_OUTPUT;
       extern const type_tag TESTING_RUN_PASSED;
 
-      void register_standart_types(type_registry& tr);
+      void register_standart_types(type_registry& tr, feature_registry& fr);
    }
 }
 

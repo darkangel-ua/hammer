@@ -42,11 +42,11 @@ std::vector<boost::intrusive_ptr<build_node> >
 generator::construct(const target_type& type_to_construct,
                      const feature_set& props,
                      const std::vector<boost::intrusive_ptr<build_node> >& sources,
-                     const basic_target* t,
+                     const basic_target* source_target,
                      const pstring* composite_target_name,
                      const main_target& owner) const
 {
-   if (!t)
+   if (!source_target)
    {
       boost::intrusive_ptr<build_node> result(new build_node(owner, composite_));
       result->action(action());
@@ -71,11 +71,11 @@ generator::construct(const target_type& type_to_construct,
 
       for(producable_types_t::const_iterator i = target_types_.begin(), last = target_types_.end(); i != last; ++i)
       {
-         pstring new_name = make_name(engine_->pstring_pool(),
-                                      *composite_target_name,
-                                      *i->type_,
-                                      i->need_tag_ ? &props : NULL,
-                                      i->need_tag_ ? &owner : NULL);
+         pstring new_name = make_product_name(engine_->pstring_pool(),
+                                              *composite_target_name,
+                                              *i->type_,
+                                              props,
+                                              i->need_tag_ ? &owner : NULL);
          result->products_.push_back(new generated_target(&owner,
                                                           new_name,
                                                           i->type_, &props));
@@ -86,18 +86,17 @@ generator::construct(const target_type& type_to_construct,
    }
    else
    {
-      pstring new_name = make_name(engine_->pstring_pool(),
-                                   t->name(),
-                                   t->type(),
-                                   type_to_construct,
-                                   producable_types().front().need_tag_ ? &props : NULL,
-                                   producable_types().front().need_tag_ ? &owner : NULL);
+      pstring new_name = make_product_name(engine_->pstring_pool(),
+                                           *source_target,
+                                           type_to_construct,
+                                           props,
+                                           producable_types().front().need_tag_ ? &owner : NULL);
       assert(sources.size() == 1);
 
       boost::intrusive_ptr<build_node> result(new build_node(owner, composite_));
       result->action(action());
 
-      result->sources_.push_back(build_node::source_t(t, sources.front()));
+      result->sources_.push_back(build_node::source_t(source_target, sources.front()));
       result->down_.push_back(sources.front());
       result->products_.push_back(new generated_target(&owner, new_name, producable_types().front().type_, &props));
       result->targeting_type_ = &type_to_construct;

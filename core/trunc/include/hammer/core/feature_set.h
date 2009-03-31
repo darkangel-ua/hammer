@@ -47,7 +47,7 @@ namespace hammer
          void clear();
 
          bool operator == (const feature_set& rhs) const;
-         bool compatible_with (const feature_set& rhs) const;
+         bool compatible_with(const feature_set& rhs) const;
          bool operator != (const feature_set& rhs) const { return !(*this == rhs); }
          bool contains(const feature_set& rhs) const;
 

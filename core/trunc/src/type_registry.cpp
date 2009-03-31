@@ -52,9 +52,9 @@ namespace hammer{
          
          for(target_type::suffixes_t::const_iterator j = i->second->suffixes().begin(), j_last = i->second->suffixes().end(); j != j_last; ++j)
          {
-            string::size_type p = rfind(name, *j);//s_name.rfind(j->c_str());
+            string::size_type p = rfind(name, j->suffix_);//s_name.rfind(j->c_str());
             if (p != string::npos && 
-                p + j->size() == name.size())
+                p + j->suffix_.size() == name.size())
                return i->second;
          }
       }
@@ -114,7 +114,7 @@ namespace hammer{
          if (!t->suffixes().empty())
          {
             for(target_type::suffixes_t::const_iterator i = t->suffixes().begin(), last = t->suffixes().end(); i != last; ++i)
-               types_by_suffix_.insert(make_pair(*i, t.get()));
+               types_by_suffix_.insert(make_pair(i->suffix_, t.get()));
          }
 
          return *t.release();

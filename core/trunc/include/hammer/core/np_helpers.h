@@ -8,20 +8,18 @@ namespace hammer
    class pool;
    class feature_set;
    class main_target;
+   class basic_target;
 
-   pstring make_name(pool& p, 
-                     const pstring& source_name, 
-                     const target_type& source_type, 
-                     const target_type& target_type,
-                     const feature_set* target_properties,
-                     const main_target* owner);
-   pstring make_name(pool& p, 
-                     const pstring& source_name, 
-                     const target_type& target_type,
-                     const feature_set* target_properties,
-                     const main_target* owner);
-   pstring cut_suffix(pool& p, const pstring& source_name,
-                      const target_type& source_type);
+   pstring make_product_name(pool& p, 
+                             const basic_target& source_target,
+                             const target_type& product_type,
+                             const feature_set& product_properties,
+                             const main_target* owner);
+   pstring make_product_name(pool& p, 
+                             const pstring& composite_target_name, 
+                             const target_type& product_type,
+                             const feature_set& product_properties,
+                             const main_target* owner);
 }
 
 #endif //h_bdbdc7f5_3827_4e2d_96e0_db906cb8b72f

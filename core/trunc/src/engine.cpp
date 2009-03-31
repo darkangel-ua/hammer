@@ -35,15 +35,13 @@
 
 using namespace std;
 namespace fs = boost::filesystem;
+using namespace boost::assign;
 
 namespace hammer{
 
 engine::engine()
    :  feature_registry_(0)
 {
-   type_registry_.reset(new type_registry);
-   types::register_standart_types(*type_registry_);
-
    auto_ptr<hammer::feature_registry> fr(new hammer::feature_registry(&pstring_pool()));
 
    resolver_.insert("project", boost::function<void (project*, vector<pstring>&, project_requirements_decl*, project_requirements_decl*)>(boost::bind(&engine::project_rule, this, _1, _2, _3, _4)));
@@ -67,24 +65,12 @@ engine::engine()
    resolver_.insert("rglob", boost::function<sources_decl (project*, std::vector<pstring>&, std::vector<pstring>*)>(boost::bind(&engine::glob_rule, this, _1, _2, _3, true)));
    resolver_.insert("explicit", boost::function<void (project*, const pstring&)>(boost::bind(&engine::explicit_rule, this, _1, _2)));
    resolver_.insert("use-project", boost::function<void (project*, const pstring&, const pstring&, feature_set*)>(boost::bind(&engine::use_project_rule, this, _1, _2, _3, _4)));
-//   resolver_.insert("repository", boost::function<void (project*, const pstring&, feature_set*)>(boost::bind(&engine::repository_rule, this, _1, _2, _3)));
+   resolver_.insert("repository", boost::function<void (project*, const pstring&, feature_set*)>(boost::bind(&engine::repository_rule, this, _1, _2, _3)));
 
    {
       feature_attributes ft = {0}; ft.free = 1;
       fr->add_def(feature_def("__searched_lib_name", vector<string>(), ft));
    }
-
-/*
-   {
-      feature_attributes ft = {0}; ft.generated = 1;
-      fr->add_def(feature_def("__use_pch", boost::assign::list_of<string>("off")("on"), ft));
-   }
-
-   {
-      feature_attributes ft = {0}; ft.generated = ft.free = 1;
-      fr->add_def(feature_def("__create_pch", vector<string>(), ft));
-   }
-*/
 
    {
       // used to mark targets that belong to pch meta target. Needed for distinguishing PCH and OBJ generators
@@ -92,7 +78,21 @@ engine::engine()
       fr->add_def(feature_def("__pch", vector<string>(), ft));
    }
 
+   {
+      feature_attributes ft = {0};
+      fr->add_def(feature_def("os", list_of("nt")("linux"), ft));
+   }
+
+#if defined(_WIN32)
+   fr->get_def("os").set_default("nt");
+#else
+   fr->get_def("os").set_default("linux");
+#endif
+
    feature_registry_ = fr.release();
+
+   type_registry_.reset(new type_registry);
+   types::register_standart_types(*type_registry_, *feature_registry_);
 
    generators_.reset(new generator_registry);
 

@@ -1,0 +1,169 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- This document was created with Syntext Serna Free. --><!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "docbookV4.5/docbookx.dtd" []>
+<book>
+  <title>Hammer User Manual</title>
+  <chapter>
+    <title>Introduction</title>
+    <section>
+      <title>What is Hammer?</title>
+    </section>
+    <section>
+      <title>Hammer&apos;s history</title>
+    </section>
+    <section>
+      <title>Hammer&apos;s features</title>
+    </section>
+  </chapter>
+  <chapter>
+    <title>Concepts</title>
+    <section>
+      <title>Filesystem layout</title>
+      <para>The proposed working space organization is not a mandated, but recommended to use. You can organize projects in many ways you wish or must in the filesystem, but not all layouts can be used to expose full  power of Hammer. </para>
+      <para>Developing big, complex software with tens or hundreds of components is not a simple task. There is no single way how programmes manage all this mess and this is only amplifies the problems. On Linux you need to download sources, unpack and do <command>./configure &amp;&amp; make &amp;&amp; make install</command> . On Windows there is no standard way at all. Linux way is much simpler and defined, but not perfect. You just can&apos;t develop two different components depended on two different versions of the same library without some magic.  </para>
+      <para>Having one, simple, unified  and easy to understand project organization will greatly simplify developers communication and removes mental switches when you need to developing cross platform code.</para>
+      <para>Unfinished.</para>
+    </section>
+    <section>
+      <title>Projects</title>
+      <section>
+        <title>Basics</title>
+        <para>To manage all that complexity in software developing we divide software into peaces - libraries. That  makes ours life much easy. Library usually consists from sources, includes, docs and tests. Sources can be build into library, docs can be build from DocBook to HTML, tests can be build and run. Hammer&apos;s <emphasis>project</emphasis> is just hammer script file. It can contain  targets to build or projects structuring declarations or both of them. To illustrate what we talking about let&apos;s see on the example.</para>
+        <graphic fileref="images/project-layout.png" align="center"/>
+        <para>Here we have a small part of well known boost library collection rearranged to be modular. The project <filename>boost/hamfile</filename> doesn&apos;t have any build targets. It only instruct hammer where to find boost&apos;s sub-projects:</para>
+        <programlisting>use-project filesystem : filesystem ;
+use-project thread : thread ;</programlisting>
+        <para>The project boost/filesystem/hamfile:</para>
+        <programlisting>version-alias filesystem : trunc ;</programlisting>
+        <para>does have targets, but <code>version-alias</code> target is not exactly real target. And finally <filename>boost/filesystem/trunc/build/hamfile</filename> contains target to build called <code>boost.filesystem</code>:</para>
+        <programlisting>lib boost.filesystem
+    :
+     @/boost/core/&lt;version&gt;1.36.0
+     [ glob ../src/*.cpp ]
+     @/boost/system/&lt;version&gt;1.36.0
+     @/boost/iterator/&lt;version&gt;1.36.0
+     @/boost/exception/&lt;version&gt;1.36.0
+    :
+     &lt;link&gt;shared:&lt;define&gt;BOOST_ALL_DYN_LINK=1 
+     &lt;link&gt;static:&lt;define&gt;BOOST_All_STATIC_LINK=1
+     @&lt;include&gt;../include
+    ;
+</programlisting>
+        <para>Every hammer script file may have projects description rule in the form:</para>
+        <programlisting>project &lt;project-name&gt; : requirements &lt;property-set&gt;
+                       : usage-requirements &lt;property-set&gt;
+                       ;</programlisting>
+        <para>For now <code>&lt;project-name&gt;</code> doesn&apos;t have any semantic load. But <emphasis>requirements</emphasis> and <emphasis>usage-requirements</emphasis> is really helpful in complex projects with many libraries and targets. As will be showed in Targets section mostly all build targets has requirements and usage-requirements. When hammer script has <code>project</code> definition along with other targets definitions, all that targets will inherits requirements and usage-requirements from project definition. Example:<programlisting>project foobar : requirements &lt;define&gt;FOO=1
+               : usage-requirements &lt;define&gt;BOO=1
+               ;
+
+lib foobar : main.cpp ;
+lib barfoo : test.cpp ;</programlisting></para>
+        <para>is equivalent to:<programlisting>lib foobar : main.cpp : &lt;define&gt;FOO=1 : : &lt;define&gt;BOO=1 ;
+lib barfoo : test.cpp : &lt;define&gt;FOO=1 : : &lt;define&gt;BOO=1 ;</programlisting></para>
+      </section>
+      <section>
+        <title>Project inheritance</title>
+        <para>Because hammer&apos;s projects is just files and   organized in filesystem in hierarchical way  reflecting underlying software structure we automatically get a projects hierarchy. Looking at previously presented project hierarchy we see  <code>boost</code> project that consists from <code>boost/filesystem</code> and <code>boost/thread</code> sub-projects. Filesystem project consists from  <code>boost.filesystem</code> library target placed in <filename>hammer/filesystem/trunc/build/hamfile</filename> and <code>test</code> target placed in <filename>boost/filesystem/trunc/test/build/hamfile</filename> that is subproject of <code>boost/filesystem</code> project. It is naturally that <code>boost</code> project may have some requirements and usage requirements that is same for all its sub-projects. Because of that every subproject <emphasis>inherits</emphasis> all requirements and usage requirements from upper project same way as that done for targets inside any <filename>hamfile</filename>. The target <code>boost.filesystem</code> in hammer project <filename>boost/filesystem/trunc/build/hamfile</filename> will have inherited requirements and usage requirements from <filename>boost/hamfile</filename> and <filename>boost/filesystem/hamfile</filename> hammer projects.</para>
+      </section>
+    </section>
+    <section>
+      <title>Features and properties</title>
+      <para>To portably represent aspects of target configuration such as debug and release variants, or single- and multi-threaded builds, Hammer uses <emphasis>features</emphasis> with associated <emphasis>values</emphasis>. For example, the <code>debug-symbols</code> feature can have a value of <code>on</code> or <code>off</code>. A <emphasis>property</emphasis> is just a (feature, value) pair.</para>
+      <para>Each feature has a set of associated <emphasis>attributes</emphasis>. Feature attributes are low-level descriptions of how the build system should interpret a feature&apos;s values when they appear in a build request.We also refer to the attributes of properties, so that an <code>incidental</code> property, for example, is one whose feature has the <code>incidental</code>  attribute.<table>
+          <title>Feature&apos;s attributes</title>
+          <tgroup cols="2">
+            <colspec colwidth="2.5 cm"/>
+            <tbody>
+              <row>
+                <entry align="center">incidental</entry>
+                <entry>Incidental features are assumed not to affect build products at all. A feature that controls a compiler&apos;s warning level is one example of a likely incidental feature. Non-incidental features are assumed to affect build products.</entry>
+              </row>
+              <row>
+                <entry align="center">propagated</entry>
+                <entry>Features of this kind are propagated to dependencies. That is, if a arget is built using a propagated property, the build systems attempts to use the same property when building any of its dependencies as part of that arget. For instance, when an exectuable is requested to build with msvc-8.0 toolset, one usually wants it to be linked with libraries builded with same toolset. Thus, the &lt;toolset&gt; feature is propagated.</entry>
+              </row>
+              <row>
+                <entry align="center">free</entry>
+                <entry>Most features have a finite set of allowed values, and can only take on a single value from that set in a given build specification. Free features, on the other hand, can have several values at a time and each value can be an arbitrary string. For example, it is possible to have several preprocessor symbols defined simultaneously: &lt;define&gt;NDEBUG=1 &lt;define&gt;HAS_CONFIG_H=1 </entry>
+              </row>
+              <row>
+                <entry align="center">optional</entry>
+                <entry>An optional feature is a feature that is not required to appear in a build specification. Every non-optional, non-free and without no-default attribute feature has a default value that is used when a value for the feature is not otherwise specified, either in a target&apos;s requirements or in the user&apos;s build request. </entry>
+              </row>
+              <row>
+                <entry align="center">path</entry>
+                <entry>The value of a path feature specifies a path. The path is treated as relative to the directory of <filename>hamfile</filename> where path feature is used and is translated appropriately by the build system when the build is invoked from a different directory</entry>
+              </row>
+              <row>
+                <entry align="center">composite</entry>
+                <entry>Composite features actually correspond to groups of properties. For example, a build variant is a composite feature. When generating targets from a set of build properties, composite features are recursively expanded and added to the build property set, so rules can find them if necessary. Non-composite non-free features override components of composite features in a build property set.</entry>
+              </row>
+              <row>
+                <entry align="center">no-defaults</entry>
+                <entry>This attribute used to disable default behaviour of assigning default values to non-optional non-free features.</entry>
+              </row>
+              <row>
+                <entry align="center">no-checks</entry>
+                <entry>This attribute disable validating allowed values for feature. With help of this attribute it is posible to define feature that can have any value like free feature, but behave like non-free non-incidental features.</entry>
+              </row>
+              <row>
+                <entry align="center">dependency</entry>
+                <entry>The value of dependency feature is a target reference.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table></para>
+    </section>
+    <section>
+      <title>Targets</title>
+      <section>
+        <title>Basics</title>
+        <para>Target is a rule in hammer&apos;s script file that define some action such as build executable,  build shared lib, copy target from one location to another or build and run some tests. </para>
+        <para>Most of the time targets takes the following form:</para>
+        <programlisting>target-rule-name target-name 
+   : [sources] 
+   : [requirements]
+   : [usage-requirements] 
+   : [default-build]
+   : [usage-requirements]
+   ;</programlisting>
+        <para>Some argument can be omitted (almost all), but most of the time <code>sources</code> and <code>requirements</code> will have some values. </para>
+        <para>Let&apos;s explaine what each argument is:</para>
+        <programlisting>lib foo : main.cpp ;</programlisting>
+        <para>Target will produce shared library <code>foo</code> from sources <code>main.cpp</code>. </para>
+        <programlisting>lib foo : main.cpp : &lt;link&gt;static ;</programlisting>
+        <para>Target will produce static library <code>foo</code> from sources <code>main.cpp</code>  using target requirements <code>&lt;link&gt;static</code>.<programlisting>lib foo : main.cpp : &lt;link&gt;static : : &lt;define&gt;FOO_STATIC ;</programlisting></para>
+        <para>Target will produce static library <code>foo</code> from sources <code>main.cpp</code>  using target requirements <code>&lt;link&gt;static</code> and set usage requirements to <code>&lt;define&gt;FOO_STATIC</code>.</para>
+        <para>Target&apos;s default build  argument is now not used, so you must leave it empty.</para>
+      </section>
+      <section>
+        <title>Target requirements</title>
+      </section>
+      <section>
+        <title>Target usage requirements</title>
+      </section>
+      <section>
+        <title>Target&apos;s alternatives</title>
+      </section>
+    </section>
+  </chapter>
+  <chapter>
+    <title>Let&apos;s build!</title>
+  </chapter>
+  <chapter>
+    <title>Reference</title>
+    <section>
+      <title>Hammer&apos;s script language</title>
+      <para>For now hammer&apos;s script language is very similar to perforce Jam language but without any control flow statements. Only rules was borrowed.  Rules is look like function invocations and most of the time have declarative meaning and very rare as real function invocation. So basic syntax is:</para>
+      <programlisting>rule-name argument_1 : argument_2 : ... : argument_N ;</programlisting>
+      <para>Each argument is a list of strings separated with <emphasis>space</emphasis> that can be zero length. Symbol &apos;:&apos; is used to separate arguments and &apos;;&apos; must enclose rule statement.</para>
+      <note>
+        <para>Because of some lexical problems real separator between arguments is &apos;&lt;space&gt;&lt;colon&gt;&lt;space&gt;&apos; not just &apos;&lt;colon&gt;&apos;. </para>
+      </note>
+      <para>Examples:</para>
+      <programlisting>exe test : main.cpp ;</programlisting>
+      <para>there we have rule name is  <code>lib</code>, first argument is <code>test</code>, second argument is <code>main.cpp</code> .</para>
+      <para><programlisting>lib iconv : : &lt;name&gt;iconv &lt;toolset&gt;gcc ;</programlisting>there we have rule name is <code>lib</code>, first argument is <code>iconv</code>, second argument is nothing, third argument is <code>&lt;name&gt;iconv &lt;toolset&gt;gcc</code>.</para>
+    </section>
+  </chapter>
+</book>

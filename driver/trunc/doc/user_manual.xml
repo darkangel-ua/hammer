@@ -69,6 +69,7 @@ lib barfoo : test.cpp : &lt;define&gt;FOO=1 : : &lt;define&gt;BOO=1 ;</programli
     <section>
       <title>Features and properties</title>
       <para>To portably represent aspects of target configuration such as debug and release variants, or single- and multi-threaded builds, Hammer uses <emphasis>features</emphasis> with associated <emphasis>values</emphasis>. For example, the <code>debug-symbols</code> feature can have a value of <code>on</code> or <code>off</code>. A <emphasis>property</emphasis> is just a (feature, value) pair.</para>
+      <para>In script properties easy located by special syntactic form <code>&lt;feature-name&gt;value</code>. For example <code>&lt;link&gt;static</code> - feature <code>link</code> with value <code>static</code>.</para>
       <para>Each feature has a set of associated <emphasis>attributes</emphasis>. Feature attributes are low-level descriptions of how the build system should interpret a feature&apos;s values when they appear in a build request.We also refer to the attributes of properties, so that an <code>incidental</code> property, for example, is one whose feature has the <code>incidental</code>  attribute.<table>
           <title>Feature&apos;s attributes</title>
           <tgroup cols="2">

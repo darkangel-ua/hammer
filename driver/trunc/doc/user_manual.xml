@@ -15,7 +15,7 @@
     </section>
   </chapter>
   <chapter>
-    <title>Concepts</title>
+    <title>Overview</title>
     <section>
       <title>Filesystem layout</title>
       <para>The proposed working space organization is not a mandated, but recommended to use. You can organize projects in many ways you wish or must in the filesystem, but not all layouts can be used to expose full  power of Hammer. </para>
@@ -24,17 +24,31 @@
       <para>Unfinished.</para>
     </section>
     <section>
+      <title>Hammer&apos;s script language</title>
+      <para>For now hammer&apos;s script language is very similar to perforce Jam language but without any control flow statements. Only rules was borrowed.  Rules is look like function invocations and most of the time have declarative meaning and very rare as real function invocation. So basic syntax is:</para>
+      <programlisting>rule-name argument_1 : argument_2 : ... : argument_N ;</programlisting>
+      <para>Each argument is a list of strings separated with <emphasis>space</emphasis> that can be zero length. Symbol &apos;:&apos; is used to separate arguments and &apos;;&apos; must enclose rule statement.</para>
+      <note>
+        <para>Because of some lexical problems real separator between arguments is &apos;&lt;space&gt;&lt;colon&gt;&lt;space&gt;&apos; not just &apos;&lt;colon&gt;&apos;. </para>
+      </note>
+      <para>Examples:</para>
+      <programlisting>exe test : main.cpp ;</programlisting>
+      <para>there we have rule name is  <code>lib</code>, first argument is <code>test</code>, second argument is <code>main.cpp</code> .</para>
+      <para><programlisting>lib iconv : : &lt;name&gt;iconv &lt;toolset&gt;gcc ;</programlisting>there we have rule name is <code>lib</code>, first argument is <code>iconv</code>, second argument is nothing, third argument is <code>&lt;name&gt;iconv &lt;toolset&gt;gcc</code>.</para>
+    </section>
+    <section>
       <title>Projects</title>
       <section>
         <title>Basics</title>
-        <para>To manage all that complexity in software developing we divide software into peaces - libraries. That  makes ours life much easy. Library usually consists from sources, includes, docs and tests. Sources can be build into library, docs can be build from DocBook to HTML, tests can be build and run. Hammer&apos;s <emphasis>project</emphasis> is just hammer script file. It can contain  targets to build or projects structuring declarations or both of them. To illustrate what we talking about let&apos;s see on the example.</para>
+        <para>To manage all that complexity in software developing we divide software into peaces - libraries. That  makes ours life much easy. Library usually consists from sources, includes, docs and tests. Sources can be build into library, docs can be build from DocBook to HTML, tests can be build and run. </para>
+        <para>Hammer&apos;s <emphasis>project</emphasis> is just hammer script file. It can contain  targets to build or projects structuring declarations or both of them. To illustrate what we talking about let&apos;s see on the example.</para>
         <graphic fileref="images/project-layout.png" align="center"/>
         <para>Here we have a small part of well known boost library collection rearranged to be modular. The project <filename>boost/hamfile</filename> doesn&apos;t have any build targets. It only instruct hammer where to find boost&apos;s sub-projects:</para>
         <programlisting>use-project filesystem : filesystem ;
 use-project thread : thread ;</programlisting>
-        <para>The project boost/filesystem/hamfile:</para>
+        <para>The project <filename>boost/filesystem/hamfile</filename>:</para>
         <programlisting>version-alias filesystem : trunc ;</programlisting>
-        <para>does have targets, but <code>version-alias</code> target is not exactly real target. And finally <filename>boost/filesystem/trunc/build/hamfile</filename> contains target to build called <code>boost.filesystem</code>:</para>
+        <para>does have targets, but <code>version-alias</code> is not exactly real target - we will explain it later. And finally <filename>boost/filesystem/trunc/build/hamfile</filename> contains target to build called <code>boost.filesystem</code>:</para>
         <programlisting>lib boost.filesystem
     :
      @/boost/core/&lt;version&gt;1.36.0
@@ -48,7 +62,7 @@ use-project thread : thread ;</programlisting>
      @&lt;include&gt;../include
     ;
 </programlisting>
-        <para>Every hammer script file may have projects description rule in the form:</para>
+        <para>Every Hammer script file may have project description rule in the form:</para>
         <programlisting>project &lt;project-name&gt; : requirements &lt;property-set&gt;
                        : usage-requirements &lt;property-set&gt;
                        ;</programlisting>
@@ -63,7 +77,8 @@ lib barfoo : test.cpp : &lt;define&gt;FOO=1 : : &lt;define&gt;BOO=1 ;</programli
       </section>
       <section>
         <title>Project inheritance</title>
-        <para>Because hammer&apos;s projects is just files and   organized in filesystem in hierarchical way  reflecting underlying software structure we automatically get a projects hierarchy. Looking at previously presented project hierarchy we see  <code>boost</code> project that consists from <code>boost/filesystem</code> and <code>boost/thread</code> sub-projects. Filesystem project consists from  <code>boost.filesystem</code> library target placed in <filename>hammer/filesystem/trunc/build/hamfile</filename> and <code>test</code> target placed in <filename>boost/filesystem/trunc/test/build/hamfile</filename> that is subproject of <code>boost/filesystem</code> project. It is naturally that <code>boost</code> project may have some requirements and usage requirements that is same for all its sub-projects. Because of that every subproject <emphasis>inherits</emphasis> all requirements and usage requirements from upper project same way as that done for targets inside any <filename>hamfile</filename>. The target <code>boost.filesystem</code> in hammer project <filename>boost/filesystem/trunc/build/hamfile</filename> will have inherited requirements and usage requirements from <filename>boost/hamfile</filename> and <filename>boost/filesystem/hamfile</filename> hammer projects.</para>
+        <para>Because Hammer&apos;s projects is just files and   organized in filesystem in hierarchical way  reflecting underlying software structure we automatically get a projects hierarchy. Looking at previously presented project hierarchy we see  <code>boost</code> project that consists from <code>boost/filesystem</code> and <code>boost/thread</code> sub-projects. Filesystem project consists from  <code>boost.filesystem</code> library target placed in <filename>hammer/filesystem/trunc/build/hamfile</filename> and <code>test</code> target placed in <filename>boost/filesystem/trunc/test/build/hamfile</filename> that is subproject of <code>boost/filesystem</code> project. </para>
+        <para>It is naturally that <code>boost</code> project may have some requirements and usage requirements that is same for all its sub-projects. Because of that every subproject <emphasis>inherits</emphasis> all requirements and usage requirements from upper project same way as that done for targets inside any <filename>hamfile</filename>. The target <code>boost.filesystem</code> in hammer project <filename>boost/filesystem/trunc/build/hamfile</filename> will  inherit requirements and usage requirements from <filename>boost/hamfile</filename> and <filename>boost/filesystem/hamfile</filename> hammer projects descriptions.</para>
       </section>
     </section>
     <section>
@@ -129,7 +144,7 @@ lib barfoo : test.cpp : &lt;define&gt;FOO=1 : : &lt;define&gt;BOO=1 ;</programli
    : [usage-requirements]
    ;</programlisting>
         <para>Some argument can be omitted (almost all), but most of the time <code>sources</code> and <code>requirements</code> will have some values. </para>
-        <para>Let&apos;s explaine what each argument is:</para>
+        <para>Let&apos;s look on some examples:</para>
         <programlisting>lib foo : main.cpp ;</programlisting>
         <para>Target will produce shared library <code>foo</code> from sources <code>main.cpp</code>. </para>
         <programlisting>lib foo : main.cpp : &lt;link&gt;static ;</programlisting>
@@ -138,13 +153,51 @@ lib barfoo : test.cpp : &lt;define&gt;FOO=1 : : &lt;define&gt;BOO=1 ;</programli
         <para>Target&apos;s default build  argument is now not used, so you must leave it empty.</para>
       </section>
       <section>
-        <title>Target requirements</title>
+        <title>Target&apos;s sources</title>
+        <para>Target&apos;s sources can take three different form:</para>
+        <itemizedlist>
+          <listitem>
+            <para>First form is a file expesed as relative to project or absolute path. </para>
+          </listitem>
+          <listitem>
+            <para>Second form is filesystem path to project, optionaly with target name and build properties with witch target must be built. Examples:</para>
+            <itemizedlist>
+              <listitem>
+                <programlisting>lib a : b a.cpp ;</programlisting>
+                <para><code>a</code>&apos;s sources is regilar file <code>a.cpp</code> and all targets from <filename>./b/hamfile</filename> project.</para>
+              </listitem>
+              <listitem>
+                <programlisting>lib b : ../c b.cpp ;</programlisting>
+                <para><code>b</code>&apos;s sources is regular file <filename>b.cpp</filename> and all targets from <filename>../c/hamfile</filename> project.</para>
+              </listitem>
+              <listitem>
+                <programlisting>lib c : ../d//d_1 c.cpp ;</programlisting>
+                <para><code>c</code>&apos;s sources is regular file <filename>c.cpp</filename> and target  <code>d_1</code> from <filename>../d/hamfile</filename> project.</para>
+              </listitem>
+              <listitem>
+                <programlisting>lib d : f/lib_f//f_1/&lt;link&gt;static d.cpp ;</programlisting>
+                <para> <code>d</code>&apos;s sources is regular file <code>d.cpp</code> and <code>f_1</code> target from <filename>./f/lib_f/hamfile</filename> project that must be build as static library.</para>
+              </listitem>
+            </itemizedlist>
+          </listitem>
+          <listitem>
+            <para>Third form similar to second with one addition - prepended <code>slash (&apos;/&apos;)</code>. This one describes <emphasis>symbolic name</emphasis> that doesn&apos;t tied to directory layout or file path.  </para>
+          </listitem>
+        </itemizedlist>
+        <para>The last one  is <emphasis>recomended</emphasis> form for sources that are targets. When you specify relative path to source target or even worth - absolute path,  that makes project highly tied to filesystem. </para>
+        <para>Consider small example. You write simple library that uses <code>zlib</code> library:<programlisting>lib foo : foo.cpp ../../zlib/build ;</programlisting></para>
+        <para>By using second form you mandate that <code>zlib</code> project  must lay close to <code>foo</code>. This forces all developers to place this  two projects together. This is unacceptable. But if you use third form you will never have such problems:<programlisting>lib foo : foo.cpp /zlib ;</programlisting></para>
+        <para>Now <code>foo</code> is not tied with  <code>zlib</code> placement. Hammer will resolve /zlib into appropriate path that was specified somewhere previously  using <code>use-project</code> rule.</para>
       </section>
       <section>
-        <title>Target usage requirements</title>
+        <title>Target&apos;s requirements</title>
+        <para>Target&apos;s requirements is a property set that specify how target must be built. When you what that library should be build  as static library you place <code>&lt;link&gt;static</code> in requirements.  </para>
       </section>
       <section>
-        <title>Target&apos;s alternatives</title>
+        <title>Target&apos;s usage requirements</title>
+      </section>
+      <section>
+        <title>Target alternatives</title>
       </section>
     </section>
   </chapter>
@@ -153,18 +206,5 @@ lib barfoo : test.cpp : &lt;define&gt;FOO=1 : : &lt;define&gt;BOO=1 ;</programli
   </chapter>
   <chapter>
     <title>Reference</title>
-    <section>
-      <title>Hammer&apos;s script language</title>
-      <para>For now hammer&apos;s script language is very similar to perforce Jam language but without any control flow statements. Only rules was borrowed.  Rules is look like function invocations and most of the time have declarative meaning and very rare as real function invocation. So basic syntax is:</para>
-      <programlisting>rule-name argument_1 : argument_2 : ... : argument_N ;</programlisting>
-      <para>Each argument is a list of strings separated with <emphasis>space</emphasis> that can be zero length. Symbol &apos;:&apos; is used to separate arguments and &apos;;&apos; must enclose rule statement.</para>
-      <note>
-        <para>Because of some lexical problems real separator between arguments is &apos;&lt;space&gt;&lt;colon&gt;&lt;space&gt;&apos; not just &apos;&lt;colon&gt;&apos;. </para>
-      </note>
-      <para>Examples:</para>
-      <programlisting>exe test : main.cpp ;</programlisting>
-      <para>there we have rule name is  <code>lib</code>, first argument is <code>test</code>, second argument is <code>main.cpp</code> .</para>
-      <para><programlisting>lib iconv : : &lt;name&gt;iconv &lt;toolset&gt;gcc ;</programlisting>there we have rule name is <code>lib</code>, first argument is <code>iconv</code>, second argument is nothing, third argument is <code>&lt;name&gt;iconv &lt;toolset&gt;gcc</code>.</para>
-    </section>
   </chapter>
 </book>

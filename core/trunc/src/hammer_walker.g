@@ -51,7 +51,7 @@ requirements returns[void* result]
                                                                      feature { hammer_add_feature_to_rdecl($feature.feature, is_public, result); }))+
            );
 requirements_public_tag[char* flag] : PUBLIC_TAG { *flag = 1; }
-                        | ;
+                        | { *flag = 0; };
 conditional_features returns[void* c] 
 @init { c = hammer_make_requirements_condition(); }
         : ^(CONDITIONAL_FEATURES condition[c] COLON feature { hammer_set_condition_result(c, $feature.feature); });

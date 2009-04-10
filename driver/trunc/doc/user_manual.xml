@@ -157,14 +157,14 @@ lib barfoo : test.cpp : &lt;define&gt;FOO=1 : : &lt;define&gt;BOO=1 ;</programli
         <para>Target&apos;s sources can take three different form:</para>
         <itemizedlist>
           <listitem>
-            <para>First form is a file expesed as relative to project or absolute path. </para>
+            <para>First form is a file expressed as relative to project or absolute path. </para>
           </listitem>
           <listitem>
-            <para>Second form is filesystem path to project, optionaly with target name and build properties with witch target must be built. Examples:</para>
+            <para>Second form is filesystem path to project, optionally with target name and build properties with witch target must be built. Examples:</para>
             <itemizedlist>
               <listitem>
                 <programlisting>lib a : b a.cpp ;</programlisting>
-                <para><code>a</code>&apos;s sources is regilar file <code>a.cpp</code> and all targets from <filename>./b/hamfile</filename> project.</para>
+                <para><code>a</code>&apos;s sources is regular file <code>a.cpp</code> and all targets from <filename>./b/hamfile</filename> project.</para>
               </listitem>
               <listitem>
                 <programlisting>lib b : ../c b.cpp ;</programlisting>
@@ -184,20 +184,135 @@ lib barfoo : test.cpp : &lt;define&gt;FOO=1 : : &lt;define&gt;BOO=1 ;</programli
             <para>Third form similar to second with one addition - prepended <code>slash (&apos;/&apos;)</code>. This one describes <emphasis>symbolic name</emphasis> that doesn&apos;t tied to directory layout or file path.  </para>
           </listitem>
         </itemizedlist>
-        <para>The last one  is <emphasis>recomended</emphasis> form for sources that are targets. When you specify relative path to source target or even worth - absolute path,  that makes project highly tied to filesystem. </para>
+        <para>The last one  is <emphasis>recommended</emphasis> form for sources that are targets. When you specify relative path to source target or even worth - absolute path,  that makes project highly tied to filesystem. </para>
         <para>Consider small example. You write simple library that uses <code>zlib</code> library:<programlisting>lib foo : foo.cpp ../../zlib/build ;</programlisting></para>
         <para>By using second form you mandate that <code>zlib</code> project  must lay close to <code>foo</code>. This forces all developers to place this  two projects together. This is unacceptable. But if you use third form you will never have such problems:<programlisting>lib foo : foo.cpp /zlib ;</programlisting></para>
         <para>Now <code>foo</code> is not tied with  <code>zlib</code> placement. Hammer will resolve /zlib into appropriate path that was specified somewhere previously  using <code>use-project</code> rule.</para>
       </section>
       <section>
         <title>Target&apos;s requirements</title>
-        <para>Target&apos;s requirements is a property set that specify how target must be built. When you what that library should be build  as static library you place <code>&lt;link&gt;static</code> in requirements.  </para>
+        <para>Target&apos;s requirements is a property set that should always be present when building a target. When you what that library should be build  as static library you place <code>&lt;link&gt;static</code> in requirements:</para>
+        <programlisting>lib foo : foo.cpp : &lt;link&gt;static ;</programlisting>
+        <para>Here we place <emphasis>define</emphasis> and <emphasis>include</emphasis> features and many others  that should be present in target&apos;s build properties to build correctly:</para>
+        <programlisting>lib foo 
+   : 
+    foo.cpp 
+   : 
+    &lt;include&gt;../include 
+    &lt;define&gt;FOO_DEFINE
+    &lt;link&gt;static
+   ;</programlisting>
+        <para>Very often you need to specify some property <emphasis>conditionally</emphasis>. This is done by following syntax:</para>
+        <programlisting>lib foo 
+   : 
+    foo.cpp 
+   : 
+    &lt;include&gt;../include
+    &lt;link&gt;shared:&lt;define&gt;EXPORT_FOO
+   ;</programlisting>
+        <para>Here we declare library <code>foo</code> with <emphasis>conditional</emphasis>  requirement <programlisting>&lt;link&gt;shared:&lt;define&gt;EXPORT_FOO</programlisting>that tell build system to add <code>&lt;define&gt;EXPORT_FOO</code> to <code>foo</code>&apos;s requirements when build as shared library.</para>
       </section>
       <section>
         <title>Target&apos;s usage requirements</title>
+        <para>Target&apos;s usage requirements is a property set that should be applied to all its direct users. This concept is  heavily used in c++ library and application developing. </para>
+        <para>Suppose you developing library <code>foo</code>:</para>
+        <programlisting>lib foo : foo.cpp : &lt;include&gt;../include ;</programlisting>
+        <para>To use you library user must do the following:<programlisting>lib bar 
+   : 
+    bar.cpp 
+    ../../foo/build                # place foo in sources
+   : 
+    &lt;include&gt;../include            # bar&apos;s include path
+    &lt;include&gt;../../foo/include     # foo&apos;s include path
+   ;</programlisting></para>
+        <para>To successfully build library <code>bar</code> you must specify where to look <code>foo</code>&apos;s includes. <code>bar</code> is small library but what about complex one, with  5-10 dependencies? More over what would you put in <code>&lt;include&gt;</code>  when those libs will appear in sources as symbolic names?</para>
+        <para>To solve this problem you have to use <emphasis>usage requirements</emphasis>. Rewritten <code>foo</code> declaration with usage requirements will be:<programlisting>lib foo 
+   : 
+     foo.cpp 
+   : 
+    &lt;include&gt;../include 
+   : 
+   : 
+    &lt;include&gt;../include 
+   ;</programlisting></para>
+        <para>Now <code>bar</code> can be rewritten to:<programlisting>lib bar 
+   : 
+     bar.cpp
+     ../../foo/build
+   :
+    &lt;include&gt;../include
+                          # we don&apos;t need to specify 
+                          # &lt;include&gt;../../foo/include
+                          # any more 
+   ;</programlisting></para>
       </section>
       <section>
         <title>Target alternatives</title>
+        <para>Sometimes you need to build a target using a completely different sources depending on build request. For example when build with <emphasis>gcc</emphasis> target looks like:<programlisting>lib foo : gcc_foo.cpp ;</programlisting></para>
+        <para>but when build with <emphasis>msvc</emphasis> it looks like:<programlisting>lib foo : msvc_foo.cpp ;</programlisting></para>
+        <para>Another example is using precompiled headers. Some compilers has pch support some don&apos;t. But build script should works for both. </para>
+        <para>To resolve all these problems you can use target alternatives. The first problem could be solved as:<programlisting>lib foo : gcc_foo.cpp  : &lt;toolset&gt;gcc ;  #first alternative
+lib foo : msvc_foo.cpp : &lt;toolset&gt;msvc ; #second alternative</programlisting></para>
+        <para>When user  use <code>/foo</code> in sources for some target, build system load <code>foo</code> project file and see <emphasis>two</emphasis> targets <code>foo</code>. To resolve witch one to use build request and target&apos;s requirements will be compared. If build request contains <code>&lt;toolset&gt;gcc</code>  property than <emphasis>first</emphasis> alternative will be selected. If build request contains <code>&lt;toolset&gt;msvc</code> than <emphasis>second</emphasis> one. </para>
+        <para>The second problem may be resolved as:<programlisting>pch stdafx : stdafx.h stdafx.cpp : &lt;toolset&gt;msvc ;
+alias stdafx ;
+
+lib foo : stdafx foo.cpp ;</programlisting></para>
+        <para>Here <code>foo</code> will be built with pch support only for msvc toolset. As you can see targets that have same name may have different <emphasis>types</emphasis>. The <code>pch</code> targets builds precompiled header from given sources. The <code>alias</code> target is a special targets that do nothing except returns its sources as is to its direct user.</para>
+        <para>The mechanism of alternative selection is very simple - only non-free non-incidental features participate in alternative selection and target with most longer matched set of properties will be chosen.</para>
+      </section>
+      <section>
+        <title>Public sources and requirements</title>
+        <para>Public sources and requirements was introduced to reduce typing and to make build scripts more clearer to readers. </para>
+        <para>When you develop some library some of dependencies used for implementation details and some for public part. Surpose you write lib <code>foo</code> that use <code>/boost/date_time</code> library:<programlisting>lib foo 
+   : 
+    foo.cpp /boost/date_time 
+   : 
+    &lt;include&gt;../include   #where to find foo&apos;s includes 
+   :
+   :
+    &lt;include&gt;../include   #export includes for foo&apos;s users
+   ;</programlisting></para>
+        <para>If <filename>foo.h</filename> that is part of public interface to <code>foo</code> library includes some of <code>/boost/date_time</code> headers, than <code>/boost/date_time</code> considered as <emphasis>public source</emphasis> for lib <code>foo</code>. </para>
+        <para>In current form building <code>foo</code> lib is not a problem - it builds correctly thanks to <code>/boost/date_time</code>&apos;s usage-requirements that brings correct include paths to <code>foo</code> target. But when somebody will try to use <code>foo</code> to build <code>bar</code>:<programlisting>lib bar 
+   : 
+    bar.cpp /foo
+   :
+    &lt;include&gt;../include #where to find bar&apos;s includes
+   : 
+   :
+    &lt;include&gt;../include #export includes for foo&apos;s users
+   ;</programlisting></para>
+        <para>he  immediately hit the problem. Because usage requirements of <code>/boost/date_time</code> is applied only to <code>foo</code>, as to direct user, compiler will not see correct include paths for <code>/boost/date_time</code> when building <code>bar</code>. <code>/boost/date_time</code>&apos;s includes need to build <code>bar</code> because <code>bar</code> uses <code>/foo</code> that <emphasis>indirectly</emphasis>, though <filename>foo.h</filename>,  uses some of <code>/boost/date_time</code> headers.</para>
+        <para>To resolve this issue <code>foo</code>&apos;s target should be rewritten as:<programlisting>lib foo 
+   : 
+    foo.cpp /boost/date_time 
+   : 
+    &lt;include&gt;../include   #where to find foo&apos;s includes 
+   :
+   :
+    &lt;include&gt;../include   #export includes for foo&apos;s users
+    &lt;use&gt;/boost/date_time #export /boost/date_time usage 
+                          #requiremenst to foo&apos;s users
+   ;</programlisting></para>
+        <para>When <code>&lt;use&gt;some-lib</code> property appear in some target&apos;s requirements build system add <code>some-lib</code>&apos;s usage requirements to that target&apos;s requirements. So now, when we use <code>foo</code> as source for <code>bar</code>, <code>foo</code>&apos;s usage requirements will be added to <code>bar</code>&apos;s requirements and because <code>foo</code>&apos;s usage requirements contains <code>&lt;use&gt;/boost/date_time</code> property all usage requirements of <code>/boost/date_time</code> will be added to requirements of <code>bar</code>. That will give all needed <code>&lt;include&gt;</code> features in <code>bar</code>&apos;s requirements to build it correctly.</para>
+        <para>Specifying <code>/boost/date_time</code> in sources and than <code>&lt;use&gt;/boost/date_time</code> in usage requirements seams not a very good idea, especially when there is  more than one such source. To simplify developers life special syntax was introduced. To indicate that some of source target is <emphasis>public source</emphasis> you should prepend <code>@</code> symbol to it. Rewritten <code>foo</code> target using new syntax:<programlisting>lib foo 
+   : 
+    foo.cpp 
+    @/boost/date_time     #public source
+   : 
+    &lt;include&gt;../include   #where to find foo&apos;s includes 
+   :
+   :
+    &lt;include&gt;../include   #export includes for foo&apos;s users
+   ;</programlisting></para>
+        <para>As you can see some double writing is still remains. <code>&lt;include&gt;../include</code> appear in both requirements and usage requirements. To reduce that typing we can apply the same public concept to requirements:<programlisting>lib foo 
+   : 
+    foo.cpp 
+    @/boost/date_time     #public source
+   : 
+    @&lt;include&gt;../include  #public requirement 
+   ;</programlisting></para>
       </section>
     </section>
   </chapter>

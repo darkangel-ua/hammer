@@ -318,6 +318,68 @@ lib foo : stdafx foo.cpp ;</programlisting></para>
   </chapter>
   <chapter>
     <title>Let&apos;s build!</title>
+    <section>
+      <title>Executables</title>
+      <section>
+        <title>Definition</title>
+        <para>To build executable you need to use <code>exe</code> rule:<programlisting>exe exe-name 
+   : sources
+   : [requirements]
+   : [default build]
+   : [usage requirements]
+   ;          </programlisting></para>
+      </section>
+      <section>
+        <title>Example: simple executable</title>
+        <figure label="test">
+          <title>Filesystem layout</title>
+          <graphic fileref="images/simple-exe-layout.png" align="center"/>
+        </figure>
+        <figure>
+          <title>
+            <filename>examples/hamroot</filename>
+          </title>
+          <programlisting>...
+use-project /simple-exe : simple-exe/build ;
+...</programlisting>
+        </figure>
+        <figure>
+          <title>
+            <filename>examples/simple-exe/build/hamfile</filename>
+          </title>
+          <programlisting>exe simple-exe : ../src/main.cpp ;</programlisting>
+        </figure>
+      </section>
+      <section>
+        <title>Libraries</title>
+        <para>All libraries has same syntax - you need to use <code>lib</code> rule:<programlisting>lib lib-name
+   : [sources]
+   : [requirements]
+   : [default build]
+   : [usage requirements]
+   ;</programlisting></para>
+        <para>To specify what type of library you need there is </para>
+        <section>
+          <title>Static and shared libraries</title>
+          <para>To build static library you should specify <code>&lt;link&gt;static</code> property in target&apos;s requirements:<programlisting>lib foo : foo.cpp : &lt;link&gt;static ;</programlisting></para>
+          <para>To build shared library you should specify <code>&lt;link&gt;shared</code> property in target&apos;s requirements:<programlisting>lib bar : bar.cpp : &lt;link&gt;shared ;</programlisting></para>
+          <para>By default feature <code>&lt;link&gt;</code> has <code>shared</code> value. So if you don&apos;t explicitly specify this feature in requirements you libray will be builded as <emphasis>shared</emphasis>. </para>
+          <para>It is good practice  to not add <code>&lt;link&gt;</code> feature to target&apos;s requirements if there is no real reasons to mandate linkage type. If you do know real word usage patterns of your library,   add <code>&lt;link&gt;</code> feature to <emphasis>default build</emphasis> section. This will allow library&apos;s users to build it whatever way they want but build it as shared if build requiest doesn&apos;t have <code>&lt;link&gt;</code> feature in it. </para>
+          <para>For example, you develop some  library <code>foo</code>:<programlisting>lib foo : foo.cpp ;</programlisting></para>
+          <para>and decide that it should be linked as shared because in most use-cases users use almost all code from <code>foo.</code> If you add <code>&lt;link&gt;shared</code> to requirements:<programlisting>lib foo : foo.cpp : &lt;link&gt;shared ;</programlisting></para>
+          <para>no one can build it as shared. But what if someone want to use you library to develop some application X and one of major requirements for  X is no dynamic dependencies? Placing <code>&lt;link&gt;shared</code> in <code>foo</code>&apos;s requirements makes imposible to use <code>foo</code> in that case.</para>
+          <para>To allow <code>foo</code>&apos;s users do whatever they want and to build it as shared by default you should declare <code>foo</code> as:</para>
+          <programlisting>lib foo 
+   : 
+    foo.cpp 
+   : 
+                  # no &lt;link&gt;shared in requirements
+   : 
+    &lt;link&gt;shared  # place it in usage requirements
+   ;</programlisting>
+        </section>
+      </section>
+    </section>
   </chapter>
   <chapter>
     <title>Reference</title>

@@ -1,0 +1,6 @@
+exe test 
+   : 
+    ../src/main.cpp 
+    /libs/static-lib
+    /libs/shared-lib
+   ;

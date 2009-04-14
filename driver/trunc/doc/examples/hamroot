@@ -1,0 +1,2 @@
+use-project /simple-exe : simple-exe/build ;
+use-project /libs : libs ;

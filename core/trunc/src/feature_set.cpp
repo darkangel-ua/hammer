@@ -237,6 +237,7 @@ bool feature_set::compatible_with(const feature_set& rhs) const
 
    for(features_t::const_iterator i = lhs_p->begin(), last = lhs_p->end(); i != last; ++i)
       if (rhs_p->find(**i) == rhs_p->end())
+      {
          if ((**i).attributes().free ||
              (**i).attributes().generated ||
              (**i).attributes().undefined_ ||
@@ -245,8 +246,16 @@ bool feature_set::compatible_with(const feature_set& rhs) const
             return false;
          }
          else
-            if ((**i).definition().get_default() != (**i).value().to_string())
+         {
+            if (rhs_p->find((**i).name()) == rhs_p->end())
+            {
+               if ((**i).definition().get_default() != (**i).value().to_string())
+                  return false;
+            }
+            else
                return false;
+         }
+      }
 
    return true;
 }

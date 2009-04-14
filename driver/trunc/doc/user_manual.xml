@@ -41,11 +41,13 @@
       <section>
         <title>Basics</title>
         <para>To manage all that complexity in software developing we divide software into peaces - libraries. That  makes ours life much easy. Library usually consists from sources, includes, docs and tests. Sources can be build into library, docs can be build from DocBook to HTML, tests can be build and run. </para>
-        <para>Hammer&apos;s <emphasis>project</emphasis> is just hammer script file. It can contain  targets to build or projects structuring declarations or both of them. To illustrate what we talking about let&apos;s see on the example.</para>
+        <para>Hammer&apos;s <emphasis>project</emphasis> is just hammer script file. It can contain  targets to build or projects structuring declarations or both of them. To illustrate that  let&apos;s see on the example:</para>
         <graphic fileref="images/project-layout.png" align="center"/>
         <para>Here we have a small part of well known boost library collection rearranged to be modular. The project <filename>boost/hamfile</filename> doesn&apos;t have any build targets. It only instruct hammer where to find boost&apos;s sub-projects:</para>
-        <programlisting>use-project filesystem : filesystem ;
-use-project thread : thread ;</programlisting>
+        <programlisting>...
+use-project filesystem : filesystem ;
+use-project thread : thread ;
+...</programlisting>
         <para>The project <filename>boost/filesystem/hamfile</filename>:</para>
         <programlisting>version-alias filesystem : trunc ;</programlisting>
         <para>does have targets, but <code>version-alias</code> is not exactly real target - we will explain it later. And finally <filename>boost/filesystem/trunc/build/hamfile</filename> contains target to build called <code>boost.filesystem</code>:</para>
@@ -191,9 +193,10 @@ lib barfoo : test.cpp : &lt;define&gt;FOO=1 : : &lt;define&gt;BOO=1 ;</programli
       </section>
       <section>
         <title>Target&apos;s requirements</title>
-        <para>Target&apos;s requirements is a property set that should always be present when building a target. When you what that library should be build  as static library you place <code>&lt;link&gt;static</code> in requirements:</para>
+        <para>Target&apos;s requirements is a property set that should always be present when building a target. For example, when you what that library should be build  as static library you place <code>&lt;link&gt;static</code> in requirements:</para>
         <programlisting>lib foo : foo.cpp : &lt;link&gt;static ;</programlisting>
-        <para>Here we place <emphasis>define</emphasis> and <emphasis>include</emphasis> features and many others  that should be present in target&apos;s build properties to build correctly:</para>
+        <para>There are many different features that affects build in many ways. You can </para>
+        <para>To build <code>foo</code> correctly you place <emphasis>define</emphasis> and <emphasis>include</emphasis> features and many others  that should be present in target&apos;s build properties:</para>
         <programlisting>lib foo 
    : 
     foo.cpp 
@@ -358,7 +361,6 @@ use-project /simple-exe : simple-exe/build ;
    : [default build]
    : [usage requirements]
    ;</programlisting></para>
-        <para>To specify what type of library you need there is </para>
         <section>
           <title>Static and shared libraries</title>
           <para>To build static library you should specify <code>&lt;link&gt;static</code> property in target&apos;s requirements:<programlisting>lib foo : foo.cpp : &lt;link&gt;static ;</programlisting></para>
@@ -377,6 +379,12 @@ use-project /simple-exe : simple-exe/build ;
    : 
     &lt;link&gt;shared  # place it in usage requirements
    ;</programlisting>
+        </section>
+        <section>
+          <title>Example: Static and shared libraries</title>
+          <figure>
+            <title>Filesystem layout</title>
+          </figure>
         </section>
       </section>
     </section>

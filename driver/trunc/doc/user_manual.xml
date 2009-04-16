@@ -333,7 +333,7 @@ lib foo : stdafx foo.cpp ;</programlisting></para>
    ;          </programlisting></para>
       </section>
       <section>
-        <title>Example: simple executable</title>
+        <title>Example: Simple executable</title>
         <figure label="test">
           <title>Filesystem layout</title>
           <graphic fileref="images/simple-exe-layout.png" align="center"/>
@@ -384,6 +384,45 @@ use-project /simple-exe : simple-exe/build ;
           <title>Example: Static and shared libraries</title>
           <figure>
             <title>Filesystem layout</title>
+            <graphic fileref="images/shared-static-libs-layout.png" align="center"/>
+          </figure>
+          <figure>
+            <title>
+              <filename>example/hamroot</filename>
+            </title>
+            <programlisting>...
+use-project /libs : libs ;
+...</programlisting>
+          </figure>
+          <figure>
+            <title>
+              <filename>example/libs/hamfile</filename>
+            </title>
+            <programlisting><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="examples/libs/hamfile" encoding="UTF-8" parse="text"/></programlisting>
+          </figure>
+          <figure>
+            <title>
+              <filename>example/libs/test/build/hamfile</filename>
+            </title>
+            <programlisting><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="examples/libs/test/build/hamfile" encoding="UTF-8" parse="text"/></programlisting>
+          </figure>
+          <figure>
+            <title>
+              <filename>examples/libs/shared-lib/build/hamfile</filename>
+            </title>
+            <programlisting><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="examples/libs/shared-lib/build/hamfile" encoding="UTF-8" parse="text"/></programlisting>
+          </figure>
+          <figure>
+            <title>
+              <filename>examples/libs/static-lib/build/hamfile</filename>
+            </title>
+            <programlisting><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="examples/libs/static-lib/build/hamfile" encoding="UTF-8" parse="text"/></programlisting>
+          </figure>
+          <figure>
+            <title>
+              <filename>examples/libs/unconstrained-lib/build/hamfile</filename>
+            </title>
+            <programlisting><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="examples/libs/unconstrained-lib/build/hamfile" encoding="UTF-8" parse="text"/></programlisting>
           </figure>
         </section>
       </section>

@@ -165,6 +165,15 @@ namespace hammer
          void project_rule(project* p, std::vector<pstring>& name, project_requirements_decl* req, project_requirements_decl* usage_req);
          void lib_rule(project* p, std::vector<pstring>& name, sources_decl* sources, 
                        requirements_decl* fs, feature_set* default_build, requirements_decl* usage_requirements);
+         void searched_shared_lib_rule(project* p, std::vector<pstring>& name, 
+                                       sources_decl* sources, pstring& lib_name,
+                                       requirements_decl* requirements, requirements_decl* usage_requirements);
+         void searched_static_lib_rule(project* p, std::vector<pstring>& name, 
+                                       sources_decl* sources, pstring& lib_name,
+                                       requirements_decl* requirements, requirements_decl* usage_requirements);
+         void prebuilt_lib_rule(project* p, std::vector<pstring>& name, 
+                                sources_decl* sources, pstring& lib_filename,
+                                requirements_decl* requirements, requirements_decl* usage_requirements);
          void header_lib_rule(project* p, std::vector<pstring>& name, sources_decl* sources, 
                               requirements_decl* fs, feature_set* default_build, requirements_decl* usage_requirements);
          void exe_rule(project* p, std::vector<pstring>& name, sources_decl& sources, requirements_decl* fs, 

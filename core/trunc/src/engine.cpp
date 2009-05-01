@@ -32,6 +32,7 @@
 #include <hammer/core/toolset_manager.h>
 #include <hammer/core/scaner_manager.h>
 #include <hammer/core/default_output_location_strategy.h>
+#include <hammer/core/prebuilt_lib_meta_target.h>
 
 using namespace std;
 namespace fs = boost::filesystem;
@@ -46,6 +47,9 @@ engine::engine()
 
    resolver_.insert("project", boost::function<void (project*, vector<pstring>&, project_requirements_decl*, project_requirements_decl*)>(boost::bind(&engine::project_rule, this, _1, _2, _3, _4)));
    resolver_.insert("lib", boost::function<void (project*, vector<pstring>&, sources_decl*, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::lib_rule, this, _1, _2, _3, _4, _5, _6)));
+   resolver_.insert("searched-shared-lib", boost::function<void (project*, vector<pstring>&, sources_decl*, pstring&, requirements_decl*, requirements_decl*)>(boost::bind(&engine::searched_shared_lib_rule, this, _1, _2, _3, _4, _5, _6)));
+   resolver_.insert("searched-static-lib", boost::function<void (project*, vector<pstring>&, sources_decl*, pstring&, requirements_decl*, requirements_decl*)>(boost::bind(&engine::searched_static_lib_rule, this, _1, _2, _3, _4, _5, _6)));
+   resolver_.insert("prebuilt-lib", boost::function<void (project*, vector<pstring>&, sources_decl*, pstring&, requirements_decl*, requirements_decl*)>(boost::bind(&engine::prebuilt_lib_rule, this, _1, _2, _3, _4, _5, _6)));
    resolver_.insert("header-lib", boost::function<void (project*, vector<pstring>&, sources_decl*, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::header_lib_rule, this, _1, _2, _3, _4, _5, _6)));
    resolver_.insert("exe", boost::function<void (project*, vector<pstring>&, sources_decl&, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::exe_rule, this, _1, _2, _3, _4, _5, _6)));
    resolver_.insert("obj", boost::function<void (project*, pstring&, sources_decl&, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::obj_rule, this, _1, _2, _3, _4, _5, _6)));
@@ -591,6 +595,62 @@ void engine::lib_rule(project* p, std::vector<pstring>& name, sources_decl* sour
 {
    auto_ptr<basic_meta_target> mt(new lib_meta_target(p, name.at(0), requirements ? *requirements : requirements_decl(),
                                                       usage_requirements ? *usage_requirements : requirements_decl()));
+   if (sources)
+      mt->sources(*sources);
+
+   p->add_target(mt);
+}
+
+void engine::searched_shared_lib_rule(project* p, 
+                                      std::vector<pstring>& name, 
+                                      sources_decl* sources,
+                                      pstring& lib_name, 
+                                      requirements_decl* requirements, 
+                                      requirements_decl* usage_requirements)
+{
+   auto_ptr<basic_meta_target> mt(new searched_lib_meta_target(p, 
+                                                               name.at(0), 
+                                                               lib_name,
+                                                               requirements ? *requirements : requirements_decl(),
+                                                               usage_requirements ? *usage_requirements : requirements_decl(),
+                                                               get_type_registry().get(types::SEARCHED_SHARED_LIB)));
+   if (sources)
+      mt->sources(*sources);
+
+   p->add_target(mt);
+}
+
+void engine::searched_static_lib_rule(project* p, 
+                                      std::vector<pstring>& name, 
+                                      sources_decl* sources,
+                                      pstring& lib_name, 
+                                      requirements_decl* requirements, 
+                                      requirements_decl* usage_requirements)
+{
+   auto_ptr<basic_meta_target> mt(new searched_lib_meta_target(p, 
+                                                               name.at(0), 
+                                                               lib_name,
+                                                               requirements ? *requirements : requirements_decl(),
+                                                               usage_requirements ? *usage_requirements : requirements_decl(),
+                                                               get_type_registry().get(types::SEARCHED_STATIC_LIB)));
+   if (sources)
+      mt->sources(*sources);
+
+   p->add_target(mt);
+}
+
+void engine::prebuilt_lib_rule(project* p, 
+                               std::vector<pstring>& name, 
+                               sources_decl* sources,
+                               pstring& lib_filename, 
+                               requirements_decl* requirements, 
+                               requirements_decl* usage_requirements)
+{
+   auto_ptr<basic_meta_target> mt(new prebuilt_lib_meta_target(p, 
+                                                               name.at(0), 
+                                                               lib_filename,
+                                                               requirements ? *requirements : requirements_decl(),
+                                                               usage_requirements ? *usage_requirements : requirements_decl()));
    if (sources)
       mt->sources(*sources);
 

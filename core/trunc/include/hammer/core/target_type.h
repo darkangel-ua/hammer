@@ -44,6 +44,7 @@ namespace hammer
          const target_type* base() const { return base_ ; }
 
          bool equal_or_derived_from(const target_type& rhs) const;
+         bool operator == (const target_type& rhs) const;
          std::auto_ptr<target_type> clone(const type_registry& tr) const;
 
       private:

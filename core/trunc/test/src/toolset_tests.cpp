@@ -8,6 +8,7 @@
 #include <hammer/core/builder.h>
 #include <hammer/core/build_action.h>
 #include <hammer/core/feature_set.h>
+#include <hammer/core/main_target.h>
 
 #include <hammer/core/toolset_manager.h>
 #include <hammer/core/toolsets/msvc_toolset.h>
@@ -62,7 +63,7 @@ namespace{
             current_directory_.normalize();
          }
 
-         virtual bool run_shell_commands(const std::vector<std::string>& cmds) const
+         virtual bool run_shell_commands(const std::vector<std::string>& cmds, const location_t& working_dir) const
          {
             for(vector<string>::const_iterator i = cmds.begin(), last = cmds.end(); i != last; ++i)
                output_ << "[run shell command]: '" << *i << "'\n";
@@ -70,9 +71,9 @@ namespace{
             return true;
          }
 
-         virtual bool run_shell_commands(std::string& captured_output, const std::vector<std::string>& cmds) const
+         virtual bool run_shell_commands(std::string& captured_output, const std::vector<std::string>& cmds, const location_t& working_dir) const
          {
-            return run_shell_commands(cmds);
+            return run_shell_commands(cmds, working_dir);
          }
 
          virtual const location_t& current_directory() const
@@ -90,6 +91,11 @@ namespace{
             output_ << "[remove] '" << p << "'\n";
          }
 
+         virtual void remove_file_by_pattern(const location_t& dir, const std::string& pattern) const
+         {
+            output_ << "[remove_file_by_pattern] dir = '" << dir << "' pattern = '" << pattern << "'\n";
+         }
+
          virtual void copy(const location_t& source, const location_t& destination) const
          {
             output_ << "[copy] '" << source << "' '" << destination << "'\n";
@@ -101,9 +107,19 @@ namespace{
             return true;
          }
 
-         std::auto_ptr<ostream> create_output_file(const char* filename, ios_base::_Openmode mode) const
+         std::auto_ptr<ostream> create_output_file(const char* filename, std::ios_base::openmode mode) const
          {
             return std::auto_ptr<ostream>(new ostringstream);
+         }
+
+         virtual location_t working_directory(const basic_target& t) const
+         {
+            return t.get_main_target()->location();
+         }
+
+         virtual const location_t* cache_directory() const
+         {
+            return NULL;
          }
          
       private:
@@ -158,10 +174,10 @@ void toolset_test::do_test(const string& name)
          generated_nodes.insert(generated_nodes.end(), n.begin(), n.end());
       }
 
-      actuality_checker checker(engine_);
+      test_build_environment environment(output_file, project_path);
+      actuality_checker checker(engine_, environment);
       checker.check(generated_nodes);
 
-      test_build_environment environment(output_file, project_path);
       builder b(environment);
       BOOST_REQUIRE_NO_THROW(b.build(generated_nodes));
       etalon_file.close();

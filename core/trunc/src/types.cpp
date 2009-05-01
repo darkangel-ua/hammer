@@ -21,6 +21,8 @@ const type_tag SHARED_LIB("SHARED_LIB");
 const type_tag IMPORT_LIB("IMPORT_LIB");
 const type_tag STATIC_LIB("STATIC_LIB");
 const type_tag SEARCHED_LIB("SEARCHED_LIB");
+const type_tag SEARCHED_SHARED_LIB("SEARCHED_SHARED_LIB");
+const type_tag SEARCHED_STATIC_LIB("SEARCHED_STATIC_LIB");
 const type_tag HEADER_LIB("HEADER_LIB");
 const type_tag EXE("EXE");
 const type_tag EXE_MANIFEST("EXE_MANIFEST");
@@ -54,7 +56,9 @@ void register_standart_types(type_registry& tr, feature_registry& fr)
                                                                                  (".a", *parse_simple_set("<os>linux", fr));
    const target_type& tIMPORT_LIB = tr.insert(target_type(IMPORT_LIB, static_lib_suffixes, tSTATIC_LIB));
    const target_type& tSEARCHED_LIB = tr.insert(target_type(SEARCHED_LIB, "", tLIB));
-   const target_type& tHEADER_LIB = tr.insert(target_type(HEADER_LIB, target_type::suffixes_t()));
+   const target_type& tSEARCHED_SHARED_LIB = tr.insert(target_type(SEARCHED_SHARED_LIB, "", tSEARCHED_LIB));
+   const target_type& tSEARCHED_STATIC_LIB = tr.insert(target_type(SEARCHED_STATIC_LIB, "", tSEARCHED_LIB));
+   const target_type& tHEADER_LIB = tr.insert(target_type(HEADER_LIB, target_type::suffixes_t(), tLIB));
    target_type::suffixes_t exe_suffixes = list_of<target_type::suffix_def>(".exe", *parse_simple_set("<os>nt", fr))
                                                                            ("", *parse_simple_set("<os>linux", fr));
    const target_type& tEXE = tr.insert(target_type(EXE, exe_suffixes));

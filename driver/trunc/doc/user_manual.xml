@@ -382,6 +382,7 @@ use-project /simple-exe : simple-exe/build ;
         </section>
         <section>
           <title>Example: Static and shared libraries</title>
+          <para>In this example you will see how to build project that consists from three different forms of libraries - shared, static and so-called &apos;unconstrained&apos;. Last one is a library that doesn&apos;t have <code>&lt;link&gt;</code> feature in requirements and therefore can be built ether shared or static.</para>
           <figure>
             <title>Filesystem layout</title>
             <graphic fileref="images/shared-static-libs-layout.png" align="center"/>
@@ -407,23 +408,29 @@ use-project /libs : libs ;
             <programlisting><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="examples/libs/test/build/hamfile" encoding="UTF-8" parse="text"/></programlisting>
           </figure>
           <figure>
-            <title>
-              <filename>examples/libs/shared-lib/build/hamfile</filename>
-            </title>
+            <title><filename>examples/libs/shared-lib/build/hamfile</filename> - shared library</title>
             <programlisting><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="examples/libs/shared-lib/build/hamfile" encoding="UTF-8" parse="text"/></programlisting>
           </figure>
           <figure>
-            <title>
-              <filename>examples/libs/static-lib/build/hamfile</filename>
-            </title>
+            <title><filename>examples/libs/static-lib/build/hamfile</filename> - static library</title>
             <programlisting><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="examples/libs/static-lib/build/hamfile" encoding="UTF-8" parse="text"/></programlisting>
           </figure>
           <figure>
-            <title>
-              <filename>examples/libs/unconstrained-lib/build/hamfile</filename>
-            </title>
+            <title><filename>examples/libs/unconstrained-lib/build/hamfile</filename> - unconstrained library</title>
             <programlisting><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="examples/libs/unconstrained-lib/build/hamfile" encoding="UTF-8" parse="text"/></programlisting>
           </figure>
+        </section>
+        <section>
+          <title>Prebuilt libraries</title>
+          <para>Most of all propreitary libraries cannot be destribute in source form, only as prebuilt lbraries. In same time you have plently pre-installed prebuilded libraries on Linux. To use that libraries Hammer has special form of <code>lib</code> rule:<programlisting>lib lib-name
+   :  # note - there are no sources
+   :
+     [&lt;file&gt;some-file-name or &lt;name&gt;some-ib-name]
+     [other requirements]
+   : [default build]
+   : [usage requirements] 
+   ;</programlisting></para>
+          <para>The main differencies from shared or static library definition is that there are no sources and in requirements should be ether <code>&lt;file&gt;</code>  or <code>&lt;name&gt;</code> feature.</para>
         </section>
       </section>
     </section>

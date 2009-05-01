@@ -61,6 +61,15 @@ bool target_type::equal_or_derived_from(const target_type& rhs) const
          return false;
 }
 
+bool target_type::operator == (const target_type& rhs) const
+{
+   assert(owner_ != NULL && "To perform this operation owner_ must be not NULL.");
+   if (owner_ != rhs.owner_)
+      return equal(rhs);
+   
+   return this == &rhs;
+}
+
 const std::string& target_type::suffix_for(const std::string& s, const feature_set& environment) const
 {
    for(target_type::suffixes_t::const_iterator i = suffixes_.begin(), last = suffixes_.end(); i != last; ++i)

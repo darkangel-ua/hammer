@@ -35,7 +35,7 @@ bool generator::is_consumable(const target_type& t) const
       return true;
 
    for(generator::consumable_types_t::const_iterator i = consumable_types().begin(), last = consumable_types().end(); i != last; ++i)
-      if (i->type_->equal_or_derived_from(t))
+      if (t.equal_or_derived_from(*i->type_))
          return true;
 
    return false;

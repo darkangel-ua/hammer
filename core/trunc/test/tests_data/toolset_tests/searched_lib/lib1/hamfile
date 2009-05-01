@@ -1,1 +1,1 @@
-lib lib1 : : <name>foo.lib ;
+searched-static-lib lib1 : : lib1.lib ;

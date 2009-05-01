@@ -23,33 +23,18 @@ lib_meta_target::lib_meta_target(hammer::project* p,
 main_target* lib_meta_target::construct_main_target(const main_target* owner, const feature_set* properties) const
 {
    main_target* result = 0;
-   // check for searched lib
-   if (properties->find("name") != properties->end() ||
-       properties->find("file") != properties->end())
-   {
-      if (!sources().empty())
-         throw std::runtime_error("lib target can't have sources when <file> or <name> specified");
-
-      result = new searched_lib_main_target(this, 
-                                            name(), 
-                                            properties,
-                                            get_engine()->targets_pool());
-   }
+   const feature& link = properties->get("link");
+   const target_type* target_type = 0;
+   if (link.value() == "static")
+      target_type = &get_engine()->get_type_registry().get(types::STATIC_LIB);
    else
-   {
-      const feature& link = properties->get("link");
-      const target_type* target_type = 0;
-      if (link.value() == "static")
-         target_type = &get_engine()->get_type_registry().get(types::STATIC_LIB);
-      else
-         target_type = &get_engine()->get_type_registry().get(types::SHARED_LIB);
+      target_type = &get_engine()->get_type_registry().get(types::SHARED_LIB);
 
-      result = new main_target(this, 
-                               name(), 
-                               target_type, 
-                               properties,
-                               get_engine()->targets_pool());
-   }
+   result = new main_target(this, 
+                            name(), 
+                            target_type, 
+                            properties,
+                            get_engine()->targets_pool());
 
    return result;
 }

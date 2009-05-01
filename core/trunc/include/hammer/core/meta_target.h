@@ -13,7 +13,8 @@ namespace hammer
    class meta_target : public basic_meta_target
    {
       public:
-         meta_target(hammer::project* p, const pstring& name, 
+         meta_target(hammer::project* p, 
+                     const pstring& name, 
                      const requirements_decl& props,
                      const requirements_decl& usage_req);
 

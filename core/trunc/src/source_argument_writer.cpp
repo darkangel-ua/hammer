@@ -27,7 +27,8 @@ argument_writer* source_argument_writer::clone() const
 
 bool source_argument_writer::accept(const basic_target& source) const
 {
-   return  source.type().equal_or_derived_from(this->source_type());
+   // here we use operator ==() to exactly match types
+   return source.type() == this->source_type();
 }
 
 void source_argument_writer::write_impl(std::ostream& output, const build_node& node, const build_environment& environment) const

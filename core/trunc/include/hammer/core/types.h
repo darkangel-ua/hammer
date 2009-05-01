@@ -19,6 +19,8 @@ namespace hammer
       extern const type_tag IMPORT_LIB;
       extern const type_tag STATIC_LIB;
       extern const type_tag SEARCHED_LIB;
+      extern const type_tag SEARCHED_SHARED_LIB;
+      extern const type_tag SEARCHED_STATIC_LIB;
       extern const type_tag HEADER_LIB;
       extern const type_tag EXE;
       extern const type_tag EXE_MANIFEST;

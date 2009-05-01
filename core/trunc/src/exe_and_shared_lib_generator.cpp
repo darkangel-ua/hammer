@@ -38,7 +38,7 @@ exe_and_shared_lib_generator::construct(const target_type& type_to_construct,
    {
       if ((**i).targeting_type_->equal_or_derived_from(searched_lib_))
       {
-         // searched_lib produce only one products - searched_lib or file target.
+         // searched_lib may have <search> feature - add it to current build request
          const basic_target& lib_target = *(**i).products_.front();
 
          feature_set::const_iterator search_location = lib_target.properties().find("search");

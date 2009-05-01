@@ -5,7 +5,7 @@
 #include <iostream>
 #include <hammer/core/engine.h>
 #include <hammer/core/type_registry.h>
-#include <hammer/core/type.h>
+#include <hammer/core/target_type.h>
 #include <hammer/core/feature.h>
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature_registry.h>
@@ -62,7 +62,7 @@ void check_type(void* e, void *t, const char* type_id)
 
    const basic_target* bt = static_cast<const basic_target*>(t);
    engine* eng = static_cast<engine*>(e);
-   const type* et = 0;
+   const target_type* et = 0;
    
    et = eng->get_type_registry().find(type_tag(type_id));
    if (et == 0)
@@ -91,16 +91,16 @@ void check_feature(void* e, void* t, void* features, const char* name, const cha
    const basic_target* bt = static_cast<const basic_target*>(t);
    engine* eng = static_cast<engine*>(e);
    const feature_def* global_def = eng->feature_registry().find_def(name);
-   const feature_def* local_def = bt->mtarget()->meta_target()->project()->local_feature_registry().find_def(name);
+   const feature_def* local_def = bt->get_project()->local_feature_registry().find_def(name);
    const feature_def& fd = global_def != NULL 
                               ? *global_def 
-                              : bt->mtarget()->meta_target()->project()->local_feature_registry().get_def(name);;
+                              : bt->get_project()->local_feature_registry().get_def(name);;
    
    if (fd.attributes().path)
    {
       feature_set::const_iterator f = fs->find(name);
       location_t p1((**f).get_path_data().target_->location() / (**f).value().to_string());
-      location_t p2(bt->mtarget()->location());
+      location_t p2(bt->get_main_target()->location());
       p1.normalize();
       p2.normalize();
       location_t p = relative_path(p1, p2);
@@ -116,7 +116,7 @@ void check_feature(void* e, void* t, void* features, const char* name, const cha
    if (!fs->find(name, value))
    {
       cout << "checker(0): error: Expected feature '" << name << "' with value '" << value 
-           << "' for target '" << bt->mtarget()->location() << "\\\\" << bt->name() << "' not found.\n";
+           << "' for target '" << bt->get_main_target()->location() << "\\\\" << bt->name() << "' not found.\n";
       return;
    }
 } 

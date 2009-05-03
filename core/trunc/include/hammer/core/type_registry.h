@@ -22,6 +22,7 @@ namespace hammer
          const target_type* resolve_from_suffix(const std::string& suffix) const;
          const target_type* resolve_from_target_name(const pstring& name) const;
          const target_type& hard_resolve_from_target_name(const pstring& name) const;
+         const target_type& soft_resolve_from_target_name(const pstring& name) const;
          const target_type& get(const type_tag& tag) const;
          const target_type* find(const type_tag& tag) const;
          const target_type& insert(const target_type& t);

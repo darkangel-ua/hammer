@@ -1,0 +1,1 @@
+copy test : ./lib1 : <type-to-copy>SHARED_LIB <destination>./ ;

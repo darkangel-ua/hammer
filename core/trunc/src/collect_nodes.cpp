@@ -26,6 +26,8 @@ void collect_nodes(build_node::sources_t& result,
          local_visited_nodes.insert(i->get());
          for(build_node::sources_t::const_iterator s = (**i).sources_.begin(), s_last = (**i).sources_.end(); s != s_last; ++s)
             new_sources.push_back(s->source_node_);
+
+         new_sources.insert(new_sources.end(), (**i).dependencies_.begin(), (**i).dependencies_.end());
       }
       else
          continue;

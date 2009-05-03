@@ -62,6 +62,14 @@ namespace hammer{
       return 0;
    }
 
+   const target_type& type_registry::soft_resolve_from_target_name(const pstring& name) const
+   {
+      const target_type* t = resolve_from_target_name(name);
+      if (t == NULL)
+         return get(types::UNKNOWN);
+      else
+         return *t;
+   }
    const target_type& type_registry::hard_resolve_from_target_name(const pstring& name) const
    {
       const target_type* t = resolve_from_target_name(name);

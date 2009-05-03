@@ -41,6 +41,8 @@ namespace hammer
          virtual void add_additional_dependencies(hammer::build_node& generated_node) const;
          virtual void additional_hash_string_data(std::ostream& s) const;
          virtual location_t intermediate_dir_impl() const;
+         // must be private, but bad design require me to place it here for file_main_target
+         void generate_and_add_dependencies(hammer::build_node& node);
 
       private:
          const hammer::meta_target* meta_target_;
@@ -52,7 +54,6 @@ namespace hammer
          bool generate_cache_filled_;
 
          virtual void timestamp_info_impl() const;
-         void generate_and_add_dependencies(hammer::build_node& node);
    };
 }
 

@@ -1,0 +1,4 @@
+file lib1_dll : lib1.dll ;
+explicit lib1_dll ; 
+
+prebuilt-lib lib1 : : lib1.lib : <dependency>lib1_dll ;

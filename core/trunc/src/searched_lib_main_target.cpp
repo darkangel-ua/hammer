@@ -41,6 +41,8 @@ searched_lib_main_target::generate()
    result->products_.push_back(t);
    result->targeting_type_ = this->type_;
 
+   generate_and_add_dependencies(*result);
+
    return std::vector<boost::intrusive_ptr<hammer::build_node> >(1, result);
 }
 

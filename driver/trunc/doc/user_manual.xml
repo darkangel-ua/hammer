@@ -353,25 +353,26 @@ use-project /simple-exe : simple-exe/build ;
           <programlisting>exe simple-exe : ../src/main.cpp ;</programlisting>
         </figure>
       </section>
-      <section>
-        <title>Libraries</title>
-        <para>All libraries has same syntax - you need to use <code>lib</code> rule:<programlisting>lib lib-name
+    </section>
+    <section>
+      <title>Libraries</title>
+      <para>All libraries has same syntax - you need to use <code>lib</code> rule:<programlisting>lib lib-name
    : [sources]
    : [requirements]
    : [default build]
    : [usage requirements]
    ;</programlisting></para>
-        <section>
-          <title>Static and shared libraries</title>
-          <para>To build static library you should specify <code>&lt;link&gt;static</code> property in target&apos;s requirements:<programlisting>lib foo : foo.cpp : &lt;link&gt;static ;</programlisting></para>
-          <para>To build shared library you should specify <code>&lt;link&gt;shared</code> property in target&apos;s requirements:<programlisting>lib bar : bar.cpp : &lt;link&gt;shared ;</programlisting></para>
-          <para>By default feature <code>&lt;link&gt;</code> has <code>shared</code> value. So if you don&apos;t explicitly specify this feature in requirements you libray will be builded as <emphasis>shared</emphasis>. </para>
-          <para>It is good practice  to not add <code>&lt;link&gt;</code> feature to target&apos;s requirements if there is no real reasons to mandate linkage type. If you do know real word usage patterns of your library,   add <code>&lt;link&gt;</code> feature to <emphasis>default build</emphasis> section. This will allow library&apos;s users to build it whatever way they want but build it as shared if build requiest doesn&apos;t have <code>&lt;link&gt;</code> feature in it. </para>
-          <para>For example, you develop some  library <code>foo</code>:<programlisting>lib foo : foo.cpp ;</programlisting></para>
-          <para>and decide that it should be linked as shared because in most use-cases users use almost all code from <code>foo.</code> If you add <code>&lt;link&gt;shared</code> to requirements:<programlisting>lib foo : foo.cpp : &lt;link&gt;shared ;</programlisting></para>
-          <para>no one can build it as shared. But what if someone want to use you library to develop some application X and one of major requirements for  X is no dynamic dependencies? Placing <code>&lt;link&gt;shared</code> in <code>foo</code>&apos;s requirements makes imposible to use <code>foo</code> in that case.</para>
-          <para>To allow <code>foo</code>&apos;s users do whatever they want and to build it as shared by default you should declare <code>foo</code> as:</para>
-          <programlisting>lib foo 
+      <section>
+        <title>Static and shared libraries</title>
+        <para>To build static library you should specify <code>&lt;link&gt;static</code> property in target&apos;s requirements:<programlisting>lib foo : foo.cpp : &lt;link&gt;static ;</programlisting></para>
+        <para>To build shared library you should specify <code>&lt;link&gt;shared</code> property in target&apos;s requirements:<programlisting>lib bar : bar.cpp : &lt;link&gt;shared ;</programlisting></para>
+        <para>By default feature <code>&lt;link&gt;</code> has <code>shared</code> value. So if you don&apos;t explicitly specify this feature in requirements you libray will be builded as <emphasis>shared</emphasis>. </para>
+        <para>It is good practice  to not add <code>&lt;link&gt;</code> feature to target&apos;s requirements if there is no real reasons to mandate linkage type. If you do know real word usage patterns of your library,   add <code>&lt;link&gt;</code> feature to <emphasis>default build</emphasis> section. This will allow library&apos;s users to build it whatever way they want but build it as shared if build requiest doesn&apos;t have <code>&lt;link&gt;</code> feature in it. </para>
+        <para>For example, you develop some  library <code>foo</code>:<programlisting>lib foo : foo.cpp ;</programlisting></para>
+        <para>and decide that it should be linked as shared because in most use-cases users use almost all code from <code>foo.</code> If you add <code>&lt;link&gt;shared</code> to requirements:<programlisting>lib foo : foo.cpp : &lt;link&gt;shared ;</programlisting></para>
+        <para>no one can build it as shared. But what if someone want to use you library to develop some application X and one of major requirements for  X is no dynamic dependencies? Placing <code>&lt;link&gt;shared</code> in <code>foo</code>&apos;s requirements makes imposible to use <code>foo</code> in that case.</para>
+        <para>To allow <code>foo</code>&apos;s users do whatever they want and to build it as shared by default you should declare <code>foo</code> as:</para>
+        <programlisting>lib foo 
    : 
     foo.cpp 
    : 
@@ -379,60 +380,136 @@ use-project /simple-exe : simple-exe/build ;
    : 
     &lt;link&gt;shared  # place it in usage requirements
    ;</programlisting>
-        </section>
-        <section>
-          <title>Example: Static and shared libraries</title>
-          <para>In this example you will see how to build project that consists from three different forms of libraries - shared, static and so-called &apos;unconstrained&apos;. Last one is a library that doesn&apos;t have <code>&lt;link&gt;</code> feature in requirements and therefore can be built ether shared or static.</para>
-          <figure>
-            <title>Filesystem layout</title>
-            <graphic fileref="images/shared-static-libs-layout.png" align="center"/>
-          </figure>
-          <figure>
-            <title>
-              <filename>example/hamroot</filename>
-            </title>
-            <programlisting>...
+      </section>
+      <section>
+        <title>Example: Static and shared libraries</title>
+        <para>In this example you will see how to build project that consists from three different forms of libraries - shared, static and so-called &apos;unconstrained&apos;. Last one is a library that doesn&apos;t have <code>&lt;link&gt;</code> feature in requirements and therefore can be built ether shared or static.</para>
+        <figure>
+          <title>Filesystem layout</title>
+          <graphic fileref="images/shared-static-libs-layout.png" align="center"/>
+        </figure>
+        <figure>
+          <title>
+            <filename>example/hamroot</filename>
+          </title>
+          <programlisting>...
 use-project /libs : libs ;
 ...</programlisting>
-          </figure>
-          <figure>
-            <title>
-              <filename>example/libs/hamfile</filename>
-            </title>
-            <programlisting><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="examples/libs/hamfile" encoding="UTF-8" parse="text"/></programlisting>
-          </figure>
-          <figure>
-            <title>
-              <filename>example/libs/test/build/hamfile</filename>
-            </title>
-            <programlisting><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="examples/libs/test/build/hamfile" encoding="UTF-8" parse="text"/></programlisting>
-          </figure>
-          <figure>
-            <title><filename>examples/libs/shared-lib/build/hamfile</filename> - shared library</title>
-            <programlisting><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="examples/libs/shared-lib/build/hamfile" encoding="UTF-8" parse="text"/></programlisting>
-          </figure>
-          <figure>
-            <title><filename>examples/libs/static-lib/build/hamfile</filename> - static library</title>
-            <programlisting><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="examples/libs/static-lib/build/hamfile" encoding="UTF-8" parse="text"/></programlisting>
-          </figure>
-          <figure>
-            <title><filename>examples/libs/unconstrained-lib/build/hamfile</filename> - unconstrained library</title>
-            <programlisting><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="examples/libs/unconstrained-lib/build/hamfile" encoding="UTF-8" parse="text"/></programlisting>
-          </figure>
-        </section>
-        <section>
-          <title>Prebuilt libraries</title>
-          <para>Most of all propreitary libraries cannot be destribute in source form, only as prebuilt lbraries. In same time you have plently pre-installed prebuilded libraries on Linux. To use that libraries Hammer has special form of <code>lib</code> rule:<programlisting>lib lib-name
-   :  # note - there are no sources
-   :
-     [&lt;file&gt;some-file-name or &lt;name&gt;some-ib-name]
-     [other requirements]
-   : [default build]
+        </figure>
+        <figure>
+          <title>
+            <filename>example/libs/hamfile</filename>
+          </title>
+          <programlisting><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="examples/libs/hamfile" encoding="UTF-8" parse="text"/></programlisting>
+        </figure>
+        <figure>
+          <title><filename>example/libs/test/build/hamfile</filename> - main project</title>
+          <programlisting><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="examples/libs/test/build/hamfile" encoding="UTF-8" parse="text"/></programlisting>
+        </figure>
+        <figure>
+          <title><filename>examples/libs/shared-lib/build/hamfile</filename> - shared library</title>
+          <programlisting><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="examples/libs/shared-lib/build/hamfile" encoding="UTF-8" parse="text"/></programlisting>
+        </figure>
+        <figure>
+          <title><filename>examples/libs/static-lib/build/hamfile</filename> - static library</title>
+          <programlisting><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="examples/libs/static-lib/build/hamfile" encoding="UTF-8" parse="text"/></programlisting>
+        </figure>
+        <figure>
+          <title><filename>examples/libs/unconstrained-lib/build/hamfile</filename> - unconstrained library</title>
+          <programlisting><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="examples/libs/unconstrained-lib/build/hamfile" encoding="UTF-8" parse="text"/></programlisting>
+        </figure>
+      </section>
+      <section>
+        <title>Prebuilt libraries</title>
+        <para>Most of all propreitary libraries cannot be destribute in source form, only as prebuilt lbraries. In same time you have plently pre-installed prebuilt libraries on Linux. To use that libraries Hammer has three apprepriate rules:<programlisting>searched-static-lib lib-name
+   : [sources]
+   : [static library name]
+   : [requirements]
+   : [usage requirements] 
+   ;
+
+searched-shared-lib lib-name
+   : [sources]
+   : [shared library name]
+   : [requirements]
+   : [usage requirements] 
+   ;
+
+prebuilt-lib lib-name
+   : [library file name]
+   : [requirements]
    : [usage requirements] 
    ;</programlisting></para>
-          <para>The main differencies from shared or static library definition is that there are no sources and in requirements should be ether <code>&lt;file&gt;</code>  or <code>&lt;name&gt;</code> feature.</para>
-        </section>
+        <para>Those three rules enough to descibe any prebuilt library. Note, <code>searched-static-lib</code> and <code>searched-static-lib</code> does have sources even no actual build process will be done to built those libraries. That because of behaviour of unix/linux ld - you <emphasis>may</emphasis> need to specify correct library order to linker to have successfull build. </para>
+        <para><code>searched-static-lib</code> describe static library that placed somewhere in the system or in directory that may be pointed by <code>&lt;search&gt;</code> feature in requirements. For each compiler <code>[static library name]</code> have unique  form. For gcc that name is a name without any <filename>lib</filename> prefix or <filename>.a</filename> suffix. For Microsoft compiler it is full name such as <code>winsock.lib</code>. To determinate how exactly you should pass library name to specific linker you have to consult  manual of that linker.</para>
+        <para><code>searched-shared-lib</code> allmost the same as <code>searched-static-lib</code> except it describe shared library. Rules for <code>[shared lirary name]</code> naming is determined by linker switches.</para>
+        <para><code>prebuild-lib</code> describe a library that lay in known place in filesystem. While <code>searched-static-lib</code> and <code>searched-shared-lib</code> is for preinstalled or system libraries, that rule is for libraries that is a part of some project. For example it may describe some prebuilt closed source lib that distribute as Hammer project to be easily linked with.</para>
       </section>
+    </section>
+    <section>
+      <title>Examples: Prebuilt libraries</title>
+      <para>It is really hard to provide comprehensive and consistent examples for this kind of libraries because of they natures. So providing only a Linux and Windows variants supposed to be enough to understand usage.</para>
+      <figure>
+        <title>On Linux</title>
+        <programlisting>searched-static-lib xml2 
+   :                  # note - no sources provided
+   : 
+    xml2              # note - full file name is libxml2.a
+   :
+    &lt;search&gt;/opt/libs # optional additional search path 
+                      # where linker should look for 
+                      # library
+   ;
+explicit xml2 ;
+
+# build executable linked with preinstalled 
+# xml2 library
+exe test
+   : 
+    main.cpp 
+    xml2 
+   ;</programlisting>
+      </figure>
+      <figure>
+        <title>On Windows</title>
+        <programlisting>searched-static-lib sockets 
+   : 
+   :
+    Ws2_32.lib # note - it is full name of library file
+   ; 
+explicit sockets ;
+ 
+#build executable linked with system sockets library
+exe test : main.cpp sockets ;</programlisting>
+      </figure>
+      <figure>
+        <title>Prebuilt lib</title>
+        <programlisting># bar library built for msvc toolset
+prebuilt-lib bar
+   :
+    ../libs/bar-msvc.lib         # path to library file
+   :
+    &lt;toolset&gt;msvc
+   ;
+
+# this is alternative for gcc toolset
+prebuilt-lib bar
+   : 
+    ../libs/libbar-gcc.a         # path to library file
+   : 
+    &lt;toolset&gt;gcc
+   ;
+explicit bar ;
+
+# test executable that links with prebuilt bar lib that 
+# ether preinstalled nor system and placed in ../libs dir
+exe test 
+   : 
+    main
+    bar
+   ;
+</programlisting>
+      </figure>
     </section>
   </chapter>
   <chapter>

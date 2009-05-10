@@ -31,6 +31,7 @@
 #include <hammer/core/generic_batcher.h>
 
 #include "user_config_location.h"
+#include "get_data_path.h"
 
 using namespace std;
 using namespace hammer;
@@ -402,22 +403,20 @@ int main(int argc, char** argv)
          return 0;
       }
       
-      fs::path startup_script_dir("./");
-#if !defined(_WIN32)
-      startup_script_dir = "/usr/lib/hammer";
-#endif
+      fs::path data_path(get_data_path());
 
       if (vm.count("install-dir"))
-         startup_script_dir = opts.hammer_install_dir_;
+         data_path = opts.hammer_install_dir_;
       
-      startup_script_dir /= "scripts/startup.ham";
+      fs::path startup_script = data_path / "scripts/startup.ham";
+
       if (opts.debug_level_ > 0)
-         cout << "...Full path to script is '" << startup_script_dir << "'\n";
+         cout << "...Full path to script is '" << startup_script << "'\n";
 
       if (opts.debug_level_ > 0)
          cout << "...Loading startup script... ";
 
-      engine.load_hammer_script(startup_script_dir);
+      engine.load_hammer_script(startup_script);
 
       if (opts.debug_level_ > 0)
          cout << "Done\n";

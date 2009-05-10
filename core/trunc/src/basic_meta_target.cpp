@@ -170,7 +170,7 @@ const feature_set& basic_meta_target::resolve_undefined_features(const feature_s
                                              : &fs;
    if (without_undefined->has_undefined_features())
       throw std::runtime_error("Target '" + name().to_string() + "' at location '" +
-                               location().native_file_string() + "' has been instantiated with unknown local features");
+                               location().native_file_string() + "' has been instantiated with unknown features");
 
    return *without_undefined;
 }

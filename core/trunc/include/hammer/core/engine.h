@@ -41,6 +41,7 @@ namespace hammer
          pool& targets_pool() { return pool_; }
          generator_registry& generators() const { return *generators_; }
          hammer::feature_registry& feature_registry() { return *feature_registry_; }
+         const hammer::feature_registry& feature_registry() const { return *feature_registry_; }
          hammer::call_resolver& call_resolver() { return resolver_; }
          hammer::toolset_manager& toolset_manager() { return *toolset_manager_; }
          hammer::scanner_manager& scanner_manager() { return *scanner_manager_; }

@@ -380,6 +380,21 @@ namespace
 
       e.toolset_manager().init_toolset(e, toolset_name.to_string(), toolset_version.to_string(), toolset_home_ == NULL ? NULL : &toolset_home);
    }
+   
+   bool has_configured_toolsets(const hammer::engine& e)
+   {
+      const feature_registry& fs = e.feature_registry();
+      const feature_def* toolset_def = fs.find_def("toolset");
+      if (!toolset_def)
+         throw std::runtime_error("Internal error: Feature 'toolset' not registered");
+
+      return !toolset_def->legal_values().empty();
+   }
+
+   void autoconfigure_toolsets(hammer::engine& e)
+   {
+
+   }
 }
 
 int main(int argc, char** argv)
@@ -465,6 +480,17 @@ int main(int argc, char** argv)
          engine.load_hammer_script(user_config_script);
          if (opts.debug_level_ > 0)
             cout << "Done\n";
+      }
+
+      if (!has_configured_toolsets(engine))
+         autoconfigure_toolsets(engine);
+
+      if (!has_configured_toolsets(engine))
+      {
+         cerr << "WARNING!!!WARNING!!!WARNING!!!WARNING!!!\n"
+                 "No toolsets are configured and no one toolset founded by auto-configure!\n"
+                 "Please, specify some toolset in $(HOME)/user-config.ham to operate properly.\n"
+                 "WARNING!!!WARNING!!!WARNING!!!WARNING!!!\n\n";
       }
 
       if (vm.count("generate-projects-locally"))

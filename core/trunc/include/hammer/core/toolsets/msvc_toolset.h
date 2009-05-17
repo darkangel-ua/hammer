@@ -18,13 +18,17 @@ namespace hammer
          };
 
          msvc_toolset();
-      
+         ~msvc_toolset();
+         virtual void autoconfigure(engine& e) const;
+
       protected:
          virtual void init_impl(engine& e, const std::string& version_id = std::string(),
                                 const location_t* toolset_home = NULL) const;
          virtual msvc_8_0_data resolve_8_0_data(const location_t* toolset_home) const;
 
       private:
+         struct impl_t;
+         impl_t* impl_;
          void init_8_0(engine& e, const location_t* toolset_home) const;
    };
 }

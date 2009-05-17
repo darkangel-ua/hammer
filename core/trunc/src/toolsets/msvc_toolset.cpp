@@ -28,10 +28,25 @@ using namespace boost;
 
 namespace hammer{
 
-msvc_toolset::msvc_toolset() : toolset("msvc")
+struct msvc_toolset::impl_t
+{
+   impl_t();
+};
+
+msvc_toolset::impl_t::impl_t()
+{
+
+}
+
+msvc_toolset::msvc_toolset() : toolset("msvc"), impl_(new impl_t)
 {
 
 };
+
+msvc_toolset::~msvc_toolset()
+{
+   delete impl_;
+}
 
 void msvc_toolset::init_impl(engine& e, const std::string& version_id,
                              const location_t* toolset_home) const
@@ -46,7 +61,7 @@ void msvc_toolset::init_impl(engine& e, const std::string& version_id,
       else
          throw std::runtime_error("Unknown version for msvc toolset");
    else
-      throw std::runtime_error("msvc toolset doesn't have auto configuration");
+      throw std::runtime_error("You must specify version for msvc toolset initialization or use 'all' to autodetect");
 }
 
 void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
@@ -388,6 +403,13 @@ msvc_toolset::msvc_8_0_data msvc_toolset::resolve_8_0_data(const location_t* too
    result.manifest_tool_ = "mt.exe";
 
    return result;
+}
+
+void msvc_toolset::autoconfigure(engine& e) const
+{
+   location_t msvc_8_0_home("c:\\Program Files\\Microsoft Visual Studio 8\\VC");
+   if (exists(msvc_8_0_home))
+      init_impl(e, "8.0", &msvc_8_0_home);
 }
 
 }

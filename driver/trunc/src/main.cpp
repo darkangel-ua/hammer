@@ -393,7 +393,7 @@ namespace
 
    void autoconfigure_toolsets(hammer::engine& e)
    {
-
+      e.toolset_manager().autoconfigure(e);
    }
 }
 

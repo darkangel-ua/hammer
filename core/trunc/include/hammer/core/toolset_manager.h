@@ -20,6 +20,7 @@ namespace hammer
                            const std::string& toolset_name, 
                            const std::string& toolset_version,
                            const location_t* toolset_home = NULL) const;
+         void autoconfigure(engine& e) const;
 
       private:
          typedef boost::unordered_map<std::string, boost::shared_ptr<toolset> > toolsets_t;

@@ -226,5 +226,10 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
 
 }
 
+void gcc_toolset::autoconfigure(engine& e) const
+{
+   //FIXME: Pure hack
+   init_impl(e, "unknown", NULL);
+}
 
 }

@@ -17,6 +17,7 @@ namespace hammer
 
          void init(engine& e, const std::string& version_id = std::string(), 
                    const location_t* toolset_home = NULL) const;
+         virtual void autoconfigure(engine& e) const = 0;
 
          virtual ~toolset() {}
 

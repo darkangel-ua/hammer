@@ -24,4 +24,10 @@ void toolset_manager::init_toolset(engine& e,
    i->second->init(e, toolset_version, toolset_home);
 }
 
+void toolset_manager::autoconfigure(engine& e) const
+{
+   for(toolsets_t::const_iterator i = toolsets_.begin(), last = toolsets_.end(); i != last; ++i)
+      i->second->autoconfigure(e);
+}
+
 }

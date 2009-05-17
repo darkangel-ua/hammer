@@ -17,6 +17,7 @@ namespace hammer
          };
 
          gcc_toolset();
+         virtual void autoconfigure(engine& e) const;
       
       protected:
          virtual void init_impl(engine& e, const std::string& version_id = std::string(),

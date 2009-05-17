@@ -394,6 +394,8 @@ msvc_toolset::msvc_8_0_data msvc_toolset::resolve_8_0_data(const location_t* too
    location_t toolset_home;
    if (toolset_home_ == NULL)
       toolset_home = "c:\\Program Files\\Microsoft Visual Studio 8\\VC";
+   else
+      toolset_home = *toolset_home_;
 
    msvc_8_0_data result;
    result.setup_script_ = toolset_home / "bin/vcvars32.bat";

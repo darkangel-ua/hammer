@@ -11,6 +11,7 @@ namespace hammer
          build_environment_impl(const location_t& cur_dir);
          virtual bool run_shell_commands(const std::vector<std::string>& cmds, const location_t& working_dir) const;
          virtual bool run_shell_commands(std::string& captured_output, const std::vector<std::string>& cmds, const location_t& working_dir) const;
+         virtual bool run_shell_commands(std::ostream& captured_output_stream, const std::vector<std::string>& cmds, const location_t& working_dir) const;
          virtual const location_t& current_directory() const;
          virtual void create_directories(const location_t& dir_to_create) const;
          virtual void remove(const location_t& p) const;
@@ -19,6 +20,7 @@ namespace hammer
          virtual bool write_tag_file(const std::string& filename, const std::string& content) const;
          virtual std::auto_ptr<std::ostream> create_output_file(const char* filename, std::ios_base::openmode mode) const;
          virtual location_t working_directory(const basic_target& t) const;
+         virtual std::ostream& output_stream() const;
          virtual const location_t* cache_directory() const;
       
       private:
@@ -26,7 +28,7 @@ namespace hammer
          location_t cache_directory_;
 
          void dump_shell_command(std::ostream& s, const location_t& full_content_file_name) const;
-         bool run_shell_commands(std::string* captured_output, 
+         bool run_shell_commands(std::ostream* captured_output_stream, 
                                  const std::vector<std::string>& cmds, 
                                  const location_t& working_dir) const;
    };

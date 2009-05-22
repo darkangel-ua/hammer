@@ -22,7 +22,7 @@ build_environment_impl::build_environment_impl(const location_t& cur_dir)
 
 }
 
-bool build_environment_impl::run_shell_commands(std::string* captured_output,
+bool build_environment_impl::run_shell_commands(std::ostream* captured_output_stream,
                                                 const std::vector<std::string>& cmds,
                                                 const location_t& working_dir) const
 {
@@ -42,7 +42,7 @@ bool build_environment_impl::run_shell_commands(std::string* captured_output,
       launcher.set_stdin_behavior(bp::inherit_stream);
       launcher.set_work_directory(working_dir.native_file_string());
 
-      if (captured_output != NULL)
+      if (captured_output_stream != NULL)
       {
          launcher.set_stdout_behavior(bp::redirect_stream);
          launcher.set_stderr_behavior(bp::close_stream);
@@ -67,10 +67,10 @@ bool build_environment_impl::run_shell_commands(std::string* captured_output,
       bp::child shell_action_child = launcher.start(cmdline);
 
 
-      if (captured_output != NULL)
+      if (captured_output_stream != NULL)
          std::copy(istreambuf_iterator<char>(shell_action_child.get_stdout()),
                    istreambuf_iterator<char>(),
-                   back_inserter(*captured_output));
+                   ostreambuf_iterator<char>(*captured_output_stream));
 
       bp::status st = shell_action_child.wait();
 
@@ -99,7 +99,17 @@ bool build_environment_impl::run_shell_commands(std::string& captured_output,
                                                 const std::vector<std::string>& cmds,
                                                 const location_t& working_dir) const
 {
-   return run_shell_commands(&captured_output, cmds, working_dir);
+   std::stringstream s;
+   bool result = run_shell_commands(&s, cmds, working_dir);
+   captured_output = s.str();
+   return result;
+}
+
+bool build_environment_impl::run_shell_commands(std::ostream& captured_output_stream, 
+                                                const std::vector<std::string>& cmds, 
+                                                const location_t& working_dir) const
+{
+   return run_shell_commands(&captured_output_stream, cmds, working_dir);
 }
 
 static std::auto_ptr<std::istream> open_input_stream(const location_t& full_content_file_name)
@@ -191,6 +201,11 @@ location_t build_environment_impl::working_directory(const basic_target& t) cons
 const location_t* build_environment_impl::cache_directory() const
 {
    return &cache_directory_;
+}
+
+std::ostream& build_environment_impl::output_stream() const
+{
+   return std::cout;
 }
 
 }

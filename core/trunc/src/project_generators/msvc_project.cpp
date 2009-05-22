@@ -34,6 +34,7 @@ namespace
 
          virtual bool run_shell_commands(const std::vector<std::string>& cmds, const location_t& working_dir) const { return true; }
          virtual bool run_shell_commands(std::string& captured_output, const std::vector<std::string>& cmds, const location_t& working_dir) const { return true; }
+         virtual bool run_shell_commands(std::ostream& captured_output_stream, const std::vector<std::string>& cmds, const location_t& working_dir) const { return true; }
          virtual const location_t& current_directory() const { return project_output_dir_; }
          virtual void create_directories(const location_t& dir_to_create) const {};
          virtual void remove(const location_t& p) const {};
@@ -49,6 +50,7 @@ namespace
          {
             return project_output_dir_;
          }
+         virtual std::ostream& output_stream() const { return std::cout; }
          
          const location_t* cache_directory() const { return NULL; }
 

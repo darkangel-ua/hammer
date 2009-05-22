@@ -2,6 +2,7 @@
 #define h_f71a8e70_7a12_4435_b9cc_ced1d1f88ee7
 
 #pragma warning(disable : 4996)
+#include <boost/asio/io_service.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/filesystem/convenience.hpp>

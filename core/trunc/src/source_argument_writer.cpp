@@ -10,10 +10,12 @@ namespace hammer{
 
 source_argument_writer::source_argument_writer(const std::string& name, 
                                                const target_type& t,
+                                               bool exact_type,
                                                bool write_full_path,
                                                const std::string& quoting_string,
                                                const std::string& prefix)
    : targets_argument_writer(name, t), 
+     exact_type_(exact_type),
      write_full_path_(write_full_path),
      quoting_string_(quoting_string),
      prefix_(prefix)
@@ -27,8 +29,10 @@ argument_writer* source_argument_writer::clone() const
 
 bool source_argument_writer::accept(const basic_target& source) const
 {
-   // here we use operator ==() to exactly match types
-   return source.type() == this->source_type();
+   if (exact_type_)
+      return source.type() == this->source_type();
+   else
+      return source.type().equal_or_derived_from(this->source_type());
 }
 
 void source_argument_writer::write_impl(std::ostream& output, const build_node& node, const build_environment& environment) const

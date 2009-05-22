@@ -11,7 +11,8 @@ namespace hammer
    {
       public:
          source_argument_writer(const std::string& name, 
-                                const target_type& t, 
+                                const target_type& t,
+                                bool exact_type = true,
                                 bool write_full_path = false,
                                 const std::string& quoting_string = "\"",
                                 const std::string& prefix = std::string());
@@ -24,6 +25,7 @@ namespace hammer
          virtual bool accept(const basic_target& source) const;
 
       private:
+         bool exact_type_;
          bool write_full_path_;
          std::string quoting_string_;
          std::string prefix_;

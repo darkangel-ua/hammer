@@ -47,7 +47,7 @@ bool cmdline_action::run_shell_commands(const std::vector<std::string>& commands
    if (node.products_.empty())
       throw std::runtime_error("[cmdline_action] Can't run command for node without products.");
 
-   return environment.run_shell_commands(commands, node.products_.front()->get_main_target()->location());
+   return environment.run_shell_commands(environment.output_stream(), commands, node.products_.front()->get_main_target()->location());
 }
 
 std::string cmdline_action::target_tag(const build_node& node, const build_environment& environment) const

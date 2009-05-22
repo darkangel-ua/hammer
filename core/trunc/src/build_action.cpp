@@ -11,7 +11,7 @@ namespace hammer{
 bool build_action::execute(const build_node& node, const build_environment& environment) const 
 { 
    string tag(target_tag(node, environment));
-   std::cout << name() << ' ' << tag << '\n';
+   environment.output_stream() << name() << ' ' << tag << '\n';
 
    bool execution_result = false;
    try
@@ -20,13 +20,13 @@ bool build_action::execute(const build_node& node, const build_environment& envi
    }
    catch(const std::exception& e)
    {
-      std::cout << "error: " << e.what() << '\n';
+      environment.output_stream() << "error: " << e.what() << '\n';
    }
 
    if (execution_result == false)
    {
-      std::cout << "...failed " << name() << ' ' << tag << '\n';
-      std::cout << "...cleaning " << tag << '\n';
+      environment.output_stream() << "...failed " << name() << ' ' << tag << '\n';
+      environment.output_stream() << "...cleaning " << tag << '\n';
       clean_on_fail(node, environment);
    }
 

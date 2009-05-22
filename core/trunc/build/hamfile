@@ -53,6 +53,8 @@ lib hammer.core
     /boost/multi_index/<version>1.36.0
     /boost/iostreams/<version>1.36.0/<link>static
     /boost/serialization/<version>1.36.0
+    /boost/asio/<version>1.36.0
+    /boost/pool/<version>1.36.0
    :
     @<include>../include
     <include>../src

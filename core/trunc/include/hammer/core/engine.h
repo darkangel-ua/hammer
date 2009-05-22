@@ -169,7 +169,7 @@ namespace hammer
          void searched_shared_lib_rule(project* p, std::vector<pstring>& name, 
                                        sources_decl* sources, pstring& lib_name,
                                        requirements_decl* requirements, requirements_decl* usage_requirements);
-         void searched_static_lib_rule(project* p, std::vector<pstring>& name, 
+         void searched_static_lib_rule(project* p, pstring& name, 
                                        sources_decl* sources, pstring& lib_name,
                                        requirements_decl* requirements, requirements_decl* usage_requirements);
          void prebuilt_lib_rule(project* p, std::vector<pstring>& name, 

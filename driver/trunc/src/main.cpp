@@ -7,6 +7,7 @@
 #include <boost/unordered_set.hpp>
 
 #include <iostream>
+#include <stdlib.h>
 #include <hammer/core/engine.h>
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature_registry.h>
@@ -43,13 +44,23 @@ typedef vector<boost::intrusive_ptr<build_node> > nodes_t;
 
 namespace
 {
+   unsigned get_number_of_processors()
+   {
+      const char* proc_info = getenv("NUMBER_OF_PROCESSORS");
+      if (proc_info != NULL)
+         return boost::lexical_cast<unsigned>(proc_info);
+      else
+         return 1;
+   }
+
    struct hammer_options
    {
       hammer_options() : generate_projects_localy_(false), 
                          only_up_to_date_check_(false),
-                         disable_batcher_(false),
+                         disable_batcher_(true),
                          hammer_output_dir_(".hammer"),
-                         debug_level_(0)
+                         debug_level_(0),
+                         worker_count_(get_number_of_processors())
       {}
 
       vector<string> build_request_options_;
@@ -60,6 +71,7 @@ namespace
       std::string hammer_install_dir_;
       int debug_level_;
       std::string just_one_source_;
+      unsigned worker_count_;
    };
 
    po::positional_options_description build_request_options;
@@ -79,7 +91,8 @@ namespace
          ("install-dir", po::value<std::string>(&opts.hammer_install_dir_), "specify where hammer was installed")
          ("debug,d", po::value<int>(&opts.debug_level_), "specify verbosity level")
          ("disable-batcher", "do not build many sources at once")
-         ("just-one-source,s", po::value<string>(&opts.just_one_source_), "build unconditionally specified source");
+         ("just-one-source,s", po::value<string>(&opts.just_one_source_), "build unconditionally specified source")
+         ("--jobs,j", po::value<unsigned>(&opts.worker_count_), "concurrency level");
 
       return desc;
    }
@@ -351,26 +364,19 @@ namespace
          }
 
          cout << "...updating " << target_to_update_count << " targets...\n";
-         builder builder(build_environment);
+         builder builder(build_environment, opts.worker_count_);
          builder.build(nodes);
          cout << "...updated " << target_to_update_count << " targets...\n";
       }
       else
       {
          cout << "...updating source '" << opts.just_one_source_ << "'...\n";
-         builder builder(build_environment, true);
+         builder builder(build_environment, opts.worker_count_, true);
          nodes_t source_nodes = find_nodes_for_source_name(nodes, pstring(e.pstring_pool(), opts.just_one_source_));
          builder.build(source_nodes);
          cout << "...updated source '" << opts.just_one_source_ << "'...\n";
       }
    }
-
-//    terminate_function old_terminate_function;
-//    void terminate_hander()
-//    {
-//       cout << "Critical error - terminate handler was invoked\n";
-//       old_terminate_function();
-//    }
 
    void use_toolset_rule(project*, engine& e, pstring& toolset_name, pstring& toolset_version, pstring* toolset_home_)
    {
@@ -401,8 +407,6 @@ int main(int argc, char** argv)
 {
    try
    {
-//      old_terminate_function = set_terminate(terminate_hander);
-
       po::options_description desc(options_for_work());
       po::variables_map vm;
       po::parsed_options options = po::command_line_parser(argc, argv).options(desc).positional(build_request_options).run();
@@ -418,6 +422,15 @@ int main(int argc, char** argv)
          return 0;
       }
       
+      // fix concurrency level if user is dumb
+      if (opts.worker_count_ == 0)
+         opts.worker_count_ = 1;
+      
+      // disable batcher for concurrency level greater than 1 
+      // batcher will slow down parallel build
+      if (opts.worker_count_ > 1)
+         opts.disable_batcher_ = true;
+
       fs::path data_path(get_data_path());
 
       if (vm.count("install-dir"))

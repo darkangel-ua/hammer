@@ -11,13 +11,17 @@ namespace hammer
       public:
          typedef std::vector<boost::intrusive_ptr<build_node> > nodes_t;
 
-         builder(const build_environment& environment, bool unconditional_build = false);
+         builder(const build_environment& environment, 
+                 unsigned worker_count = 1, 
+                 bool unconditional_build = false);
+         ~builder();
+
          void build(nodes_t& nodes);
-         bool build(build_node& node);
+         void build(build_node& node);
 
       private:
-         const build_environment& environment_;
-         bool unconditional_build_;
+         struct impl_t;
+         impl_t* impl_;
    };
 }
 

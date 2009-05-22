@@ -49,7 +49,7 @@ engine::engine()
    resolver_.insert("project", boost::function<void (project*, vector<pstring>&, project_requirements_decl*, project_requirements_decl*)>(boost::bind(&engine::project_rule, this, _1, _2, _3, _4)));
    resolver_.insert("lib", boost::function<void (project*, vector<pstring>&, sources_decl*, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::lib_rule, this, _1, _2, _3, _4, _5, _6)));
    resolver_.insert("searched-shared-lib", boost::function<void (project*, vector<pstring>&, sources_decl*, pstring&, requirements_decl*, requirements_decl*)>(boost::bind(&engine::searched_shared_lib_rule, this, _1, _2, _3, _4, _5, _6)));
-   resolver_.insert("searched-static-lib", boost::function<void (project*, vector<pstring>&, sources_decl*, pstring&, requirements_decl*, requirements_decl*)>(boost::bind(&engine::searched_static_lib_rule, this, _1, _2, _3, _4, _5, _6)));
+   resolver_.insert("searched-static-lib", boost::function<void (project*, pstring&, sources_decl*, pstring&, requirements_decl*, requirements_decl*)>(boost::bind(&engine::searched_static_lib_rule, this, _1, _2, _3, _4, _5, _6)));
    resolver_.insert("prebuilt-lib", boost::function<void (project*, vector<pstring>&, sources_decl*, pstring&, requirements_decl*, requirements_decl*)>(boost::bind(&engine::prebuilt_lib_rule, this, _1, _2, _3, _4, _5, _6)));
    resolver_.insert("file", boost::function<void (project*, vector<pstring>&, pstring&, requirements_decl*, requirements_decl*)>(boost::bind(&engine::file_rule, this, _1, _2, _3, _4, _5)));
    resolver_.insert("header-lib", boost::function<void (project*, vector<pstring>&, sources_decl*, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::header_lib_rule, this, _1, _2, _3, _4, _5, _6)));
@@ -623,14 +623,14 @@ void engine::searched_shared_lib_rule(project* p,
 }
 
 void engine::searched_static_lib_rule(project* p, 
-                                      std::vector<pstring>& name, 
+                                      pstring& name, 
                                       sources_decl* sources,
                                       pstring& lib_name, 
                                       requirements_decl* requirements, 
                                       requirements_decl* usage_requirements)
 {
    auto_ptr<basic_meta_target> mt(new searched_lib_meta_target(p, 
-                                                               name.at(0), 
+                                                               name, 
                                                                lib_name,
                                                                requirements ? *requirements : requirements_decl(),
                                                                usage_requirements ? *usage_requirements : requirements_decl(),

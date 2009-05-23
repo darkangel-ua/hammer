@@ -57,7 +57,7 @@ namespace
    {
       hammer_options() : generate_projects_localy_(false), 
                          only_up_to_date_check_(false),
-                         disable_batcher_(true),
+                         disable_batcher_(false),
                          hammer_output_dir_(".hammer"),
                          debug_level_(0),
                          worker_count_(get_number_of_processors())
@@ -359,7 +359,7 @@ namespace
          if (!opts.disable_batcher_)
          {
             cout << "...running batcher... ";
-            generic_batcher::process(nodes);
+            generic_batcher::process(nodes, opts.worker_count_);
             cout << "Done.\n";
          }
 
@@ -426,11 +426,6 @@ int main(int argc, char** argv)
       if (opts.worker_count_ == 0)
          opts.worker_count_ = 1;
       
-      // disable batcher for concurrency level greater than 1 
-      // batcher will slow down parallel build
-      if (opts.worker_count_ > 1)
-         opts.disable_batcher_ = true;
-
       fs::path data_path(get_data_path());
 
       if (vm.count("install-dir"))

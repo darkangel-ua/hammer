@@ -17,8 +17,9 @@ batched_cmdline_action::batched_cmdline_action(const std::string& name)
 
 bool batched_cmdline_action::execute_impl(const build_node& node, const build_environment& environment) const
 {
-   environment.remove_file_by_pattern(node.products_owner().intermediate_dir(), "batched\\.[0-9A-F]+\\.");
-   return cmdline_action::execute_impl(node, environment);
+   bool result = cmdline_action::execute_impl(node, environment);
+//   environment.remove(node.products_owner().intermediate_dir() / target_tag(node, environment));
+   return result;
 }
 
 }

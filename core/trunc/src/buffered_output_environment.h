@@ -8,8 +8,12 @@ namespace hammer{namespace details{
 class buffered_output_environment : public build_environment
 {
    public:
-      buffered_output_environment(const hammer::build_environment& env) : env_(env) {}
-      buffered_output_environment(const buffered_output_environment& rhs) : env_(rhs.env_) {}
+      buffered_output_environment(const hammer::build_environment& env) 
+         : env_(env), 
+           s_(env.begin_use_output_stream())
+      {}
+
+      ~buffered_output_environment() { env_.end_use_output_stream(s_); }
 
       virtual bool run_shell_commands(const std::vector<std::string>& cmds, const location_t& working_dir) const
       {
@@ -59,7 +63,9 @@ class buffered_output_environment : public build_environment
 
    private:
       const hammer::build_environment& env_;
-      mutable std::stringstream s_;
+      std::ostream& s_;
+
+      buffered_output_environment(const buffered_output_environment& rhs);
 };
 
 }}

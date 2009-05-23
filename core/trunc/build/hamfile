@@ -35,6 +35,7 @@ lib hammer.core
     without_pch
     [ rglob ../src/*.cpp : stdafx.cpp dos_wildcard.cpp ]
     [ rglob ../src/*.h : stdafx.h ]
+    [ rglob ../include/*.h ]
     /libantlr3c/<version>3.1.1
     @/boost/date_time/<version>1.36.0
     @/boost/function_types/<version>1.36.0

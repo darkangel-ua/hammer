@@ -71,14 +71,12 @@ struct worker_ctx_t
                 asio::io_service::strand& strand,
                 build_queue_t& queue,
                 nodes_in_progress_t& nodes_in_progess,
-                build_queue_node_t* current_node,
-                const build_environment& environment)
+                build_queue_node_t* current_node)
       : scheduler_(scheduler),
         strand_(strand),
         queue_(queue),
         nodes_in_progess_(nodes_in_progess),
         current_node_(current_node),
-        environment_(environment),
         action_result_(false)
    {
    }
@@ -91,7 +89,6 @@ struct worker_ctx_t
    build_queue_t& queue_;
    nodes_in_progress_t& nodes_in_progess_;
    build_queue_node_t* current_node_;
-   hammer::details::buffered_output_environment environment_;
    bool action_result_;
 };
 
@@ -151,7 +148,8 @@ void builder::build(nodes_t& nodes)
 
 void builder::impl_t::task_handler(shared_ptr<worker_ctx_t> ctx)
 {
-   ctx->action_result_ = ctx->node().action()->execute(ctx->node(), ctx->environment_);
+   details::buffered_output_environment buffered_environment(environment_);
+   ctx->action_result_ = ctx->node().action()->execute(ctx->node(), buffered_environment);
    ctx->node().up_to_date(ctx->action_result_ ? boost::tribool::true_value : boost::tribool::false_value);
 
    ctx->strand_.post(boost::bind(&impl_t::task_completition_handler, this, ctx));
@@ -161,7 +159,6 @@ void builder::impl_t::task_completition_handler(shared_ptr<worker_ctx_t> ctx)
 {
    if (ctx->current_node_ != NULL)
    {
-      environment_.output_stream() << static_cast<std::stringstream&>(ctx->environment_.output_stream()).str();
       ctx->nodes_in_progess_.erase(ctx->current_node_);
          
       if (ctx->action_result_ == true)
@@ -199,17 +196,19 @@ void builder::impl_t::task_completition_handler(shared_ptr<worker_ctx_t> ctx)
             if (!(**i).up_to_date())
                lack_of_nodes.push_back(*i);
 
+         details::buffered_output_environment buffered_environment(environment_);
+
          // some sources was not build - skip this node, but print why we skip it
-         environment_.output_stream() << "...skipped " << current_node.node_->action()->target_tag(*current_node.node_, environment_) << '\n';
+         buffered_environment.output_stream() << "...skipped " << current_node.node_->action()->target_tag(*current_node.node_, buffered_environment) << '\n';
 
          // remove dups
          sort(lack_of_nodes.begin(), lack_of_nodes.end());
          lack_of_nodes.erase(unique(lack_of_nodes.begin(), lack_of_nodes.end()), lack_of_nodes.end());
 
          for(nodes_t::const_iterator i = lack_of_nodes.begin(), last = lack_of_nodes.end(); i != last; ++i)
-            environment_.output_stream()
+            buffered_environment.output_stream()
                << "......for lack of " 
-               << ((**i).action() != NULL ? (**i).action()->target_tag(**i, environment_) 
+               << ((**i).action() != NULL ? (**i).action()->target_tag(**i, buffered_environment) 
                                           : "?unknown?") 
                << '\n';
       }
@@ -238,8 +237,7 @@ void builder::impl_t::build(nodes_t& nodes)
    nodes_in_progress_t nodes_in_progress;
    
    shared_ptr<worker_ctx_t> initial_ctx(
-      new worker_ctx_t(scheduler, strand, build_queue, nodes_in_progress, 
-                       NULL, environment_));
+      new worker_ctx_t(scheduler, strand, build_queue, nodes_in_progress, NULL));
    
    scheduler.post(boost::bind(&impl_t::task_completition_handler, this, initial_ctx));
 

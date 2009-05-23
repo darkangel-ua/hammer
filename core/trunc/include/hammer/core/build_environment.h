@@ -9,11 +9,21 @@
 
 namespace hammer
 {
+   namespace details
+   {
+      class buffered_output_environment;
+   }
+
    class basic_target;
 
    class build_environment
    {
       public:
+         friend class ::hammer::details::buffered_output_environment;
+
+         build_environment();
+         virtual ~build_environment();
+
          virtual bool run_shell_commands(const std::vector<std::string>& cmds, const location_t& working_dir) const = 0;
          virtual bool run_shell_commands(std::string& captured_output, const std::vector<std::string>& cmds, const location_t& working_dir) const = 0;
          virtual bool run_shell_commands(std::ostream& captured_output_stream, const std::vector<std::string>& cmds, const location_t& working_dir) const = 0;
@@ -32,7 +42,12 @@ namespace hammer
          // If returns null - caching is not allowed
          virtual const location_t* cache_directory() const = 0;
 
-         virtual ~build_environment() {}
+      private:
+         struct impl_t;
+         mutable impl_t* impl_;
+
+         std::ostream& begin_use_output_stream() const;
+         void end_use_output_stream(std::ostream& s) const;
    };
 }
 

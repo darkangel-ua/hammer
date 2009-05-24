@@ -3,7 +3,7 @@ feature.compose <all-static>on : <link>static <runtime-link>static ;
 
 copy install 
    :
-    ../build/<all-static>on
+    ../build/<all-static>on/<variant>release
    :
     <destination>./template/win32/
     <type-to-copy>EXE

@@ -1,6 +1,7 @@
 #include "stdafx.h"
-#include <hammer/core/fs_helpers.h>
+#include <boost/filesystem/convenience.hpp>
 #include <boost/scoped_array.hpp>
+#include <hammer/core/fs_helpers.h>
 
 namespace hammer
 {

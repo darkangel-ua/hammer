@@ -1,6 +1,7 @@
 #include "stdafx.h"
-#include <hammer/core/toolsets/msvc_toolset.h>
+#include <boost/filesystem/convenience.hpp>
 #include <boost/assign/list_of.hpp>
+#include <hammer/core/toolsets/msvc_toolset.h>
 #include <hammer/core/generator.h>
 #include <hammer/core/types.h>
 #include <hammer/core/engine.h>

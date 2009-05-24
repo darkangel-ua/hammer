@@ -1,4 +1,7 @@
 #include "stdafx.h"
+#include <iostream>
+#include <boost/filesystem/convenience.hpp>
+#include <boost/filesystem/fstream.hpp>
 #include <hammer/core/project_generators/msvc_project.h>
 #include <hammer/core/main_target.h>
 #include <hammer/core/meta_target.h>
@@ -17,7 +20,6 @@
 #include <hammer/core/free_feature_arg_writer.h>
 #include <hammer/core/source_argument_writer.h>
 #include <hammer/core/pch_argument_writer.h>
-#include <iostream>
 
 using namespace std;
    

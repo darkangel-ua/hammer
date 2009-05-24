@@ -1,18 +1,19 @@
 #include "stdafx.h"
-#include <hammer/core/feature_registry.h>
-#include <boost/checked_delete.hpp>
-#include <hammer/core/feature_set.h>
-#include <hammer/core/feature.h>
-#include <hammer/core/subfeature.h>
 #include <list>
 #include <map>
 #include <cassert>
 #include <cstdlib>
+#include <boost/shared_ptr.hpp>
+#include <boost/checked_delete.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/multi_index/identity.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
+#include <hammer/core/feature_registry.h>
+#include <hammer/core/feature_set.h>
+#include <hammer/core/feature.h>
+#include <hammer/core/subfeature.h>
 
 using namespace std;
 using namespace boost;

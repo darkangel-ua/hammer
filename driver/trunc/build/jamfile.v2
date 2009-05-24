@@ -5,4 +5,6 @@ exe hammer :
              /boost/filesystem
              /boost/regex
              /hammer/core//hammer_core
+           :
+             <link>static
            ;

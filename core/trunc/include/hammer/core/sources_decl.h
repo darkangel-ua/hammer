@@ -1,6 +1,7 @@
 #if !defined(h_29741f53_09ff_4880_b28d_86010263122e)
 #define h_29741f53_09ff_4880_b28d_86010263122e
 
+#include <vector>
 #include "pstring.h"
 #include "source_decl.h"
 

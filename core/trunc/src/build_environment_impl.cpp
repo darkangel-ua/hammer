@@ -1,14 +1,15 @@
 #include "stdafx.h"
-#include <hammer/core/build_environment_impl.h>
-#include <hammer/core/fs_helpers.h>
-#include <hammer/core/main_target.h>
+#include <fstream>
+#include <iterator>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/fstream.hpp>
+#include <boost/filesystem/convenience.hpp>
 #include <boost/regex.hpp>
 #include <boost/process.hpp>
 #include <boost/guid.hpp>
-#include <fstream>
-#include <iterator>
+#include <hammer/core/build_environment_impl.h>
+#include <hammer/core/fs_helpers.h>
+#include <hammer/core/main_target.h>
 
 namespace bp = boost::process;
 namespace fs = boost::filesystem;

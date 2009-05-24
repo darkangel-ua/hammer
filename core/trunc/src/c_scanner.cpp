@@ -1,16 +1,9 @@
 #include "stdafx.h"
-#include <hammer/core/c_scanner.h>
-#include <hammer/core/scaner_context.h>
+#include <boost/filesystem/convenience.hpp>
 #include <boost/unordered_set.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/ptr_container/ptr_unordered_map.hpp>
 #include <boost/scoped_ptr.hpp>
-#include <hammer/core/feature_set.h>
-#include <hammer/core/feature.h>
-#include <hammer/core/basic_meta_target.h>
-#include <hammer/core/basic_target.h>
-#include <hammer/core/build_environment.h>
-#include <hammer/core/hashed_location_serialization.h>
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/date_time/posix_time/time_serialize.hpp>
 #include <boost/date_time/posix_time/conversion.hpp>
@@ -26,6 +19,14 @@
 #include <boost/serialization/utility.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/filesystem/fstream.hpp>
+#include <hammer/core/feature_set.h>
+#include <hammer/core/feature.h>
+#include <hammer/core/basic_meta_target.h>
+#include <hammer/core/basic_target.h>
+#include <hammer/core/build_environment.h>
+#include <hammer/core/hashed_location_serialization.h>
+#include <hammer/core/c_scanner.h>
+#include <hammer/core/scaner_context.h>
 
 using namespace std;
 using namespace boost::posix_time;

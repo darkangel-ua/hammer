@@ -1,6 +1,8 @@
 #if !defined(h_bd7a680f_5464_4a47_b274_185a105a6da0)
 #define h_bd7a680f_5464_4a47_b274_185a105a6da0
 
+#include <vector>
+
 namespace hammer
 {
    class feature_set;

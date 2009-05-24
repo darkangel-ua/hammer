@@ -1,16 +1,17 @@
 #include "stdafx.h"
-#include <hammer/core/project_generators/msvc_solution.h>
-#include <boost/guid.hpp>
-#include <hammer/core/project_generators/msvc_project.h>
-#include <boost/ptr_container/ptr_map.hpp>
-#include <vector>
-#include <hammer/core/main_target.h>
-#include <hammer/core/engine.h>
-#include <hammer/core/meta_target.h>
-#include <hammer/core/fs_helpers.h>
-#include <hammer/core/feature.h>
-#include <boost/filesystem/fstream.hpp>
 #include <set>
+#include <vector>
+#include <boost/filesystem/fstream.hpp>
+#include <boost/filesystem/convenience.hpp>
+#include <boost/ptr_container/ptr_map.hpp>
+#include <boost/guid.hpp>
+#include <hammer/core/engine.h>
+#include <hammer/core/feature.h>
+#include <hammer/core/fs_helpers.h>
+#include <hammer/core/main_target.h>
+#include <hammer/core/meta_target.h>
+#include <hammer/core/project_generators/msvc_project.h>
+#include <hammer/core/project_generators/msvc_solution.h>
 
 using namespace std;
 

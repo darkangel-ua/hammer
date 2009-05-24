@@ -1,13 +1,14 @@
 #include "stdafx.h"
+#include <set>
+#include <boost/assign/list_of.hpp>
+#include <boost/filesystem/convenience.hpp>
 #include <hammer/core/copy_generator.h>
 #include <hammer/core/engine.h>
 #include <hammer/core/type_registry.h>
-#include <boost/assign/list_of.hpp>
 #include <hammer/core/types.h>
 #include <hammer/core/copy_main_target.h>
 #include <hammer/core/copy_target.h>
 #include <hammer/core/generated_target.h>
-#include <set>
 #include <hammer/core/types.h>
 #include <hammer/core/build_action.h>
 #include <hammer/core/target_type.h>

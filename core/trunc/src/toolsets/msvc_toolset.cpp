@@ -273,7 +273,7 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
       shared_ptr<product_argument_writer> exe_product(new product_argument_writer("exe_product", e.get_type_registry().get(types::EXE)));
       shared_ptr<product_argument_writer> exe_manifest_product(new product_argument_writer("exe_manifest_product", e.get_type_registry().get(types::EXE_MANIFEST)));
       auto_ptr<cmdline_action> exe_action(new cmdline_action("link-exe", exe_product));
-      cmdline_builder exe_cmd(config_data.linker_.native_file_string() + " /nologo $(link_flags) $(user_link_flags) $(searched_lib_searched_dirs) /out:\"$(exe_product)\" $(obj_sources) $(static_lib_sources) $(searched_lib_sources) $(import_lib_sources)\n"
+      cmdline_builder exe_cmd(config_data.linker_.native_file_string() + " /nologo /MANIFEST $(link_flags) $(user_link_flags) $(searched_lib_searched_dirs) /out:\"$(exe_product)\" $(obj_sources) $(static_lib_sources) $(searched_lib_sources) $(import_lib_sources)\n"
                               "if %ERRORLEVEL% NEQ 0 EXIT %ERRORLEVEL%\n"
                               "if exist \"$(exe_manifest_product)\" (" + config_data.manifest_tool_.native_file_string() + " -nologo -manifest \"$(exe_manifest_product)\" \"-outputresource:$(exe_product)\")");
       exe_cmd += link_flags;
@@ -344,7 +344,7 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
       shared_lib_cmd += shared_lib_product;
       shared_lib_cmd += dll_manifest_product;
 
-      cmdline_builder shared_lib_rsp(" /nologo /DLL $(link_flags) $(user_link_flags) $(searched_lib_searched_dirs) /out:\"$(shared_lib_product)\" /IMPLIB:\"$(import_lib_product)\" $(obj_sources) $(static_lib_sources) $(searched_lib_sources) $(import_lib_sources)");
+      cmdline_builder shared_lib_rsp(" /nologo /DLL /MANIFEST $(link_flags) $(user_link_flags) $(searched_lib_searched_dirs) /out:\"$(shared_lib_product)\" /IMPLIB:\"$(import_lib_product)\" $(obj_sources) $(static_lib_sources) $(searched_lib_sources) $(import_lib_sources)");
       shared_lib_rsp += link_flags;
       shared_lib_rsp += user_link_flags;
       shared_lib_rsp += searched_lib_searched_dirs;

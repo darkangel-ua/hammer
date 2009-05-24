@@ -57,7 +57,7 @@ namespace
    {
       hammer_options() : generate_projects_localy_(false), 
                          only_up_to_date_check_(false),
-                         disable_batcher_(false),
+                         disable_batcher_(true), // disable until we resolve paralell output problems
                          hammer_output_dir_(".hammer"),
                          debug_level_(0),
                          worker_count_(get_number_of_processors())

@@ -18,8 +18,10 @@ const type_tag OBJ("OBJ");
 const type_tag PCH("PCH");
 const type_tag LIB("LIB");
 const type_tag SHARED_LIB("SHARED_LIB");
+const type_tag PREBUILT_SHARED_LIB("PREBUILT_SHARED_LIB");
 const type_tag IMPORT_LIB("IMPORT_LIB");
 const type_tag STATIC_LIB("STATIC_LIB");
+const type_tag PREBUILT_STATIC_LIB("PREBUILT_STATIC_LIB");
 const type_tag SEARCHED_LIB("SEARCHED_LIB");
 const type_tag SEARCHED_SHARED_LIB("SEARCHED_SHARED_LIB");
 const type_tag SEARCHED_STATIC_LIB("SEARCHED_STATIC_LIB");
@@ -50,7 +52,9 @@ void register_standart_types(type_registry& tr, feature_registry& fr)
    target_type::suffixes_t shared_suffixes = list_of<target_type::suffix_def>(".dll", *parse_simple_set("<os>nt", fr))
                                                                              (".so", *parse_simple_set("<os>linux", fr));
    const target_type& tSHARED_LIB = tr.insert(target_type(SHARED_LIB, shared_suffixes, tLIB));
+   const target_type& tPREBUILT_SHARED_LIB = tr.insert(target_type(PREBUILT_SHARED_LIB, "", tSHARED_LIB));
    const target_type& tSTATIC_LIB = tr.insert(target_type(STATIC_LIB, ".lib", tLIB));
+   const target_type& tPREBUILT_STATIC_LIB = tr.insert(target_type(PREBUILT_STATIC_LIB, "", tSTATIC_LIB));
 
    target_type::suffixes_t static_lib_suffixes = list_of<target_type::suffix_def>(".lib", *parse_simple_set("<os>nt", fr))
                                                                                  (".a", *parse_simple_set("<os>linux", fr));

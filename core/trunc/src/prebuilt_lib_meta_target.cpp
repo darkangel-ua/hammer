@@ -3,8 +3,19 @@
 #include <hammer/core/project.h>
 #include <hammer/core/engine.h>
 #include <hammer/core/type_registry.h>
+#include <hammer/core/target_type.h>
+#include <hammer/core/types.h>
 
 namespace hammer{
+
+static const target_type& resolve_type(const pstring& lib_file_path, const type_registry& tr)
+{
+   const target_type& lib_type = tr.hard_resolve_from_target_name(lib_file_path);
+   if (lib_type.equal_or_derived_from(tr.get(types::SHARED_LIB)))
+      return tr.get(types::PREBUILT_SHARED_LIB);
+   else 
+      return tr.get(types::PREBUILT_STATIC_LIB);
+}
 
 prebuilt_lib_meta_target::prebuilt_lib_meta_target(hammer::project* p, 
                                                    const pstring& name, 
@@ -17,7 +28,7 @@ prebuilt_lib_meta_target::prebuilt_lib_meta_target(hammer::project* p,
                              lib_file_path, 
                              props, 
                              usage_req, 
-                             p->get_engine()->get_type_registry().hard_resolve_from_target_name(lib_file_path))
+                             resolve_type(lib_file_path, p->get_engine()->get_type_registry()))
 {
 }
 

@@ -202,13 +202,12 @@ msvc_project::msvc_project(engine& e,
    // linker options
    boost::shared_ptr<source_argument_writer> additional_libraries(
        new source_argument_writer("additional_libraries", 
-                                  e.get_type_registry().get(types::SEARCHED_LIB)));
+                                  e.get_type_registry().get(types::PREBUILT_STATIC_LIB), true, true));
    linker_options_ += additional_libraries;
 
-   boost::shared_ptr<searched_lib_argument_writer> additional_searched_libraries(
-       new searched_lib_argument_writer("additional_searched_libraries", 
-                                        e.get_type_registry().get(types::STATIC_LIB),
-                                        e.get_type_registry().get(types::SEARCHED_LIB)));
+   boost::shared_ptr<source_argument_writer> additional_searched_libraries(
+       new source_argument_writer("additional_searched_libraries", 
+                                  e.get_type_registry().get(types::SEARCHED_LIB), false));
    linker_options_ += additional_searched_libraries;
 
    boost::shared_ptr<free_feature_arg_writer> additional_libraries_dirs(

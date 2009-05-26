@@ -16,8 +16,10 @@ namespace hammer
       extern const type_tag PCH;
       extern const type_tag LIB;
       extern const type_tag SHARED_LIB;
+      extern const type_tag PREBUILT_SHARED_LIB;
       extern const type_tag IMPORT_LIB;
       extern const type_tag STATIC_LIB;
+      extern const type_tag PREBUILT_STATIC_LIB;
       extern const type_tag SEARCHED_LIB;
       extern const type_tag SEARCHED_SHARED_LIB;
       extern const type_tag SEARCHED_STATIC_LIB;

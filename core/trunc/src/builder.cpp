@@ -105,7 +105,7 @@ struct builder::impl_t
         unconditional_build_(unconditional_build)
    {}
    
-   void build(nodes_t& nodes);
+   result build(nodes_t& nodes);
    
    build_queue_node_t& gather_nodes(nodes_to_build_t& nodes_to_build, 
                                          build_node& node);
@@ -120,6 +120,7 @@ struct builder::impl_t
    unsigned worker_count_;
    bool unconditional_build_;
    boost::object_pool<build_queue_node_t> nodes_pool_;
+   result result_;
 };
 
 builder::builder(const build_environment& environment, 
@@ -136,15 +137,15 @@ builder::~builder()
    delete impl_;
 }
 
-void builder::build(build_node& node)
+builder::result builder::build(build_node& node)
 {
    nodes_t nodes(1, boost::intrusive_ptr<build_node>(&node));
-   impl_->build(nodes);
+   return impl_->build(nodes);
 }
 
-void builder::build(nodes_t& nodes)
+builder::result builder::build(nodes_t& nodes)
 {
-   impl_->build(nodes);
+   return impl_->build(nodes);
 }
 
 void builder::impl_t::task_handler(shared_ptr<worker_ctx_t> ctx)
@@ -163,11 +164,17 @@ void builder::impl_t::task_completition_handler(shared_ptr<worker_ctx_t> ctx)
       ctx->nodes_in_progess_.erase(ctx->current_node_);
          
       if (ctx->action_result_ == true)
+      {
+         ++result_.updated_targets_;
          for(build_queue_nodes_t::iterator i = ctx->queue_node().uses_nodes_.begin(), last = ctx->queue_node().uses_nodes_.end(); i != last; ++i)
             ctx->queue_.get<1>().modify(ctx->queue_.get<1>().find(*i), dependency_decrementor());
+      }
       else
+      {
+         ++result_.failed_to_build_targets_;
          for(build_queue_nodes_t::iterator i = ctx->queue_node().uses_nodes_.begin(), last = ctx->queue_node().uses_nodes_.end(); i != last; ++i)
             (**i).some_dependencies_failed_to_build_ = true;
+      }
    }
 
    for(;!ctx->queue_.empty() && ctx->nodes_in_progess_.size() < worker_count_;)
@@ -186,6 +193,8 @@ void builder::impl_t::task_completition_handler(shared_ptr<worker_ctx_t> ctx)
       {
          if (!current_node.some_dependencies_failed_to_build_)
             return;
+
+         ++result_.skipped_targets_;
 
          // gather sources that was not built
          nodes_t lack_of_nodes;
@@ -218,8 +227,10 @@ void builder::impl_t::task_completition_handler(shared_ptr<worker_ctx_t> ctx)
    }
 }
 
-void builder::impl_t::build(nodes_t& nodes)
+builder::result builder::impl_t::build(nodes_t& nodes)
 {
+   result_ = result();
+
    // gather information about all nodes needed to be built
    nodes_to_build_t nodes_to_build;
    for(nodes_t::const_iterator i = nodes.begin(), last = nodes.end(); i != last; ++i)
@@ -231,7 +242,7 @@ void builder::impl_t::build(nodes_t& nodes)
       build_queue.insert(i->second);
    
    if (build_queue.empty())
-      return;
+      return result_;
 
    boost::asio::io_service scheduler;
    asio::io_service::strand strand(scheduler);
@@ -248,6 +259,8 @@ void builder::impl_t::build(nodes_t& nodes)
          thread_pool.create_thread(boost::bind(&asio::io_service::run, &scheduler));
 
    scheduler.run();
+
+   return result_;
 }
 
 build_queue_node_t& 

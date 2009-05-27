@@ -10,14 +10,26 @@ namespace hammer
    {
       public:
          typedef std::vector<boost::intrusive_ptr<build_node> > nodes_t;
+         
+         struct result
+         {
+            result() : updated_targets_(0),
+                       failed_to_build_targets_(0),
+                       skipped_targets_(0) 
+            {}
+
+            unsigned updated_targets_;
+            unsigned failed_to_build_targets_;
+            unsigned skipped_targets_;
+         };
 
          builder(const build_environment& environment, 
                  unsigned worker_count = 1, 
                  bool unconditional_build = false);
          ~builder();
 
-         void build(nodes_t& nodes);
-         void build(build_node& node);
+         result build(nodes_t& nodes);
+         result build(build_node& node);
 
       private:
          struct impl_t;

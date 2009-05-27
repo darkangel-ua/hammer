@@ -12,8 +12,8 @@
 
   ;Name and file
   Name $(product_name)
-  OutFile "hammer_setup.exe"
-  Caption "Hammer 0.1 Alpha Setup"
+  OutFile "hammer_svn20090526_setup.exe"
+  Caption "Hammer SVN snapshot 2009-05-26 Setup"
   ;Default installation folder
   InstallDir "$PROGRAMFILES\Hammer"
   
@@ -77,7 +77,7 @@ Section "Dummy Section" SecDummy
     
     ;Create shortcuts
     CreateDirectory "$SMPROGRAMS\$StartMenuFolder"
-    CreateShortCut  "$SMPROGRAMS\$StartMenuFolder\Hammer User Manual.lnk" "$INSTDIR\user_manual.pdf"
+    CreateShortCut  "$SMPROGRAMS\$StartMenuFolder\Hammer User Manual.lnk" "$INSTDIR\doc\user_manual.pdf"
     CreateShortCut  "$SMPROGRAMS\$StartMenuFolder\Uninstall.lnk" "$INSTDIR\Uninstall.exe"
   
   !insertmacro MUI_STARTMENU_WRITE_END

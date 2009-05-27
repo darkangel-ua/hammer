@@ -365,15 +365,20 @@ namespace
 
          cout << "...updating " << target_to_update_count << " targets...\n";
          builder builder(build_environment, opts.worker_count_);
-         builder.build(nodes);
-         cout << "...updated " << target_to_update_count << " targets...\n";
+         builder::result build_result = builder.build(nodes);
+         cout << "...updated " << build_result.updated_targets_ << " targets...\n";
+         
+         if (build_result.failed_to_build_targets_)
+            cout << "...failed updating " << build_result.failed_to_build_targets_ << " targets...\n";
+         if (build_result.skipped_targets_)
+            cout << "...skipped " << build_result.skipped_targets_ << " targets...\n";
       }
       else
       {
          cout << "...updating source '" << opts.just_one_source_ << "'...\n";
          builder builder(build_environment, opts.worker_count_, true);
          nodes_t source_nodes = find_nodes_for_source_name(nodes, pstring(e.pstring_pool(), opts.just_one_source_));
-         builder.build(source_nodes);
+         builder::result build_result = builder.build(source_nodes);
          cout << "...updated source '" << opts.just_one_source_ << "'...\n";
       }
    }

@@ -1,20 +1,21 @@
 Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual Studio 2005
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "a", "./a/a.vcproj", "{00000000-0000-0000-0000-000000000003}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "a", "./a/a.vcproj", "{00000000-0000-0000-0000-000000000002}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lib1", "./lib1/lib1.vcproj", "{00000000-0000-0000-0000-000000000002}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lib1", "./lib1/lib1.vcproj", "{00000000-0000-0000-0000-000000000003}"
 	ProjectSection(ProjectDependencies) = postProject
-		{00000000-0000-0000-0000-000000000003} = {00000000-0000-0000-0000-000000000003}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test", "./test/test.vcproj", "{00000000-0000-0000-0000-000000000001}"
 	ProjectSection(ProjectDependencies) = postProject
 		{00000000-0000-0000-0000-000000000002} = {00000000-0000-0000-0000-000000000002}
+		{00000000-0000-0000-0000-000000000003} = {00000000-0000-0000-0000-000000000003}
 	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		release|Win32 = release|Win32
-EndGlobalSection
+	EndGlobalSection
+EndGlobal

@@ -12,4 +12,5 @@ EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		release|Win32 = release|Win32
-EndGlobalSection
+	EndGlobalSection
+EndGlobal

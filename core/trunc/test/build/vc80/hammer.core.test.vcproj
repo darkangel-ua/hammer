@@ -272,6 +272,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\src\options.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\parser_and_cr_tests.cpp"
 				>
 			</File>
@@ -339,6 +343,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\build\jcfParser.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\options.h"
 				>
 			</File>
 			<File

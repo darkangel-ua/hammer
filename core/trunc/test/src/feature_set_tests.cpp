@@ -69,7 +69,6 @@ namespace
    }; 
 }
 
-/*
 BOOST_FIXTURE_TEST_CASE(join_free, enviroment)
 {
    feature_set* f = fr_.make_set();
@@ -102,4 +101,3 @@ BOOST_FIXTURE_TEST_CASE(simple_composite, enviroment)
    f->join("variant", "debug");
    BOOST_REQUIRE_EQUAL(f->size(), 3);
 }
-*/

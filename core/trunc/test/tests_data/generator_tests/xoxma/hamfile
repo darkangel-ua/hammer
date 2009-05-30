@@ -1,3 +1,5 @@
+# options: skip
+
 lib a : a.cpp ;
 lib b : a/<link>static b.cpp ;
 exe xoxma : main.cpp a b ;

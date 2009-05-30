@@ -25,6 +25,6 @@ attribute[void* t]
         
 type[void* t]   : ^(TYPE_ATTR ID) { check_type(PARSER->super, t, $ID.text->chars); };   
 features[void* t, void* f] : ^(FEATURES_ATTR feature[t, f]+);
-feature[void* t, void* f]  : ^(FEATURE name=ID value=ID) { check_feature(PARSER->super, t, f, $name.text->chars, $value.text->chars); }
+feature[void* t, void* f]  : ^(FEATURE name=ID value=ID) { check_feature(PARSER->super, t, f, $name->getToken($name), $value->getToken($value)); }
                            | ^(NOT_FEATURE name=ID value=ID) { check_not_feature(PARSER->super, t, f, $name.text->chars, $value.text->chars); };
 location[void* t] : ^(LOCATION ID) { check_location(t, $ID.text->chars); };

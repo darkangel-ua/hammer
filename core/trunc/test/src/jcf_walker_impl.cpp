@@ -85,8 +85,10 @@ void* get_features(void* t)
    return const_cast<feature_set*>(&bt->properties());
 }
 
-void check_feature(void* e, void* t, void* features, const char* name, const char* value)
+void check_feature(void* e, void* t, void* features, const pANTLR3_COMMON_TOKEN name_token, const pANTLR3_COMMON_TOKEN value_token)
 {
+   const char* name = reinterpret_cast<const char*>(name_token->getText(name_token)->chars);
+   const char* value = reinterpret_cast<const char*>(name_token->getText(value_token)->chars);
    const feature_set* fs = static_cast<const feature_set*>(features);
    const basic_target* bt = static_cast<const basic_target*>(t);
    engine* eng = static_cast<engine*>(e);
@@ -108,15 +110,17 @@ void check_feature(void* e, void* t, void* features, const char* name, const cha
       location_t expected_path(value);
       expected_path.normalize();
       if (p != expected_path)      
-         cout << "checker(0): error: Expected feature '" << name << "' with value '" << value << "' but found value '" << p << "'.\n";
+         cout << name_token->input->fileName->chars << "(" << name_token->line << "): error: "
+                 "Expected feature '" << name << "' with value '" << value << "' but found value '" << p << "'.\n";
 
       return;
    }
 
    if (!fs->find(name, value))
    {
-      cout << "checker(0): error: Expected feature '" << name << "' with value '" << value 
-           << "' for target '" << bt->get_main_target()->location() << "\\\\" << bt->name() << "' not found.\n";
+      cout << name_token->input->fileName->chars << "(" << name_token->line << "): error: "
+              "Expected feature '" << name << "' with value '" << value <<
+              "' for target '" << bt->get_main_target()->location() << "\\\\" << bt->name() << "' not found.\n";
       return;
    }
 } 

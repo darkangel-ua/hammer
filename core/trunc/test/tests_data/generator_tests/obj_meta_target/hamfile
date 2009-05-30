@@ -1,4 +1,4 @@
 lib a : a.cpp : : : <define>USE_A_LIB ;
 obj c-files : test.c a : <cxxflags>/TP ;
 lib lib1 : lib1.cpp c-files ;
-exe test : main.cpp lib1/<link>static ;
+exe test : main.cpp lib1/<link>static a ;

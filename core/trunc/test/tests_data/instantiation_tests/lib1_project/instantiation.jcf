@@ -1,4 +1,4 @@
-a [ type = SHARED_LIB; features = <define>NDEBUG=1; ]
+test [ type = SHARED_LIB; features = <define>NDEBUG=1; ]
 {
    test.cpp [ type = CPP; features = <define>NDEBUG=1; ] {}
 }

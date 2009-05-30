@@ -1,6 +1,11 @@
 #include "stdafx.h"
-#include "enviroment.h"
-#include "jcf_parser.h"
+#include <set>
+#include <algorithm>
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/convenience.hpp>
+#include <boost/filesystem/fstream.hpp>
+#include <boost/guid.hpp>
+#include <boost/bind.hpp>
 #include <hammer/core/engine.h>
 #include <hammer/core/feature_registry.h>
 #include <hammer/core/feature_set.h>
@@ -8,16 +13,14 @@
 #include <hammer/core/basic_target.h>
 #include <hammer/core/project_generators/msvc_solution.h>
 #include <hammer/core/fs_helpers.h>
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/convenience.hpp>
-#include <boost/filesystem/fstream.hpp>
-#include <boost/guid.hpp>
-#include <set>
-#include <algorithm>
+#include "enviroment.h"
+#include "jcf_parser.h"
+#include "options.h"
 
 using namespace hammer;
 using namespace hammer::project_generators;
 using namespace std;
+using namespace boost::unit_test;
 namespace fs = boost::filesystem;
 
 static void compare_files(const fs::path& lhs, const fs::path& rhs, const fs::path& test_root)
@@ -169,16 +172,10 @@ struct generator_tests : setuped_engine
 
    }
 
-   void load()
+   void check_msvc_solution(const fs::path& test_data_path)
    {
-      BOOST_REQUIRE_NO_THROW(p_ = &engine_.load_project(test_data_path / fs::path("generator_tests") / test_name_));
-      BOOST_REQUIRE(p_);
-   } 
- 
-   void check_msvc_solution()
-   {
-      fs::path etalon_files_path(test_data_path / "generator_tests" / test_name_ / "hammer_etalon");
-      fs::path generated_files_path(test_data_path / "generator_tests" / test_name_);
+      fs::path etalon_files_path(test_data_path  / "hammer_etalon");
+      fs::path generated_files_path(test_data_path );
       fs::recursive_directory_iterator i_etalon_files(etalon_files_path);
       fs::recursive_directory_iterator i_generated_files(generated_files_path);
       set<fs::path> etalon_files, generated_files;
@@ -256,23 +253,22 @@ struct generator_tests : setuped_engine
       }
    }
 
-   void check()
+   void check(const fs::path& test_data_path)
    {
       BOOST_CHECK_NO_THROW(msvc_solution_->write());
-      check_msvc_solution();
-//      BOOST_CHECK(checker_.walk(gtargets_, &engine_));
+      check_msvc_solution(test_data_path);
    }
 
-   void instantiate(const char* target_name)
+   void instantiate(const fs::path& test_data_path, const char* target_name)
    {
       feature_set* build_request = engine_.feature_registry().make_set();
       build_request->join("variant", "release");
       build_request->join("toolset", "msvc");
       p_->instantiate(target_name, *build_request, &itargets_);
 
-      if (exists(test_data_path / "generator_tests" / test_name_ / "check.jcf"))
+      if (exists(test_data_path / "check.jcf"))
       {
-         BOOST_REQUIRE(checker_.parse(test_data_path / "generator_tests" / test_name_ / "check.jcf"));
+         BOOST_REQUIRE(checker_.parse(test_data_path / "check.jcf"));
          BOOST_CHECK(checker_.walk(itargets_, &engine_));
       }
    }
@@ -292,9 +288,9 @@ struct generator_tests : setuped_engine
       std::sort(nodes.begin(), nodes.end(), &less_node);
    }
 
-   void run_generators(msvc_solution::generation_mode::value mode = msvc_solution::generation_mode::NON_LOCAL)
+   void run_generators(const fs::path& test_data_path, msvc_solution::generation_mode::value mode = msvc_solution::generation_mode::NON_LOCAL)
    {
-      msvc_solution_.reset(new test_msvc_solution(*p_, test_data_path / "generator_tests" / test_name_ / generators_output_dir_name_, mode));
+      msvc_solution_.reset(new test_msvc_solution(*p_, test_data_path / generators_output_dir_name_, mode));
       for(vector<basic_target*>::iterator i = itargets_.begin(), last = itargets_.end(); i != last; ++i)
       {
          std::vector<boost::intrusive_ptr<build_node> > r((**i).generate());
@@ -306,7 +302,27 @@ struct generator_tests : setuped_engine
          nodes_.insert(nodes_.end(), r.begin(), r.end());
       }
    }
-  
+
+   void run_test(const fs::path& test_data_path)
+   {
+      msvc_solution::generation_mode::value mode = msvc_solution::generation_mode::NON_LOCAL;
+      options opts(test_data_path / "hamfile");
+      if (opts.exists("skip"))
+         return;
+     
+      if (opts.exists("output_dir"))
+         generators_output_dir_name_ = opts["output_dir"];
+
+      if (opts.exists("local"))
+         mode = msvc_solution::generation_mode::LOCAL;   
+
+      BOOST_REQUIRE_NO_THROW(p_ = &engine_.load_project(test_data_path));
+      BOOST_REQUIRE(p_);
+      BOOST_REQUIRE_NO_THROW(instantiate(test_data_path, "test"));
+      BOOST_REQUIRE_NO_THROW(run_generators(test_data_path, mode));
+      check(test_data_path);
+   }
+
    jcf_parser checker_;
    auto_ptr<test_msvc_solution> msvc_solution_;
    const project* p_;
@@ -316,122 +332,18 @@ struct generator_tests : setuped_engine
    location_t generators_output_dir_name_;
 };
 
-/*
-BOOST_FIXTURE_TEST_CASE(g_simple_exe, generator_tests)
+static void test_function(const fs::path& test_data_path)
 {
-   test_name_ = "simple_exe";
-   load();
-   BOOST_REQUIRE_NO_THROW(instantiate("test"));
-   BOOST_REQUIRE_NO_THROW(run_generators());
-   check();
+   generator_tests tests;
+   tests.run_test(test_data_path);
 }
 
-BOOST_FIXTURE_TEST_CASE(path_features, generator_tests)
+void init_generators_tests(const fs::path& test_data_path)
 {
-   test_name_ = "path_features";
-   load();
-   BOOST_REQUIRE_NO_THROW(instantiate("test"));
-   BOOST_REQUIRE_NO_THROW(run_generators());
-   check();
-}
+   test_suite* ts = BOOST_TEST_SUITE("generators");
+   for(fs::directory_iterator i(test_data_path / "generator_tests"); i != fs::directory_iterator(); ++i)
+      if (i->path().filename() != ".svn")
+         ts->add(make_test_case(boost::bind(&test_function, i->path()), i->path().filename()));
 
-BOOST_FIXTURE_TEST_CASE(pch, generator_tests)
-{
-   test_name_ = "pch";
-   load();
-   BOOST_REQUIRE_NO_THROW(instantiate("test"));
-   BOOST_REQUIRE_NO_THROW(run_generators(msvc_solution::generation_mode::NON_LOCAL));
-   check();
+   framework::master_test_suite().add(ts);
 }
-
-BOOST_FIXTURE_TEST_CASE(prebuilt_libs, generator_tests)
-{
-   test_name_ = "prebuilt_libs";
-   load();
-   BOOST_REQUIRE_NO_THROW(instantiate("test"));
-   BOOST_REQUIRE_NO_THROW(run_generators());
-   check();
-}
-
-BOOST_FIXTURE_TEST_CASE(composite_features, generator_tests)
-{
-   test_name_ = "composite_features";
-   load();
-   BOOST_REQUIRE_NO_THROW(instantiate("test"));
-   BOOST_REQUIRE_NO_THROW(run_generators());
-   check();
-}
-
-BOOST_FIXTURE_TEST_CASE(cpp_libs, generator_tests)
-{
-   test_name_ = "cpp_libs";
-   load();
-   BOOST_REQUIRE_NO_THROW(instantiate("test"));
-   BOOST_REQUIRE_NO_THROW(run_generators());
-   check();
-}
-
-BOOST_FIXTURE_TEST_CASE(g_header_lib, generator_tests)
-{
-   test_name_ = "header_lib";
-   load();
-   BOOST_REQUIRE_NO_THROW(instantiate("test"));
-   BOOST_REQUIRE_NO_THROW(run_generators());
-   check();
-}
-
-BOOST_FIXTURE_TEST_CASE(user_dir_generation, generator_tests)
-{
-   test_name_ = "user_dir_generation";
-   generators_output_dir_name_ = "user_dir";
-   load();
-   BOOST_REQUIRE_NO_THROW(instantiate("test"));
-   BOOST_REQUIRE_NO_THROW(run_generators());
-   check();
-}
-
-BOOST_FIXTURE_TEST_CASE(non_local_generation, generator_tests)
-{
-   test_name_ = "non_local_generation";
-   load();
-   BOOST_REQUIRE_NO_THROW(instantiate("test"));
-   BOOST_REQUIRE_NO_THROW(run_generators(msvc_solution::generation_mode::NON_LOCAL));
-   check();
-}
-
-BOOST_FIXTURE_TEST_CASE(obj_meta_target, generator_tests)
-{
-   test_name_ = "obj_meta_target";
-   load();
-   BOOST_REQUIRE_NO_THROW(instantiate("test"));
-   BOOST_REQUIRE_NO_THROW(run_generators());
-   check();
-}
-
-BOOST_FIXTURE_TEST_CASE(local_generation, generator_tests)
-{
-   test_name_ = "local_generation";
-   load();
-   BOOST_REQUIRE_NO_THROW(instantiate("test"));
-   BOOST_REQUIRE_NO_THROW(run_generators(msvc_solution::generation_mode::LOCAL));
-   check();
-}
-
-BOOST_FIXTURE_TEST_CASE(exe_and_static_lib, generator_tests)
-{
-   test_name_ = "exe_and_static_lib";
-   load();
-   BOOST_REQUIRE_NO_THROW(instantiate("test"));
-   BOOST_REQUIRE_NO_THROW(run_generators());
-   check();
-}
-
-BOOST_FIXTURE_TEST_CASE(copy_target, generator_tests)
-{
-   test_name_ = "copy_target";
-   load();
-   BOOST_REQUIRE_NO_THROW(instantiate("test"));
-   BOOST_REQUIRE_NO_THROW(run_generators());
-   check();
-}
-*/

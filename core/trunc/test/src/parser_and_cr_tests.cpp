@@ -15,7 +15,10 @@ using namespace std;
 namespace fs = boost::filesystem;
 using namespace hammer;
 
-boost::unit_test::test_suite*            
+void init_instantiation_tests(const fs::path& test_data_root);
+void init_generators_tests(const fs::path& test_data_path);
+
+boost::unit_test::test_suite*
 init_unit_test_suite( int argc, char* argv[] )
 {
    if (argc < 2)
@@ -23,6 +26,11 @@ init_unit_test_suite( int argc, char* argv[] )
        
    test_data_path = fs::path(argv[1]); 
 
+   // Because we have massive memleaks we disable leak reporting until we resolve memleaks
+   _CrtSetDbgFlag(_CrtSetDbgFlag( _CRTDBG_REPORT_FLAG ) & ~_CRTDBG_LEAK_CHECK_DF);
+   
+   init_instantiation_tests(test_data_path);
+   init_generators_tests(test_data_path);
    return 0;            
 }                             
 

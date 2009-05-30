@@ -6,13 +6,13 @@
    ProjectGUID="{00000000-0000-0000-0000-000000000001}"
    RootNamespace="test"
    Keyword="Win32Proj">
-	<Platforms>
+       <Platforms>
        <Platform Name="Win32"/>
    </Platforms>
    <ToolFiles/>
    <Configurations>
       <Configuration
-         Name="release-be1ea987216fc9c0caf4a6e8da6c86ce|Win32"
+         Name="release-9593abc2b926c3c61e244022c7700a68|Win32"
          OutputDirectory="$(SolutionDir)release"
          IntermediateDirectory="$(ConfigurationName)"
          ConfigurationType="1"
@@ -34,7 +34,7 @@
          />
          <Tool
             Name="VCLinkerTool"
-            AdditionalDependencies=""
+            AdditionalDependencies=' '
             AdditionalLibraryDirectories=""
             GenerateDebugInformation="false"
             LinkIncremental="1"

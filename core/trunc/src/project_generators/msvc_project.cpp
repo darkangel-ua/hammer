@@ -60,29 +60,6 @@ namespace
       private:
          location_t project_output_dir_;
    };
-
-   class searched_lib_argument_writer : public source_argument_writer
-   {
-      public:
-         searched_lib_argument_writer(const std::string& name, 
-                                      const target_type& static_lib_type, 
-                                      const target_type& searched_lib_type) 
-            : source_argument_writer(name, static_lib_type, true),
-              static_lib_type_(static_lib_type),
-              searched_lib_type_(searched_lib_type)
-         {}
-
-      protected:
-         virtual bool accept(const basic_target& source) const
-         {
-            return source.type().equal_or_derived_from(this->source_type()) &&
-                   source.get_main_target()->type().equal_or_derived_from(searched_lib_type_);
-         }
-      
-      private:
-         const target_type& static_lib_type_;
-         const target_type& searched_lib_type_;
-   };
 }
 
 static const string configuration_option_format_string(
@@ -202,12 +179,16 @@ msvc_project::msvc_project(engine& e,
    // linker options
    boost::shared_ptr<source_argument_writer> additional_libraries(
        new source_argument_writer("additional_libraries", 
-                                  e.get_type_registry().get(types::PREBUILT_STATIC_LIB), true, true));
+                                  e.get_type_registry().get(types::PREBUILT_STATIC_LIB), 
+                                  true,
+                                  source_argument_writer::RELATIVE_TO_WORKING_DIR));
    linker_options_ += additional_libraries;
 
    boost::shared_ptr<source_argument_writer> additional_searched_libraries(
        new source_argument_writer("additional_searched_libraries", 
-                                  e.get_type_registry().get(types::SEARCHED_LIB), false));
+                                  e.get_type_registry().get(types::SEARCHED_STATIC_LIB),
+                                  true, 
+                                  source_argument_writer::WITHOUT_PATH));
    linker_options_ += additional_searched_libraries;
 
    boost::shared_ptr<free_feature_arg_writer> additional_libraries_dirs(

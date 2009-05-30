@@ -11,12 +11,12 @@ namespace hammer{
 source_argument_writer::source_argument_writer(const std::string& name, 
                                                const target_type& t,
                                                bool exact_type,
-                                               bool write_full_path,
+                                               output_strategy os,
                                                const std::string& quoting_string,
                                                const std::string& prefix)
    : targets_argument_writer(name, t), 
      exact_type_(exact_type),
-     write_full_path_(write_full_path),
+     output_strategy_(os),
      quoting_string_(quoting_string),
      prefix_(prefix)
 {
@@ -47,18 +47,43 @@ void source_argument_writer::write_impl(std::ostream& output, const build_node& 
          else
             first = false;
 
-         if (write_full_path_)
+         switch(output_strategy_)
          {
-            location_t source_path = i->source_target_->location() / i->source_target_->name().to_string();
-            source_path.normalize();
-            output << quoting_string_ << prefix_ << source_path.native_file_string() << quoting_string_; 
-         }
-         else
-         {
-            location_t source_path = relative_path(i->source_target_->location(), i->source_target_->get_main_target()->location());
-            source_path.normalize();
-            source_path /= i->source_target_->name().to_string();
-            output << quoting_string_ << prefix_ << source_path.native_file_string() << quoting_string_;
+            case RELATIVE_TO_MAIN_TARGET:
+            {
+               location_t source_path = relative_path(i->source_target_->location(), i->source_target_->get_main_target()->location());
+               source_path /= i->source_target_->name().to_string();
+               source_path.normalize();
+               output << quoting_string_ << prefix_ << source_path.native_file_string() << quoting_string_;
+               break;
+            }
+
+            case FULL_PATH:
+            {
+               location_t source_path = i->source_target_->location() / i->source_target_->name().to_string();
+               source_path.normalize();
+               output << quoting_string_ << prefix_ << source_path.native_file_string() << quoting_string_; 
+               break;
+            }
+
+            case RELATIVE_TO_WORKING_DIR:
+            {
+               location_t source_path = relative_path(i->source_target_->location(), environment.working_directory(*i->source_target_));
+               source_path /= i->source_target_->name().to_string();
+               source_path.normalize();
+               output << quoting_string_ << prefix_ << source_path.native_file_string() << quoting_string_;
+               break;
+            }
+
+            case WITHOUT_PATH:
+            {
+               location_t source_path(i->source_target_->name().to_string());
+               output << quoting_string_ << prefix_ << source_path.native_file_string() << quoting_string_;
+               break;
+            }
+
+            default:
+               throw std::runtime_error("Unknown output strategy");
          }
       }
    }

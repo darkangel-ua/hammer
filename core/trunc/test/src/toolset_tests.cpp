@@ -76,6 +76,11 @@ namespace{
             return run_shell_commands(cmds, working_dir);
          }
 
+         virtual bool run_shell_commands(std::ostream& captured_output_stream, const std::vector<std::string>& cmds, const location_t& working_dir) const
+         {
+            return run_shell_commands(cmds, working_dir);
+         }
+
          virtual const location_t& current_directory() const
          {
             return current_directory_;
@@ -122,7 +127,13 @@ namespace{
             return NULL;
          }
          
+         virtual std::ostream& output_stream() const
+         {
+            return null_output_;
+         }
+
       private:
+         mutable std::stringstream null_output_;
          ostream& output_;
          location_t current_directory_;
    };

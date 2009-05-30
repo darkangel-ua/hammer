@@ -6,52 +6,48 @@
    ProjectGUID="{00000000-0000-0000-0000-000000000001}"
    RootNamespace="test"
    Keyword="Win32Proj">
-	<Platforms>
+       <Platforms>
        <Platform Name="Win32"/>
    </Platforms>
    <ToolFiles/>
    <Configurations>
       <Configuration
-         Name="release|Win32"
-         OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+         Name="release-1b54e8dcdee70a34ba77afa968140e4d|Win32"
+         OutputDirectory="$(SolutionDir)release"
          IntermediateDirectory="$(ConfigurationName)"
          ConfigurationType="1"
-         CharacterSet="2 ">
+         CharacterSet="">
          <Tool
             Name="VCCLCompilerTool"
-            Optimization="2 "
-            InlineFunctionExpansion="2 "
-            AdditionalIncludeDirectories="..\..\..\lib1;"
-            DebugInformationFormat="0 "
-            WarningLevel=""
+            Optimization="2"
+            InlineFunctionExpansion="2"
+            AdditionalIncludeDirectories="..\..\..\lib1\.;"
+            DebugInformationFormat="0"
+            WarningLevel="3"
             PreprocessorDefinitions="NDEBUG;"
-            ExceptionHandling="1 "
-            RuntimeLibrary="2 "
-            RuntimeTypeInfo="true "
+            ExceptionHandling="1"
+            RuntimeLibrary="2"
+            RuntimeTypeInfo="true"
             AdditionalOptions=""
-            UsePrecompiledHeader="0 "
+            UsePrecompiledHeader="0"
             PrecompiledHeaderThrough=""
          />
          <Tool
             Name="VCLinkerTool"
-            AdditionalDependencies=""
+            AdditionalDependencies=' '
             AdditionalLibraryDirectories=""
+            GenerateDebugInformation="false"
+            LinkIncremental="1"
          />
       </Configuration>
    </Configurations>
       <Files>
          <Filter
             Name="Source Files"
-            Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
             UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
          <File
             RelativePath="..\..\..\main.cpp">
          </File>
-         </Filter>
-         <Filter
-            Name="Header Files"
-            Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
-            UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
          </Filter>
       </Files>
 </VisualStudioProject>

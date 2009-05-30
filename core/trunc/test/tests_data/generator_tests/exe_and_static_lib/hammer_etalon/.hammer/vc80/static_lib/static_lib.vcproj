@@ -6,13 +6,13 @@
    ProjectGUID="{00000000-0000-0000-0000-000000000002}"
    RootNamespace="static_lib"
    Keyword="Win32Proj">
-	<Platforms>
+       <Platforms>
        <Platform Name="Win32"/>
    </Platforms>
    <ToolFiles/>
    <Configurations>
       <Configuration
-         Name="release-6b6c745423edb7ce9b875a2ce72b5524|Win32"
+         Name="release-28df37cc6bbb15bcc109c3bbb77631ef|Win32"
          OutputDirectory="$(SolutionDir)release"
          IntermediateDirectory="$(ConfigurationName)"
          ConfigurationType="4"

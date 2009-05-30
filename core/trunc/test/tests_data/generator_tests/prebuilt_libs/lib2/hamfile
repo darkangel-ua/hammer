@@ -1,1 +1,1 @@
-lib lib2 : : <file>lib2.lib ;
+prebuilt-lib lib2 : : lib2.lib ;

@@ -178,6 +178,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\build_environment.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\build_environment_impl.cpp"
 				>
 			</File>
@@ -836,11 +840,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\hammer\core\hammer_lexer_context.h"
+				RelativePath="..\..\src\hammer_lexer_context.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\hammer_lexer_context.h"
+				RelativePath="..\..\include\hammer\core\hammer_lexer_context.h"
 				>
 			</File>
 			<File
@@ -856,11 +860,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\hammer_walker_impl.h"
+				RelativePath="..\..\include\hammer\core\hammer_walker_impl.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\hammer\core\hammer_walker_impl.h"
+				RelativePath="..\..\src\hammer_walker_impl.h"
 				>
 			</File>
 			<File
@@ -924,11 +928,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\non_buffered_token_stream.h"
+				RelativePath="..\..\include\hammer\core\non_buffered_token_stream.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\hammer\core\non_buffered_token_stream.h"
+				RelativePath="..\..\src\non_buffered_token_stream.h"
 				>
 			</File>
 			<File
@@ -1064,11 +1068,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\stdafx.h"
+				RelativePath="..\..\include\hammer\core\stdafx.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\hammer\core\stdafx.h"
+				RelativePath="..\..\src\stdafx.h"
 				>
 			</File>
 			<File

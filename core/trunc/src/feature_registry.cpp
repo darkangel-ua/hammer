@@ -361,6 +361,9 @@ namespace hammer{
 
    feature* feature_registry::create_feature(const std::string& name, const std::string& value)
    {
+      if (name.empty())
+         throw std::runtime_error("Can't create feature without name");
+
       const feature_def* posible_feature = find_def(name.c_str());
 
       if (posible_feature != NULL && 

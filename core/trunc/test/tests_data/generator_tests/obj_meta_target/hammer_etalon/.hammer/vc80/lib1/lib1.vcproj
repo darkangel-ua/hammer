@@ -3,33 +3,33 @@
    ProjectType="Visual C++"
    Version="8,00"
    Name="lib1"
-   ProjectGUID="{00000000-0000-0000-0000-000000000002}"
+   ProjectGUID="{00000000-0000-0000-0000-000000000003}"
    RootNamespace="lib1"
    Keyword="Win32Proj">
-	<Platforms>
+       <Platforms>
        <Platform Name="Win32"/>
    </Platforms>
    <ToolFiles/>
    <Configurations>
       <Configuration
-         Name="release|Win32"
-         OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+         Name="release-081daeee2850a62dbd976e01bbebe2e3|Win32"
+         OutputDirectory="$(SolutionDir)release"
          IntermediateDirectory="$(ConfigurationName)"
          ConfigurationType="4"
-         CharacterSet="2 ">
+         CharacterSet="">
          <Tool
             Name="VCCLCompilerTool"
-            Optimization="2 "
-            InlineFunctionExpansion="2 "
+            Optimization="2"
+            InlineFunctionExpansion="2"
             AdditionalIncludeDirectories=""
-            DebugInformationFormat="0 "
-            WarningLevel=""
+            DebugInformationFormat="0"
+            WarningLevel="3"
             PreprocessorDefinitions="NDEBUG;"
-            ExceptionHandling="1 "
-            RuntimeLibrary="2 "
-            RuntimeTypeInfo="true "
+            ExceptionHandling="1"
+            RuntimeLibrary="2"
+            RuntimeTypeInfo="true"
             AdditionalOptions=""
-            UsePrecompiledHeader="0 "
+            UsePrecompiledHeader="0"
             PrecompiledHeaderThrough=""
          />
       </Configuration>
@@ -37,7 +37,6 @@
       <Files>
          <Filter
             Name="Source Files"
-            Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
             UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
          <File
             RelativePath="..\..\..\lib1.cpp">
@@ -45,29 +44,24 @@
          <File
             RelativePath="..\..\..\test.c">
               <FileConfiguration
-                   Name="release">
+                   Name="release-081daeee2850a62dbd976e01bbebe2e3">
          <Tool
             Name="VCCLCompilerTool"
-            Optimization="2 "
-            InlineFunctionExpansion="2 "
+            Optimization="2"
+            InlineFunctionExpansion="2"
             AdditionalIncludeDirectories=""
-            DebugInformationFormat="0 "
-            WarningLevel=""
+            DebugInformationFormat="0"
+            WarningLevel="3"
             PreprocessorDefinitions="NDEBUG;USE_A_LIB;"
-            ExceptionHandling="1 "
-            RuntimeLibrary="2 "
-            RuntimeTypeInfo="true "
+            ExceptionHandling="1"
+            RuntimeLibrary="2"
+            RuntimeTypeInfo="true"
             AdditionalOptions="/TP "
-            UsePrecompiledHeader="0 "
+            UsePrecompiledHeader="0"
             PrecompiledHeaderThrough=""
          />
               </FileConfiguration>
          </File>
-         </Filter>
-         <Filter
-            Name="Header Files"
-            Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
-            UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
          </Filter>
       </Files>
 </VisualStudioProject>

@@ -1,2 +1,3 @@
+# options: skip
 exe test_exe : main.cpp ;
 copy test : test_exe : <type-to-copy>EXE <destination>./ ;

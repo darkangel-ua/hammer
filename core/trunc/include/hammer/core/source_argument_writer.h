@@ -10,10 +10,12 @@ namespace hammer
    class source_argument_writer : public targets_argument_writer
    {
       public:
+         enum output_strategy{RELATIVE_TO_MAIN_TARGET, FULL_PATH, RELATIVE_TO_WORKING_DIR, WITHOUT_PATH};
+
          source_argument_writer(const std::string& name, 
                                 const target_type& t,
                                 bool exact_type = true,
-                                bool write_full_path = false,
+                                output_strategy os = RELATIVE_TO_MAIN_TARGET,
                                 const std::string& quoting_string = "\"",
                                 const std::string& prefix = std::string());
          virtual argument_writer* clone() const;
@@ -26,7 +28,7 @@ namespace hammer
 
       private:
          bool exact_type_;
-         bool write_full_path_;
+         output_strategy output_strategy_;
          std::string quoting_string_;
          std::string prefix_;
    };

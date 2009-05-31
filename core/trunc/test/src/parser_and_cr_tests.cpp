@@ -24,7 +24,14 @@ init_unit_test_suite( int argc, char* argv[] )
    if (argc < 2)
       throw runtime_error("Need test data directory path");
        
+   
    test_data_path = fs::path(argv[1]); 
+   if (!test_data_path.has_root_path())
+   {
+      test_data_path = fs::current_path() / test_data_path;
+      test_data_path.normalize();
+   }
+
 
    // Because we have massive memleaks we disable leak reporting until we resolve memleaks
    _CrtSetDbgFlag(_CrtSetDbgFlag( _CRTDBG_REPORT_FLAG ) & ~_CRTDBG_LEAK_CHECK_DF);

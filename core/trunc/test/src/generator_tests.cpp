@@ -318,8 +318,8 @@ struct generator_tests : setuped_engine
 
       BOOST_REQUIRE_NO_THROW(p_ = &engine_.load_project(test_data_path));
       BOOST_REQUIRE(p_);
-      BOOST_REQUIRE_NO_THROW(instantiate(test_data_path, "test"));
-      BOOST_REQUIRE_NO_THROW(run_generators(test_data_path, mode));
+      instantiate(test_data_path, "test");
+      run_generators(test_data_path, mode);
       check(test_data_path);
    }
 

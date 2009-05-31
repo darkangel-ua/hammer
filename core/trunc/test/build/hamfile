@@ -15,8 +15,7 @@ obj without_pch
    ;
 explicit without_pch ;
 
-exe hammer.core.test
-   :
+testing.run
     pch
     [ glob ../src/*.cpp : stdafx.cpp ]
     [ glob ../src/*.h : stdafx.h ]
@@ -27,6 +26,12 @@ exe hammer.core.test
     /boost/regex/<version>1.36.0
     /libantlr3c/<version>3.1.1
     /boost/sandbox/process
+    /boost/spirit/<version>1.36.0
+   :
+   :
+    ../tests_data/.
    :
     <use>/boost/test//utf/<version>1.36.0/<link>static
+   :
+    hammer.core
    ;

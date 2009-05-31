@@ -2,6 +2,7 @@
 #include <hammer/core/feature.h>
 #include <hammer/core/subfeature.h>
 #include <algorithm>
+#include <stdexcept>
 
 using namespace std;
 

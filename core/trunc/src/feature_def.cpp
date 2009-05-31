@@ -1,9 +1,10 @@
 #include "stdafx.h"
-#include <hammer/core/feature_def.h>
 #include <algorithm>
 #include <cassert>
+#include <stdexcept>
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature.h>
+#include <hammer/core/feature_def.h>
 
 using namespace std;
 

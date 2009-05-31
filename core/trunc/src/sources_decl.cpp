@@ -1,8 +1,9 @@
 #include "stdafx.h"
+#include <vector>
+#include <stdexcept>
 #include <hammer/core/sources_decl.h>
 #include <hammer/core/feature_set.h>
 
-#include <vector>
 
 namespace hammer{
 
@@ -102,7 +103,7 @@ void sources_decl::insert(const std::vector<pstring>& v, const type_registry& tr
 {
    clone_if_needed();
    for(std::vector<pstring>::const_iterator i = v.begin(), last = v.end(); i != last; ++i)
-	   push_back(*i, tr);
+           push_back(*i, tr);
 }
 
 void sources_decl::add_to_source_properties(const feature_set& props)

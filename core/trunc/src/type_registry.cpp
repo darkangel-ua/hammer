@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <stdexcept>
 #include <hammer/core/type_registry.h>
 #include <hammer/core/target_type.h>
 #include <hammer/core/types.h>

@@ -1,7 +1,9 @@
 #if !defined(h_f71a8e70_7a12_4435_b9cc_ced1d1f88ee7)
 #define h_f71a8e70_7a12_4435_b9cc_ced1d1f88ee7
 
+#if defined(_WIN32)
 #pragma warning(disable : 4996)
+#endif
 
 #define _WIN32_WINNT 0x0501
 

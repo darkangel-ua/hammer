@@ -2,6 +2,7 @@
 #define h_9689707e_e6c1_4154_9276_3693b32bc777
 
 #include <vector>
+#include <string>
 #include <boost/noncopyable.hpp>
 
 namespace hammer

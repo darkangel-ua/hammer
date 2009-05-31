@@ -1,6 +1,9 @@
 #include "stdafx.h"
 #include "get_data_path.h"
+
+#if defined(_WIN32)
 #include <Windows.h>
+#endif
 
 namespace fs = boost::filesystem;
 

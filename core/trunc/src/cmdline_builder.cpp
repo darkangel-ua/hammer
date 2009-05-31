@@ -1,8 +1,9 @@
 #include "stdafx.h"
-#include <hammer/core/cmdline_builder.h>
+#include <stdexcept>
 #include <boost/range/iterator_range.hpp>
 #include <boost/spirit/core.hpp>
 #include <boost/spirit/utility/lists.hpp>
+#include <hammer/core/cmdline_builder.h>
 
 using namespace std;
 

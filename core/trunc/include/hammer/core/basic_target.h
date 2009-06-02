@@ -41,7 +41,7 @@ namespace hammer
          engine* get_engine() const;
          
          virtual build_nodes_t generate() = 0;
-         const timestamp_info_t& timestamp_info(timestamp_info_t::getter_policy_t how_to_get = timestamp_info_t::just_get) const;
+         const timestamp_info_t& timestamp_info() const;
 
          virtual const location_t& location() const;
 

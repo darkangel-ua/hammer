@@ -234,7 +234,8 @@ builder::result builder::impl_t::build(nodes_t& nodes)
    // gather information about all nodes needed to be built
    nodes_to_build_t nodes_to_build;
    for(nodes_t::const_iterator i = nodes.begin(), last = nodes.end(); i != last; ++i)
-      gather_nodes(nodes_to_build, **i);
+      if (!(**i).up_to_date())
+         gather_nodes(nodes_to_build, **i);
 
    // make build queue
    build_queue_t build_queue;

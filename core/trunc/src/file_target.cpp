@@ -19,7 +19,7 @@ void file_target::timestamp_info_impl() const
    if (exists(p))
       timestamp_info_.timestamp_ = boost::posix_time::from_time_t(last_write_time(p));
    else
-      timestamp_info_.timestamp_ = boost::posix_time::ptime(boost::date_time::neg_infin);
+      timestamp_info_.timestamp_ = boost::posix_time::neg_infin;
 }
 
 }

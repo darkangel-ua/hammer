@@ -14,7 +14,7 @@ namespace hammer{
 std::size_t actuality_checker::check(nodes_t& nodes)
 {
    std::size_t result = 0;
-   ptime max_node_time;
+   ptime max_node_time(neg_infin);
    for(nodes_t::const_iterator i = nodes.begin(), last = nodes.end(); i != last; ++i)
       check(max_node_time, result, **i);
 
@@ -88,8 +88,6 @@ bool actuality_checker::check(boost::posix_time::ptime& max_target_time, std::si
    for(build_node::targets_t::const_iterator i = node.products_.begin(), last = node.products_.end(); i != last; ++i)
    {
 	   const timestamp_info_t& time_info = (**i).timestamp_info();
-      if (time_info.is_unknown_)
-         (**i).timestamp_info(timestamp_info_t::recheck);
 
       // product is missing?
       if (time_info.timestamp_ == neg_infin)

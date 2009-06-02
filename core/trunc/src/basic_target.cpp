@@ -8,9 +8,9 @@
 namespace hammer{
 
 const timestamp_info_t& 
-basic_target::timestamp_info(timestamp_info_t::getter_policy_t how_to_get) const
+basic_target::timestamp_info() const
 {
-   if (how_to_get == timestamp_info_t::just_get)
+   if (!timestamp_info_.is_unknown_)
       return timestamp_info_;
    
    timestamp_info_impl();

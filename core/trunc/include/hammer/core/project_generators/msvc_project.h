@@ -38,6 +38,7 @@ namespace hammer
             struct variant
             {
                boost::intrusive_ptr<const build_node> node_;
+               boost::intrusive_ptr<const build_node> real_node_;
                const main_target* target_;
                const feature_set* properties_;
                std::string name_;
@@ -148,10 +149,13 @@ namespace hammer
             const target_type& searched_lib_;
             const target_type& obj_type_;
             const target_type& pch_type_;
+            const target_type& testing_run_passed_type_;
             const target_type& copied_type_;
+            const target_type& exe_type_;
             cmdline_builder configuration_options_;
             cmdline_builder compiller_options_;
             cmdline_builder linker_options_;
+            cmdline_builder post_build_step_;
 
             void fill_filters();
             void write_header(std::ostream& s) const;

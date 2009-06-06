@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include <hammer/core/testing_meta_target.h>
+#include <hammer/core/testing_main_target.h>
 #include <hammer/core/project.h>
 #include <hammer/core/engine.h>
 #include <hammer/core/main_target.h>
@@ -18,16 +19,16 @@ testing_meta_target::testing_meta_target(hammer::project* p,
 
 }
 
-sources_decl testing_meta_target::compute_additional_sources(const main_target& owner) const
+main_target* 
+testing_meta_target::construct_main_target(const main_target* owner, 
+                                           const feature_set* properties) const
 {
-   sources_decl result;
-   for(feature_set::const_iterator i = owner.properties().find("testing.additional-source"), last = owner.properties().end(); i != last;)
-   {
-      result.push_back((**i).get_dependency_data().source_);
-      i = owner.properties().find(i + 1, "testing.additional-source");
-   }
-
-   return result;
+   main_target* mt = new testing_main_target(this, 
+                                             name(), 
+                                             &type(), 
+                                             properties,
+                                             get_engine()->targets_pool());
+   return mt;
 }
 
 }

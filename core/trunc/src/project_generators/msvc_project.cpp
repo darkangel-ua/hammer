@@ -85,6 +85,8 @@ static const string linker_option_format_string(
    "            GenerateDebugInformation=\"$(debug_info)\"\n"
    "            LinkIncremental=\"$(incremental_linking)\"\n");
 
+static const string post_build_step_format_string("$(non_path_args) $(path_args)\"\n");
+
 msvc_project::msvc_project(engine& e, 
                            const location_t& output_dir, 
                            const std::string& solution_configuration_name,
@@ -98,10 +100,13 @@ msvc_project::msvc_project(engine& e,
     searched_lib_(engine_->get_type_registry().get(types::SEARCHED_LIB)),
     obj_type_(engine_->get_type_registry().get(types::OBJ)),
     pch_type_(engine_->get_type_registry().get(types::PCH)),
+    testing_run_passed_type_(engine_->get_type_registry().get(types::TESTING_RUN_PASSED)),
     copied_type_(engine_->get_type_registry().get(types::COPIED)),
+    exe_type_(engine_->get_type_registry().get(types::EXE)),
     configuration_options_(configuration_option_format_string),
     compiller_options_(compiller_option_format_string),
-    linker_options_(linker_option_format_string)
+    linker_options_(linker_option_format_string),
+    post_build_step_(post_build_step_format_string)
 {
    output_dir_.normalize();
    // configuration options
@@ -206,6 +211,17 @@ msvc_project::msvc_project(engine& e,
    incremental_linking->add("<debug-symbols>on", "2").
                         add("<debug-symbols>off", "1");
    linker_options_ += incremental_linking;
+
+   // Post Build Step section
+   boost::shared_ptr<free_feature_arg_writer> path_args(
+       new free_feature_arg_writer("path_args",
+                                   e.feature_registry().get_def("testing.input-file")));
+   post_build_step_ += path_args;
+
+   boost::shared_ptr<free_feature_arg_writer> non_path_args(
+       new free_feature_arg_writer("non_path_args",
+                                   e.feature_registry().get_def("testing.argument")));
+   post_build_step_ += non_path_args;
 }
 
 static std::string make_variant_name(const main_target& mt)
@@ -219,6 +235,16 @@ void msvc_project::add_variant(boost::intrusive_ptr<const build_node> node)
    assert(!node->products_.empty());
    std::auto_ptr<variant> v(new variant);
    variant* naked_variant = v.get();
+
+   // if this testing runner than we actually need exe target that we run in post build step
+   if (*node->targeting_type_ == testing_run_passed_type_)
+   {
+      naked_variant->real_node_ = node;
+      node = node->sources_.front().source_node_;
+   }
+   else
+      naked_variant->real_node_ = node;
+
    const basic_target* t = node->products_[0];
    v->properties_ = &t->properties();
    v->node_ = node;
@@ -291,8 +317,11 @@ configuration_types::value msvc_project::resolve_configuration_type(const varian
    const target_type& shared_lib_type = engine_->get_type_registry().get(types::SHARED_LIB);
    const target_type& header_lib_type = engine_->get_type_registry().get(types::HEADER_LIB);
 
-   if (v.target_->type().equal_or_derived_from(exe_type))
+   if (v.target_->type().equal_or_derived_from(exe_type) ||
+       v.target_->type().equal_or_derived_from(testing_run_passed_type_))
+   {
       return configuration_types::exe;
+   }
    else
       if (v.target_->type().equal_or_derived_from(static_lib_type))
          return configuration_types::static_lib;
@@ -348,6 +377,17 @@ void msvc_project::write_configurations(std::ostream& s) const
             s << "         />\n";
             break;
          }
+      }
+
+      if (i->real_node_->targeting_type_->equal_or_derived_from(testing_run_passed_type_))
+      {
+         s << "         <Tool\n"
+              "            Name=\"VCPostBuildEventTool\"\n"
+           << "            CommandLine=\"$(TargetPath) ";
+
+         post_build_step_.write(s, *i->real_node_, fake_environment(project_output_dir()));
+         
+         s << "         />\n";
       }
 
       s << "      </Configuration>\n";

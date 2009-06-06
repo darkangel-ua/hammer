@@ -630,6 +630,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\testing_intermediate_meta_target.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\testing_main_target.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\testing_meta_target.cpp"
 				>
 			</File>
@@ -840,11 +848,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\hammer_lexer_context.h"
+				RelativePath="..\..\include\hammer\core\hammer_lexer_context.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\hammer\core\hammer_lexer_context.h"
+				RelativePath="..\..\src\hammer_lexer_context.h"
 				>
 			</File>
 			<File
@@ -860,11 +868,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\hammer\core\hammer_walker_impl.h"
+				RelativePath="..\..\src\hammer_walker_impl.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\hammer_walker_impl.h"
+				RelativePath="..\..\include\hammer\core\hammer_walker_impl.h"
 				>
 			</File>
 			<File
@@ -928,11 +936,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\hammer\core\non_buffered_token_stream.h"
+				RelativePath="..\..\src\non_buffered_token_stream.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\non_buffered_token_stream.h"
+				RelativePath="..\..\include\hammer\core\non_buffered_token_stream.h"
 				>
 			</File>
 			<File
@@ -1068,11 +1076,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\hammer\core\stdafx.h"
+				RelativePath="..\..\src\stdafx.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\stdafx.h"
+				RelativePath="..\..\include\hammer\core\stdafx.h"
 				>
 			</File>
 			<File
@@ -1097,6 +1105,10 @@
 			</File>
 			<File
 				RelativePath="..\..\include\hammer\core\testing_generators.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\hammer\core\testing_main_target.h"
 				>
 			</File>
 			<File

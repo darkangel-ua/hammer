@@ -259,12 +259,12 @@ struct generator_tests : setuped_engine
       check_msvc_solution(test_data_path);
    }
 
-   void instantiate(const fs::path& test_data_path, const char* target_name)
+   void instantiate(const fs::path& test_data_path, const string& target_name)
    {
       feature_set* build_request = engine_.feature_registry().make_set();
       build_request->join("variant", "release");
       build_request->join("toolset", "msvc");
-      p_->instantiate(target_name, *build_request, &itargets_);
+      p_->instantiate(target_name.c_str(), *build_request, &itargets_);
 
       if (exists(test_data_path / "check.jcf"))
       {
@@ -306,6 +306,7 @@ struct generator_tests : setuped_engine
    void run_test(const fs::path& test_data_path)
    {
       msvc_solution::generation_mode::value mode = msvc_solution::generation_mode::NON_LOCAL;
+      string testing_target_name = "test";
       options opts(test_data_path / "hamfile");
       if (opts.exists("skip"))
          return;
@@ -315,10 +316,13 @@ struct generator_tests : setuped_engine
 
       if (opts.exists("local"))
          mode = msvc_solution::generation_mode::LOCAL;   
+      
+      if (opts.exists("target"))
+         testing_target_name = opts["target"];
 
       BOOST_REQUIRE_NO_THROW(p_ = &engine_.load_project(test_data_path));
       BOOST_REQUIRE(p_);
-      instantiate(test_data_path, "test");
+      instantiate(test_data_path, testing_target_name);
       run_generators(test_data_path, mode);
       check(test_data_path);
    }

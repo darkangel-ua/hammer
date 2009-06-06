@@ -14,8 +14,8 @@ namespace hammer
                              const requirements_decl& usage_req,
                              const target_type& t);
       protected:
-         virtual sources_decl compute_additional_sources(const main_target& owner) const;
-         virtual bool is_cachable(const main_target* owner) const { return false; }
+         virtual main_target* construct_main_target(const main_target* owner, 
+                                                    const feature_set* properties) const;
    };
 }
 

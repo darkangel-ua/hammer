@@ -29,6 +29,7 @@
 #include <hammer/core/pch_meta_target.h>
 #include <hammer/core/copy_meta_target.h>
 #include <hammer/core/testing_meta_target.h>
+#include <hammer/core/testing_intermediate_meta_target.h>
 #include <hammer/core/toolset_manager.h>
 #include <hammer/core/scaner_manager.h>
 #include <hammer/core/default_output_location_strategy.h>
@@ -934,17 +935,18 @@ sources_decl engine::testing_run_rule(project* p,
       else
          throw std::runtime_error("Target must have either sources or target name");
 
-   pstring exe_name(pstring_pool(), real_target_name + ".test");
+   pstring exe_name(pstring_pool(), real_target_name);
    auto_ptr<basic_meta_target> intermediate_exe(
-      new testing_meta_target(p,
-                              exe_name,
-                              requirements != NULL ? *requirements
-                                                   : requirements_decl(),
-                              requirements_decl(),
-                              get_type_registry().get(types::EXE)));
+      new testing_intermediate_meta_target(p,
+                                           exe_name,
+                                           requirements != NULL ? *requirements
+                                                                : requirements_decl(),
+                                           requirements_decl(),
+                                           get_type_registry().get(types::EXE)));
 
    intermediate_exe->sources(sources == NULL ? sources_decl() : *sources);
    intermediate_exe->set_explicit(true);
+
    p->add_target(intermediate_exe);
 
    requirements_decl run_requirements;
@@ -953,12 +955,16 @@ sources_decl engine::testing_run_rule(project* p,
       for(vector<pstring>::const_iterator i = input_files->begin(), last = input_files->end(); i != last; ++i)
          run_requirements.add(*this->feature_registry().create_feature("testing.input-file", i->to_string()));
 
+   if (args != NULL)
+      for(vector<pstring>::const_iterator i = args->begin(), last = args->end(); i != last; ++i)
+         run_requirements.add(*this->feature_registry().create_feature("testing.argument", i->to_string()));
+
    auto_ptr<basic_meta_target> run_target(
-      new typed_meta_target(p,
-                            pstring(pstring_pool(), real_target_name),
-                            run_requirements,
-                            requirements_decl(),
-                            get_type_registry().get(types::TESTING_RUN_PASSED)));
+      new testing_meta_target(p,
+                              pstring(pstring_pool(), real_target_name + ".runner"),
+                              run_requirements,
+                              requirements_decl(),
+                              get_type_registry().get(types::TESTING_RUN_PASSED)));
 
    sources_decl run_sources;
    run_sources.push_back(exe_name, get_type_registry());

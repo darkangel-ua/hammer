@@ -1,0 +1,2 @@
+# options: target=test.runner
+testing.run test.cpp : -x : ./ : : test ;

@@ -14,22 +14,25 @@ project::project(hammer::engine* e,
                  const location_t& location, 
                  const requirements_decl& req,
                  const requirements_decl& usage_req)
-                :
-                 basic_meta_target(this, name, req, usage_req), location_(location), engine_(e),
-                 is_root_(false),
-                 add_targets_as_explicit_(false),
-                 local_feature_registry_(&pool_for_feature_registry_)
+   : 
+    basic_meta_target(this, name, req, usage_req), 
+    location_(location), 
+    engine_(e),
+    is_root_(false),
+    add_targets_as_explicit_(false),
+    local_feature_registry_(&pool_for_feature_registry_)
 {
 }
 
 
 void project::add_target(std::auto_ptr<basic_meta_target> t)
 {
-  if (add_targets_as_explicit_)
-   t->set_explicit(true);
+   if (add_targets_as_explicit_)
+      t->set_explicit(true);
 
-  targets_.insert(t->name(), t.get());
-  t.release();
+   targets_.insert(t->name(), t.get());
+
+   t.release();
 }
 
 void project::add_targets_as_explicit(bool v) 

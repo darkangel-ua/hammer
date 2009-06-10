@@ -33,5 +33,5 @@ testing.run
    :
     <use>/boost/test//utf/<version>1.36.0/<link>static
    :
-    hammer.core
+    hammer.core.test
    ;

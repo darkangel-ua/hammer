@@ -24,8 +24,9 @@ namespace hammer
          };
 
          builder(const build_environment& environment, 
-                 unsigned worker_count = 1, 
-                 bool unconditional_build = false);
+                 volatile bool& interrupt_flag,
+                 unsigned worker_count, 
+                 bool unconditional_build);
          ~builder();
 
          result build(nodes_t& nodes);

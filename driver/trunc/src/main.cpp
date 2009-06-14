@@ -8,6 +8,8 @@
 
 #include <iostream>
 #include <stdlib.h>
+#include <signal.h>
+
 #include <hammer/core/engine.h>
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature_registry.h>
@@ -44,6 +46,27 @@ typedef vector<boost::intrusive_ptr<build_node> > nodes_t;
 
 namespace
 {
+   // Ctrl-C flag
+   volatile bool interrupt_flag = false;
+   
+   // Reaction in Ctrl-C
+   volatile bool terminate_immediately = true;
+
+   void already_interrupted_ctrl_handler(int sig) 
+   {
+      signal(SIGINT, already_interrupted_ctrl_handler);
+   }
+
+   void ctrl_handler(int sig) 
+   {
+      signal(SIGINT, already_interrupted_ctrl_handler);
+      interrupt_flag = true;
+      printf("...interrupting...\n");
+
+      if (terminate_immediately)
+         terminate();
+   }
+
    unsigned get_number_of_processors()
    {
       const char* proc_info = getenv("NUMBER_OF_PROCESSORS");
@@ -338,6 +361,9 @@ namespace
                   engine& e, 
                   hammer_options opts)
    {
+      terminate_immediately = false;
+      signal(SIGINT, ctrl_handler);
+
       build_environment_impl build_environment(fs::current_path());
       
       if (opts.just_one_source_.empty())
@@ -364,7 +390,7 @@ namespace
          }
 
          cout << "...updating " << target_to_update_count << " targets...\n";
-         builder builder(build_environment, opts.worker_count_);
+         builder builder(build_environment, interrupt_flag, opts.worker_count_, false);
          builder::result build_result = builder.build(nodes);
          cout << "...updated " << build_result.updated_targets_ << " targets...\n";
          
@@ -376,7 +402,7 @@ namespace
       else
       {
          cout << "...updating source '" << opts.just_one_source_ << "'...\n";
-         builder builder(build_environment, opts.worker_count_, true);
+         builder builder(build_environment, interrupt_flag, opts.worker_count_, true);
          nodes_t source_nodes = find_nodes_for_source_name(nodes, pstring(e.pstring_pool(), opts.just_one_source_));
          builder::result build_result = builder.build(source_nodes);
          cout << "...updated source '" << opts.just_one_source_ << "'...\n";
@@ -407,6 +433,7 @@ namespace
       e.toolset_manager().autoconfigure(e);
    }
 }
+
 
 int main(int argc, char** argv)
 {
@@ -585,7 +612,7 @@ int main(int argc, char** argv)
    }
    catch (...)
    {
-      cout << "Error: Unexpected exception.\n";
+      cout << "Error: Unknown error.\n";
       return -1;
    }
 }

@@ -40,7 +40,7 @@ bool build_environment_impl::run_shell_commands(std::ostream* captured_output_st
       }
 
       bp::launcher launcher;
-      launcher.set_stdin_behavior(bp::inherit_stream);
+      launcher.set_stdin_behavior(bp::close_stream);
       launcher.set_work_directory(working_dir.native_file_string());
 
       if (captured_output_stream != NULL)

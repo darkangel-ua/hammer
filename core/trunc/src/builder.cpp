@@ -98,9 +98,11 @@ struct worker_ctx_t
 struct builder::impl_t
 {
    impl_t(const build_environment& environment, 
+          volatile bool& interrupt_flag,
           unsigned worker_count,
           bool unconditional_build) 
       : environment_(environment),
+        interrupt_flag_(interrupt_flag),
         worker_count_(worker_count),
         unconditional_build_(unconditional_build)
    {}
@@ -117,6 +119,7 @@ struct builder::impl_t
    void task_handler(shared_ptr<worker_ctx_t> ctx);
    
    const build_environment& environment_;
+   volatile bool& interrupt_flag_;
    unsigned worker_count_;
    bool unconditional_build_;
    boost::object_pool<build_queue_node_t> nodes_pool_;
@@ -124,9 +127,11 @@ struct builder::impl_t
 };
 
 builder::builder(const build_environment& environment, 
+                 volatile bool& interrupt_flag,
                  unsigned worker_count,
                  bool unconditional_build) 
    : impl_(new impl_t(environment,
+                      interrupt_flag,
                       worker_count,
                       unconditional_build))
 {
@@ -159,6 +164,9 @@ void builder::impl_t::task_handler(shared_ptr<worker_ctx_t> ctx)
 
 void builder::impl_t::task_completition_handler(shared_ptr<worker_ctx_t> ctx)
 {
+   if (interrupt_flag_)
+      return;
+
    if (ctx->current_node_ != NULL)
    {
       ctx->nodes_in_progess_.erase(ctx->current_node_);
@@ -260,6 +268,9 @@ builder::result builder::impl_t::build(nodes_t& nodes)
          thread_pool.create_thread(boost::bind(&asio::io_service::run, &scheduler));
 
    scheduler.run();
+   
+   if (interrupt_flag_)
+      throw std::runtime_error("Interrupted by user");
 
    return result_;
 }

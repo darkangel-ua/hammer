@@ -104,6 +104,7 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
                add("<debug-symbols>on/<runtime-debugging>off", "/OPT:REF,ICF").
                add("<user-interface>console", "/subsystem:console").
                add("<user-interface>gui", "/subsystem:windows").
+               add("<user-interface>gui/<character-set>unicode", "/ENTRY:\"wWinMainCRTStartup\"").
                add("<user-interface>wince", "/subsystem:windowsce").
                add("<user-interface>native", "/subsystem:native").
                add("<user-interface>auto", "/subsystem:posix");
@@ -122,6 +123,7 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
            add("<warnings>all", "/W4").
            add("<warnings-as-errors>on", "/WX").
            add("<rtti>on","/GR").
+           add("<character-set>unicode", "/D \"UNICODE\" /D \"_UNICODE\"").
            add("<runtime-debugging>off/<runtime-link>static/<threading>multi", "/MT").
            add("<runtime-debugging>on/<runtime-link>static/<threading>multi", "/MTd").
            add("<runtime-debugging>off/<runtime-link>shared", "/MD").
@@ -143,6 +145,7 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
    shared_ptr<free_feature_arg_writer> undefines(new free_feature_arg_writer("undefines", e.feature_registry().get_def("undef"), "-U \"", "\""));
 
    shared_ptr<source_argument_writer> cpp_input(new source_argument_writer("cpp_input", e.get_type_registry().get(types::CPP)));
+   shared_ptr<source_argument_writer> res_sources(new source_argument_writer("res_sources", e.get_type_registry().get(types::RES)));
    shared_ptr<pch_argument_writer> create_pch_header(new pch_argument_writer("create_pch_header", pch_argument_writer::part::header,
                                                                              "/Yc\"", "\""));
    shared_ptr<pch_argument_writer> use_pch_header(new pch_argument_writer("use_pch_header", pch_argument_writer::part::header,
@@ -269,19 +272,45 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
       e.generators().insert(g);
    }
 
+   // RC -> RES
+   {
+      shared_ptr<source_argument_writer> rc_source(new source_argument_writer("rc_source", e.get_type_registry().get(types::RC)));
+      shared_ptr<product_argument_writer> res_product(new product_argument_writer("res_product", e.get_type_registry().get(types::RES)));
+      cmdline_builder res_cmd(config_data.resource_compiler_.native_file_string() + " $(includes) $(undefines) $(defines) /Fo\"$(res_product)\" $(rc_source)");
+
+      res_cmd += rc_source;
+      res_cmd += includes;
+      res_cmd += undefines;
+      res_cmd += defines;
+      res_cmd += res_product;
+
+      auto_ptr<cmdline_action> res_action(new cmdline_action("compile-rc", res_product));
+      *res_action += setup_vars;
+      *res_action += res_cmd;
+
+      generator::consumable_types_t source;
+      generator::producable_types_t target;
+      source.push_back(generator::consumable_type(e.get_type_registry().get(types::RC), 1, 0));
+      target.push_back(generator::produced_type(e.get_type_registry().get(types::RES)));
+      auto_ptr<generator> g(new generator(e, "msvc.resource-compiler", source, target, false, generator_condition));
+      g->action(res_action);
+      e.generators().insert(g);
+   }
+
    // ... -> EXE
    { 
       shared_ptr<source_argument_writer> obj_sources(new source_argument_writer("obj_sources", e.get_type_registry().get(types::OBJ)));
       shared_ptr<product_argument_writer> exe_product(new product_argument_writer("exe_product", e.get_type_registry().get(types::EXE)));
       shared_ptr<product_argument_writer> exe_manifest_product(new product_argument_writer("exe_manifest_product", e.get_type_registry().get(types::EXE_MANIFEST)));
       auto_ptr<cmdline_action> exe_action(new cmdline_action("link-exe", exe_product));
-      cmdline_builder exe_cmd(config_data.linker_.native_file_string() + " /nologo /MANIFEST $(link_flags) $(user_link_flags) $(searched_lib_searched_dirs) /out:\"$(exe_product)\" $(obj_sources) $(static_lib_sources) $(prebuilt_lib_sources) $(searched_lib_sources) $(import_lib_sources)\n"
+      cmdline_builder exe_cmd(config_data.linker_.native_file_string() + " /nologo /MANIFEST $(link_flags) $(user_link_flags) $(searched_lib_searched_dirs) /out:\"$(exe_product)\" $(obj_sources) $(res_sources) $(static_lib_sources) $(prebuilt_lib_sources) $(searched_lib_sources) $(import_lib_sources)\n"
                               "if %ERRORLEVEL% NEQ 0 EXIT %ERRORLEVEL%\n"
                               "if exist \"$(exe_manifest_product)\" (" + config_data.manifest_tool_.native_file_string() + " -nologo -manifest \"$(exe_manifest_product)\" \"-outputresource:$(exe_product)\")");
       exe_cmd += link_flags;
       exe_cmd += user_link_flags;
       exe_cmd += searched_lib_searched_dirs;
       exe_cmd += obj_sources;
+      exe_cmd += res_sources;
       exe_cmd += static_lib_sources;
       exe_cmd += prebuilt_lib_sources;
       exe_cmd += searched_lib_sources;
@@ -294,6 +323,7 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
       generator::consumable_types_t source;
       generator::producable_types_t target;
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::OBJ), 0, 0));
+      source.push_back(generator::consumable_type(e.get_type_registry().get(types::RES), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::STATIC_LIB), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::SEARCHED_STATIC_LIB), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::HEADER_LIB), 0, 0));
@@ -347,11 +377,12 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
       shared_lib_cmd += shared_lib_product;
       shared_lib_cmd += dll_manifest_product;
 
-      cmdline_builder shared_lib_rsp(" /nologo /DLL /MANIFEST $(link_flags) $(user_link_flags) $(searched_lib_searched_dirs) /out:\"$(shared_lib_product)\" /IMPLIB:\"$(import_lib_product)\" $(obj_sources) $(static_lib_sources) $(prebuilt_lib_sources) $(searched_lib_sources) $(import_lib_sources)");
+      cmdline_builder shared_lib_rsp(" /nologo /DLL /MANIFEST $(link_flags) $(user_link_flags) $(searched_lib_searched_dirs) /out:\"$(shared_lib_product)\" /IMPLIB:\"$(import_lib_product)\" $(obj_sources) $(res_sources) $(static_lib_sources) $(prebuilt_lib_sources) $(searched_lib_sources) $(import_lib_sources)");
       shared_lib_rsp += link_flags;
       shared_lib_rsp += user_link_flags;
       shared_lib_rsp += searched_lib_searched_dirs;
       shared_lib_rsp += obj_sources;
+      shared_lib_rsp += res_sources;
       shared_lib_rsp += static_lib_sources;
       shared_lib_rsp += prebuilt_lib_sources;
       shared_lib_rsp += searched_lib_sources;
@@ -367,6 +398,7 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
       generator::consumable_types_t source;
       generator::producable_types_t target;
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::OBJ), 0, 0));
+      source.push_back(generator::consumable_type(e.get_type_registry().get(types::RES), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::STATIC_LIB), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::SEARCHED_STATIC_LIB), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::HEADER_LIB), 0, 0));
@@ -407,6 +439,7 @@ msvc_toolset::msvc_8_0_data msvc_toolset::resolve_8_0_data(const location_t* too
    result.librarian_ = "lib.exe";
    result.linker_ = "link.exe";
    result.manifest_tool_ = "mt.exe";
+   result.resource_compiler_ = "rc.exe";
 
    return result;
 }

@@ -12,6 +12,8 @@ namespace hammer
       extern const type_tag CPP;
       extern const type_tag C;
       extern const type_tag H;
+      extern const type_tag RC;
+      extern const type_tag RES;
       extern const type_tag OBJ;
       extern const type_tag PCH;
       extern const type_tag LIB;

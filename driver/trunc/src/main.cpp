@@ -491,6 +491,7 @@ int main(int argc, char** argv)
       boost::shared_ptr<scanner> c_scaner(new hammer::c_scanner);
       engine.scanner_manager().register_scanner(engine.get_type_registry().get(types::CPP), c_scaner);
       engine.scanner_manager().register_scanner(engine.get_type_registry().get(types::C), c_scaner);
+      engine.scanner_manager().register_scanner(engine.get_type_registry().get(types::RC), c_scaner);
 
       if (opts.debug_level_ > 0)
          cout << "Done\n";

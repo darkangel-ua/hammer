@@ -14,6 +14,8 @@ namespace hammer{ namespace types{
 const type_tag CPP("CPP");
 const type_tag C("C");
 const type_tag H("H");
+const type_tag RC("RC");
+const type_tag RES("RES");
 const type_tag OBJ("OBJ");
 const type_tag PCH("PCH");
 const type_tag LIB("LIB");
@@ -43,6 +45,9 @@ void register_standart_types(type_registry& tr, feature_registry& fr)
    
    target_type::suffixes_t h_suffixes = list_of(".h")(".hpp");
    const target_type& tH = tr.insert(target_type(H, h_suffixes));
+
+   const target_type& tRC = tr.insert(target_type(RC, ".rc"));
+   const target_type& tRES = tr.insert(target_type(RES, ".res"));
    
    target_type::suffixes_t obj_suffixes = list_of<target_type::suffix_def>(".obj", *parse_simple_set("<os>nt", fr))
                                                                           (".o", *parse_simple_set("<os>linux", fr));

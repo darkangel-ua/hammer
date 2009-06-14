@@ -15,6 +15,7 @@ namespace hammer
             location_t linker_;
             location_t librarian_;
             location_t manifest_tool_;
+            location_t resource_compiler_;
          };
 
          msvc_toolset();

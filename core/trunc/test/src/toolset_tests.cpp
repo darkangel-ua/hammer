@@ -189,7 +189,8 @@ void toolset_test::do_test(const string& name)
       actuality_checker checker(engine_, environment);
       checker.check(generated_nodes);
 
-      builder b(environment);
+      volatile bool interrupt_flag = false;
+      builder b(environment, interrupt_flag, 1, true);
       BOOST_REQUIRE_NO_THROW(b.build(generated_nodes));
       etalon_file.close();
       output_file.close();

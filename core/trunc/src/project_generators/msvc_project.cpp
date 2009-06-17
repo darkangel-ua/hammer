@@ -83,7 +83,8 @@ static const string linker_option_format_string(
    "            AdditionalDependencies='$(additional_libraries) $(additional_searched_libraries)'\n"
    "            AdditionalLibraryDirectories=\"$(additional_libraries_dirs)\"\n"
    "            GenerateDebugInformation=\"$(debug_info)\"\n"
-   "            LinkIncremental=\"$(incremental_linking)\"\n");
+   "            LinkIncremental=\"$(incremental_linking)\"\n"
+   "            SubSystem=\"$(subsystem)\"\n");
 
 static const string post_build_step_format_string("$(non_path_args) $(path_args)\"\n");
 
@@ -206,6 +207,11 @@ msvc_project::msvc_project(engine& e,
    link_debug_info->add("<debug-symbols>on", "true").
                     add("<debug-symbols>off", "false");
    linker_options_ += link_debug_info;
+
+   boost::shared_ptr<fs_argument_writer> link_subsystem(new fs_argument_writer("subsystem", engine_->feature_registry()));
+   link_subsystem->add("<user-interface>console", "1").
+                   add("<user-interface>gui", "2");
+   linker_options_ += link_subsystem;
 
    boost::shared_ptr<fs_argument_writer> incremental_linking(new fs_argument_writer("incremental_linking", engine_->feature_registry()));
    incremental_linking->add("<debug-symbols>on", "2").

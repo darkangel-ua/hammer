@@ -38,6 +38,7 @@
             AdditionalLibraryDirectories=""
             GenerateDebugInformation="false"
             LinkIncremental="1"
+            SubSystem="1"
          />
          <Tool
             Name="VCPostBuildEventTool"

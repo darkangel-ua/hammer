@@ -12,8 +12,8 @@
 
   ;Name and file
   Name $(product_name)
-  OutFile "hammer_svn20090610_setup.exe"
-  Caption "Hammer SVN snapshot 2009-06-10 Setup"
+  OutFile "hammer_svn(512)_setup.exe"
+  Caption "Hammer SVN(512) snapshot Setup"
   ;Default installation folder
   InstallDir "$PROGRAMFILES\Hammer"
   

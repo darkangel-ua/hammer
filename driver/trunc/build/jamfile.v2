@@ -7,4 +7,5 @@ exe hammer :
              /hammer/core//hammer_core
            :
              <link>static
+             <threading>multi
            ;

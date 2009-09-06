@@ -54,10 +54,9 @@ bool build_environment_impl::run_shell_commands(std::ostream* captured_output_st
          ctx.stdout_behavior = bp::inherit_stream();
          ctx.stderr_behavior = bp::inherit_stream();
       }
-
+      
+     std::vector<std::string> cmdline;
 #if defined(_WIN32)
-      std::string executable;
-      std::vector<std::string> cmdline;
       cmdline.push_back("cmd.exe");
       cmdline.push_back("/Q");
       cmdline.push_back("/C");
@@ -67,10 +66,10 @@ bool build_environment_impl::run_shell_commands(std::ostream* captured_output_st
       if (shell_cmd == NULL)
          throw std::runtime_error("Can't find SHELL environment variable.");
 
-      std::string executable(shell_cmd);
+      cmdline.push_back(shell_cmd);
       cmdline.push_back(tmp_file_name);
 #endif
-      bp::child shell_action_child = bp::launch(executable, cmdline, ctx);
+      bp::child shell_action_child = bp::launch(std::string(), cmdline, ctx);
 
       if (captured_output_stream != NULL)
          std::copy(istreambuf_iterator<char>(shell_action_child.get_stdout()),

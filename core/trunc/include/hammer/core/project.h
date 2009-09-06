@@ -64,14 +64,19 @@ namespace hammer
          hammer::scm_info& scm_info() { return scm_info_; }
          void add_target(std::auto_ptr<basic_meta_target> t);
          const targets_t& targets() const { return targets_; }
+
+         // FIXME: there is can be many metatargets with same name
          const basic_meta_target* find_target(const pstring& name) const;
+         // FIXME: there is can be many metatargets with same name
          basic_meta_target* find_target(const pstring& name);
+
          hammer::engine* get_engine() const { return engine_; }
          const location_t& intermediate_dir() const { return intermediate_dir_; }
          feature_registry& local_feature_registry() const { return local_feature_registry_; }
          bool is_root() const { return is_root_; }
          void set_root(bool v) { is_root_ = v; }
          void add_targets_as_explicit(bool v);
+         void mark_as_explicit(const pstring& name);
 
          void instantiate(const std::string& target_name, 
                           const feature_set& build_request,

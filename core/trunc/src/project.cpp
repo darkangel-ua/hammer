@@ -252,4 +252,11 @@ feature_set* project::try_resolve_local_features(const feature_set& fs) const
    return result;
 }
 
+void project::mark_as_explicit(const pstring& name)
+{
+   boost::iterator_range<targets_t::iterator> targets = targets_.equal_range(name);
+   for(targets_t::iterator i = targets.begin(); i != targets.end(); ++i)
+      i->second->set_explicit(true);
+}
+
 }

@@ -202,7 +202,6 @@ void toolset_test::do_test(const string& name)
 
 namespace{
 
-/*
 BOOST_FIXTURE_TEST_CASE(simple_exe, toolset_test)
 {
    BOOST_REQUIRE_NO_THROW(do_test("simple_exe"));
@@ -243,7 +242,6 @@ BOOST_FIXTURE_TEST_CASE(copy, toolset_test)
 {
    BOOST_REQUIRE_NO_THROW(do_test("copy"));
 }
-*/
 
 BOOST_FIXTURE_TEST_CASE(file, toolset_test)
 {

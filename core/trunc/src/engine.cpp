@@ -1066,7 +1066,8 @@ void engine::explicit_rule(project* p, const pstring& target_name)
    basic_meta_target* target = p->find_target(target_name);
    if (target == 0)
       throw std::runtime_error("target '" + target_name.to_string() + "' not found.");
-   target->set_explicit(true);
+
+   p->mark_as_explicit(target_name);
 }
 
 void engine::use_project_rule(project* p, const pstring& project_id_alias,

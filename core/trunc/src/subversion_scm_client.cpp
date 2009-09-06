@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include <hammer/core/subversion_scm_client.h>
-#define BOOST_PROCESS_HERE
 #include <boost/process.hpp>
 
 namespace bp = boost::process ;
@@ -9,40 +8,44 @@ namespace hammer{
 
 void subversion_scm_client::checkout(const location_t& path, const std::string& uri, bool recursive) const
 {
-   bp::launcher l;
-   l.set_work_directory(path.native_file_string());
-   l.set_stdin_behavior(bp::inherit_stream);
-   l.set_stdout_behavior(bp::inherit_stream);
-   l.set_stderr_behavior(bp::inherit_stream);
+   bp::context ctx;
+   ctx.environment = bp::self::get_environment();
+   ctx.work_directory = path.native_file_string();
+   ctx.stdin_behavior = bp::inherit_stream();
+   ctx.stdout_behavior = bp::inherit_stream();
+   ctx.stderr_behavior = bp::inherit_stream();
 
-   bp::command_line cmd("svn");
-   cmd.argument("checkout");
+   std::vector<std::string> args;
+   args.push_back("svn");
+   args.push_back("checkout");
    
    if (!recursive)
-      cmd.argument("-N");
+      args.push_back("-N");
    
-   cmd.argument(uri).
-       argument(".");
+   args.push_back(uri);
+   args.push_back(".");
    
-   bp::status status = l.start(cmd).wait();
+   bp::status status = bp::launch(std::string(), args, ctx).wait();
 }
 
 void subversion_scm_client::up(const location_t& where_up, const std::string& what_up, bool recursive) const
 {
-   bp::launcher l;
-   l.set_work_directory(where_up.native_file_string());
-   l.set_stdout_behavior(bp::inherit_stream);
-   l.set_stderr_behavior(bp::inherit_stream);
+   bp::context ctx;
+   ctx.environment = bp::self::get_environment();
+   ctx.work_directory = where_up.native_file_string();
+   ctx.stdout_behavior = bp::inherit_stream();
+   ctx.stderr_behavior = bp::inherit_stream();
 
-   bp::command_line cmd("svn");
-   cmd.argument("up");
+   std::vector<std::string> cmd;
+   cmd.push_back("svn");
+   cmd.push_back("up");
 
    if (!recursive)
-      cmd.argument("-N");
+      cmd.push_back("-N");
 
-   cmd.argument(what_up);
+   cmd.push_back(what_up);
 
-   bp::status status = l.start(cmd).wait();
+   bp::status status = bp::launch(std::string(), cmd, ctx).wait();
 }
 
 }

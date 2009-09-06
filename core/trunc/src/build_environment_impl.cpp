@@ -39,34 +39,38 @@ bool build_environment_impl::run_shell_commands(std::ostream* captured_output_st
             *f << *i << '\n';
       }
 
-      bp::launcher launcher;
-      launcher.set_stdin_behavior(bp::close_stream);
-      launcher.set_work_directory(working_dir.native_file_string());
+      bp::context ctx;
+      ctx.environment = bp::self::get_environment();
+      ctx.stdin_behavior = bp::close_stream();
+      ctx.work_directory = working_dir.native_file_string();
 
       if (captured_output_stream != NULL)
       {
-         launcher.set_stdout_behavior(bp::redirect_stream);
-         launcher.set_stderr_behavior(bp::close_stream);
-         launcher.set_merge_out_err(true);
+         ctx.stdout_behavior = bp::capture_stream();
+         ctx.stderr_behavior = bp::redirect_stream_to_stdout();
       }
       else
       {
-         launcher.set_stdout_behavior(bp::inherit_stream);
-         launcher.set_stderr_behavior(bp::inherit_stream);
+         ctx.stdout_behavior = bp::inherit_stream();
+         ctx.stderr_behavior = bp::inherit_stream();
       }
 
 #if defined(_WIN32)
-      bp::command_line cmdline = bp::command_line("cmd.exe");
-      cmdline.argument("/Q").argument("/C").argument("call " + tmp_file_name);
+      std::string executable;
+      std::vector<std::string> cmdline;
+      cmdline.push_back("cmd.exe");
+      cmdline.push_back("/Q");
+      cmdline.push_back("/C");
+      cmdline.push_back("call " + tmp_file_name);
 #else
       const char* shell_cmd = getenv("SHELL");
       if (shell_cmd == NULL)
          throw std::runtime_error("Can't find SHELL environment variable.");
-      bp::command_line cmdline = bp::command_line(shell_cmd);
-      cmdline.argument(tmp_file_name);
-#endif
-      bp::child shell_action_child = launcher.start(cmdline);
 
+      std::string executable(shell_cmd);
+      cmdline.push_back(tmp_file_name);
+#endif
+      bp::child shell_action_child = bp::launch(executable, cmdline, ctx);
 
       if (captured_output_stream != NULL)
          std::copy(istreambuf_iterator<char>(shell_action_child.get_stdout()),
@@ -82,12 +86,18 @@ bool build_environment_impl::run_shell_commands(std::ostream* captured_output_st
 
       return st.exit_status() == 0;
    }
+   catch(const std::exception& e)
+   {
+      std::cerr << "Error: " << e.what() << std::endl;
+   }
    catch(...)
    {
-      dump_shell_command(std::cerr, full_tmp_file_name);
-      remove(full_tmp_file_name);
-      return false;
+      std::cerr << "Error: Unknown error\n";
    }
+
+   dump_shell_command(std::cerr, full_tmp_file_name);
+   remove(full_tmp_file_name);
+   return false;
 }
 
 bool build_environment_impl::run_shell_commands(const std::vector<std::string>& cmds,
@@ -115,7 +125,7 @@ bool build_environment_impl::run_shell_commands(std::ostream& captured_output_st
 
 static std::auto_ptr<std::istream> open_input_stream(const location_t& full_content_file_name)
 {
-#if defined(_WIN32)
+#if defined(_WIN32) && !defined(__MINGW32__)
    std::auto_ptr<istream> f(new ifstream((L"\\\\?\\" + to_wide(location_t(full_content_file_name)).native_file_string()).c_str()));
    return f;
 #else
@@ -185,7 +195,7 @@ std::auto_ptr<ostream> build_environment_impl::create_output_file(const char* fi
    full_filename_path.normalize();
    std::auto_ptr<ofstream> f(new ofstream);
    f->exceptions(ios_base::badbit | ios_base::eofbit | ios_base::failbit);
-#if defined (_WIN32)
+#if defined(_WIN32) && !defined(__MINGW32__)
    wstring unc_path(L"\\\\?\\" + to_wide(location_t(full_filename_path)).native_file_string());
    f->open(unc_path.c_str(), mode);
 #else

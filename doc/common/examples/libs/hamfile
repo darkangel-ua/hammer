@@ -1,4 +1,0 @@
-use-project test : test/build ;
-use-project static-lib : static-lib/build ;
-use-project shared-lib : shared-lib/build ;
-use-project unconstrained-lib : unconstrained-lib/build ;

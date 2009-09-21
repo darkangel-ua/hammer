@@ -1,9 +1,0 @@
-lib libs.shared-lib 
-   :
-    ../src/shared_lib.cpp
-    /libs/unconstrained-lib/<link>static
-   :
-    @<include>../include
-    <define>SHARED_LIB_EXPORTS
-    <link>shared
-   ;

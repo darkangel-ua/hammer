@@ -45,7 +45,7 @@
         <title>Basics</title>
         <para>To manage all that complexity in software development we divide software into pieces - libraries. That makes the life much easier. Libraries usually build of sources, includes, documents and tests. Sources can be build into library, documents can be build from DocBook to HTML, tests can be build and run. </para>
         <para>Hammer&apos;s <emphasis>project</emphasis> is just a hammer script file. It can contain targets to build or projects structuring declarations or both of them. <remark> TODO I couldn't understand the previous sentence, needs rephrasing. </remark> To illustrate that let&apos;s see an example:</para>
-        <graphic fileref="images/project-layout.png" align="center"/>
+        <graphic fileref="../../common/images/project-layout.png" align="center"/>
         <para>Here we have a small part of well known boost library collection rearranged to be modular. The project <filename>boost/hamfile</filename> doesn&apos;t have any build targets. It only instructs hammer where to find boost&apos;s sub-projects:</para>
         <programlisting>...
 use-project filesystem : filesystem ;
@@ -339,11 +339,11 @@ lib foo : stdafx foo.cpp ;</programlisting></para>
         <title>Example: Simple executable</title>
         <figure label="test">
           <title>Filesystem layout</title>
-          <graphic fileref="images/simple-exe-layout.png" align="center"/>
+          <graphic fileref="../../common/images/simple-exe-layout.png" align="center"/>
         </figure>
         <figure>
           <title>
-            <filename>examples/hamroot</filename>
+            <filename>../../common/examples/hamroot</filename>
           </title>
           <programlisting>...
 use-project /simple-exe : simple-exe/build ;
@@ -351,7 +351,7 @@ use-project /simple-exe : simple-exe/build ;
         </figure>
         <figure>
           <title>
-            <filename>examples/simple-exe/build/hamfile</filename>
+            <filename>../../common/examples/simple-exe/build/hamfile</filename>
           </title>
           <programlisting>exe simple-exe : ../src/main.cpp ;</programlisting>
         </figure>
@@ -389,7 +389,7 @@ use-project /simple-exe : simple-exe/build ;
         <para>In this example you will see how to build projects that consist from three different forms of libraries - shared, static and so-called &apos;unconstrained&apos;. Last one is a library that doesn&apos;t have <code>&lt;link&gt;</code> feature in requirements and therefore can be built ether shared or static.</para>
         <figure>
           <title>Filesystem layout</title>
-          <graphic fileref="images/shared-static-libs-layout.png" align="center"/>
+          <graphic fileref="../../common/images/shared-static-libs-layout.png" align="center"/>
         </figure>
         <figure>
           <title>
@@ -403,23 +403,23 @@ use-project /libs : libs ;
           <title>
             <filename>example/libs/hamfile</filename>
           </title>
-          <programlisting><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="examples/libs/hamfile" encoding="UTF-8" parse="text"/></programlisting>
+          <programlisting><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="../../common/examples/libs/hamfile" encoding="UTF-8" parse="text"/></programlisting>
         </figure>
         <figure>
           <title><filename>example/libs/test/build/hamfile</filename> - main project</title>
-          <programlisting><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="examples/libs/test/build/hamfile" encoding="UTF-8" parse="text"/></programlisting>
+          <programlisting><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="../../common/examples/libs/test/build/hamfile" encoding="UTF-8" parse="text"/></programlisting>
         </figure>
         <figure>
-          <title><filename>examples/libs/shared-lib/build/hamfile</filename> - shared library</title>
-          <programlisting><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="examples/libs/shared-lib/build/hamfile" encoding="UTF-8" parse="text"/></programlisting>
+          <title><filename>../../common/examples/libs/shared-lib/build/hamfile</filename> - shared library</title>
+          <programlisting><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="../../common/examples/libs/shared-lib/build/hamfile" encoding="UTF-8" parse="text"/></programlisting>
         </figure>
         <figure>
-          <title><filename>examples/libs/static-lib/build/hamfile</filename> - static library</title>
-          <programlisting><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="examples/libs/static-lib/build/hamfile" encoding="UTF-8" parse="text"/></programlisting>
+          <title><filename>../../common/examples/libs/static-lib/build/hamfile</filename> - static library</title>
+          <programlisting><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="../../common/examples/libs/static-lib/build/hamfile" encoding="UTF-8" parse="text"/></programlisting>
         </figure>
         <figure>
-          <title><filename>examples/libs/unconstrained-lib/build/hamfile</filename> - unconstrained library</title>
-          <programlisting><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="examples/libs/unconstrained-lib/build/hamfile" encoding="UTF-8" parse="text"/></programlisting>
+          <title><filename>../../common/examples/libs/unconstrained-lib/build/hamfile</filename> - unconstrained library</title>
+          <programlisting><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="../../common/examples/libs/unconstrained-lib/build/hamfile" encoding="UTF-8" parse="text"/></programlisting>
         </figure>
       </section>
       <section>

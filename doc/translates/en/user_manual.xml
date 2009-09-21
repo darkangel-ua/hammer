@@ -1,0 +1,521 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- This document was created with Syntext Serna Free. --><!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "docbookV4.5/docbookx.dtd" []>
+<book>
+  <title>Hammer User Manual</title>
+  <chapter>
+    <title>Introduction</title>
+    <section>
+      <title>What is Hammer?</title>
+      <remark> TODO </remark>
+    </section>
+    <section>
+      <title>Hammer&apos;s history</title>
+      <remark> TODO </remark>
+    </section>
+    <section>
+      <title>Hammer&apos;s features</title>
+      <remark> TODO </remark>
+    </section>
+  </chapter>
+  <chapter>
+    <title>Overview</title>
+    <section>
+      <title>Filesystem layout</title>
+      <para>The proposed working space organization is not mandatory, but the recommended way use. You can organize projects in many ways you wish or must in the filesystem, but not all layouts can be used to expose full power of Hammer. <remark> TODO: Can you rephrase the sentence, a little hard to grasp. </remark> </para>
+      <para>Developing big, complex software with tens or hundreds of components is not a simple task. There is no single way for programmers to manage all this mess and this <remark> TODO: what? </remark> only amplifies the problems. On Linux you need to download sources, unpack and do <command>./configure &amp;&amp; make &amp;&amp; make install</command> . On Windows there is no standard way at all. Linux way is much simpler and defined, but it is not perfect. You just can&apos;t develop two different components depend on two different versions of the same library without some magic.  </para>
+      <para>Having one, simple, unified and easy to understand project organization will greatly simplify communication between developers and remove mental switches when you need to develop cross platform code.</para>
+      <para>Unfinished.</para>
+    </section>
+    <section>
+      <title>Hammer&apos;s script language</title>
+      <para>For now hammer&apos;s script language is very similar to perforce Jam language but without any control flow statements. Only rules was borrowed.  Rules look like function invocations and most of the time have declarative meaning and very rare are real function invocations. So basic syntax is:</para>
+      <programlisting>rule-name argument_1 : argument_2 : ... : argument_N ;</programlisting>
+      <para>Each argument is a list of strings separated with <emphasis>space</emphasis> that can be zero length. Symbol &apos;:&apos; is used to separate arguments and &apos;;&apos; must enclose rule statement.</para>
+      <note>
+        <para>Note that, because of some lexical problems the real separator between arguments is &apos;&lt;space&gt;&lt;colon&gt;&lt;space&gt;&apos; not just &apos;&lt;colon&gt;&apos;. </para>
+      </note>
+      <para>Examples:</para>
+      <programlisting>exe test : main.cpp ;</programlisting>
+      <para>there we have a rule named <code>exe</code>, an argument <code>test</code>, and another argument <code>main.cpp</code> .</para>
+      <para><programlisting>lib iconv : : &lt;name&gt;iconv &lt;toolset&gt;gcc ;</programlisting>there we have a rule named <code>lib</code>, an argument <code>iconv</code>, an empty second argument, and a third argument <code>&lt;name&gt;iconv &lt;toolset&gt;gcc</code>.</para>
+    </section>
+    <section>
+      <title>Projects</title>
+      <section>
+        <title>Basics</title>
+        <para>To manage all that complexity in software development we divide software into pieces - libraries. That makes the life much easier. Libraries usually build of sources, includes, documents and tests. Sources can be build into library, documents can be build from DocBook to HTML, tests can be build and run. </para>
+        <para>Hammer&apos;s <emphasis>project</emphasis> is just a hammer script file. It can contain targets to build or projects structuring declarations or both of them. <remark> TODO I couldn't understand the previous sentence, needs rephrasing. </remark> To illustrate that let&apos;s see an example:</para>
+        <graphic fileref="../../common/images/project-layout.png" align="center"/>
+        <para>Here we have a small part of well known boost library collection rearranged to be modular. The project <filename>boost/hamfile</filename> doesn&apos;t have any build targets. It only instructs hammer where to find boost&apos;s sub-projects:</para>
+        <programlisting>...
+use-project filesystem : filesystem ;
+use-project thread : thread ;
+...</programlisting>
+        <para>The project <filename>boost/filesystem/hamfile</filename>:</para>
+        <programlisting>version-alias filesystem : trunc ;</programlisting>
+        <para>does have targets, but <code>version-alias</code> is not exactly a real target - we will explain it later. And finally <filename>boost/filesystem/trunc/build/hamfile</filename> contains a target to build; <code>boost.filesystem</code>:</para>
+        <programlisting>lib boost.filesystem
+    :
+     @/boost/core/&lt;version&gt;1.36.0
+     [ glob ../src/*.cpp ]
+     @/boost/system/&lt;version&gt;1.36.0
+     @/boost/iterator/&lt;version&gt;1.36.0
+     @/boost/exception/&lt;version&gt;1.36.0
+    :
+     &lt;link&gt;shared:&lt;define&gt;BOOST_ALL_DYN_LINK=1 
+     &lt;link&gt;static:&lt;define&gt;BOOST_All_STATIC_LINK=1
+     @&lt;include&gt;../include
+    ;
+</programlisting>
+        <para>Every Hammer script file may have project description rule in the form:</para>
+        <programlisting>project &lt;project-name&gt; : requirements &lt;property-set&gt;
+                       : usage-requirements &lt;property-set&gt;
+                       ;</programlisting>
+        <para>For now <code>&lt;project-name&gt;</code> doesn&apos;t have any semantic load. But <emphasis>requirements</emphasis> and <emphasis>usage-requirements</emphasis> is really helpful in complex projects with many libraries and targets. As will be showed in Targets section mostly all build targets have requirements and usage-requirements. When hammer script has <code>project</code> definition along with other target definitions, all that targets will inherit requirements and usage-requirements from project definition. Example:<programlisting>project foobar : requirements &lt;define&gt;FOO=1
+               : usage-requirements &lt;define&gt;BOO=1
+               ;
+
+lib foobar : main.cpp ;
+lib barfoo : test.cpp ;</programlisting></para>
+        <para>is equivalent to:<programlisting>lib foobar : main.cpp : &lt;define&gt;FOO=1 : : &lt;define&gt;BOO=1 ;
+lib barfoo : test.cpp : &lt;define&gt;FOO=1 : : &lt;define&gt;BOO=1 ;</programlisting></para>
+      </section>
+      <section>
+        <title>Project inheritance</title>
+        <para>Because Hammer&apos;s projects are just files and organized in filesystem in hierarchical way reflecting underlying software structure we automatically get a projects hierarchy. Looking at previously presented project hierarchy we see <code>boost</code> project that consists from <code>boost/filesystem</code> and <code>boost/thread</code> sub-projects. Filesystem project consists from <code>boost.filesystem</code> library target placed in <filename>hammer/filesystem/trunc/build/hamfile</filename> and <code>test</code> target placed in <filename>boost/filesystem/trunc/test/build/hamfile</filename> that is subproject of <code>boost/filesystem</code> project. </para>
+        <para>Naturally <code>boost</code> project may have some requirements and usage requirements that is same for all of its sub-projects. Because of that every subproject <emphasis>inherits</emphasis> all requirements and usage requirements from upper project same way as that done for targets inside any <filename>hamfile</filename>. The target <code>boost.filesystem</code> in hammer project <filename>boost/filesystem/trunc/build/hamfile</filename> inherit requirements and usage requirements from <filename>boost/hamfile</filename> and <filename>boost/filesystem/hamfile</filename> hammer projects descriptions.</para>
+      </section>
+    </section>
+    <section>
+      <title>Features and properties</title>
+      <para>To portably represent aspects of target configuration such as debug and release variants, or single- and multi-threaded builds, Hammer uses <emphasis>features</emphasis> with associated <emphasis>values</emphasis>. For example, the <code>debug-symbols</code> feature can have a value of <code>on</code> or <code>off</code>. A <emphasis>property</emphasis> is just a (feature, value) pair.</para>
+      <para>In script properties easy located by special syntactic form <remark> TODO: vague sentence </remark> <code>&lt;feature-name&gt;value</code>. For example <code>&lt;link&gt;static</code> - feature <code>link</code> with value <code>static</code>.<remark> TODO: What links with what? </remark></para>
+      <para>Each feature has a set of associated <emphasis>attributes</emphasis>. Feature attributes are low-level descriptions of how the build system should interpret a feature&apos;s values when they appear in a build request. We also refer to the attributes of properties, so that an <code>incidental</code> property, for example, is one whose feature has the <code>incidental</code> attribute.<table>
+          <title>Feature&apos;s attributes</title>
+          <tgroup cols="2">
+            <colspec colwidth="2.5 cm"/>
+            <tbody>
+              <row>
+                <entry align="center">incidental</entry>
+                <entry>Incidental features are assumed not to affect build products at all. A feature that controls a compiler&apos;s warning level is one example of a likely incidental feature. Non-incidental features are assumed to affect build products.</entry>
+              </row>
+              <row>
+                <entry align="center">propagated</entry>
+                <entry>Features of this kind are propagated to dependencies. That is, if a target is built using a propagated property, the build systems attempt to use the same property when building any of its dependencies as part of that target. For instance, when an exectuable is requested to build with msvc-8.0 toolset, one usually want it to be linked with libraries builded with same toolset. Thus, the &lt;toolset&gt; feature is propagated.</entry>
+              </row>
+              <row>
+                <entry align="center">free</entry>
+                <entry>Most features have a finite set of allowed values, and can only take on a single value from that set in a given build specification. Free features, on the other hand, can have several values at a time and each value can be an arbitrary string. For example, it is possible to have several preprocessor symbols definitions simultaneously: &lt;define&gt;NDEBUG=1 &lt;define&gt;HAS_CONFIG_H=1 </entry>
+              </row>
+              <row>
+                <entry align="center">optional</entry>
+                <entry>An optional feature is a feature that is not required to appear in a build specification. Every non-optional, non-free and without no-default attribute feature has a default value that is used when a value for the feature is not otherwise specified, either in a target&apos;s requirements or in the user&apos;s build request. </entry>
+              </row>
+              <row>
+                <entry align="center">path</entry>
+                <entry>The value of a path feature specifies a path. The path is treated as relative to the directory of <filename>hamfile</filename> where path feature is used and is translated appropriately by the build system when the build is invoked from a different directory</entry>
+              </row>
+              <row>
+                <entry align="center">composite</entry>
+                <entry>Composite features actually correspond to groups of properties. For example, a build variant is a composite feature. When generating targets from a set of build properties, composite features are recursively expanded and added to the build property set, so rules can find them if necessary. Non-composite non-free features override components of composite features in a build property set.</entry>
+              </row>
+              <row>
+                <entry align="center">no-defaults</entry>
+                <entry>This attribute used to disable default behaviour of assigning default values to non-optional non-free features.</entry>
+              </row>
+              <row>
+                <entry align="center">no-checks</entry>
+                <entry>This attribute disables validating allowed values for feature. With help of this attribute it is posible to define feature that can have any value like free feature, but behave like non-free non-incidental features.</entry>
+              </row>
+              <row>
+                <entry align="center">dependency</entry>
+                <entry>The value of dependency feature is a target reference.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table></para>
+    </section>
+    <section>
+      <title>Targets</title>
+      <section>
+        <title>Basics</title>
+        <para>Target is a rule in hammer&apos;s script file that define some action such as building an executable, building shared libraries, copy target from one location to another or build and run some tests. </para>
+        <para>Most of the time targets take the following form:</para>
+        <programlisting>target-rule-name target-name 
+   : [sources] 
+   : [requirements]
+   : [usage-requirements] 
+   : [default-build]
+   : [usage-requirements]
+   ;</programlisting>
+        <para>Some arguments can be omitted (almost all), but most of the time <code>sources</code> and <code>requirements</code> will have some values. </para>
+        <para>Let&apos;s look at some examples:</para>
+        <programlisting>lib foo : main.cpp ;</programlisting>
+        <para>Target will produce shared library <code>foo</code> from the source <code>main.cpp</code>. </para>
+        <programlisting>lib foo : main.cpp : &lt;link&gt;static ;</programlisting>
+        <para>Target will produce static library <code>foo</code> from the source <code>main.cpp</code> using target requirements <code>&lt;link&gt;static</code>.<programlisting>lib foo : main.cpp : &lt;link&gt;static : : &lt;define&gt;FOO_STATIC ;</programlisting></para>
+        <para>Target will produce static library <code>foo</code> from sources <code>main.cpp</code>  using target requirements <code>&lt;link&gt;static</code> and set usage requirements to <code>&lt;define&gt;FOO_STATIC</code>.</para>
+        <para>Target&apos;s default build  argument is now not used, so you must leave it empty.</para>
+      </section>
+      <section>
+        <title>Target&apos;s sources</title>
+        <para>Target&apos;s sources can take three different form:</para>
+        <itemizedlist>
+          <listitem>
+            <para>First form is a file expressed as relative to project or absolute path. </para>
+          </listitem>
+          <listitem>
+            <para>Second form is filesystem path to project, optionally with target name and build properties with witch target must be built. Examples:</para>
+            <itemizedlist>
+              <listitem>
+                <programlisting>lib a : b a.cpp ;</programlisting>
+                <para><code>a</code>&apos;s sources is a regular file <code>a.cpp</code> and all targets from <filename>./b/hamfile</filename> project.</para>
+              </listitem>
+              <listitem>
+                <programlisting>lib b : ../c b.cpp ;</programlisting>
+                <para><code>b</code>&apos;s sources is a regular file <filename>b.cpp</filename> and all targets from <filename>../c/hamfile</filename> project.</para>
+              </listitem>
+              <listitem>
+                <programlisting>lib c : ../d//d_1 c.cpp ;</programlisting>
+                <para><code>c</code>&apos;s sources is a regular file <filename>c.cpp</filename> and target <code>d_1</code> from <filename>../d/hamfile</filename> project.</para>
+              </listitem>
+              <listitem>
+                <programlisting>lib d : f/lib_f//f_1/&lt;link&gt;static d.cpp ;</programlisting>
+                <para> <code>d</code>&apos;s sources is a regular file <code>d.cpp</code> and <code>f_1</code> target from <filename>./f/lib_f/hamfile</filename> project that must be build as static library.</para>
+              </listitem>
+            </itemizedlist>
+          </listitem>
+          <listitem>
+            <para>Third form is similar to the second one with one addition - prepended <code>slash (&apos;/&apos;)</code>. This one describes <emphasis>symbolic name</emphasis> that doesn&apos;t tied to directory layout or file path.  </para>
+          </listitem>
+        </itemizedlist>
+        <para>The last one is <emphasis>recommended</emphasis> form for sources that are targets. When you specify relative path to source target or even worth - an absolute path, that makes project highly tied to the filesystem. </para>
+        <para>Consider a small example. You write a simple library that uses <code>zlib</code> library:<programlisting>lib foo : foo.cpp ../../zlib/build ;</programlisting></para>
+        <para>By using second form you mandate that <code>zlib</code> project must lay close to <code>foo</code>. This forces all developers to place this two projects together. This is unacceptable. But if you use third form you will never have such problems:<programlisting>lib foo : foo.cpp /zlib ;</programlisting></para>
+        <para>Now <code>foo</code> is not tied with  <code>zlib</code> placement. Hammer will resolve /zlib into appropriate path that was specified somewhere previously using <code>use-project</code> rule.</para>
+      </section>
+      <section>
+        <title>Target&apos;s requirements</title>
+        <para>Target&apos;s requirements is a property set that should always be present when building a target. For example, when you want that library should be build as a static library you place <code>&lt;link&gt;static</code> in requirements:</para>
+        <programlisting>lib foo : foo.cpp : &lt;link&gt;static ;</programlisting>
+        <para>There are many different features that affect build in many ways. You can <remark> TODO ? </remark> </para>
+        <para>To build <code>foo</code> correctly you place <emphasis>define</emphasis> and <emphasis>include</emphasis> features and many others that should be present in target&apos;s build properties:</para>
+        <programlisting>lib foo 
+   : 
+    foo.cpp 
+   : 
+    &lt;include&gt;../include 
+    &lt;define&gt;FOO_DEFINE
+    &lt;link&gt;static
+   ;</programlisting>
+        <para>Very often you need to specify some property <emphasis>conditionally</emphasis>. This is done by following syntax:</para>
+        <programlisting>lib foo 
+   : 
+    foo.cpp 
+   : 
+    &lt;include&gt;../include
+    &lt;link&gt;shared:&lt;define&gt;EXPORT_FOO
+   ;</programlisting>
+        <para>Here we declare library <code>foo</code> with <emphasis>conditional</emphasis>  requirement <programlisting>&lt;link&gt;shared:&lt;define&gt;EXPORT_FOO</programlisting>that tell build system to add <code>&lt;define&gt;EXPORT_FOO</code> to <code>foo</code>&apos;s requirements when building as a shared library.</para>
+      </section>
+      <section>
+        <title>Target&apos;s usage requirements</title>
+        <para>Target&apos;s usage requirements is a property set that should be applied to all its direct users. This concept is  heavily used in C++ library and application development. </para>
+        <para>Suppose you are developing library <code>foo</code>:</para>
+        <programlisting>lib foo : foo.cpp : &lt;include&gt;../include ;</programlisting>
+        <para>To use your library users must do the following:<programlisting>lib bar 
+   : 
+    bar.cpp 
+    ../../foo/build                # place foo in sources
+   : 
+    &lt;include&gt;../include            # bar&apos;s include path
+    &lt;include&gt;../../foo/include     # foo&apos;s include path
+   ;</programlisting></para>
+        <para>To successfully build library <code>bar</code> you must specify where to look for <code>foo</code>&apos;s includes. <code>bar</code> is a small library but what about complex one, with 5-10 dependencies? More over what would you put in <code>&lt;include&gt;</code> when those libs will appear in sources as symbolic names?</para>
+        <para>To solve this problem you have to use <emphasis>usage requirements</emphasis>. Rewritten <code>foo</code> declaration with usage requirements will be:<programlisting>lib foo 
+   : 
+     foo.cpp 
+   : 
+    &lt;include&gt;../include 
+   : 
+   : 
+    &lt;include&gt;../include 
+   ;</programlisting></para>
+        <para>Now <code>bar</code> can be rewritten as:<programlisting>lib bar 
+   : 
+     bar.cpp
+     ../../foo/build
+   :
+    &lt;include&gt;../include
+                          # we don&apos;t need to specify 
+                          # &lt;include&gt;../../foo/include
+                          # any more 
+   ;</programlisting></para>
+      </section>
+      <section>
+        <title>Target alternatives</title>
+        <para>Sometimes you need to build a target using a completely different set of sources depending on build request. For example when building with <emphasis>gcc</emphasis> target looks like:<programlisting>lib foo : gcc_foo.cpp ;</programlisting></para>
+        <para>but when building with <emphasis>msvc</emphasis> it looks like:<programlisting>lib foo : msvc_foo.cpp ;</programlisting></para>
+        <para>Another example is using precompiled headers. Some compilers have pch support and some don&apos;t. But build script should work for both. </para>
+        <para>To resolve all these problems you can use target alternatives. The first problem could be solved as:<programlisting>lib foo : gcc_foo.cpp  : &lt;toolset&gt;gcc ;  #first alternative
+lib foo : msvc_foo.cpp : &lt;toolset&gt;msvc ; #second alternative</programlisting></para>
+        <para>When user use <code>/foo</code> in sources for some target, build system load <code>foo</code> project file and see <emphasis>two</emphasis> targets <code>foo</code>. To resolve witch one to use build request and target&apos;s requirements will be compared. If build request contains <code>&lt;toolset&gt;gcc</code> property than <emphasis>first</emphasis> alternative will be selected. If build request contains <code>&lt;toolset&gt;msvc</code> than <emphasis>second</emphasis> one. </para>
+        <para>The second problem may be resolved as:<programlisting>pch stdafx : stdafx.h stdafx.cpp : &lt;toolset&gt;msvc ;
+alias stdafx ;
+
+lib foo : stdafx foo.cpp ;</programlisting></para>
+        <para>Here <code>foo</code> will be built with pch support only for msvc toolset. As you can see targets that have same name may have different <emphasis>types</emphasis>. The <code>pch</code> targets build precompiled header from given sources. The <code>alias</code> target is a special target that do nothing except returning its sources as is to its direct user.</para>
+        <para>The mechanism of alternative selection is very simple - only non-free non-incidental features participate in alternative selection and target with most longer matched set of properties will be chosen.</para>
+      </section>
+      <section>
+        <title>Public sources and requirements</title>
+        <para>Public sources and requirements was introduced to reduce typing and to make build scripts clearer to readers. </para>
+        <para>When you are developing a library some of the dependencies are used for implementation details and some for public part. Suppose you are writing lib <code>foo</code> that use <code>/boost/date_time</code> library:<programlisting>lib foo 
+   : 
+    foo.cpp /boost/date_time 
+   : 
+    &lt;include&gt;../include   #where to find foo&apos;s includes 
+   :
+   :
+    &lt;include&gt;../include   #export includes for foo&apos;s users
+   ;</programlisting></para>
+        <para>If <filename>foo.h</filename> that is part of public interface to <code>foo</code> library includes some of <code>/boost/date_time</code> headers, than <code>/boost/date_time</code> considered as <emphasis>public source</emphasis> for lib <code>foo</code>. </para>
+        <para>In current form building <code>foo</code> lib is not a problem - it builds correctly thanks to <code>/boost/date_time</code>&apos;s usage-requirements that brings correct include paths to <code>foo</code> target. But when somebody will try to use <code>foo</code> to build <code>bar</code>:<programlisting>lib bar 
+   : 
+    bar.cpp /foo
+   :
+    &lt;include&gt;../include #where to find bar&apos;s includes
+   : 
+   :
+    &lt;include&gt;../include #export includes for foo&apos;s users
+   ;</programlisting></para>
+        <para>he  immediately hits the problem. Because usage requirements of <code>/boost/date_time</code> is applied only to <code>foo</code>, as to direct user, compiler will not see correct include paths for <code>/boost/date_time</code> when building <code>bar</code>. <code>/boost/date_time</code>&apos;s includes need to build <code>bar</code> because <code>bar</code> uses <code>/foo</code> that <emphasis>indirectly</emphasis>, though <filename>foo.h</filename>,  uses some of <code>/boost/date_time</code> headers.</para>
+        <para>To resolve this issue <code>foo</code>&apos;s target should be rewritten as:<programlisting>lib foo 
+   : 
+    foo.cpp /boost/date_time 
+   : 
+    &lt;include&gt;../include   #where to find foo&apos;s includes 
+   :
+   :
+    &lt;include&gt;../include   #export includes for foo&apos;s users
+    &lt;use&gt;/boost/date_time #export /boost/date_time usage 
+                          #requiremenst to foo&apos;s users
+   ;</programlisting></para>
+        <para>When <code>&lt;use&gt;some-lib</code> property appear in some target&apos;s requirements build system add <code>some-lib</code>&apos;s usage requirements to that target&apos;s requirements. So now, when we use <code>foo</code> as source for <code>bar</code>, <code>foo</code>&apos;s usage requirements will be added to <code>bar</code>&apos;s requirements and because <code>foo</code>&apos;s usage requirements contains <code>&lt;use&gt;/boost/date_time</code> property all usage requirements of <code>/boost/date_time</code> will be added to requirements of <code>bar</code>. That will give all needed <code>&lt;include&gt;</code> features in <code>bar</code>&apos;s requirements to build it correctly.</para>
+        <para>Specifying <code>/boost/date_time</code> in sources and than <code>&lt;use&gt;/boost/date_time</code> in usage requirements seams not as a very good idea, especially when there is more than one such source. To simplify developers life special syntax was introduced. To indicate that some of source target is <emphasis>public source</emphasis> you should prepend <code>@</code> symbol to it. Rewritten <code>foo</code> target using new syntax:<programlisting>lib foo 
+   : 
+    foo.cpp 
+    @/boost/date_time     #public source
+   : 
+    &lt;include&gt;../include   #where to find foo&apos;s includes 
+   :
+   :
+    &lt;include&gt;../include   #export includes for foo&apos;s users
+   ;</programlisting></para>
+        <para>As you can see some double writing is still remains. <code>&lt;include&gt;../include</code> appear in both requirements and usage requirements. To reduce that typing we can apply the same public concept to requirements:<programlisting>lib foo 
+   : 
+    foo.cpp 
+    @/boost/date_time     #public source
+   : 
+    @&lt;include&gt;../include  #public requirement 
+   ;</programlisting></para>
+      </section>
+    </section>
+  </chapter>
+  <chapter>
+    <title>Let&apos;s build!</title>
+    <section>
+      <title>Executables</title>
+      <section>
+        <title>Definition</title>
+        <para>To build executables you need to use <code>exe</code> rule:<programlisting>exe exe-name 
+   : sources
+   : [requirements]
+   : [default build]
+   : [usage requirements]
+   ;          </programlisting></para>
+      </section>
+      <section>
+        <title>Example: Simple executable</title>
+        <figure label="test">
+          <title>Filesystem layout</title>
+          <graphic fileref="../../common/images/simple-exe-layout.png" align="center"/>
+        </figure>
+        <figure>
+          <title>
+            <filename>../../common/examples/hamroot</filename>
+          </title>
+          <programlisting>...
+use-project /simple-exe : simple-exe/build ;
+...</programlisting>
+        </figure>
+        <figure>
+          <title>
+            <filename>../../common/examples/simple-exe/build/hamfile</filename>
+          </title>
+          <programlisting>exe simple-exe : ../src/main.cpp ;</programlisting>
+        </figure>
+      </section>
+    </section>
+    <section>
+      <title>Libraries</title>
+      <para>All libraries have the same syntax - you need to use <code>lib</code> rule:<programlisting>lib lib-name
+   : [sources]
+   : [requirements]
+   : [default build]
+   : [usage requirements]
+   ;</programlisting></para>
+      <section>
+        <title>Static and shared libraries</title>
+        <para>To build static libraries you should specify <code>&lt;link&gt;static</code> property in target&apos;s requirements:<programlisting>lib foo : foo.cpp : &lt;link&gt;static ;</programlisting></para>
+        <para>To build shared libraries you should specify <code>&lt;link&gt;shared</code> property in target&apos;s requirements:<programlisting>lib bar : bar.cpp : &lt;link&gt;shared ;</programlisting></para>
+        <para>By default feature <code>&lt;link&gt;</code> has <code>shared</code> value. So if you don&apos;t explicitly specify this feature in requirements your libray will be builded as <emphasis>shared</emphasis>. </para>
+        <para>It is a good practice not to add <code>&lt;link&gt;</code> feature to target&apos;s requirements if there is no real reason to mandate linkage type. If you do know real word usage patterns of your library, add <code>&lt;link&gt;</code> feature to <emphasis>default build</emphasis> section. This will allow library&apos;s users to build it whatever way they want but build it as shared if build requiest doesn&apos;t have <code>&lt;link&gt;</code> feature in it. </para>
+        <para>For example, you develop a library <code>foo</code>:<programlisting>lib foo : foo.cpp ;</programlisting></para>
+        <para>and decide that it should be linked as shared because in most use-cases users use almost all code from <code>foo.</code> If you add <code>&lt;link&gt;shared</code> to requirements:<programlisting>lib foo : foo.cpp : &lt;link&gt;shared ;</programlisting></para>
+        <para>no one can build it as shared. But what if someone want to use you library to develop some application X and one of major requirements for  X is no dynamic dependencies? Placing <code>&lt;link&gt;shared</code> in <code>foo</code>&apos;s requirements make it imposible to use <code>foo</code> in that case.</para>
+        <para>To allow <code>foo</code>&apos;s users do whatever they want and to build it as shared by default you should declare <code>foo</code> as:</para>
+        <programlisting>lib foo 
+   : 
+    foo.cpp 
+   : 
+                  # no &lt;link&gt;shared in requirements
+   : 
+    &lt;link&gt;shared  # place it in usage requirements
+   ;</programlisting>
+      </section>
+      <section>
+        <title>Example: Static and shared libraries</title>
+        <para>In this example you will see how to build projects that consist from three different forms of libraries - shared, static and so-called &apos;unconstrained&apos;. Last one is a library that doesn&apos;t have <code>&lt;link&gt;</code> feature in requirements and therefore can be built ether shared or static.</para>
+        <figure>
+          <title>Filesystem layout</title>
+          <graphic fileref="../../common/images/shared-static-libs-layout.png" align="center"/>
+        </figure>
+        <figure>
+          <title>
+            <filename>example/hamroot</filename>
+          </title>
+          <programlisting>...
+use-project /libs : libs ;
+...</programlisting>
+        </figure>
+        <figure>
+          <title>
+            <filename>example/libs/hamfile</filename>
+          </title>
+          <programlisting><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="../../common/examples/libs/hamfile" encoding="UTF-8" parse="text"/></programlisting>
+        </figure>
+        <figure>
+          <title><filename>example/libs/test/build/hamfile</filename> - main project</title>
+          <programlisting><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="../../common/examples/libs/test/build/hamfile" encoding="UTF-8" parse="text"/></programlisting>
+        </figure>
+        <figure>
+          <title><filename>../../common/examples/libs/shared-lib/build/hamfile</filename> - shared library</title>
+          <programlisting><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="../../common/examples/libs/shared-lib/build/hamfile" encoding="UTF-8" parse="text"/></programlisting>
+        </figure>
+        <figure>
+          <title><filename>../../common/examples/libs/static-lib/build/hamfile</filename> - static library</title>
+          <programlisting><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="../../common/examples/libs/static-lib/build/hamfile" encoding="UTF-8" parse="text"/></programlisting>
+        </figure>
+        <figure>
+          <title><filename>../../common/examples/libs/unconstrained-lib/build/hamfile</filename> - unconstrained library</title>
+          <programlisting><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="../../common/examples/libs/unconstrained-lib/build/hamfile" encoding="UTF-8" parse="text"/></programlisting>
+        </figure>
+      </section>
+      <section>
+        <title>Prebuilt libraries</title>
+        <para>Most of the proprietary libraries cannot be destributed in source form, only as prebuilt libraries. In the same time you have plently pre-installed prebuilt libraries on Linux. To use that libraries Hammer has three apprepriate rules:<programlisting>searched-static-lib lib-name
+   : [sources]
+   : [static library name]
+   : [requirements]
+   : [usage requirements] 
+   ;
+
+searched-shared-lib lib-name
+   : [sources]
+   : [shared library name]
+   : [requirements]
+   : [usage requirements] 
+   ;
+
+prebuilt-lib lib-name
+   : [library file name]
+   : [requirements]
+   : [usage requirements] 
+   ;</programlisting></para>
+        <para>Those three rules are enough to descibe any prebuilt library. Note, <code>searched-static-lib</code> and <code>searched-shared-lib</code> does have sources even no actual build process will be done to built those libraries. That is because of the behaviour of unix/linux ld - you <emphasis>may</emphasis> need to specify correct library order to linker to have successfull build. </para>
+        <para><code>searched-static-lib</code> describe static library which is placed somewhere in the system or in the directory that may be pointed by <code>&lt;search&gt;</code> feature in requirements. For each compiler <code>[static library name]</code> have unique form. For gcc that name is a name without any <filename>lib</filename> prefix or <filename>.a</filename> suffix. For Microsoft compiler it is full name such as <code>winsock.lib</code>. To determinate how exactly you should pass library name to specific linker you have to consult manual of that linker.</para>
+        <para><code>searched-shared-lib</code> is almost the same as <code>searched-static-lib</code> except it describe shared library. Rules for <code>[shared lirary name]</code> naming is determined by linker switches.</para>
+        <para><code>prebuild-lib</code> describe a library that lay in known place in the filesystem. While <code>searched-static-lib</code> and <code>searched-shared-lib</code> is for preinstalled or system libraries, that rule is for libraries that is a part of some project. For example it may describe some prebuilt closed source lib which is distributed as Hammer project to be easily linked with.</para>
+      </section>
+    </section>
+    <section>
+      <title>Examples: Prebuilt libraries</title>
+      <para>It is really hard to provide comprehensive and consistent examples for this kind of libraries because of their nature. So providing only Linux and Windows variants supposed to be enough to understand usage.</para>
+      <figure>
+        <title>On Linux</title>
+        <programlisting>searched-static-lib xml2 
+   :                  # note - no sources provided
+   : 
+    xml2              # note - full file name is libxml2.a
+   :
+    &lt;search&gt;/opt/libs # optional additional search path 
+                      # where linker should look for 
+                      # library
+   ;
+explicit xml2 ;
+
+# build executable linked with preinstalled 
+# xml2 library
+exe test
+   : 
+    main.cpp 
+    xml2 
+   ;</programlisting>
+      </figure>
+      <figure>
+        <title>On Windows</title>
+        <programlisting>searched-static-lib sockets 
+   : 
+   :
+    Ws2_32.lib # note - it is full name of library file
+   ; 
+explicit sockets ;
+ 
+#build executable linked with system sockets library
+exe test : main.cpp sockets ;</programlisting>
+      </figure>
+      <figure>
+        <title>Prebuilt lib</title>
+        <programlisting># bar library built for msvc toolset
+prebuilt-lib bar
+   :
+    ../libs/bar-msvc.lib         # path to library file
+   :
+    &lt;toolset&gt;msvc
+   ;
+
+# this is alternative for gcc toolset
+prebuilt-lib bar
+   : 
+    ../libs/libbar-gcc.a         # path to library file
+   : 
+    &lt;toolset&gt;gcc
+   ;
+explicit bar ;
+
+# test executable that links with prebuilt bar lib that 
+# ether preinstalled nor system and placed in ../libs dir
+exe test 
+   : 
+    main
+    bar
+   ;
+</programlisting>
+      </figure>
+    </section>
+  </chapter>
+  <chapter>
+    <title>Reference</title>
+  </chapter>
+</book>

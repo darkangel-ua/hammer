@@ -1,0 +1,1 @@
+exe simple-exe : ../src/main.cpp ;

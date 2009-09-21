@@ -1,0 +1,8 @@
+lib libs.static-lib 
+   :
+    ../src/static_lib.cpp
+    /libs/unconstrained-lib/<link>shared
+   :
+    @<include>../include
+    <link>static
+   ;

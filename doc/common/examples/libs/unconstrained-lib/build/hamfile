@@ -1,0 +1,9 @@
+lib lib.unconstrained-lib
+   :
+    ../src/unconstrained_lib.cpp
+   :
+    @<include>../include
+    <link>shared:<define>UNCONSTRAINED_LIB_EXPORTS
+    @<link>static:<define>UNCONSTRAINED_LIB_STATIC_LIB
+   ;
+    

@@ -214,6 +214,7 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::OBJ), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::H), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::STATIC_LIB), 0, 0));
+      source.push_back(generator::consumable_type(e.get_type_registry().get(types::SHARED_LIB), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::HEADER_LIB), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::SEARCHED_STATIC_LIB), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::SEARCHED_SHARED_LIB), 0, 0));

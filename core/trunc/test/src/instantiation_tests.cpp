@@ -9,6 +9,7 @@
 #include <hammer/core/feature_registry.h>
 #include <hammer/core/feature_set.h>
 #include <iostream>
+#include "options.h"
 
 using namespace hammer;
 using namespace std;
@@ -29,12 +30,21 @@ struct instantiation_tests : public setuped_engine
       // FIXME: else we just parse project for now
       if (exists(test_data_path / "instantiation.jcf"))
       {
+         options opts(test_data_path / "hamfile");
          feature_set* build_request = engine_.feature_registry().make_set();
-         vector<basic_target*> instantiated_targets;
-         p.instantiate("test", *build_request, &instantiated_targets);
+         build_request->join("host-os", engine_.feature_registry().get_def("host-os").get_default().c_str());
 
-         BOOST_CHECK(checker_.parse(test_data_path / "instantiation.jcf"));
-         BOOST_CHECK(checker_.walk(instantiated_targets, &engine_));
+         vector<basic_target*> instantiated_targets;
+         if (opts.exists("should-fail"))
+         {
+            BOOST_CHECK_THROW(p.instantiate("test", *build_request, &instantiated_targets), std::exception);
+         }
+         else
+         {
+            p.instantiate("test", *build_request, &instantiated_targets);
+            BOOST_CHECK(checker_.parse(test_data_path / "instantiation.jcf"));
+            BOOST_CHECK(checker_.walk(instantiated_targets, &engine_));
+         }
       }
    }
 

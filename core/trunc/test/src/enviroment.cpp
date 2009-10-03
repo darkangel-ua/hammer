@@ -5,10 +5,13 @@
 #include <hammer/core/generator_registry.h>
 #include <hammer/core/testing_generators.h>
 #include <hammer/core/toolset_manager.h>
+#include <hammer/core/types.h>
+
 
 setuped_engine::setuped_engine(bool install_toolsets)
 {
    engine_.load_hammer_script(test_data_path / "../scripts/startup.ham");
+   hammer::types::register_standart_types(engine_.get_type_registry(), engine_.feature_registry());
    if (install_toolsets)
    {
       engine_.toolset_manager().add_toolset(std::auto_ptr<hammer::toolset>(new hammer::msvc_toolset()));

@@ -65,21 +65,14 @@ int compute_alternative_rank(const feature_set& target_properties,
             (**i).attributes().undefined_))
       {
          feature_set::const_iterator f = build_request.find((**i).name());
-         if (f != build_request.end() && 
-             (**i).value() != (**f).value())
-         {
-            return -1;
-         }
-         else
-         {
-             if ((**i).value() != (**i).definition().get_default())
-                return -1;
-
-            if ((**i).name() == "override")
-               rank += 10000;
+         if (f != build_request.end())
+            if ((**i).value() != (**f).value())
+               return -1;
             else
                ++rank;
-         }
+         else
+            if ((**i).name() == "override")
+               rank += 10000;
       }
    }
 

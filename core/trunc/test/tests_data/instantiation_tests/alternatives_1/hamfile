@@ -1,3 +1,5 @@
+# options: should-fail
+
 alias src : multi.cpp  ;
 alias src : single.cpp : <threading>single ;
 explicit src ;

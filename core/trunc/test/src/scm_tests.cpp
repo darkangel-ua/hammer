@@ -19,12 +19,14 @@ struct scm_tests
 
    void remove_all(const std::string& test_name)
    {
+/*
       bp::launcher launcher;
       for(fs::directory_iterator i(test_data_path / "scm_tests" / test_name), last; i != last; ++i)
       {
          if (is_directory(*i) && i->filename() != ".svn")
             launcher.start(bp::command_line::shell("RMDIR /S /Q " + i->path().native_file_string())).wait();
       }
+*/
    }
 
    void load_project(const string& name);

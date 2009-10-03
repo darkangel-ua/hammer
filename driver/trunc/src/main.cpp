@@ -557,6 +557,9 @@ int main(int argc, char** argv)
 
       if (build_request->find("variant") == build_request->end())
          build_request->join("variant", "debug");
+      
+      if (build_request->find("host-os") == build_request->end())
+         build_request->join("host-os", engine.feature_registry().get_def("host-os").get_default().c_str());
 
       if (opts.debug_level_ > 0)
          cout << "...Loading project at '" << fs::current_path() << "'... ";

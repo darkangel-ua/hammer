@@ -472,6 +472,7 @@ int main(int argc, char** argv)
          cout << "...Loading startup script... ";
 
       engine.load_hammer_script(startup_script);
+      types::register_standart_types(engine.get_type_registry(), engine.feature_registry());
 
       if (opts.debug_level_ > 0)
          cout << "Done\n";

@@ -1,7 +1,7 @@
 feature.feature undef : : free ;
 feature.feature define : : free ;
 feature.feature include : : free path ; 
-feature.feature toolset : : propagated no-defaults ;
+feature.feature toolset : : propagated no-defaults no-checks ;
 feature.subfeature toolset : version ; 
 feature.feature link : shared static ;
 feature.feature runtime-link : shared static ;

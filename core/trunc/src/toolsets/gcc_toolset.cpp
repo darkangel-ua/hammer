@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <boost/filesystem/operations.hpp>
 #include <hammer/core/toolsets/gcc_toolset.h>
 #include <hammer/core/feature_def.h>
 #include <hammer/core/engine.h>
@@ -14,6 +15,7 @@
 #include <hammer/core/generator_registry.h>
 #include <hammer/core/exe_and_shared_lib_generator.h>
 #include <hammer/core/static_lib_generator.h>
+#include <hammer/core/unix_libraries_argument_writer.h>
 
 using namespace boost;
 using namespace std;
@@ -34,7 +36,10 @@ gcc_toolset::resolve_install_data(const location_t* toolset_home_) const
    install_data.version_ = "unknown";
    install_data.compiler_ = toolset_home / "g++";
    install_data.linker_ = toolset_home / "g++";
+
    install_data.librarian_ = toolset_home / "ar";
+   if (!exists(install_data.librarian_))
+      install_data.librarian_ = "ar";
 
    return install_data;
 }
@@ -77,7 +82,7 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
            add("<warnings-as-errors>on", "-Werror").
            add("<debug-symbols>on", "-g").
            add("<profiling>on", "-pg").
-           add("<link>shared", "-fPIC");
+           add("<link>shared/<host-os>linux", "-fPIC");
 
    shared_ptr<fs_argument_writer> link_flags(new fs_argument_writer("link_flags", e.feature_registry()));
    link_flags->add("<debug-symbols>on", "-g").
@@ -140,7 +145,8 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
       shared_ptr<source_argument_writer> obj_sources(new source_argument_writer("obj_sources", e.get_type_registry().get(types::OBJ)));
       shared_ptr<product_argument_writer> exe_product(new product_argument_writer("exe_product", e.get_type_registry().get(types::EXE)));
       auto_ptr<cmdline_action> exe_action(new cmdline_action("link-exe", exe_product));
-      cmdline_builder exe_cmd(install_data.linker_.native_file_string() + " $(link_flags) $(searched_lib_searched_dirs) -o \"$(exe_product)\" $(obj_sources) $(static_lib_sources) $(searched_lib_sources) $(shared_lib_sources)\n");
+      cmdline_builder exe_cmd(install_data.linker_.native_file_string() + " $(link_flags) $(searched_lib_searched_dirs) -o \"$(exe_product)\" $(obj_sources) "
+                              "$(static_lib_sources) $(shared_lib_sources)\n");
       
       exe_cmd += link_flags;
       exe_cmd += searched_lib_searched_dirs;
@@ -197,13 +203,12 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
    { 
       shared_ptr<source_argument_writer> obj_sources(new source_argument_writer("obj_sources", e.get_type_registry().get(types::OBJ)));
       shared_ptr<product_argument_writer> shared_lib_product(new product_argument_writer("shared_lib_product", e.get_type_registry().get(types::SHARED_LIB)));
-      cmdline_builder shared_lib_cmd(install_data.linker_.native_file_string() + " -shared $(link_flags) $(searched_lib_searched_dirs) -o \"$(shared_lib_product)\" $(obj_sources) $(static_lib_sources) $(searched_lib_sources) $(shared_lib_sources)\n");
+      shared_ptr<unix_libraries_argument_writer> libraries_writer(new unix_libraries_argument_writer("libraries", linker_type::GNU, e));
+      cmdline_builder shared_lib_cmd(install_data.linker_.native_file_string() + " -shared $(link_flags) $(searched_lib_searched_dirs) -o \"$(shared_lib_product)\" $(obj_sources) $(libraries)\n");
       shared_lib_cmd += link_flags;
       shared_lib_cmd += searched_lib_searched_dirs;
       shared_lib_cmd += obj_sources;
-      shared_lib_cmd += static_lib_sources;
-      shared_lib_cmd += searched_lib_sources;
-      shared_lib_cmd += shared_lib_sources;
+      shared_lib_cmd += libraries_writer;
       shared_lib_cmd += shared_lib_product;
 
       auto_ptr<cmdline_action> shared_lib_action(new cmdline_action("link-shared-lib", shared_lib_product));
@@ -224,7 +229,6 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
       g->action(shared_lib_action);
       e.generators().insert(g);
    }
-
 }
 
 void gcc_toolset::autoconfigure(engine& e) const

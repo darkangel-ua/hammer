@@ -58,7 +58,7 @@ boost::filesystem::path relative_path(boost::filesystem::path p,
 
 }
 
-#if defined(_WIN32)
+#if defined(_WIN32) && !defined(__MINGW32__)
 #include <windows.h>
 boost::filesystem::wpath to_wide(const boost::filesystem::path& narrow_path)
 {

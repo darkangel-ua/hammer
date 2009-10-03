@@ -87,19 +87,18 @@ engine::engine()
 
    {
       feature_attributes ft = {0};
-      fr->add_def(feature_def("os", list_of("nt")("linux"), ft));
+      fr->add_def(feature_def("host-os", list_of("windows")("linux"), ft));
    }
 
 #if defined(_WIN32)
-   fr->get_def("os").set_default("nt");
+   fr->get_def("host-os").set_default("windows");
 #else
-   fr->get_def("os").set_default("linux");
+   fr->get_def("host-os").set_default("linux");
 #endif
 
    feature_registry_ = fr.release();
 
    type_registry_.reset(new type_registry);
-   types::register_standart_types(*type_registry_, *feature_registry_);
 
    generators_.reset(new generator_registry);
 

@@ -49,27 +49,28 @@ void register_standart_types(type_registry& tr, feature_registry& fr)
    const target_type& tRC = tr.insert(target_type(RC, ".rc"));
    const target_type& tRES = tr.insert(target_type(RES, ".res"));
    
-   target_type::suffixes_t obj_suffixes = list_of<target_type::suffix_def>(".obj", *parse_simple_set("<os>nt", fr))
-                                                                          (".o", *parse_simple_set("<os>linux", fr));
+   target_type::suffixes_t obj_suffixes = list_of<target_type::suffix_def>(".o", *parse_simple_set("<host-os>linux", fr))
+                                                                          (".o", *parse_simple_set("<toolset>gcc", fr))
+                                                                          (".obj", *parse_simple_set("<host-os>windows", fr));
    const target_type& tOBJ = tr.insert(target_type(OBJ, obj_suffixes));
    const target_type& tPCH = tr.insert(target_type(PCH, ".pch"));
    const target_type& tLIB = tr.insert(target_type(LIB, ""));
-   target_type::suffixes_t shared_suffixes = list_of<target_type::suffix_def>(".dll", *parse_simple_set("<os>nt", fr))
-                                                                             (".so", *parse_simple_set("<os>linux", fr));
+   target_type::suffixes_t shared_suffixes = list_of<target_type::suffix_def>(".dll", *parse_simple_set("<host-os>windows", fr))
+                                                                             (".so", *parse_simple_set("<host-os>linux", fr));
    const target_type& tSHARED_LIB = tr.insert(target_type(SHARED_LIB, shared_suffixes, tLIB));
    const target_type& tPREBUILT_SHARED_LIB = tr.insert(target_type(PREBUILT_SHARED_LIB, "", tSHARED_LIB));
    const target_type& tSTATIC_LIB = tr.insert(target_type(STATIC_LIB, ".lib", tLIB));
    const target_type& tPREBUILT_STATIC_LIB = tr.insert(target_type(PREBUILT_STATIC_LIB, "", tSTATIC_LIB));
 
-   target_type::suffixes_t static_lib_suffixes = list_of<target_type::suffix_def>(".lib", *parse_simple_set("<os>nt", fr))
-                                                                                 (".a", *parse_simple_set("<os>linux", fr));
+   target_type::suffixes_t static_lib_suffixes = list_of<target_type::suffix_def>(".lib", *parse_simple_set("<host-os>windows", fr))
+                                                                                 (".a", *parse_simple_set("<host-os>linux", fr));
    const target_type& tIMPORT_LIB = tr.insert(target_type(IMPORT_LIB, static_lib_suffixes, tSTATIC_LIB));
    const target_type& tSEARCHED_LIB = tr.insert(target_type(SEARCHED_LIB, "", tLIB));
    const target_type& tSEARCHED_SHARED_LIB = tr.insert(target_type(SEARCHED_SHARED_LIB, "", tSEARCHED_LIB));
    const target_type& tSEARCHED_STATIC_LIB = tr.insert(target_type(SEARCHED_STATIC_LIB, "", tSEARCHED_LIB));
    const target_type& tHEADER_LIB = tr.insert(target_type(HEADER_LIB, target_type::suffixes_t(), tLIB));
-   target_type::suffixes_t exe_suffixes = list_of<target_type::suffix_def>(".exe", *parse_simple_set("<os>nt", fr))
-                                                                           ("", *parse_simple_set("<os>linux", fr));
+   target_type::suffixes_t exe_suffixes = list_of<target_type::suffix_def>(".exe", *parse_simple_set("<host-os>windows", fr))
+                                                                           ("", *parse_simple_set("<host-os>linux", fr));
    const target_type& tEXE = tr.insert(target_type(EXE, exe_suffixes));
    const target_type& tEXE_MANIFEST = tr.insert(target_type(EXE_MANIFEST, ".exe.manifest"));
    const target_type& tDLL_MANIFEST = tr.insert(target_type(DLL_MANIFEST, ".dll.manifest"));

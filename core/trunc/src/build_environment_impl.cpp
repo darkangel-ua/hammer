@@ -29,15 +29,21 @@ bool build_environment_impl::run_shell_commands(std::ostream* captured_output_st
 {
    string tmp_file_name(boost::guid::create().to_string() + ".cmd");
    location_t full_tmp_file_name(working_dir / tmp_file_name);
+   std::stringstream cmd_stream;
 
    try
    {
+#if defined(_WIN32)
       {
          std::auto_ptr<ostream> f(create_output_file(full_tmp_file_name.native_file_string().c_str(), std::ios_base::out));
 
          for(vector<string>::const_iterator i = cmds.begin(), last = cmds.end(); i != last; ++i)
             *f << *i << '\n';
       }
+#else
+      for(vector<string>::const_iterator i = cmds.begin(), last = cmds.end(); i != last; ++i)
+         cmd_stream << *i << '\n';
+#endif
 
       bp::context ctx;
       ctx.environment = bp::self::get_environment();
@@ -61,15 +67,13 @@ bool build_environment_impl::run_shell_commands(std::ostream* captured_output_st
       cmdline.push_back("/Q");
       cmdline.push_back("/C");
       cmdline.push_back("call " + tmp_file_name);
-#else
-      const char* shell_cmd = getenv("SHELL");
-      if (shell_cmd == NULL)
-         throw std::runtime_error("Can't find SHELL environment variable.");
-
-      cmdline.push_back(shell_cmd);
-      cmdline.push_back(tmp_file_name);
 #endif
+
+#if defined(_WIN32)
       bp::child shell_action_child = bp::launch(std::string(), cmdline, ctx);
+#else
+      bp::child shell_action_child = bp::launch_shell(cmd_stream.str(), ctx);
+#endif
 
       if (captured_output_stream != NULL)
          std::copy(istreambuf_iterator<char>(shell_action_child.get_stdout()),
@@ -79,9 +83,16 @@ bool build_environment_impl::run_shell_commands(std::ostream* captured_output_st
       bp::status st = shell_action_child.wait();
 
       if (st.exit_status() != 0)
+#if defined(_WIN32)
          dump_shell_command(std::cerr, full_tmp_file_name);
+#else
+         cerr << cmd_stream.str();
+#endif
 
+
+#if defined(_WIN32)
       remove(full_tmp_file_name);
+#endif
 
       return st.exit_status() == 0;
    }
@@ -94,8 +105,12 @@ bool build_environment_impl::run_shell_commands(std::ostream* captured_output_st
       std::cerr << "Error: Unknown error\n";
    }
 
+#if defined(_WIN32)
    dump_shell_command(std::cerr, full_tmp_file_name);
    remove(full_tmp_file_name);
+#else
+   cerr << cmd_stream.str();
+#endif
    return false;
 }
 

@@ -87,6 +87,7 @@ engine::engine()
 
    {
       feature_attributes ft = {0};
+      ft.propagated = true;
       fr->add_def(feature_def("host-os", list_of("windows")("linux"), ft));
    }
 

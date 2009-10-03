@@ -1,4 +1,0 @@
-test [ type = SHARED_LIB; ]
-{
-   multi.cpp [ type = CPP; ] {}
-}

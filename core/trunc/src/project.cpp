@@ -72,6 +72,9 @@ int compute_alternative_rank(const feature_set& target_properties,
          }
          else
          {
+             if ((**i).value() != (**i).definition().get_default())
+                return -1;
+
             if ((**i).name() == "override")
                rank += 10000;
             else

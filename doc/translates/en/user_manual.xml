@@ -3,21 +3,6 @@
 <book>
   <title>Hammer User Manual</title>
   <chapter>
-    <title>Introduction</title>
-    <section>
-      <title>What is Hammer?</title>
-      <remark> TODO </remark>
-    </section>
-    <section>
-      <title>Hammer&apos;s history</title>
-      <remark> TODO </remark>
-    </section>
-    <section>
-      <title>Hammer&apos;s features</title>
-      <remark> TODO </remark>
-    </section>
-  </chapter>
-  <chapter>
     <title>Overview</title>
     <section>
       <title>Filesystem layout</title>
@@ -44,7 +29,7 @@
       <section>
         <title>Basics</title>
         <para>To manage all that complexity in software development we divide software into pieces - libraries. That makes the life much easier. Libraries usually build of sources, includes, documents and tests. Sources can be build into library, documents can be build from DocBook to HTML, tests can be build and run. </para>
-        <para>Hammer&apos;s <emphasis>project</emphasis> is just a hammer script file. It can contain targets to build or projects structuring declarations or both of them. <remark> TODO I couldn't understand the previous sentence, needs rephrasing. </remark> To illustrate that let&apos;s see an example:</para>
+        <para>Hammer&apos;s <emphasis>project</emphasis> is just a hammer script file. It can contain targets to build or projects structuring declarations or both of them. <remark> TODO I couldn&apos;t understand the previous sentence, needs rephrasing. </remark> To illustrate that let&apos;s see an example:</para>
         <graphic fileref="../../common/images/project-layout.png" align="center"/>
         <para>Here we have a small part of well known boost library collection rearranged to be modular. The project <filename>boost/hamfile</filename> doesn&apos;t have any build targets. It only instructs hammer where to find boost&apos;s sub-projects:</para>
         <programlisting>...

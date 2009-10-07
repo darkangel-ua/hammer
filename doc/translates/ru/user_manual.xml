@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- This document was created with Syntext Serna Free. --><!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "docbookV4.5/docbookx.dtd" []>
-<book>
+<book lang="en">
   <title>Hammer. Руководство пользователя</title>
   <chapter>
     <title>Вступление</title>
@@ -100,46 +100,47 @@ lib barfoo : test.cpp : &lt;define&gt;FOO=1 : : &lt;define&gt;BOO=1 ;</programli
       <title>Признаки и свойства</title>
       <para>Чтобы портабельно представить аспекты конфигурирования таргетов, такие как  debug и release варианты, или single- и multi-threaded сборки, Hammer использует  <emphasis>признаки</emphasis> с асоциированными <emphasis>значениями</emphasis>. Например, признак  <code>debug-symbols</code> может иметь значение  <code>on</code> или <code>off</code>.  <emphasis>Свойство</emphasis> это просто пара (признак, значение).</para>
       <para>В скрипте свойства  просто размещаются с помощью специального синтаксиса  <code>&lt;имя-признака&gt;значение</code>. Например <code>&lt;link&gt;static</code> - признак <code>link</code> со значением <code>static</code>.<remark> TODO: What links with what? </remark></para>
-      <para>Каждый признак имеет множество асоциированных  <emphasis>атрибутов</emphasis>. Атрибуты признака - это низкоуровневые описания как билдовая система должна интерпретировать значения признаков когда они появляются в билд запросе. Мы также ссылаемся на атрибуты свойств, так что  <code>присущие</code> свойства, к примеру, являются одними, чьи признаки имеют <code>присущие</code> атрибуты.<table>
+      <para>Каждый признак имеет множество асоциированных  <emphasis>атрибутов</emphasis>. Атрибуты признака - это низкоуровневые описания как билдовая система должна интерпретировать значения признаков когда они появляются в билд запросе. Мы также ссылаемся на атрибуты свойств, так что  <code>присущие</code> свойства, к примеру, являются одними, чьи признаки имеют <code>присущие</code> атрибуты.</para>
+      <para><table>
           <title>Атрибуты признаков</title>
           <tgroup cols="2">
             <colspec colwidth="2.5 cm"/>
             <tbody>
               <row>
-                <entry align="center">incidental</entry>
-                <entry>Incidental features are assumed not to affect build products at all. A feature that controls a compiler&apos;s warning level is one example of a likely incidental feature. Non-incidental features are assumed to affect build products.</entry>
+                <entry align="center">дополнительный</entry>
+                <entry>Дополнительные признаки предполагают неизменность результата сборки в общем. Признак, который управляет уровнем предупреждений компилятора является типичным примером дополнительного признака. Не дополнительные признаки допускают влияние на результат сборки.</entry>
               </row>
               <row>
-                <entry align="center">propagated</entry>
-                <entry>Features of this kind are propagated to dependencies. That is, if a target is built using a propagated property, the build systems attempt to use the same property when building any of its dependencies as part of that target. For instance, when an exectuable is requested to build with msvc-8.0 toolset, one usually want it to be linked with libraries builded with same toolset. Thus, the &lt;toolset&gt; feature is propagated.</entry>
+                <entry align="center">распостраняющийся</entry>
+                <entry>Признаки такого рода распостраняются на зависимости. Это означает, что если таргет собран с использованием распостраняемого свойства, билдовая система пытается использовать то же свойство при сборке любых его зависимостей как часть таргета. Например, когда исполняемый файл требует быть собраным msvc-8.0 инструментарием, он обычно линкуется с библиотеками собраными тем же инструментарием. Таким образом признак &lt;toolset&gt; является распостраняющимся.</entry>
               </row>
               <row>
-                <entry align="center">free</entry>
-                <entry>Most features have a finite set of allowed values, and can only take on a single value from that set in a given build specification. Free features, on the other hand, can have several values at a time and each value can be an arbitrary string. For example, it is possible to have several preprocessor symbols definitions simultaneously: &lt;define&gt;NDEBUG=1 &lt;define&gt;HAS_CONFIG_H=1 </entry>
+                <entry align="center">свободный</entry>
+                <entry>Большинство признаков имеют конечное множество разрешенных атрибутов, и могут принимать только одно значение из этого множества в данной спецификации сборки. Свободные признаки, с другой стороны, могут иметь несколько значений одновременно и каждое значение может быть произвольной строкой. Например, можно одновременно иметь несколько определений для препроцессора: &lt;define&gt;NDEBUG=1 &lt;define&gt;HAS_CONFIG_H=1 </entry>
               </row>
               <row>
-                <entry align="center">optional</entry>
-                <entry>An optional feature is a feature that is not required to appear in a build specification. Every non-optional, non-free and without no-default attribute feature has a default value that is used when a value for the feature is not otherwise specified, either in a target&apos;s requirements or in the user&apos;s build request. </entry>
+                <entry align="center">опциональный</entry>
+                <entry>Опциональный атрибут - это атрибут, который не обязателен для сборки. Каждый неопциональный, несвободный признаки и признаки без атрибутов по-умолчанию имеют значения по-умолчанию, которые используются в случае если значение признака неопределено явно ни в реквайрементах таргета, ни в требваниях к сборке, заданных пользователем. </entry>
               </row>
               <row>
-                <entry align="center">path</entry>
-                <entry>The value of a path feature specifies a path. The path is treated as relative to the directory of <filename>hamfile</filename> where path feature is used and is translated appropriately by the build system when the build is invoked from a different directory</entry>
+                <entry align="center">путь</entry>
+                <entry>Значение признака пути определяет путь. The value of a path feature specifies a path. Путь трактуется как относительный к директории с <filename>hamfile</filename>, где признак путь используется и транслируется соответственно билдовой системой, когда сборка запущена из другой директории.</entry>
               </row>
               <row>
-                <entry align="center">composite</entry>
-                <entry>Composite features actually correspond to groups of properties. For example, a build variant is a composite feature. When generating targets from a set of build properties, composite features are recursively expanded and added to the build property set, so rules can find them if necessary. Non-composite non-free features override components of composite features in a build property set.</entry>
+                <entry align="center">составной</entry>
+                <entry>Составной признак фактически соответствует группам признаков. Например, вариант сборки является составным признаком. Когда генерирутся таргеты из множества свойств сборки, составные признаки рекурсивно разворачиваются и прибавляются к множеству свойств сборки, таким образом рулы могут найти их при необходимости. Несоставные несвободные признаки переопределяют компоненты составных признаков в множестве свойств сборки.</entry>
               </row>
               <row>
-                <entry align="center">no-defaults</entry>
-                <entry>This attribute used to disable default behaviour of assigning default values to non-optional non-free features.</entry>
+                <entry align="center">не умолчательный</entry>
+                <entry>Этот атрибут изпользуется чтобы отключить умолчательное поведение присвоения значений по-уполчанию неопциональным несвободным признакам.</entry>
               </row>
               <row>
-                <entry align="center">no-checks</entry>
-                <entry>This attribute disables validating allowed values for feature. With help of this attribute it is posible to define feature that can have any value like free feature, but behave like non-free non-incidental features.</entry>
+                <entry align="center">беспроверочный</entry>
+                <entry>Этот атрибут отключает валидацию разрешенных значений для признака. с помощью этого признака возможно определить признак, который может иметь любое значение, как у свободного признака, но с поведением несвободного недополнительного признака.</entry>
               </row>
               <row>
-                <entry align="center">dependency</entry>
-                <entry>The value of dependency feature is a target reference.</entry>
+                <entry align="center">зависимость</entry>
+                <entry>Значение зависимого атрибута - это ссылка на таргет.</entry>
               </row>
             </tbody>
           </tgroup>
@@ -172,44 +173,44 @@ lib barfoo : test.cpp : &lt;define&gt;FOO=1 : : &lt;define&gt;BOO=1 ;</programli
         <para>Исходники таргета могут принимать три различных формы:</para>
         <itemizedlist>
           <listitem>
-            <para>Первая форма First form is a file expressed as relative to project or absolute path. </para>
+            <para>Первая форма -  это  файл представленный как относительный к проекту или абсолютному пути.</para>
           </listitem>
           <listitem>
-            <para>Second form is filesystem path to project, optionally with target name and build properties with witch target must be built. Examples:</para>
+            <para>Вторая форма - это системный путь к проекту, опционально с именем таргета и свойствами сборки с которыми таргет должен быть собран. Примеры:</para>
             <itemizedlist>
               <listitem>
                 <programlisting>lib a : b a.cpp ;</programlisting>
-                <para><code>a</code>&apos;s sources is a regular file <code>a.cpp</code> and all targets from <filename>./b/hamfile</filename> project.</para>
+                <para>исходниками библиотеки <code>a</code>  являются  обычный файл <code>a.cpp</code> и все таргеты из проекта <filename>./b/hamfile</filename>.</para>
               </listitem>
               <listitem>
                 <programlisting>lib b : ../c b.cpp ;</programlisting>
-                <para><code>b</code>&apos;s sources is a regular file <filename>b.cpp</filename> and all targets from <filename>../c/hamfile</filename> project.</para>
+                <para>исходниками библиотеки <code>b</code> являются обычный файл <filename>b.cpp</filename> и все таргеты проекта <filename>../c/hamfile</filename>.</para>
               </listitem>
               <listitem>
                 <programlisting>lib c : ../d//d_1 c.cpp ;</programlisting>
-                <para><code>c</code>&apos;s sources is a regular file <filename>c.cpp</filename> and target <code>d_1</code> from <filename>../d/hamfile</filename> project.</para>
+                <para>исходниками библиотеки <code>c</code> являются обычный файл <filename>c.cpp</filename> и таргет  <code>d_1</code> из проекта  <filename>../d/hamfile</filename>.</para>
               </listitem>
               <listitem>
                 <programlisting>lib d : f/lib_f//f_1/&lt;link&gt;static d.cpp ;</programlisting>
-                <para> <code>d</code>&apos;s sources is a regular file <code>d.cpp</code> and <code>f_1</code> target from <filename>./f/lib_f/hamfile</filename> project that must be build as static library.</para>
+                <para> исходниками  библиотеки <code>d</code> являются обычный файл <code>d.cpp</code> и таргет <code>f_1</code> из проекта <filename>./f/lib_f/hamfile</filename>, который должен быть собран в статическую библиотеку.</para>
               </listitem>
             </itemizedlist>
           </listitem>
           <listitem>
-            <para>Third form is similar to the second one with one addition - prepended <code>slash (&apos;/&apos;)</code>. This one describes <emphasis>symbolic name</emphasis> that doesn&apos;t tied to directory layout or file path.  </para>
+            <para>Третья форма подобна второй, но с одним дополнением - предворяющей косой чертой <code>slash (&apos;/&apos;)</code>. Она описвывает  <emphasis>символьное имя</emphasis> которое не завязывается на структуру директорий или пути к файлам.</para>
           </listitem>
         </itemizedlist>
-        <para>The last one is <emphasis>recommended</emphasis> form for sources that are targets. When you specify relative path to source target or even worth - an absolute path, that makes project highly tied to the filesystem. </para>
-        <para>Consider a small example. You write a simple library that uses <code>zlib</code> library:<programlisting>lib foo : foo.cpp ../../zlib/build ;</programlisting></para>
-        <para>By using second form you mandate that <code>zlib</code> project must lay close to <code>foo</code>. This forces all developers to place this two projects together. This is unacceptable. But if you use third form you will never have such problems:<programlisting>lib foo : foo.cpp /zlib ;</programlisting></para>
-        <para>Now <code>foo</code> is not tied with  <code>zlib</code> placement. Hammer will resolve /zlib into appropriate path that was specified somewhere previously using <code>use-project</code> rule.</para>
+        <para>Последний вариант является <emphasis>рекомендуемой</emphasis> формой для исходников, которые являются таргетами. Когда вы задаете относительный путь к исходному таргету, или еще хуже - абсолютный путь, это делает проекты сильно привязанными к файловой системе.</para>
+        <para>Расмотрим маленький пример. Вы написали простую библиотеку, которая зависит от библиотеки  <code>zlib</code>:<programlisting>lib foo : foo.cpp ../../zlib/build ;</programlisting></para>
+        <para>Используя вторую форму вы  указываете что проект <code>zlib</code> должен располагатся близко к <code>foo</code>. Это провоцирует всех разработчиков размещать эти два проекта вместе. Это неприемлемо! Но, если Вы используете третью форму, то такие проблемы никогда не возникнут:<programlisting>lib foo : foo.cpp /zlib ;</programlisting></para>
+        <para>Теперь<code>foo</code> не завязан на местоположение <code>zlib</code>. Hammer преобразует /zlib в правильный путь, который указан где-нибудь выше с помощью правила <code>use-project</code>.</para>
       </section>
       <section>
-        <title>Реквайременты таргета</title>
-        <para>Target&apos;s requirements is a property set that should always be present when building a target. For example, when you want that library should be build as a static library you place <code>&lt;link&gt;static</code> in requirements:</para>
+        <title>Требования таргета</title>
+        <para>Требования таргета это множество свойств, которые должны всегда присутствовать при сборке таргета. Например, когда Вы хотите, чтобы некоторая библиотека была собрана статически, нужно прописать <code>&lt;link&gt;static</code> в требованиях таргета:</para>
         <programlisting>lib foo : foo.cpp : &lt;link&gt;static ;</programlisting>
-        <para>There are many different features that affect build in many ways. You can <remark> TODO ? </remark> </para>
-        <para>To build <code>foo</code> correctly you place <emphasis>define</emphasis> and <emphasis>include</emphasis> features and many others that should be present in target&apos;s build properties:</para>
+        <para>Существует много различных признаков, которые  влияют на сборку разными способами. Вы можете <remark> TODO ? Чего туду, непонятно :)</remark> </para>
+        <para>Чтобы собрать <code>foo</code> коректно нужно прописать  <emphasis>define</emphasis> и <emphasis>include</emphasis> признаки и много других, которые должны присутствовать в свойствах сборки таргета:</para>
         <programlisting>lib foo 
    : 
     foo.cpp 
@@ -226,14 +227,14 @@ lib barfoo : test.cpp : &lt;define&gt;FOO=1 : : &lt;define&gt;BOO=1 ;</programli
     &lt;include&gt;../include
     &lt;link&gt;shared:&lt;define&gt;EXPORT_FOO
    ;</programlisting>
-        <para>Here we declare library <code>foo</code> with <emphasis>conditional</emphasis>  requirement <programlisting>&lt;link&gt;shared:&lt;define&gt;EXPORT_FOO</programlisting>that tell build system to add <code>&lt;define&gt;EXPORT_FOO</code> to <code>foo</code>&apos;s requirements when building as a shared library.</para>
+        <para>Здесь мы определям библиотеку <code>foo</code> с <emphasis>условным</emphasis>  требованием<programlisting>&lt;link&gt;shared:&lt;define&gt;EXPORT_FOO</programlisting>которое говорит билдовой системе добавить <code>&lt;define&gt;EXPORT_FOO</code> призак к требованиям  <code>foo</code>, в случае статической сборки библиотеки.</para>
       </section>
       <section>
-        <title>Target&apos;s usage requirements</title>
-        <para>Target&apos;s usage requirements is a property set that should be applied to all its direct users. This concept is  heavily used in C++ library and application development. </para>
-        <para>Suppose you are developing library <code>foo</code>:</para>
+        <title>Требования к использованию таргета</title>
+        <para>Требования к использованию таргета это набор свойств,  которые нужно применить для всех его прямых пользователей. Этот концепт интенсивно используется в разработке библиотек и приложений на C++.</para>
+        <para>Предположим Вы разрабатываете библиотеку  <code>foo</code>:</para>
         <programlisting>lib foo : foo.cpp : &lt;include&gt;../include ;</programlisting>
-        <para>To use your library users must do the following:<programlisting>lib bar 
+        <para>Для использования этой библиотеки вы должны сделать следующее:<programlisting>lib bar 
    : 
     bar.cpp 
     ../../foo/build                # place foo in sources
@@ -241,8 +242,8 @@ lib barfoo : test.cpp : &lt;define&gt;FOO=1 : : &lt;define&gt;BOO=1 ;</programli
     &lt;include&gt;../include            # bar&apos;s include path
     &lt;include&gt;../../foo/include     # foo&apos;s include path
    ;</programlisting></para>
-        <para>To successfully build library <code>bar</code> you must specify where to look for <code>foo</code>&apos;s includes. <code>bar</code> is a small library but what about complex one, with 5-10 dependencies? More over what would you put in <code>&lt;include&gt;</code> when those libs will appear in sources as symbolic names?</para>
-        <para>To solve this problem you have to use <emphasis>usage requirements</emphasis>. Rewritten <code>foo</code> declaration with usage requirements will be:<programlisting>lib foo 
+        <para>Для успешной сборки библиотеки <code>bar</code> Вы должны указать где искать подключаемые файлы для <code>foo</code>. <code>bar</code> является маленькой библиотекой, но как насчет  более сложной, с 5-10 зависимостями? Более того, что Вы будете прописывать в  <code>&lt;include&gt;</code> когда те библиотеки появятся в исходниках как символические имена?</para>
+        <para>Для решения этой проблемы нужно использовать  <emphasis>требования к использованию</emphasis>. Переписанный вариант объявления <code>foo</code> с требованиями к использованию выглядит так:<programlisting>lib foo 
    : 
      foo.cpp 
    : 
@@ -251,7 +252,7 @@ lib barfoo : test.cpp : &lt;define&gt;FOO=1 : : &lt;define&gt;BOO=1 ;</programli
    : 
     &lt;include&gt;../include 
    ;</programlisting></para>
-        <para>Now <code>bar</code> can be rewritten as:<programlisting>lib bar 
+        <para>Теперь <code>bar</code> можно переписать следующим образом:<programlisting>lib bar 
    : 
      bar.cpp
      ../../foo/build
@@ -264,23 +265,23 @@ lib barfoo : test.cpp : &lt;define&gt;FOO=1 : : &lt;define&gt;BOO=1 ;</programli
       </section>
       <section>
         <title>Альтернативы таргета</title>
-        <para>Sometimes you need to build a target using a completely different set of sources depending on build request. For example when building with <emphasis>gcc</emphasis> target looks like:<programlisting>lib foo : gcc_foo.cpp ;</programlisting></para>
-        <para>but when building with <emphasis>msvc</emphasis> it looks like:<programlisting>lib foo : msvc_foo.cpp ;</programlisting></para>
-        <para>Another example is using precompiled headers. Some compilers have pch support and some don&apos;t. But build script should work for both. </para>
-        <para>To resolve all these problems you can use target alternatives. The first problem could be solved as:<programlisting>lib foo : gcc_foo.cpp  : &lt;toolset&gt;gcc ;  #first alternative
+        <para>Иногда нужно собрать таргет используя используя совершенно другой набор исходников в зависимости от требования к сборке. Напримеер, когда таргет собирается <emphasis>gcc</emphasis>, он выглядит так:<programlisting>lib foo : gcc_foo.cpp ;</programlisting></para>
+        <para>но когда собирается  <emphasis>msvc</emphasis>, выглядит по-другому:<programlisting>lib foo : msvc_foo.cpp ;</programlisting></para>
+        <para>Другой пример - использование скомпилированных заголовочных файлов. Некоторые компиляторы имеют поддержку  pch, а некоторые нет. Но билдовый скрипт должен работть для обеих.</para>
+        <para>Чтобы разрешить все эти проблемы можно использовать альтернатывные таргеты. Первая задача может быть решена следующим образом:<programlisting>lib foo : gcc_foo.cpp  : &lt;toolset&gt;gcc ;  #first alternative
 lib foo : msvc_foo.cpp : &lt;toolset&gt;msvc ; #second alternative</programlisting></para>
-        <para>When user use <code>/foo</code> in sources for some target, build system load <code>foo</code> project file and see <emphasis>two</emphasis> targets <code>foo</code>. To resolve witch one to use build request and target&apos;s requirements will be compared. If build request contains <code>&lt;toolset&gt;gcc</code> property than <emphasis>first</emphasis> alternative will be selected. If build request contains <code>&lt;toolset&gt;msvc</code> than <emphasis>second</emphasis> one. </para>
-        <para>The second problem may be resolved as:<programlisting>pch stdafx : stdafx.h stdafx.cpp : &lt;toolset&gt;msvc ;
+        <para>Когда пользователь использует <code>/foo</code> в исходниках некоторого таргета, билдовая система загружает файл проекта <code>foo</code> и видит  <emphasis>два</emphasis> таргета <code>foo</code>. Чтобы решить который использовать, сравниваются требования к сборке и требования к таргету. Если требования к сборке содержат свойство <code>&lt;toolset&gt;gcc</code> тогда <emphasis>первая</emphasis> альтернатива выбирается. Если требования к сборке содержат свойство <code>&lt;toolset&gt;msvc</code> то <emphasis>вторая</emphasis> выбирается. </para>
+        <para>Вторую задачу можно разрешить так:<programlisting>pch stdafx : stdafx.h stdafx.cpp : &lt;toolset&gt;msvc ;
 alias stdafx ;
 
 lib foo : stdafx foo.cpp ;</programlisting></para>
-        <para>Here <code>foo</code> will be built with pch support only for msvc toolset. As you can see targets that have same name may have different <emphasis>types</emphasis>. The <code>pch</code> targets build precompiled header from given sources. The <code>alias</code> target is a special target that do nothing except returning its sources as is to its direct user.</para>
-        <para>The mechanism of alternative selection is very simple - only non-free non-incidental features participate in alternative selection and target with most longer matched set of properties will be chosen.</para>
+        <para>Здесь  <code>foo</code> будет собрано с поддержкой pch только для  msvc инструментария. Как можно увидеть таргеты с одним именем могут иметь разные <emphasis>типы</emphasis>. Таргеты <code>pch</code> сбоирают скомпилированные заголовочные файлы из даных исходников.  <code>alias</code> таргет - это специальный таргет, который ничего не делает кроме возвращения своих исходников их прямому пользователю.</para>
+        <para>Механизм выбора альтернативы очень прост - только несвободные недополнительные признаки участвуют в выборе из альтернатив и таргет с наиболее подходящими свойствами будет выбран.</para>
       </section>
       <section>
-        <title>Публичные исходники и реквайременты</title>
-        <para>Public sources and requirements was introduced to reduce typing and to make build scripts clearer to readers. </para>
-        <para>When you are developing a library some of the dependencies are used for implementation details and some for public part. Suppose you are writing lib <code>foo</code> that use <code>/boost/date_time</code> library:<programlisting>lib foo 
+        <title>Доступные исходники и требования</title>
+        <para>Доступные исходники и требования были введены чтобы уменьшить писанину и сделать билдовые скрипты читабельнее.</para>
+        <para>Когда Вы разрабатываете библиотеку некоторые из зависимостей используются для реализации деталей, а некоторые для открытой части. Предположим Вы  пишете библиотеку <code>foo</code> которая использует  <code>/boost/date_time</code> библиотеку:<programlisting>lib foo 
    : 
     foo.cpp /boost/date_time 
    : 
@@ -289,8 +290,8 @@ lib foo : stdafx foo.cpp ;</programlisting></para>
    :
     &lt;include&gt;../include   #export includes for foo&apos;s users
    ;</programlisting></para>
-        <para>If <filename>foo.h</filename> that is part of public interface to <code>foo</code> library includes some of <code>/boost/date_time</code> headers, than <code>/boost/date_time</code> considered as <emphasis>public source</emphasis> for lib <code>foo</code>. </para>
-        <para>In current form building <code>foo</code> lib is not a problem - it builds correctly thanks to <code>/boost/date_time</code>&apos;s usage-requirements that brings correct include paths to <code>foo</code> target. But when somebody will try to use <code>foo</code> to build <code>bar</code>:<programlisting>lib bar 
+        <para>В <filename>foo.h</filename> , который является частью открытого интерфейса библиотеки <code>foo</code>,  подключаются некоторые из заголовочных файлов <code>/boost/date_time</code>, поэтому <code>/boost/date_time</code> должна быть <emphasis>открытым исходником</emphasis> для библиотеки <code>foo</code>. </para>
+        <para>В такой форме  собрать библиотеку <code>foo</code> не проблема - сборка происходит коректно благодаря требованиям к использованию библиотеки <code>/boost/date_time</code>, которые правильно  проносят пути к подключаемым файлам  для таргета <code>foo</code>. Но когда кто-то попробует использовать <code>foo</code> для сборки  <code>bar</code>:<programlisting>lib bar 
    : 
     bar.cpp /foo
    :
@@ -299,8 +300,8 @@ lib foo : stdafx foo.cpp ;</programlisting></para>
    :
     &lt;include&gt;../include #export includes for foo&apos;s users
    ;</programlisting></para>
-        <para>he  immediately hits the problem. Because usage requirements of <code>/boost/date_time</code> is applied only to <code>foo</code>, as to direct user, compiler will not see correct include paths for <code>/boost/date_time</code> when building <code>bar</code>. <code>/boost/date_time</code>&apos;s includes need to build <code>bar</code> because <code>bar</code> uses <code>/foo</code> that <emphasis>indirectly</emphasis>, though <filename>foo.h</filename>,  uses some of <code>/boost/date_time</code> headers.</para>
-        <para>To resolve this issue <code>foo</code>&apos;s target should be rewritten as:<programlisting>lib foo 
+        <para>у него сразу возникнут проблемы. Потому как требования к использованию таргета <code>/boost/date_time</code> применимы только к  <code>foo</code>, как к прямому пользователю, компилятор не увидит правильных путей к подключаемым файоам (модулям, ресурсам) для <code>/boost/date_time</code> при сборке <code>bar</code>. Пути к подключаемым файлам  таргета<code>/boost/date_time</code> нужны для сборки <code>bar</code> потому что <code>bar</code> использует <code>/foo</code>, который  <emphasis>неявно</emphasis>, через  <filename>foo.h</filename>,  использует некоторые из заколовочных файлов <code>/boost/date_time</code>.</para>
+        <para>Чтобы разрешить эту проблему таргет <code>foo</code> следует переписать:<programlisting>lib foo 
    : 
     foo.cpp /boost/date_time 
    : 
@@ -311,8 +312,8 @@ lib foo : stdafx foo.cpp ;</programlisting></para>
     &lt;use&gt;/boost/date_time #export /boost/date_time usage 
                           #requiremenst to foo&apos;s users
    ;</programlisting></para>
-        <para>When <code>&lt;use&gt;some-lib</code> property appear in some target&apos;s requirements build system add <code>some-lib</code>&apos;s usage requirements to that target&apos;s requirements. So now, when we use <code>foo</code> as source for <code>bar</code>, <code>foo</code>&apos;s usage requirements will be added to <code>bar</code>&apos;s requirements and because <code>foo</code>&apos;s usage requirements contains <code>&lt;use&gt;/boost/date_time</code> property all usage requirements of <code>/boost/date_time</code> will be added to requirements of <code>bar</code>. That will give all needed <code>&lt;include&gt;</code> features in <code>bar</code>&apos;s requirements to build it correctly.</para>
-        <para>Specifying <code>/boost/date_time</code> in sources and than <code>&lt;use&gt;/boost/date_time</code> in usage requirements seams not as a very good idea, especially when there is more than one such source. To simplify developers life special syntax was introduced. To indicate that some of source target is <emphasis>public source</emphasis> you should prepend <code>@</code> symbol to it. Rewritten <code>foo</code> target using new syntax:<programlisting>lib foo 
+        <para>Когда свойство  <code>&lt;use&gt;some-lib</code> появляется в каком-либо требовании таргета, билдовая система добавляет требования к использованию  <code>some-lib</code> к требованиям таргета. Таким образом теперь, когда мы используем  <code>foo</code> как исходник для <code>bar</code>, требования к использованию <code>foo</code>&apos;s будут добавлены к требованиям <code>bar</code> и так как требования к использованию <code>foo</code> содержат свойство <code>&lt;use&gt;/boost/date_time</code>, то все требования к использованию <code>/boost/date_time</code> будут добавлены к требованиям  <code>bar</code>. Это даст все необходимые <code>&lt;include&gt;</code> признаки в требованиях <code>bar</code> для его коректной сборки.</para>
+        <para>Указывая <code>/boost/date_time</code> в исходниках и потом <code>&lt;use&gt;/boost/date_time</code> в требованиях к использованию выглядит не очень хорошей идеей, особенно когда таких исходников много. Чтобы упростить жизнь разработчикам был ввседен специальный синтаксис. Чтобы определить что некоторый из таргетов является  <emphasis>открытым исходником</emphasis> следует дописать символ <code>@</code> перед ним. Переписанный таргет <code>foo</code> с использованием нового синтаксиса:<programlisting>lib foo 
    : 
     foo.cpp 
     @/boost/date_time     #public source
@@ -322,7 +323,7 @@ lib foo : stdafx foo.cpp ;</programlisting></para>
    :
     &lt;include&gt;../include   #export includes for foo&apos;s users
    ;</programlisting></para>
-        <para>As you can see some double writing is still remains. <code>&lt;include&gt;../include</code> appear in both requirements and usage requirements. To reduce that typing we can apply the same public concept to requirements:<programlisting>lib foo 
+        <para>Как можно увидеть некоторое дублирование кода все же присутствует. <code>&lt;include&gt;../include</code> появляется и в требованиях и в требованиях к использованию. Чтобы упростить это мы можем применить тот же открытый прцип к требованиям таргета:<programlisting>lib foo 
    : 
     foo.cpp 
     @/boost/date_time     #public source
@@ -338,7 +339,7 @@ lib foo : stdafx foo.cpp ;</programlisting></para>
       <title>Исполняемые файлы</title>
       <section>
         <title>Определение</title>
-        <para>To build executables you need to use <code>exe</code> rule:<programlisting>exe exe-name 
+        <para>Чтобы собрать исполняемый файл нужно использовать правило  <code>exe</code>:<programlisting>exe exe-name 
    : sources
    : [requirements]
    : [default build]
@@ -346,7 +347,7 @@ lib foo : stdafx foo.cpp ;</programlisting></para>
    ;          </programlisting></para>
       </section>
       <section>
-        <title>Пример: Простой исполняемій файл</title>
+        <title>Пример: Простой исполняемый файл</title>
         <figure label="test">
           <title>Уровень файловой системы</title>
           <graphic fileref="../../common/images/simple-exe-layout.png" align="center"/>
@@ -369,7 +370,7 @@ use-project /simple-exe : simple-exe/build ;
     </section>
     <section>
       <title>Библиотеки</title>
-      <para>All libraries have the same syntax - you need to use <code>lib</code> rule:<programlisting>lib lib-name
+      <para>Все библиотеки имеют один и тот же синтаксис - нужно использовать правило <code>lib</code>:<programlisting>lib lib-name
    : [sources]
    : [requirements]
    : [default build]
@@ -377,14 +378,14 @@ use-project /simple-exe : simple-exe/build ;
    ;</programlisting></para>
       <section>
         <title>Статические и динамические библиотеки</title>
-        <para>To build static libraries you should specify <code>&lt;link&gt;static</code> property in target&apos;s requirements:<programlisting>lib foo : foo.cpp : &lt;link&gt;static ;</programlisting></para>
-        <para>To build shared libraries you should specify <code>&lt;link&gt;shared</code> property in target&apos;s requirements:<programlisting>lib bar : bar.cpp : &lt;link&gt;shared ;</programlisting></para>
-        <para>By default feature <code>&lt;link&gt;</code> has <code>shared</code> value. So if you don&apos;t explicitly specify this feature in requirements your libray will be builded as <emphasis>shared</emphasis>. </para>
-        <para>It is a good practice not to add <code>&lt;link&gt;</code> feature to target&apos;s requirements if there is no real reason to mandate linkage type. If you do know real word usage patterns of your library, add <code>&lt;link&gt;</code> feature to <emphasis>default build</emphasis> section. This will allow library&apos;s users to build it whatever way they want but build it as shared if build requiest doesn&apos;t have <code>&lt;link&gt;</code> feature in it. </para>
-        <para>For example, you develop a library <code>foo</code>:<programlisting>lib foo : foo.cpp ;</programlisting></para>
-        <para>and decide that it should be linked as shared because in most use-cases users use almost all code from <code>foo.</code> If you add <code>&lt;link&gt;shared</code> to requirements:<programlisting>lib foo : foo.cpp : &lt;link&gt;shared ;</programlisting></para>
-        <para>no one can build it as shared. But what if someone want to use you library to develop some application X and one of major requirements for  X is no dynamic dependencies? Placing <code>&lt;link&gt;shared</code> in <code>foo</code>&apos;s requirements make it imposible to use <code>foo</code> in that case.</para>
-        <para>To allow <code>foo</code>&apos;s users do whatever they want and to build it as shared by default you should declare <code>foo</code> as:</para>
+        <para>Чтобы собирать статические библиотеки  нужно указать свойство <code>&lt;link&gt;static</code> в требованиях таргета:<programlisting>lib foo : foo.cpp : &lt;link&gt;static ;</programlisting></para>
+        <para>Чтобы  собирать динамические библиотеки нужно указать свойство <code>&lt;link&gt;shared</code> в требованиях таргета:<programlisting>lib bar : bar.cpp : &lt;link&gt;shared ;</programlisting></para>
+        <para>По-умолчанию признак <code>&lt;link&gt;</code> имеет значение  <code>shared</code>. Поэтому, если явно не утановить значение в требованиях, то  библиотека будет собрана <emphasis>динамически</emphasis>. </para>
+        <para>Явное указание признака в требованиях таргета является плохим стилем, если нет реальных причин задавать тип линковки. Если известны шаблоны использования бибилиотеки, лучше добавить признак <code>&lt;link&gt;</code> в секцию  <emphasis>сборка по-умолчанию</emphasis> section. Это позволит пользователям библиотеки собирать ее как угодно по их желанию, но в случае отсутсвия признака <code>&lt;link&gt;</code> в требованиях сборки она будет собиратся динамически.</para>
+        <para>Например, Вы разрабатываете библиотеку <code>foo</code>:<programlisting>lib foo : foo.cpp ;</programlisting></para>
+        <para>и решаете что она должна линковатся динамически, потому что в большинстве случаев пользователи используют почти весь код из <code>foo.</code> Если добавить  <code>&lt;link&gt;shared</code> в требования:<programlisting>lib foo : foo.cpp : &lt;link&gt;shared ;</programlisting></para>
+        <para>никто не сможет собрать как динамическую. Но если кто-то захочет использовать библиотеку для разработки некоторого приложения Х и одним из основных требований будет отсутсвие динамических зависимостей? Прописывая <code>&lt;link&gt;shared</code> в требования  <code>foo</code> делает невозможным  использовать <code>foo</code> таким оразом.</para>
+        <para>Чтоыб разрешить пользователям <code>foo</code> делать что им вздумается и собирать библиотеку как динамическую по умолчанию нужно прописать  <code>foo</code> как:</para>
         <programlisting>lib foo 
    : 
     foo.cpp 
@@ -396,9 +397,9 @@ use-project /simple-exe : simple-exe/build ;
       </section>
       <section>
         <title>Пример: Статические и динамические библиотеки</title>
-        <para>In this example you will see how to build projects that consist from three different forms of libraries - shared, static and so-called &apos;unconstrained&apos;. Last one is a library that doesn&apos;t have <code>&lt;link&gt;</code> feature in requirements and therefore can be built ether shared or static.</para>
+        <para>В этом примере будет показано как собрать проект, который состоит из трех различных форм библиотек - динамической, статической и, так называемой, &apos;безсвязную&apos;. Последняя является библиотекой, которая не имеет признака <code>&lt;link&gt;</code> в требованиях и потому может быть собрана как статически так и динамически.</para>
         <figure>
-          <title>Filesystem layout</title>
+          <title>Структура файловой системы</title>
           <graphic fileref="../../common/images/shared-static-libs-layout.png" align="center"/>
         </figure>
         <figure>
@@ -434,7 +435,7 @@ use-project /libs : libs ;
       </section>
       <section>
         <title>Prebuilt libraries</title>
-        <para>Most of the proprietary libraries cannot be destributed in source form, only as prebuilt libraries. In the same time you have plently pre-installed prebuilt libraries on Linux. To use that libraries Hammer has three apprepriate rules:<programlisting>searched-static-lib lib-name
+        <para>Большинство проприетарных библиотек не распостраняются с исходным кодом, только как собранные библиотеки. В то же время  есть множество предустановленных собранных библиотек под Linux. Для их использования  Hammer имет три соответствующие правила:<programlisting>searched-static-lib lib-name
    : [sources]
    : [static library name]
    : [requirements]
@@ -453,17 +454,17 @@ prebuilt-lib lib-name
    : [requirements]
    : [usage requirements] 
    ;</programlisting></para>
-        <para>Those three rules are enough to descibe any prebuilt library. Note, <code>searched-static-lib</code> and <code>searched-shared-lib</code> does have sources even no actual build process will be done to built those libraries. That is because of the behaviour of unix/linux ld - you <emphasis>may</emphasis> need to specify correct library order to linker to have successfull build. </para>
-        <para><code>searched-static-lib</code> describe static library which is placed somewhere in the system or in the directory that may be pointed by <code>&lt;search&gt;</code> feature in requirements. For each compiler <code>[static library name]</code> have unique form. For gcc that name is a name without any <filename>lib</filename> prefix or <filename>.a</filename> suffix. For Microsoft compiler it is full name such as <code>winsock.lib</code>. To determinate how exactly you should pass library name to specific linker you have to consult manual of that linker.</para>
-        <para><code>searched-shared-lib</code> is almost the same as <code>searched-static-lib</code> except it describe shared library. Rules for <code>[shared lirary name]</code> naming is determined by linker switches.</para>
-        <para><code>prebuild-lib</code> describe a library that lay in known place in the filesystem. While <code>searched-static-lib</code> and <code>searched-shared-lib</code> is for preinstalled or system libraries, that rule is for libraries that is a part of some project. For example it may describe some prebuilt closed source lib which is distributed as Hammer project to be easily linked with.</para>
+        <para>Тех три правила достаточно чтобы описать любую собраную библиотеку. Обратите внимание, что <code>searched-static-lib</code> и <code>searched-shared-lib</code> должны иметь исходные файлы даже если библиотека не будет собиратся. Это так вследствии  unix/linux линкера ld -  <emphasis>возможно</emphasis> необходимо определить правильную последовательность библиотек для успешной сборки.</para>
+        <para><code>searched-static-lib</code> описывает статическую библиотеку, размещенную где-нибудь в системе или директории, которая может быть указана признаком <code>&lt;search&gt;</code> в требованиях. Для каждого компилятора <code>[static library name]</code> имеет уникальную форму. Для  gcc это имя является именем без префикса <filename>lib</filename> или <filename>.a</filename> суфикса. Для компилятора  Microsoft это полное имя, например как  <code>winsock.lib</code>. Чтобы определить как следует передавать имя библиотеки заданному линковщику, следует обратится к документации на этот линковщик.</para>
+        <para><code>searched-shared-lib</code> это почти то же что и <code>searched-static-lib</code> за исключением, что это правило описывает динамическую библиотеку. Правила именования для<code>[shared lirary name]</code> определяются переключателями линковщика.</para>
+        <para><code>prebuild-lib</code> описывает библиотеку, которая размещена в известном месте в файловой системе. Пока <code>searched-static-lib</code> и <code>searched-shared-lib</code> являются правилом установленных в системе библиотек, то правило  - для библиотек, которые являются частью некоторого проекта. Например, оно может описывать некоторую собранную закрытую библиотеку в качестве исходника, так что проект Hammer&quot;а  может быть легко с ней слинкован.</para>
       </section>
     </section>
     <section>
       <title>Примеры: Prebuilt libraries</title>
-      <para>It is really hard to provide comprehensive and consistent examples for this kind of libraries because of their nature. So providing only Linux and Windows variants supposed to be enough to understand usage.</para>
+      <para>На самом деле одчень сложно обеспечить обширные и содержательные примеры для этого типа библиотек через их природу. Таким образом обеспечением только Linux и Windows вариантов предполагается что этого будет достаточно для понимания.</para>
       <figure>
-        <title>On Linux</title>
+        <title>В Linux</title>
         <programlisting>searched-static-lib xml2 
    :                  # note - no sources provided
    : 
@@ -484,7 +485,7 @@ exe test
    ;</programlisting>
       </figure>
       <figure>
-        <title>On Windows</title>
+        <title>В Windows</title>
         <programlisting>searched-static-lib sockets 
    : 
    :
@@ -496,7 +497,7 @@ explicit sockets ;
 exe test : main.cpp sockets ;</programlisting>
       </figure>
       <figure>
-        <title>Prebuilt lib</title>
+        <title>Соранные (prebuilt) lib</title>
         <programlisting># bar library built for msvc toolset
 prebuilt-lib bar
    :
@@ -527,14 +528,65 @@ exe test
   </chapter>
   <chapter>
     <title>Ссылки</title>
-    <address>http://buildhammer.sourceforge.net/</address>
+    <address>http://buildhammer.sourceforge.net</address>
     <address>http://boost.org</address>
     <address>http://www.antlr.org/works/index.html</address>
   </chapter>
   <appendix>
-    <title>Словарь</title>
+    <title>Словари</title>
     <glossary>
       <title>Словарь терминов</title>
+      <glossentry>
+        <glossterm>attribute</glossterm>
+        <glossdef>
+          <para>атрибут</para>
+        </glossdef>
+      </glossentry>
+      <glossentry>
+        <glossterm>feature</glossterm>
+        <glossdef>
+          <para>признак</para>
+        </glossdef>
+      </glossentry>
+      <glossentry>
+        <glossterm>requirements</glossterm>
+        <glossdef>
+          <para>требования</para>
+        </glossdef>
+      </glossentry>
+      <glossentry>
+        <glossterm>rule</glossterm>
+        <glossdef>
+          <para>правило</para>
+        </glossdef>
+      </glossentry>
+      <glossentry>
+        <glossterm>target</glossterm>
+        <glossdef>
+          <para>таргет</para>
+        </glossdef>
+      </glossentry>
+      <glossentry>
+        <glossterm>toolset</glossterm>
+        <glossdef>
+          <para>инструментарий</para>
+        </glossdef>
+      </glossentry>
+    </glossary>
+    <glossary>
+      <title>Словарь сокращений</title>
+      <glossentry>
+        <glossterm>GCC</glossterm>
+        <glossdef>
+          <para>GNU Compilers Collection</para>
+        </glossdef>
+      </glossentry>
+      <glossentry>
+        <glossterm>MSVC</glossterm>
+        <glossdef>
+          <para>Microsoft Visual Compiler</para>
+        </glossdef>
+      </glossentry>
     </glossary>
   </appendix>
 </book>

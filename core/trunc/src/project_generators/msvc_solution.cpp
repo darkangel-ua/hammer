@@ -46,7 +46,7 @@ struct msvc_solution::impl_t
    void generate_dependencies(dependencies_t::const_iterator first, 
                               dependencies_t::const_iterator last) const;
    void write_project_section(ostream& os, const msvc_project& project) const;
-   boost::guid generate_id() const { return boost::guid::create(); }
+   boost::guid generate_id() const { return boost::guid(); }
    location_t project_output_dir(const build_node& node) const;
 
    msvc_solution* owner_;

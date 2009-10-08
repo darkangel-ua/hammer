@@ -373,7 +373,14 @@ bool c_scanner_context::load_directory(const hashed_location& dir, dir_node_t& c
             if (file.filename_ == NULL)
                file.filename_ = filename;
 
-            file.file_infos_[&dir].timestamp_ = from_time_t(last_write_time(i->path()));
+            try
+            {
+               file.file_infos_[&dir].timestamp_ = from_time_t(last_write_time(i->path()));
+            }
+            catch(...)
+            {
+               // not all files can be examined because of security reasons, for example
+            }
          }
       }
 

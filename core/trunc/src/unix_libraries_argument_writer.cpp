@@ -41,7 +41,7 @@ void unix_libraries_argument_writer::write_impl(std::ostream& output,
          output << " -Wl,-Bstatic -l" << i->source_target_->name();
       else
          if (i->source_target_->type().equal_or_derived_from(*searched_shared_lib_type_))
-            output << " -Wl,-Bshared -l" << i->source_target_->name();
+            output << " -Wl,-Bdynamic -l" << i->source_target_->name();
          else
             if (i->source_target_->type().equal_or_derived_from(*static_lib_type_) || 
                 i->source_target_->type().equal_or_derived_from(*shared_lib_type_) ||

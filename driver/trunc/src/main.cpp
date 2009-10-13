@@ -115,7 +115,7 @@ namespace
          ("debug,d", po::value<int>(&opts.debug_level_), "specify verbosity level")
          ("disable-batcher", "do not build many sources at once")
          ("just-one-source,s", po::value<string>(&opts.just_one_source_), "build unconditionally specified source")
-         ("--jobs,j", po::value<unsigned>(&opts.worker_count_), "concurrency level");
+         ("jobs,j", po::value<unsigned>(&opts.worker_count_), "concurrency level");
 
       return desc;
    }

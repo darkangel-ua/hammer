@@ -37,6 +37,8 @@ pstring make_product_name(pool& p,
    string::size_type slash_pos = source_name.find_last_of('/');
    if (slash_pos == string::npos)
       slash_pos = 0;
+   else
+      ++slash_pos;
 
    std::string hash_suffix;
    if (owner != NULL)

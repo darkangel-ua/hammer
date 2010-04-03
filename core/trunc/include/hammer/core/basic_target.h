@@ -17,6 +17,7 @@ namespace hammer
    class meta_target;
    class engine;
    class project;
+   class build_environment;
 
    class basic_target : public boost::noncopyable
    {
@@ -41,6 +42,9 @@ namespace hammer
          engine* get_engine() const;
          
          virtual build_nodes_t generate() = 0;
+         // maybe this is wrong? The reason to making it const was cleaner implementation
+         virtual void clean(const build_environment& environment) const {};
+
          const timestamp_info_t& timestamp_info() const;
 
          virtual const location_t& location() const;

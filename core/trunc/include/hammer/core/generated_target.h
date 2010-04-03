@@ -12,6 +12,7 @@ namespace hammer
                           const target_type* t, const feature_set* f);
          virtual const location_t& location() const;
          virtual std::vector<boost::intrusive_ptr<build_node> > generate();
+         virtual void clean(const build_environment& environment) const;
    };
 }
 

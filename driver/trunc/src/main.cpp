@@ -22,6 +22,7 @@
 #include <hammer/core/testing_generators.h>
 #include <hammer/core/build_environment_impl.h>
 #include <hammer/core/builder.h>
+#include <hammer/core/cleaner.h>
 #include <hammer/core/actuality_checker.h>
 #include <hammer/core/generator_registry.h>
 #include <hammer/core/types.h>
@@ -35,6 +36,7 @@
 
 #include "user_config_location.h"
 #include "get_data_path.h"
+#include "dump_targets_to_update.h"
 
 using namespace std;
 using namespace hammer;
@@ -81,6 +83,8 @@ namespace
       hammer_options() : generate_projects_localy_(false), 
                          only_up_to_date_check_(false),
                          disable_batcher_(true), // disable until we resolve paralell output problems
+                         clean_all_(false),
+                         dump_targets_to_update_(false),
                          hammer_output_dir_(".hammer"),
                          debug_level_(0),
                          worker_count_(get_number_of_processors())
@@ -90,6 +94,8 @@ namespace
       bool generate_projects_localy_;
       bool only_up_to_date_check_;
       bool disable_batcher_;
+      bool clean_all_;
+      bool dump_targets_to_update_;
       std::string hammer_output_dir_;
       std::string hammer_install_dir_;
       int debug_level_;
@@ -108,6 +114,8 @@ namespace
          ("instantiate,i", "instantiate/materialize targets only")
          ("generate,g", "instantiate/materialize + generate targets")
          ("up-to-date-check,c", "instantiate/materialize + generate targets + up to date check")
+         ("dump-targets-to-update", "dump tree of target to update for debuginf purposes")
+         ("clean-all", "clean all targets recursively")
          ("generate-msvc-8.0-solution,p", "generate msvc-8.0 solution+projects")
          ("generate-projects-locally,l", "when generating build script makes them in one place")
          ("hammer-out", po::value<std::string>(&opts.hammer_output_dir_), "specify where hammer will place all its generated output")
@@ -373,6 +381,12 @@ namespace
          size_t target_to_update_count = checker.check(nodes);
          cout << "Done.\n";
 
+         if (opts.dump_targets_to_update_)
+         {
+            ofstream f("targets-to-update.txt", std::ios_base::trunc);
+            dump_targets_to_update(f, nodes, build_environment);
+         }
+
          if (opts.only_up_to_date_check_)
             return;
 
@@ -431,6 +445,17 @@ namespace
    void autoconfigure_toolsets(hammer::engine& e)
    {
       e.toolset_manager().autoconfigure(e);
+   }
+
+   void do_clean_all(nodes_t& nodes,
+                     engine& e)
+   {
+      cout << "...cleaning...";
+      build_environment_impl build_environment(fs::current_path());
+      cleaner cleaner(e, build_environment);
+      cleaner::result r = cleaner.clean_all(nodes);
+      cout << "Done.\n"
+           << r.cleaned_target_count_ << " targets was cleaned.\n";
    }
 }
 
@@ -544,6 +569,12 @@ int main(int argc, char** argv)
       if (vm.count("disable-batcher"))
          opts.disable_batcher_ = true;
 
+      if (vm.count("clean-all"))
+         opts.clean_all_ = true;
+
+      if (vm.count("dump-targets-to-update"))
+         opts.dump_targets_to_update_ = true;
+
       if (vm.count("build-request"))
          resolve_arguments(targets, build_request, engine.feature_registry(), vm["build-request"].as<vector<string> >());
 
@@ -573,7 +604,7 @@ int main(int argc, char** argv)
 
       if (opts.debug_level_ > 0)
       {
-         cout << "...Targets to build is: ";
+         cout << "...Targets to " << (opts.clean_all_ ? "clean-all" : "build") << " is: ";
          bool first_pass = true;
          for(vector<string>::const_iterator i = targets.begin(), last = targets.end(); i != last; ++i)
          {
@@ -602,6 +633,12 @@ int main(int argc, char** argv)
          return 0;
 
 //      remove_propagated_targets(nodes, project_to_build);
+
+      if (opts.clean_all_)
+      {
+         do_clean_all(nodes, engine);
+         return 0;
+      }
 
       if (vm.count("generate-msvc-8.0-solution"))
          generate_msvc80_solution(nodes, project_to_build);

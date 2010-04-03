@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include <hammer/core/generated_target.h>
 #include <hammer/core/main_target.h>
+#include <hammer/core/build_environment.h>
 
 namespace hammer{
 
@@ -17,6 +18,11 @@ const location_t& generated_target::location() const
 std::vector<boost::intrusive_ptr<build_node> > generated_target::generate()
 {
    throw std::logic_error("generated target cannot be generated again.");
+}
+
+void generated_target::clean(const build_environment& environment) const
+{
+   environment.remove(location() / name().to_string());
 }
 
 }

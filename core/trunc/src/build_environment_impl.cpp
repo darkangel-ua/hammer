@@ -29,6 +29,7 @@ bool build_environment_impl::run_shell_commands(std::ostream* captured_output_st
 {
    string tmp_file_name(boost::guid::create().to_string() + ".cmd");
    location_t full_tmp_file_name(working_dir / tmp_file_name);
+   full_tmp_file_name.normalize();
    std::stringstream cmd_stream;
 
    try

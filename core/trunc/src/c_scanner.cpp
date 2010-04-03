@@ -1037,7 +1037,7 @@ void c_scanner_context::load(Archive & ar, const unsigned int version)
       fi.included_files_ = &included_files;
       fi.cached_timestamp_ = cached_timestamp;
       
-      assert(fi.cached_timestamp_ == not_a_date_time);
+      assert(fi.cached_timestamp_ != not_a_date_time);
    }
 }
 

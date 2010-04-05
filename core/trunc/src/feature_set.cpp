@@ -308,7 +308,7 @@ static bool less_by_name(const feature* lhs, const feature* rhs)
    return lhs->name() < rhs->name();
 }
 
-static void dump_for_hash(std::ostream& s, const feature& f)
+static void dump_for_hash(std::ostream& s, const feature& f, bool dump_all)
 {
    s << '<' << f.name() << '>' << f.value();
    if (f.subfeatures().empty())
@@ -317,7 +317,7 @@ static void dump_for_hash(std::ostream& s, const feature& f)
    typedef vector<const subfeature*> subfeatures_t;
    subfeatures_t subfeatures;
    for(feature::subfeatures_t::const_iterator i = f.subfeatures().begin(), last = f.subfeatures().end(); i != last; ++i)
-      if (!(**i).attributes().incidental)
+      if (dump_all || !(**i).attributes().incidental)
          subfeatures.push_back(*i);
 
    if (subfeatures.empty())
@@ -338,7 +338,7 @@ static void dump_for_hash(std::ostream& s, const feature& f)
    }
 }
 
-void dump_for_hash(std::ostream& s, const feature_set& fs)
+void dump_for_hash(std::ostream& s, const feature_set& fs, bool dump_all)
 {
    if (fs.empty())
    {
@@ -350,7 +350,8 @@ void dump_for_hash(std::ostream& s, const feature_set& fs)
    features_t features;
    for(feature_set::const_iterator i = fs.begin(), last = fs.end(); i != last; ++i)
    {
-      if (!((**i).attributes().free || 
+      if (dump_all || 
+          !((**i).attributes().free || 
             (**i).attributes().incidental ||
             (**i).attributes().path || 
             (**i).attributes().dependency ||
@@ -371,14 +372,14 @@ void dump_for_hash(std::ostream& s, const feature_set& fs)
       else
          first = false;
 
-      dump_for_hash(s, **i);
+      dump_for_hash(s, **i, dump_all);
    }
 }
 
-std::string dump_for_hash(const feature_set& fs)
+std::string dump_for_hash(const feature_set& fs, bool dump_all)
 {
    std::ostringstream s;
-   dump_for_hash(s, fs);
+   dump_for_hash(s, fs, dump_all);
    return s.str();
 }
 

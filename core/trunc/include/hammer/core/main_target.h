@@ -11,6 +11,7 @@ namespace hammer
 {
    class meta_target;
    class feature_set;
+   class mksig_action;
 
    class main_target : public basic_target
    {
@@ -52,8 +53,12 @@ namespace hammer
          mutable location_t intermediate_dir_;
          std::vector<boost::intrusive_ptr<hammer::build_node> > generate_cache_;
          bool generate_cache_filled_;
+         static boost::shared_ptr<mksig_action> mksig_action_;
 
          virtual void timestamp_info_impl() const;
+         void add_hamfile_dependency(hammer::build_node& node) const;
+         void add_hamfile_dependency(hammer::build_node& node, 
+                                     const boost::intrusive_ptr<hammer::build_node>& hamfile_node) const;
    };
 }
 

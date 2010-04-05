@@ -10,11 +10,17 @@
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature.h>
 #include <hammer/core/output_location_strategy.h>
+#include <hammer/core/generated_target.h>
+#include <hammer/core/types.h>
+#include "mksig_action.h"
+#include "signature_target.h"
 #include <set>
 
 using namespace std;
 
 namespace hammer{
+
+boost::shared_ptr<mksig_action> main_target::mksig_action_ = boost::shared_ptr<mksig_action>(new mksig_action);
 
 main_target::main_target(const hammer::meta_target* mt,
                          const pstring& name,
@@ -59,6 +65,7 @@ main_target::generate()
       build_node_ = result.front();
       generate_and_add_dependencies(*build_node_);
       add_additional_dependencies(*build_node_);
+      add_hamfile_dependency(*build_node_);
       generate_cache_ = result;
       generate_cache_filled_ = true;
       return result;
@@ -72,6 +79,36 @@ void main_target::add_additional_dependencies(hammer::build_node& generated_node
    int_dir_node->action(static_cast<const directory_target*>(int_dir_node->products_.front())->action());
 
    generated_node.dependencies_.push_back(int_dir_node);
+}
+
+void main_target::add_hamfile_dependency(hammer::build_node& node) const
+{
+   boost::intrusive_ptr<hammer::build_node> hamfile_node(new hammer::build_node(*this, false));
+   hamfile_node->products_.push_back(
+      new signature_target(this, 
+                           pstring(get_engine()->pstring_pool(), "target.sig"), 
+                           &get_engine()->get_type_registry().get(types::UNKNOWN),
+                           &properties()));
+   
+   hamfile_node->action(mksig_action_.get());
+   
+   add_hamfile_dependency(node, hamfile_node);
+}
+
+// search for all leaf nodes and add hamfile_node to it as dependency
+void main_target::add_hamfile_dependency(hammer::build_node& node, 
+                                         const boost::intrusive_ptr<hammer::build_node>& hamfile_node) const
+{
+   for(hammer::build_node::sources_t::iterator i = node.sources_.begin(), last = node.sources_.end(); i != last; ++i)
+   {
+      if (&i->source_node_->products_owner() == this)
+      {
+         if (i->source_node_->sources_.empty())
+            node.dependencies_.push_back(hamfile_node);
+         else
+            add_hamfile_dependency(*i->source_node_, hamfile_node);
+      }
+   }
 }
 
 location_t main_target::intermediate_dir_impl() const

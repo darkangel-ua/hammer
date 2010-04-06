@@ -33,13 +33,23 @@ scanner_context& actuality_checker::get_scanner_context(const target_type& t, co
       return *i->second;
 }
 
-static void mark_to_update_sources(build_node& node, std::size_t& nodes_to_update, const main_target& products_owner)
+// go deep in down nodes and mark all of they as needed to update, including dependency nodes
+static void mark_to_update(build_node& node, std::size_t& nodes_to_update, const main_target& products_owner)
 {
    for(build_node::nodes_t::iterator i = node.down_.begin(), last = node.down_.end(); i != last; ++i)
       if (&(**i).products_owner() == &products_owner)
       {
          (**i).up_to_date(boost::tribool::false_value);
-         mark_to_update_sources(**i, nodes_to_update, products_owner);
+         mark_to_update(**i, nodes_to_update, products_owner);
+         ++nodes_to_update;
+      }
+
+   // we should mark dependencies also if they was generated as part of main_target generation process
+   for(build_node::nodes_t::iterator i = node.dependencies_.begin(), last = node.dependencies_.end(); i != last; ++i)
+      if (&(**i).products_owner() == &products_owner)
+      {
+         (**i).up_to_date(boost::tribool::false_value);
+         mark_to_update(**i, nodes_to_update, products_owner);
          ++nodes_to_update;
       }
 }
@@ -62,7 +72,7 @@ bool actuality_checker::check(boost::posix_time::ptime& max_target_time, std::si
       dependency_need_to_be_updated = check(dependency_max_time, nodes_to_update, **i) || dependency_need_to_be_updated;
 
    if (dependency_need_to_be_updated)
-      mark_to_update_sources(node, nodes_to_update, node.products_owner());
+      mark_to_update(node, nodes_to_update, node.products_owner());
 
    ptime sources_max_time(neg_infin);
    bool some_need_to_be_updated = dependency_need_to_be_updated;
@@ -80,7 +90,7 @@ bool actuality_checker::check(boost::posix_time::ptime& max_target_time, std::si
    if (!dependency_need_to_be_updated &&
        sources_max_time < dependency_max_time)
    {
-      mark_to_update_sources(node, nodes_to_update, node.products_owner());
+      mark_to_update(node, nodes_to_update, node.products_owner());
    }
 
    sources_max_time = (std::max)(sources_max_time, dependency_max_time);

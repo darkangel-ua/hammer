@@ -344,7 +344,7 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
       static_lib_rsp += obj_sources;
       static_lib_rsp += static_lib_product;
       cmdline_builder static_lib_cmd("if exist \"$(static_lib_product)\" DEL \"$(static_lib_product)\"\n" +
-                                     config_data.librarian_.native_file_string() + " /nologo \"@\\\\$(static_lib_product).rsp\"");
+                                     config_data.librarian_.native_file_string() + " /nologo \"@$(static_lib_product).rsp\"");
       
       static_lib_cmd += static_lib_product;
       static_lib_cmd += obj_sources;

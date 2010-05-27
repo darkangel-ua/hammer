@@ -5,6 +5,7 @@
 #include <hammer/core/scaner.h>
 #include <hammer/core/scaner_manager.h>
 #include <hammer/core/engine.h>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 using namespace boost::date_time;
 using namespace boost::posix_time;
@@ -59,6 +60,7 @@ bool actuality_checker::check(boost::posix_time::ptime& max_target_time, std::si
    if (node.up_to_date() != boost::tribool::indeterminate_value)
    {
       max_target_time = (std::max)(node.timestamp(), max_target_time);
+      assert(node.timestamp() != not_a_date_time);
       if (node.up_to_date() == boost::tribool::true_value)
          return false;
       else
@@ -87,7 +89,11 @@ bool actuality_checker::check(boost::posix_time::ptime& max_target_time, std::si
       }
    }
 
+   // if we have some sources and they older then dependencies than
+   // we should mark all nodes down from here to update, 
+   // because we should build dependencies first and than sources
    if (!dependency_need_to_be_updated &&
+       !node.sources_.empty() && 
        sources_max_time < dependency_max_time)
    {
       mark_to_update(node, nodes_to_update, node.products_owner());

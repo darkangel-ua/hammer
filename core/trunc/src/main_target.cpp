@@ -65,23 +65,31 @@ main_target::generate()
       build_node_ = result.front();
       generate_and_add_dependencies(*build_node_);
       add_additional_dependencies(*build_node_);
-      add_hamfile_dependency(*build_node_);
       generate_cache_ = result;
       generate_cache_filled_ = true;
       return result;
    }
 }
 
-void main_target::add_additional_dependencies(hammer::build_node& generated_node) const
+build_node_ptr 
+main_target::add_intermediate_dir_dependency(hammer::build_node& generated_node) const
 {
-   boost::intrusive_ptr<hammer::build_node> int_dir_node(new hammer::build_node(*this, false));
+   build_node_ptr int_dir_node(new hammer::build_node(*this, false));
    int_dir_node->products_.push_back(new directory_target(this, intermediate_dir()));
    int_dir_node->action(static_cast<const directory_target*>(int_dir_node->products_.front())->action());
-
    generated_node.dependencies_.push_back(int_dir_node);
+   
+   return int_dir_node;
 }
 
-void main_target::add_hamfile_dependency(hammer::build_node& node) const
+void main_target::add_additional_dependencies(hammer::build_node& generated_node) const
+{
+   build_node_ptr& intr_dir_node = add_intermediate_dir_dependency(generated_node);
+   add_hamfile_dependency(generated_node, intr_dir_node);
+}
+
+void main_target::add_hamfile_dependency(hammer::build_node& node,
+                                         const build_node_ptr& intermediate_dir_node) const
 {
    boost::intrusive_ptr<hammer::build_node> hamfile_node(new hammer::build_node(*this, false));
    hamfile_node->products_.push_back(
@@ -91,13 +99,14 @@ void main_target::add_hamfile_dependency(hammer::build_node& node) const
                            &properties()));
    
    hamfile_node->action(mksig_action_.get());
-   
-   add_hamfile_dependency(node, hamfile_node);
+   hamfile_node->dependencies_.push_back(intermediate_dir_node);
+
+   add_hamfile_dependency_impl(node, hamfile_node);
 }
 
 // search for all leaf nodes and add hamfile_node to it as dependency
-void main_target::add_hamfile_dependency(hammer::build_node& node, 
-                                         const boost::intrusive_ptr<hammer::build_node>& hamfile_node) const
+void main_target::add_hamfile_dependency_impl(hammer::build_node& node, 
+                                              const boost::intrusive_ptr<hammer::build_node>& hamfile_node) const
 {
    for(hammer::build_node::sources_t::iterator i = node.sources_.begin(), last = node.sources_.end(); i != last; ++i)
    {
@@ -106,7 +115,7 @@ void main_target::add_hamfile_dependency(hammer::build_node& node,
          if (i->source_node_->sources_.empty())
             node.dependencies_.push_back(hamfile_node);
          else
-            add_hamfile_dependency(*i->source_node_, hamfile_node);
+            add_hamfile_dependency_impl(*i->source_node_, hamfile_node);
       }
    }
 }

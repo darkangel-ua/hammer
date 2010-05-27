@@ -27,7 +27,10 @@ void signature_target::timestamp_info_impl() const
          if (signature != saved_signature)
             timestamp_info_.timestamp_ = boost::date_time::neg_infin;
          else
-            generated_target::timestamp_info_impl();
+            // we can't do generated_target::timestamp_info_impl();
+            // because target.sig will we older than sources that depends on it
+            // and this will cause constant rebuild
+            timestamp_info_.timestamp_ = boost::posix_time::ptime(boost::gregorian::date(1900, 1, 1));
    }
 }
 

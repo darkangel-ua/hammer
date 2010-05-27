@@ -56,9 +56,14 @@ namespace hammer
          static boost::shared_ptr<mksig_action> mksig_action_;
 
          virtual void timestamp_info_impl() const;
-         void add_hamfile_dependency(hammer::build_node& node) const;
-         void add_hamfile_dependency(hammer::build_node& node, 
-                                     const boost::intrusive_ptr<hammer::build_node>& hamfile_node) const;
+         
+         build_node_ptr 
+         add_intermediate_dir_dependency(hammer::build_node& generated_node) const;
+         
+         void add_hamfile_dependency(hammer::build_node& node,
+                                     const build_node_ptr& intermediate_dir_node) const;
+         void add_hamfile_dependency_impl(hammer::build_node& node, 
+                                          const build_node_ptr& hamfile_node) const;
    };
 }
 

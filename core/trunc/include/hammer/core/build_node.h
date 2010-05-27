@@ -17,6 +17,7 @@ namespace hammer
 
    // this very common type to use
    typedef std::vector<boost::intrusive_ptr<build_node> > build_nodes_t;
+   typedef boost::intrusive_ptr<build_node> build_node_ptr;
 
    class build_node
    {

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "dump_targets_to_update.h"
 #include <hammer/core/basic_target.h>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 using namespace hammer;
 
@@ -26,7 +27,7 @@ static void dump(std::ostream& os,
       if (i->source_node_->up_to_date() != boost::tribool::true_value)
       {
          sources_up_to_date = false;
-         put_indent(os, indent) << "[s]" << i->source_target_->name() << std::endl;
+         put_indent(os, indent) << "[s]" << i->source_target_->name() << " " << to_simple_string(i->source_target_->timestamp_info().timestamp_) << std::endl;
          dump(os, *i->source_node_, environment, indent + 1);
       }
    }
@@ -42,10 +43,8 @@ static void dump(std::ostream& os,
       }
    }
 
-   if (sources_up_to_date && dependencies_up_to_date)
-      for(build_node::targets_t::const_iterator i = node.products_.begin(), last = node.products_.end(); i != last; ++i)
-      {
-      }
+   for(build_node::targets_t::const_iterator i = node.products_.begin(), last = node.products_.end(); i != last; ++i)
+      put_indent(os, indent) << "[p]" << (**i).name() << " " << to_simple_string((**i).timestamp_info().timestamp_) << std::endl;
 }
 
 void dump_targets_to_update(std::ostream& os, 

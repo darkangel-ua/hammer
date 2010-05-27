@@ -40,6 +40,10 @@ feature.feature testing.argument : : free ;
 feature.feature testing.input-file : : free path ;
 feature.feature testing.additional-source : : free dependency incidental ;
 
+# use this in project declaration to point hammer on project root folder
+# helps eclipse project generator find out right root.
+feature.feature project-root : : free path ;
+
 feature.feature warnings :
     on         # enable default/"reasonable" warning level for the tool
     all        # enable all possible warnings issued by the tool

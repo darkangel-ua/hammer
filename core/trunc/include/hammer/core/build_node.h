@@ -13,6 +13,10 @@ namespace hammer
    class target_type;
    class build_action;
    class feature_set;
+   class build_node;
+
+   // this very common type to use
+   typedef std::vector<boost::intrusive_ptr<build_node> > build_nodes_t;
 
    class build_node
    {

@@ -18,6 +18,7 @@
 #include <hammer/core/main_target.h>
 #include <hammer/core/meta_target.h>
 #include <hammer/core/project_generators/msvc_solution.h>
+#include <hammer/core/project_generators/eclipse_cdt_workspace.h>
 #include <hammer/core/copy_generator.h>
 #include <hammer/core/testing_generators.h>
 #include <hammer/core/build_environment_impl.h>
@@ -118,6 +119,7 @@ namespace
          ("clean-all", "clean all targets recursively")
          ("generate-msvc-8.0-solution,p", "generate msvc-8.0 solution+projects")
          ("generate-projects-locally,l", "when generating build script makes them in one place")
+         ("eclipse-cdt", "generate Eclipse CDT workspace and projects")
          ("hammer-out", po::value<std::string>(&opts.hammer_output_dir_), "specify where hammer will place all its generated output")
          ("install-dir", po::value<std::string>(&opts.hammer_install_dir_), "specify where hammer was installed")
          ("debug,d", po::value<int>(&opts.debug_level_), "specify verbosity level")
@@ -282,6 +284,15 @@ namespace
          solution.add_target(*i);
 
       solution.write();
+   }
+
+   void generate_eclipse_workspace(const nodes_t& nodes)
+   {
+      project_generators::eclipse_cdt_workspace workspace("c:\\hammer-eclipse-test", 
+                                                          nodes, 
+                                                          "d:/bin/hammer/eclipse-cdt-templates");
+      workspace.construct();
+      workspace.write();
    }
 
    void remove_propagated_targets(nodes_t& nodes, const project& project)
@@ -643,7 +654,10 @@ int main(int argc, char** argv)
       if (vm.count("generate-msvc-8.0-solution"))
          generate_msvc80_solution(nodes, project_to_build);
       else
-         run_build(nodes, engine, opts);
+         if (vm.count("eclipse-cdt"))
+            generate_eclipse_workspace(nodes);
+         else
+            run_build(nodes, engine, opts);
 
       return 0;
    }

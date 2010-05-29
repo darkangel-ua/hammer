@@ -41,6 +41,7 @@ static void mark_to_update(build_node& node, std::size_t& nodes_to_update, const
       if (&(**i).products_owner() == &products_owner)
       {
          (**i).up_to_date(boost::tribool::false_value);
+         (**i).timestamp(pos_infin);
          mark_to_update(**i, nodes_to_update, products_owner);
          ++nodes_to_update;
       }
@@ -50,6 +51,7 @@ static void mark_to_update(build_node& node, std::size_t& nodes_to_update, const
       if (&(**i).products_owner() == &products_owner)
       {
          (**i).up_to_date(boost::tribool::false_value);
+         (**i).timestamp(pos_infin);
          mark_to_update(**i, nodes_to_update, products_owner);
          ++nodes_to_update;
       }
@@ -57,6 +59,8 @@ static void mark_to_update(build_node& node, std::size_t& nodes_to_update, const
 
 bool actuality_checker::check(boost::posix_time::ptime& max_target_time, std::size_t& nodes_to_update, build_node& node)
 {
+   assert(max_target_time != not_a_date_time);
+
    if (node.up_to_date() != boost::tribool::indeterminate_value)
    {
       max_target_time = (std::max)(node.timestamp(), max_target_time);
@@ -134,6 +138,7 @@ bool actuality_checker::check(boost::posix_time::ptime& max_target_time, std::si
    {
       node.up_to_date(boost::tribool::false_value);
       node.timestamp(products_max_time);
+      assert(node.timestamp() != not_a_date_time);
       nodes_to_update += node.products_.size();
       return true;
    }
@@ -141,6 +146,7 @@ bool actuality_checker::check(boost::posix_time::ptime& max_target_time, std::si
    {
       ptime this_max_target_time = (std::max)(sources_max_time, products_max_time);
       node.timestamp(this_max_target_time);
+      assert(node.timestamp() != not_a_date_time);
       max_target_time = (std::max)(max_target_time, this_max_target_time);
 
       if (sources_max_time > products_max_time ||

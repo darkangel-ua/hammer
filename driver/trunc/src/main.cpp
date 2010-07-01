@@ -7,6 +7,7 @@
 #include <boost/unordered_set.hpp>
 
 #include <iostream>
+#include <fstream>
 #include <stdlib.h>
 #include <signal.h>
 

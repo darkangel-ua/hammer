@@ -6,7 +6,7 @@
 #include "argument_writer.h"
 #include <map>
 #include <boost/shared_ptr.hpp>
-#include <boost/smart_cast.hpp>
+//#include <boost/smart_cast.hpp>
 
 namespace hammer
 {

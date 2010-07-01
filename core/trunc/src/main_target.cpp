@@ -84,7 +84,7 @@ main_target::add_intermediate_dir_dependency(hammer::build_node& generated_node)
 
 void main_target::add_additional_dependencies(hammer::build_node& generated_node) const
 {
-   build_node_ptr& intr_dir_node = add_intermediate_dir_dependency(generated_node);
+   build_node_ptr intr_dir_node = add_intermediate_dir_dependency(generated_node);
    add_hamfile_dependency(generated_node, intr_dir_node);
 }
 

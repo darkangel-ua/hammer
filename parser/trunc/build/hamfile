@@ -1,0 +1,9 @@
+lib hammer.parser
+   :
+    [ glob ../src/*.cpp ]
+    /hammer/sema
+    /boost/filesystem/<version>1.36.0/<link>static
+   :
+    @<include>../include
+    <link>static
+   ;

@@ -32,11 +32,11 @@ hamfile       : project_def? target_decl_or_rule_call* -> ^(HAMFILE project_def?
 project_def   : WS* 'project' params ';' -> ^(PROJECT_DEF 'project' params);
 target_decl_or_rule_call : target_decl_or_rule_call_impl WS* ';' -> target_decl_or_rule_call_impl;
 target_decl_or_rule_call_impl : WS* ID params -> ^(TARGET_DECL_OR_RULE_CALL ID params);
-params        : expression (WS* ':' parameter)* -> ^(PARAMS expression parameter*)
+params        : WS+ expression (WS+ ':' param)* -> ^(PARAMS expression param*)
               | -> ^(PARAMS);
-parameter     : expression
-              | -> EMPTY_PARAM;
-expression    : WS* feature_set -> feature_set
+param         : WS+ expression
+              | -> ; 
+expression    : feature_set -> feature_set
               | list_of ;
 feature_set   : feature_set_feature (WS+ feature_set_feature)* -> ^(FEATURE_SET feature_set_feature+);
 feature_set_feature : public_tag? '<' ID '>' feature_value -> ^(FEATURE public_tag? ID feature_value);
@@ -52,7 +52,7 @@ target_ref_impl : target_props -> TARGET_NAME target_props
                 | target_name_seq target_props?; 
 target_name_seq : '//' ID -> ^(TARGET_NAME ID);
 target_props : (WS* '/' feature)+ -> ^(FEATURE_SET feature+);
-list_of : WS* list_of_impl (WS+ list_of_impl)* -> ^(LIST_OF list_of_impl+);
+list_of : list_of_impl (WS+ list_of_impl)* -> ^(LIST_OF list_of_impl+);
 list_of_impl : path_like_seq
              | target_ref
              | '[' target_decl_or_rule_call_impl WS* ']' -> target_decl_or_rule_call_impl;

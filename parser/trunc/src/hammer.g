@@ -1,9 +1,9 @@
 grammar hammer;
 
 options{ 
-//   language = C; 
+   language = C; 
    output = AST;
-//   ASTLabelType = pANTLR3_BASE_TREE;
+   ASTLabelType = pANTLR3_BASE_TREE;
 }
 
 tokens{
@@ -21,6 +21,7 @@ PATH_LIKE_SEQ;
 FEATURE_SET;
 FEATURE;
 PUBLIC_TAG;
+CONDITION;
 }
 
 @parser::preincludes
@@ -34,13 +35,20 @@ target_decl_or_rule_call : target_decl_or_rule_call_impl WS* ';' -> target_decl_
 target_decl_or_rule_call_impl : WS* ID params -> ^(TARGET_DECL_OR_RULE_CALL ID params);
 params        : WS+ expression (WS+ ':' param)* -> ^(PARAMS expression param*)
               | -> ^(PARAMS);
-param         : WS+ expression
+param         : WS+ expression -> expression
               | -> ; 
 expression    : feature_set -> feature_set
               | list_of ;
 feature_set   : feature_set_feature (WS+ feature_set_feature)* -> ^(FEATURE_SET feature_set_feature+);
-feature_set_feature : public_tag? '<' ID '>' feature_value -> ^(FEATURE public_tag? ID feature_value);
-feature       : '<' ID '>' feature_value -> ^(FEATURE ID feature_value);
+feature_set_feature : public_tag? feature_set_feature_impl -> ^(FEATURE public_tag? feature_set_feature_impl);
+feature_set_feature_impl : (conditional_feature)=> conditional_feature
+			 | feature_impl ;
+conditional_feature : condition feature;
+condition : feature condition_impl -> ^(CONDITION feature condition_impl);
+// colon must stay here because if it is not syntactic predicate will not work
+condition_impl : (',' feature)* ':' -> feature* ':';
+feature       : feature_impl -> ^(FEATURE feature_impl);
+feature_impl : '<' ID '>' feature_value -> ID feature_value;
 feature_value : path_like_seq
               | '(' target_ref ')' -> target_ref;
 path_like_seq : '/' path_like_seq_impl -> ^(PATH_LIKE_SEQ SLASH path_like_seq_impl)

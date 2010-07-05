@@ -345,6 +345,7 @@ namespace
          }
 
          if (r.first)
+         {
             if (node->is_composite())
             {
                result.push_back(*i);
@@ -356,6 +357,7 @@ namespace
                visited_nodes.erase(node.get());
                return r;
             }
+         }
       }
 
       visited_nodes.erase(node.get());

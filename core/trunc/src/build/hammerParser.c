@@ -230,10 +230,12 @@ static void	hammerParserFree(phammerParser ctx);
  * we need a function that knows how to free a return scope when the list is destroyed. 
  * We cannot just use ANTLR3_FREE because in debug tracking mode, this is a macro.
  */
-static	void ANTLR3_CDECL freeScope(void * scope)
+/* defined but not used
+static void ANTLR3_CDECL freeScope(void * scope)
 {
     ANTLR3_FREE(scope);
 }
+*/
 
 /** \brief Name of the grammar file that generated this code
  */
@@ -375,10 +377,12 @@ hammerParserNewSSD   (pANTLR3_COMMON_TOKEN_STREAM instream, pANTLR3_RECOGNIZER_S
  * 
  * \return Pointer to first char * in the table.
  */
+/* defined but not used
 static pANTLR3_UINT8    *getTokenNames() 
 {
         return hammerParserTokenNames; 
 }
+*/
 
     
 /* Declare the bitsets
@@ -3063,7 +3067,7 @@ requirements(phammerParser ctx)
             	                    {
 
             	                        {
-            	                            int LA9_1 = LA(2);
+            	                            //int LA9_1 = LA(2); // unused variable LA9_1
             	                            if ( (!( (((( is_conditional_feature(PARSER) && !is_dependency_feature(PARSER) ))||(( (( is_conditional_feature(PARSER) && !is_dependency_feature(PARSER) )) && (( is_dependency_feature(PARSER) )) )))) )) ) 
             	                            {
             	                                alt9=1;
@@ -3881,7 +3885,7 @@ feature(phammerParser ctx)
                                         {
 
                                             {
-                                                int LA12_4 = LA(5);
+                                                //int LA12_4 = LA(5); // unused variable LA12_4
                                                 if ( (( is_dependency_feature(PARSER) )) ) 
                                                 {
                                                     alt12=1;
@@ -5063,7 +5067,7 @@ target_path(phammerParser ctx)
                                 {
                                    /* dfaLoopbackState(k,edges,eotPredictsAlt,description,stateNumber,semPredState)
                                     */
-                                    int LA16_3 = LA(3);
+                                    //int LA16_3 = LA(3); // unused variable LA16_3
                                     if ( (( (( is_path_element(PARSER) )) && (( is_path_slash(PARSER) )) )) ) 
                                     {
                                         alt16=1;
@@ -5111,7 +5115,7 @@ target_path(phammerParser ctx)
                     if ( (LA17_0 == SLASH) ) 
                     {
                         {
-                            int LA17_1 = LA(2);
+                            //int LA17_1 = LA(2); // unused variable LA17_1
                             if ( (( is_trailing_slash(PARSER) )) ) 
                             {
                                 alt17=1;
@@ -5595,7 +5599,7 @@ target_features(phammerParser ctx)
         	                    {
         	                       /* dfaLoopbackState(k,edges,eotPredictsAlt,description,stateNumber,semPredState)
         	                        */
-        	                        int LA19_2 = LA(2);
+        	                        // int LA19_2 = LA(2); // unused variable LA19_2
         	                        if ( (( is_path_slash(PARSER) )) ) 
         	                        {
         	                            alt19=1;

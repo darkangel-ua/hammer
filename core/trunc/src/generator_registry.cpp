@@ -39,8 +39,7 @@ generator_registry::find_viable_generators(const target_type& t,
    int rank = 0; // rank show as the weight of generator (the more rank the more generator suitable for generation this type of targets)
    for(generators_t::const_iterator i = generators_.begin(), last = generators_.end(); i != last; ++i)
    {
-      if (i->second->is_composite() && !allow_composite ||
-          !i->second->is_composite() && allow_composite)
+      if ((i->second->is_composite() && !allow_composite) || (!i->second->is_composite() && allow_composite))
       {
          continue;
       }

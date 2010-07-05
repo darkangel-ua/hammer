@@ -233,11 +233,12 @@ static void	hammer_walkerFree(phammer_walker ctx);
  * we need a function that knows how to free a return scope when the list is destroyed. 
  * We cannot just use ANTLR3_FREE because in debug tracking mode, this is a macro.
  */
+/* defined but not used
 static	void ANTLR3_CDECL freeScope(void * scope)
 {
     ANTLR3_FREE(scope);
 }
-
+*/
 /** \brief Name of the grammar file that generated this code
  */
 static const char fileName[] = "hammer_walker.g";
@@ -368,11 +369,12 @@ hammer_walkerNewSSD   (pANTLR3_COMMON_TREE_NODE_STREAM instream, pANTLR3_RECOGNI
  * 
  * \return Pointer to first char * in the table.
  */
+/* defined but not used
 static pANTLR3_UINT8    *getTokenNames() 
 {
         return hammer_walkerTokenNames; 
 }
-
+*/
     
 /* Declare the bitsets
  */
@@ -800,7 +802,7 @@ rule(phammer_walker ctx)
             }
 
             {
-                 result = hammer_rule_call(PARSER->super, (ID2 != NULL ? ID2->getText(ID2) : NULL)->chars, args_list); 
+                 result = hammer_rule_call(PARSER->super, (const char*)(ID2 != NULL ? ID2->getText(ID2) : NULL)->chars, args_list); 
             }
 
         }
@@ -1258,7 +1260,7 @@ string_arg(phammer_walker ctx, void* args_list)
             }
 
             {
-                 hammer_add_string_arg_to_args_list(PARSER->super, args_list, (ID8 != NULL ? ID8->getText(ID8) : NULL)->chars); 
+                 hammer_add_string_arg_to_args_list(PARSER->super, args_list, (const char*)(ID8 != NULL ? ID8->getText(ID8) : NULL)->chars); 
             }
 
         }
@@ -1421,7 +1423,7 @@ string_list_id(phammer_walker ctx, void* list)
             }
 
             {
-                 hammer_add_id_to_string_list(PARSER->super, list, (ID9 != NULL ? ID9->getText(ID9) : NULL)->chars); 
+                 hammer_add_id_to_string_list(PARSER->super, list, (const char*)(ID9 != NULL ? ID9->getText(ID9) : NULL)->chars); 
             }
 
         }
@@ -1551,7 +1553,7 @@ project_requirements(phammer_walker ctx)
             }
 
             {
-                result = hammer_make_project_requirements_decl((ID10 != NULL ? ID10->getText(ID10) : NULL)->chars, requirements11); 
+                result = hammer_make_project_requirements_decl((const char*)(ID10 != NULL ? ID10->getText(ID10) : NULL)->chars, requirements11); 
             }
 
         }
@@ -2220,7 +2222,9 @@ feature(phammer_walker ctx)
         	        }
 
         	        {
-        	             feature = hammer_create_feature(PARSER->super, (feature_name != NULL ? feature_name->getText(feature_name) : NULL)->chars, (feature_value != NULL ? feature_value->getText(feature_value) : NULL)->chars); 
+        	             feature = hammer_create_feature(PARSER->super, 
+        	                                             (const char*)(feature_name != NULL ? feature_name->getText(feature_name) : NULL)->chars, 
+        	                                             (const char*)(feature_value != NULL ? feature_value->getText(feature_value) : NULL)->chars); 
         	        }
 
         	    }
@@ -2264,7 +2268,8 @@ feature(phammer_walker ctx)
         	        }
 
         	        {
-        	             feature = hammer_create_feature(PARSER->super, (feature_name != NULL ? feature_name->getText(feature_name) : NULL)->chars, NULL); hammer_feature_set_dependency_data(feature, source_decl16); 
+        	             feature = hammer_create_feature(PARSER->super, (const char*)(feature_name != NULL ? feature_name->getText(feature_name) : NULL)->chars, NULL);
+                             hammer_feature_set_dependency_data(feature, source_decl16); 
         	        }
 
         	    }
@@ -2869,7 +2874,7 @@ target_name(phammer_walker ctx, void* sd)
         	        }
 
         	        {
-        	             hammer_source_decl_set_target_name(PARSER->super, sd, (ID21 != NULL ? ID21->getText(ID21) : NULL)->chars); 
+        	             hammer_source_decl_set_target_name(PARSER->super, sd, (const char*)(ID21 != NULL ? ID21->getText(ID21) : NULL)->chars); 
         	        }
 
         	        MATCHT(ANTLR3_TOKEN_UP, NULL); 

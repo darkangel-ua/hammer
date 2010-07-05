@@ -51,7 +51,7 @@ void basic_meta_target::instantiate_simple_targets(const sources_decl& targets,
                                                    const main_target& owner,
                                                    std::vector<basic_target*>* result) const
 {
-   const type_registry& tr = get_engine()->get_type_registry();
+   //const type_registry& tr = get_engine()->get_type_registry(); // unused variable tr;
    for(sources_decl::const_iterator i = targets.begin(), last = targets.end(); i != last; ++i)
    {
       const hammer::target_type* tp = i->type();

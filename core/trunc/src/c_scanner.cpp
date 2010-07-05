@@ -626,7 +626,7 @@ ptime c_scanner_context::calculate_timestamp(const hashed_location& file_dir,
       file_node::file_infos_t::iterator fi = file.file_infos_.find(&file_dir);
       if (fi != file.file_infos_.end())
       {
-         file_node::file_info& fi_ref = fi->second;
+         //file_node::file_info& fi_ref = fi->second; // unused variable
          if (fi->second.included_files_ == NULL || 
              fi->second.timestamp_ != fi->second.cached_timestamp_)
          {

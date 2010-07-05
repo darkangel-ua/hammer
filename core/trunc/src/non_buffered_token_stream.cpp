@@ -259,7 +259,7 @@ void non_buffered_token_stream::relex_from_current()
    for(int last = ctx_.tstream_->tstream->istream->cachedSize - 1, i = ctx_.tstream_->p; i <= last; --last)
       ctx_.tstream_->tokens->del(ctx_.tstream_->tokens, last);
    ctx_.tstream_->tstream->istream->cachedSize = ctx_.tstream_->p;
-   pANTLR3_STRING s = tok->getText(tok);
+   //pANTLR3_STRING s = tok->getText(tok); // unused variable s
    ctx_.input_->istream->seek(ctx_.input_->istream, tok->getStopIndex(tok));
    ctx_.input_->charPositionInLine	= tok->getCharPositionInLine(tok);
    ctx_.input_->currentLine		= tok->lineStart;

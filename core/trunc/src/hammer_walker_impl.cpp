@@ -77,7 +77,7 @@ void hammer_add_id_to_string_list(void* context, void* string_list, const char* 
 
 void hammer_add_feature_to_list(void* context, void* args_list, const char* feature_name, const char* feature_value)
 {
-   hammer_walker_context* ctx = static_cast<hammer_walker_context*>(context);
+   //hammer_walker_context* ctx = static_cast<hammer_walker_context*>(context); // unused variable ctx
    call_resolver_call_arg<feature_set>* args_list_ = static_cast<call_resolver_call_arg<feature_set>*>(args_list);
    args_list_->value()->join(feature_name, feature_value);
 }
@@ -271,7 +271,7 @@ void* hammer_make_target_path()
 
 void hammer_add_to_target_path(void* context, void* tp, pANTLR3_BASE_TREE node)
 {
-   hammer_walker_context* ctx = static_cast<hammer_walker_context*>(context);
+   //hammer_walker_context* ctx = static_cast<hammer_walker_context*>(context); // unused variable ctx
    target_path_t* target_path = static_cast<target_path_t*>(tp);
 
    if (target_path->first == NULL)

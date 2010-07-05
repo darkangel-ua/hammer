@@ -398,8 +398,11 @@ void msvc_project::write_configurations(std::ostream& s) const
                  "            Name=\"VCLinkerTool\"\n";
             linker_options_.write(s, *i->node_, fake_environment(project_output_dir()));
             s << "         />\n";
-            break;
          }
+         break;
+         case configuration_types::static_lib:
+         case configuration_types::utility:
+         break;
       }
 
       if (i->real_node_->targeting_type_->equal_or_derived_from(testing_run_passed_type_))
@@ -418,7 +421,7 @@ void msvc_project::write_configurations(std::ostream& s) const
 
    s << "   </Configurations>\n"; 
 }
-
+/* defined but not used
 static feature_set* compute_file_conf_properties(const basic_target& target, const msvc_project::variant& v)
 {
    feature_set* result = v.target_->get_engine()->feature_registry().make_set();
@@ -431,7 +434,7 @@ static feature_set* compute_file_conf_properties(const basic_target& target, con
 
    return result;
 }
-
+*/
 void msvc_project::file_configuration::write(write_context& ctx, const variant& v) const
 {
    if (!v.properties_->contains(target_->properties()))

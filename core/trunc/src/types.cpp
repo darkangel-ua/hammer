@@ -39,45 +39,48 @@ const type_tag TESTING_RUN_PASSED("TESTING_RUN_PASSED");
 void register_standart_types(type_registry& tr, feature_registry& fr)
 {
    target_type::suffixes_t cpp_suffixes = list_of(".cpp")(".cc");
-   const target_type& tCPP = tr.insert(target_type(CPP, cpp_suffixes));
-   
-   const target_type& tC = tr.insert(target_type(C, ".c"));
-   
-   target_type::suffixes_t h_suffixes = list_of(".h")(".hpp");
-   const target_type& tH = tr.insert(target_type(H, h_suffixes));
+   tr.insert(target_type(CPP, cpp_suffixes));
 
-   const target_type& tRC = tr.insert(target_type(RC, ".rc"));
-   const target_type& tRES = tr.insert(target_type(RES, ".res"));
-   
+   tr.insert(target_type(C, ".c"));
+
+   target_type::suffixes_t h_suffixes = list_of(".h")(".hpp");
+   tr.insert(target_type(H, h_suffixes));
+
+   tr.insert(target_type(RC, ".rc"));
+   tr.insert(target_type(RES, ".res"));
+
    target_type::suffixes_t obj_suffixes = list_of<target_type::suffix_def>(".o", *parse_simple_set("<host-os>linux", fr))
                                                                           (".o", *parse_simple_set("<toolset>gcc", fr))
                                                                           (".obj", *parse_simple_set("<host-os>windows", fr));
-   const target_type& tOBJ = tr.insert(target_type(OBJ, obj_suffixes));
-   const target_type& tPCH = tr.insert(target_type(PCH, ".pch"));
+   tr.insert(target_type(OBJ, obj_suffixes));
+   tr.insert(target_type(PCH, ".pch"));
    const target_type& tLIB = tr.insert(target_type(LIB, ""));
    target_type::suffixes_t shared_suffixes = list_of<target_type::suffix_def>(".dll", *parse_simple_set("<host-os>windows", fr))
                                                                              (".so", *parse_simple_set("<host-os>linux", fr));
    const target_type& tSHARED_LIB = tr.insert(target_type(SHARED_LIB, shared_suffixes, tLIB));
-   const target_type& tPREBUILT_SHARED_LIB = tr.insert(target_type(PREBUILT_SHARED_LIB, "", tSHARED_LIB));
+   tr.insert(target_type(PREBUILT_SHARED_LIB, "", tSHARED_LIB));
    const target_type& tSTATIC_LIB = tr.insert(target_type(STATIC_LIB, ".lib", tLIB));
-   const target_type& tPREBUILT_STATIC_LIB = tr.insert(target_type(PREBUILT_STATIC_LIB, "", tSTATIC_LIB));
+   tr.insert(target_type(PREBUILT_STATIC_LIB, "", tSTATIC_LIB));
+
 
    target_type::suffixes_t static_lib_suffixes = list_of<target_type::suffix_def>(".lib", *parse_simple_set("<host-os>windows", fr))
                                                                                  (".a", *parse_simple_set("<host-os>linux", fr));
-   const target_type& tIMPORT_LIB = tr.insert(target_type(IMPORT_LIB, static_lib_suffixes, tSTATIC_LIB));
+   tr.insert(target_type(IMPORT_LIB, static_lib_suffixes, tSTATIC_LIB));
    const target_type& tSEARCHED_LIB = tr.insert(target_type(SEARCHED_LIB, "", tLIB));
-   const target_type& tSEARCHED_SHARED_LIB = tr.insert(target_type(SEARCHED_SHARED_LIB, "", tSEARCHED_LIB));
-   const target_type& tSEARCHED_STATIC_LIB = tr.insert(target_type(SEARCHED_STATIC_LIB, "", tSEARCHED_LIB));
-   const target_type& tHEADER_LIB = tr.insert(target_type(HEADER_LIB, target_type::suffixes_t(), tLIB));
+   tr.insert(target_type(SEARCHED_SHARED_LIB, "", tSEARCHED_LIB));
+   tr.insert(target_type(SEARCHED_STATIC_LIB, "", tSEARCHED_LIB));
+   tr.insert(target_type(HEADER_LIB, target_type::suffixes_t(), tLIB));
+
+
    target_type::suffixes_t exe_suffixes = list_of<target_type::suffix_def>(".exe", *parse_simple_set("<host-os>windows", fr))
                                                                            ("", *parse_simple_set("<host-os>linux", fr));
-   const target_type& tEXE = tr.insert(target_type(EXE, exe_suffixes));
-   const target_type& tEXE_MANIFEST = tr.insert(target_type(EXE_MANIFEST, ".exe.manifest"));
-   const target_type& tDLL_MANIFEST = tr.insert(target_type(DLL_MANIFEST, ".dll.manifest"));
-   const target_type& tUNKNOWN = tr.insert(target_type(UNKNOWN, ""));
-   const target_type& tCOPIED = tr.insert(target_type(COPIED, ""));
-   const target_type& tTESTING_OUTPUT = tr.insert(target_type(TESTING_OUTPUT, ".test_output"));
-   const target_type& tTESTING_RUN_PASSED = tr.insert(target_type(TESTING_RUN_PASSED, ".run_passed"));
+   tr.insert(target_type(EXE, exe_suffixes));
+   tr.insert(target_type(EXE_MANIFEST, ".exe.manifest"));
+   tr.insert(target_type(DLL_MANIFEST, ".dll.manifest"));
+   tr.insert(target_type(UNKNOWN, ""));
+   tr.insert(target_type(COPIED, ""));
+   tr.insert(target_type(TESTING_OUTPUT, ".test_output"));
+   tr.insert(target_type(TESTING_RUN_PASSED, ".run_passed"));
 }
 
 }}

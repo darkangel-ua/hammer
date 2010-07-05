@@ -37,8 +37,7 @@ copy_main_target::copy_main_target(const hammer::meta_target* mt,
    // Solution will be specify on what target types feature a works
    // feature.feature recursive : on off : : COPIED ;
    feature_set::const_iterator i = props->find("recursive");
-   if (i != props->end() && (**i).value() == "on" ||
-       i == props->end())
+   if ((i != props->end() && (**i).value() == "on") || i == props->end())
    {
       recursive_ = true;
    }

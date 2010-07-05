@@ -1439,7 +1439,7 @@ void mCOLON(phammerLexer ctx)
 static ANTLR3_INLINE
 void mSTRING(phammerLexer ctx)
 {
-	ANTLR3_UINT32	_type;
+	//ANTLR3_UINT32	_type; // unused variable _type
 
         
     // hammer.g:99:9: ( '\"' STRING_ID '\"' )
@@ -1492,7 +1492,7 @@ void mSTRING(phammerLexer ctx)
 static ANTLR3_INLINE
 void mSTRING_ID(phammerLexer ctx)
 {
-	ANTLR3_UINT32	_type;
+	//ANTLR3_UINT32	_type; // unused variable _type
 
         
     // hammer.g:101:11: ( ( '\\\\\"' | ~ ( '\"' | '\\n' | '\\r' ) )* )

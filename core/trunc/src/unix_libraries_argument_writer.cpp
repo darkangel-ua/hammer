@@ -33,7 +33,7 @@ void unix_libraries_argument_writer::write_impl(std::ostream& output,
                                                 const build_node& node, 
                                                 const build_environment& environment) const
 {
-   bool first = true;
+   //bool first = true; // unused variable first
    output << "-Wl,--start-group ";
    for(build_node::sources_t::const_iterator i = node.sources_.begin(), last = node.sources_.end(); i != last; ++i)
    {

@@ -74,7 +74,7 @@ namespace hammer
                              const target_type& h_type,
                              build_environment& environment,
                              const cmdline_builder& compiller_options) 
-                  : output_(s), h_type_(h_type),
+                  : h_type_(h_type), output_(s),
                     environment_(environment),
                     compiller_options_(compiller_options)
                {}
@@ -117,7 +117,7 @@ namespace hammer
                   filter_t(const types_t& t, 
                            const std::string& name,
                            const std::string& uid = std::string()) 
-                     : types_(t), name(name), uid(uid) 
+                     : name(name), uid(uid), types_(t) 
                   {}
 
                   void write(write_context& ctx, const std::string& path_prefix) const;

@@ -15,8 +15,8 @@ static_lib_generator::static_lib_generator(hammer::engine& e,
                                            bool composite,
                                            const feature_set* c) 
    : generator(e, name, source_types, target_types, composite, c),
-     static_lib_(e.get_type_registry().get(types::STATIC_LIB)),
      shared_lib_(e.get_type_registry().get(types::SHARED_LIB)),
+     static_lib_(e.get_type_registry().get(types::STATIC_LIB)),
      searched_lib_(e.get_type_registry().get(types::SEARCHED_LIB))
 {
 }

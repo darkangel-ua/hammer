@@ -6,8 +6,8 @@
 #include <stdexcept>
 #include <sstream>
 #include <hammer/core/sources_decl.h>
-#include <boost/spirit/core.hpp>
-#include <boost/spirit/utility/lists.hpp>
+#include <boost/spirit/include/classic_core.hpp>
+#include <boost/spirit/include/classic_lists.hpp>
 #include <hammer/core/subfeature.h>
 
 using namespace std;
@@ -280,7 +280,7 @@ bool feature_set::contains(const feature_set& rhs) const
 
 feature_set* parse_simple_set(const std::string& s, feature_registry& r)
 {
-   using namespace boost::spirit;
+   using namespace boost::spirit::classic;
 
    vector<string> feature_names, feature_values;
    if (parse(s.begin(), s.end(), 

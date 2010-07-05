@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #include <stdexcept>
 #include <boost/range/iterator_range.hpp>
-#include <boost/spirit/core.hpp>
-#include <boost/spirit/utility/lists.hpp>
+#include <boost/spirit/include/classic_core.hpp>
+#include <boost/spirit/include/classic_lists.hpp>
 #include <hammer/core/cmdline_builder.h>
 
 using namespace std;
@@ -21,7 +21,7 @@ void cmdline_builder::add(const boost::shared_ptr<argument_writer>& v)
 
 void cmdline_builder::write(std::ostream& output, const build_node& node, const build_environment& environment) const
 {
-   using namespace boost::spirit;
+   using namespace boost::spirit::classic;
 
    typedef boost::iterator_range<const char*> range_t;
    typedef vector<range_t> arguments_t;

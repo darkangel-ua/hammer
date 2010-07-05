@@ -179,7 +179,8 @@ project::try_select_best_alternative(const pstring& target_name,
    if (selected_targets[0].resolved_build_request_rank_ != selected_targets[1].resolved_build_request_rank_)
       return selected_targets.front();
    else
-      error_cannot_choose_alternative(selected_targets[0], selected_targets[1]);
+      //error_cannot_choose_alternative(selected_targets[0], selected_targets[1]);
+      throw std::runtime_error("Can't select best alternative[FIXME]");
 }
 
 

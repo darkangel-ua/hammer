@@ -94,7 +94,7 @@ void main_target::add_hamfile_dependency(hammer::build_node& node,
    boost::intrusive_ptr<hammer::build_node> hamfile_node(new hammer::build_node(*this, false));
    hamfile_node->products_.push_back(
       new signature_target(this, 
-                           pstring(get_engine()->pstring_pool(), "target.sig"), 
+                           pstring(get_engine()->pstring_pool(), name().to_string() + ".target.sig"), 
                            &get_engine()->get_type_registry().get(types::UNKNOWN),
                            &properties()));
    

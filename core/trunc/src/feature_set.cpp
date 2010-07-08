@@ -2,6 +2,9 @@
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature_registry.h>
 #include <hammer/core/feature.h>
+#include <hammer/core/location.h>
+#include <hammer/core/basic_meta_target.h>
+#include <hammer/core/fs_helpers.h>
 #include <iterator>
 #include <stdexcept>
 #include <sstream>
@@ -308,9 +311,37 @@ static bool less_by_name(const feature* lhs, const feature* rhs)
    return lhs->name() < rhs->name();
 }
 
+static void dump_value(std::ostream& s, const feature& f)
+{
+   if (f.attributes().path)
+   {
+      const feature::path_data& pd = f.get_path_data();
+      location_t l(f.value().to_string());
+      if (!l.has_root_name())
+      {
+         l = pd.target_->location() / l;   
+         l.normalize();
+      }
+
+      s << l;
+   }
+   else
+      if (f.attributes().dependency)
+      {
+         const feature::dependency_data& dd = f.get_dependency_data();
+         s << dd.source_.target_path();
+         if (!dd.source_.target_name().empty())
+            s << "//" << dd.source_.target_name();
+      }
+      else
+         s << f.value();
+}
+
 static void dump_for_hash(std::ostream& s, const feature& f, bool dump_all)
 {
-   s << '<' << f.name() << '>' << f.value();
+   s << '<' << f.name() << '>';
+   dump_value(s, f);
+
    if (f.subfeatures().empty())
       return;
    
@@ -335,6 +366,8 @@ static void dump_for_hash(std::ostream& s, const feature& f, bool dump_all)
       }
 
       s << (**i).name() << ':' << (**i).value();
+      if (dump_all)
+         s << endl;
    }
 }
 
@@ -368,7 +401,7 @@ void dump_for_hash(std::ostream& s, const feature_set& fs, bool dump_all)
    for(features_t::const_iterator i = features.begin(), last = features.end(); i != last; ++i)
    {
       if (!first)
-         s << ' ';
+         s << (dump_all ? '\n' : ' ');
       else
          first = false;
 

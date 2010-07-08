@@ -21,7 +21,8 @@ void signature_target::timestamp_info_impl() const
    else
    {
       std::string saved_signature;
-      if (!getline(f, saved_signature))
+      std::copy(std::istreambuf_iterator<char>(f), std::istreambuf_iterator<char>(), back_inserter(saved_signature));
+      if (!f)
          timestamp_info_.timestamp_ = boost::date_time::neg_infin;
       else
          if (signature != saved_signature)

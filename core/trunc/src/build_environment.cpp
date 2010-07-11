@@ -23,7 +23,7 @@ build_environment::build_environment() : impl_(new impl_t)
 
 build_environment::~build_environment()
 {
-
+   delete impl_;
 }
 
 std::ostream& build_environment::begin_use_output_stream() const
@@ -55,7 +55,8 @@ void build_environment::end_use_output_stream(std::ostream& s) const
    else
    {
       impl_->buffer_ << static_cast<std::stringstream&>(s).str();
-      impl_->streams_.erase(impl_->streams_.find(&s));
+      assert(impl_->streams_.find(&s) != impl_->streams_.end());
+      impl_->streams_.erase(&s);
    }
 }
 

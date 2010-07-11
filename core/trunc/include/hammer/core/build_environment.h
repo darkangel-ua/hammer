@@ -6,6 +6,7 @@
 #include <memory>
 #include <iosfwd>
 #include "location.h"
+#include <boost/noncopyable.hpp>
 
 namespace hammer
 {
@@ -16,7 +17,7 @@ namespace hammer
 
    class basic_target;
 
-   class build_environment
+   class build_environment : public boost::noncopyable
    {
       public:
          friend class ::hammer::details::buffered_output_environment;

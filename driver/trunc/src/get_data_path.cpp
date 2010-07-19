@@ -25,7 +25,7 @@ fs::path get_data_path()
 
 fs::path get_data_path()
 {
-   return "/usr/hammer/lib";
+   return "/usr/lib/hammer";
 }
 
 #  else

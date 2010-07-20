@@ -31,10 +31,9 @@ std::ostream& build_environment::begin_use_output_stream() const
    boost::mutex::scoped_lock lk(impl_->m_);
    if (impl_->should_buffer_)
    {
-      std::auto_ptr<std::ostream> s(new std::stringstream);
-      std::ostream* result = s.get();
-      impl_->streams_.insert(s.get(), s);
-      return *result;
+      std::ostream* s = new std::stringstream;
+      impl_->streams_.insert(s, s);
+      return *s;
    }
    else
    {
@@ -61,4 +60,3 @@ void build_environment::end_use_output_stream(std::ostream& s) const
 }
 
 }
-

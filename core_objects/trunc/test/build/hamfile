@@ -1,0 +1,12 @@
+testing.run
+    [ glob ../src/*.cpp : stdafx.cpp ]
+    [ glob ../src/*.h : stdafx.h ]
+    /hammer/parscore
+    /hammer/core_objects
+    /boost/test//utf/<version>1.36.0/<link>static 
+   :
+   :
+   :
+   :
+    hammer.core_objects.test
+   ;

@@ -1,8 +1,19 @@
+obj c_as_cpp_files 
+   :     
+    [ glob ../src/*.c ]
+   :
+    <toolset>msvc:<cxxflags>/TP
+   ;
+explicit c_as_cpp_files ;
+
 lib hammer.parser
    :
     [ glob ../src/*.cpp ]
+    [ rglob ../include/*.h ]
+    c_as_cpp_files
     /hammer/sema
     /boost/filesystem/<version>1.36.0/<link>static
+    /libantlr3c/<version>3.1.1
    :
     @<include>../include
     <link>static

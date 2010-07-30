@@ -9,13 +9,14 @@ namespace hammer{namespace parser{
 class parser
 {
    public:
-      static void parse(const boost::filesystem::path& hamfile,
-                        const sema::actions& actions);
+      static const ast::hamfile* 
+      parse(const boost::filesystem::path& hamfile,
+            const sema::actions& actions);
 
    private:
       parser(const boost::filesystem::path& hamfile,
              const sema::actions& actions);
-      void parse_impl();
+      const ast::hamfile* parse_impl();
 
       boost::filesystem::path hamfile_;
       const sema::actions& actions_;

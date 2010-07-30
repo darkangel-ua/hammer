@@ -1,0 +1,9 @@
+lib hammer.sema
+   :
+    [ glob ../src/*.cpp ]
+    [ rglob ../include/*.h ]
+    @/hammer/ast
+   :
+    @<include>../include
+    <link>static
+   ;

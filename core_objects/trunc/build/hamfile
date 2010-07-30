@@ -1,0 +1,11 @@
+lib hammer.core_objects
+   :
+    [ glob ../src/*.cpp ]
+    [ rglob ../include/*.h ]
+    @/hammer/parscore
+    @/boost/function/<version>1.36.0
+    @/boost/function_types/<version>1.36.0
+   :
+    @<include>../include
+    <link>static
+   ;

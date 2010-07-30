@@ -1,0 +1,23 @@
+pch pch 
+   : 
+    ../src/stdafx.cpp 
+    ../src/stdafx.h 
+   ;
+explicit pch ;
+
+testing.run
+    pch
+    [ glob ../src/*.cpp : stdafx.cpp ]
+    [ glob ../src/*.h : stdafx.h ]
+    /hammer/ast
+    /hammer/parser
+    /hammer/sema
+    /boost/filesystem/<version>1.36.0/<link>static 
+    /boost/test//utf/<version>1.36.0/<link>static 
+   :
+   :
+    ../work/.
+   :
+   :
+    hammer.ast.test
+   ;

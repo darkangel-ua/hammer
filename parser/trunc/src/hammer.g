@@ -8,14 +8,14 @@ options{
 
 tokens{
 HAMFILE;
-PROJECT_DEF;
+EXPLICIT_PROJECT_DEF;
+IMPLICIT_PROJECT_DEF;
 TARGET_DECL_OR_RULE_CALL;
 TARGET_REF;
 TARGET_NAME;
-PARAMS;
-PARAMETER;
-EMPTY_PARAM;
+ARGUMENTS;
 EXPRESSION;
+EMPTY_EXPRESSION;
 LIST_OF;
 PATH_LIKE_SEQ;
 FEATURE_SET;
@@ -26,17 +26,17 @@ CONDITION;
 
 @parser::preincludes
 {
-   #include "../hammer_parser_context.h"
 }
 
-hamfile       : project_def? target_decl_or_rule_call* -> ^(HAMFILE project_def? target_decl_or_rule_call*);
-project_def   : WS* 'project' params ';' -> ^(PROJECT_DEF 'project' params);
+hamfile       : project_def target_decl_or_rule_call* -> ^(HAMFILE project_def? target_decl_or_rule_call*);
+project_def   : WS* 'project' arguments WS* ';' -> ^(EXPLICIT_PROJECT_DEF 'project' arguments)
+              | -> IMPLICIT_PROJECT_DEF;
 target_decl_or_rule_call : target_decl_or_rule_call_impl WS* ';' -> target_decl_or_rule_call_impl;
-target_decl_or_rule_call_impl : WS* ID params -> ^(TARGET_DECL_OR_RULE_CALL ID params);
-params        : WS+ expression (WS+ ':' param)* -> ^(PARAMS expression param*)
-              | -> ^(PARAMS);
-param         : WS+ expression -> expression
-              | -> ; 
+target_decl_or_rule_call_impl : WS* ID arguments -> ^(TARGET_DECL_OR_RULE_CALL ID arguments);
+arguments     : WS+ expression (WS+ ':' argument)* -> ^(ARGUMENTS expression argument*)
+              | -> ^(ARGUMENTS);
+argument         : WS+ expression -> expression
+              | -> EMPTY_EXPRESSION; 
 expression    : feature_set -> feature_set
               | list_of ;
 feature_set   : feature_set_feature (WS+ feature_set_feature)* -> ^(FEATURE_SET feature_set_feature+);
@@ -64,7 +64,7 @@ list_of : list_of_impl (WS+ list_of_impl)* -> ^(LIST_OF list_of_impl+);
 list_of_impl : path_like_seq
              | target_ref
              | '[' target_decl_or_rule_call_impl WS* ']' -> target_decl_or_rule_call_impl;
-public_tag : '@' WS* -> PUBLIC_TAG;           
+public_tag : '@' WS* -> PUBLIC_TAG;
              
 SLASH : '/';
 ID : ('a'..'z' | 'A'..'Z' | '0'..'9' | '.' | '-' | '_'| '=' | '*')+  

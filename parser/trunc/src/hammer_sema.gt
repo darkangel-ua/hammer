@@ -1,0 +1,56 @@
+tree grammar hammer_sema;
+
+options
+{ 
+        language = C; 
+        tokenVocab = hammer;
+        ASTLabelType = pANTLR3_BASE_TREE;
+}
+
+@header
+{
+#include <hammer/sema/actions.h>
+#include <hammer/parscore/identifier.h>
+#define SEMA static_cast<const hammer::sema::actions*>(PARSER->super)
+}
+
+hamfile returns [const hammer::ast::hamfile* result]
+        : ^(HAMFILE project_def) { result = SEMA->on_hamfile($project_def.result); }
+        ;
+        
+project_def returns[const hammer::ast::project_def* result]
+@init { hammer::ast::expressions_t args; }
+        : IMPLICIT_PROJECT_DEF { result = SEMA->on_implicit_project_def(); }
+        | ^(EXPLICIT_PROJECT_DEF p='project' arguments[&args]) { result = SEMA->on_explicit_project_def($p->getToken($p), args); }
+        ;
+//statement : target_def_or_rule_call ;
+//target_def_or_rule_call : ^(TARGET_DECL_OR_RULE_CALL ID arguments); 
+
+arguments[hammer::ast::expressions_t* args]
+        : ^(ARGUMENTS (expression { args->push_back($expression.result); })* )
+        ;
+
+expression returns[const hammer::ast::expression* result]
+@init { hammer::ast::expressions_t args; }
+	: EMPTY_EXPRESSION { result = SEMA->on_empty_expr(); }
+        | list_of[&args] { result = SEMA->on_list_of(args); }
+        ;
+
+list_of[hammer::ast::expressions_t* args]
+	: ^(LIST_OF (list_of_impl { args->push_back($list_of_impl.result); })+ )
+	;           
+
+list_of_impl returns[const hammer::ast::expression* result ] 
+	: path_like_seq { result = $path_like_seq.result; }
+	;
+
+path_like_seq returns[const hammer::ast::expression* result]
+@init { std::pair<pANTLR3_COMMON_TOKEN, pANTLR3_COMMON_TOKEN> bounds; } 
+	: ^(PATH_LIKE_SEQ SLASH path_like_seq_impl[&bounds]) { result = SEMA->on_path_like_seq($SLASH->getToken($SLASH), bounds.second); }
+	| ^(PATH_LIKE_SEQ path_like_seq_impl[&bounds])       { result = SEMA->on_path_like_seq(bounds.first, bounds.second); }
+	; 
+
+path_like_seq_impl[std::pair<pANTLR3_COMMON_TOKEN, pANTLR3_COMMON_TOKEN>* bounds] 
+	: ID { bounds->first = bounds->second = $ID->getToken($ID); }
+	| first=ID ID* last=ID { bounds->first = $first->getToken($first); bounds->second = $last->getToken($last); }
+	;

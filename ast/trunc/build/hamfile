@@ -1,0 +1,11 @@
+lib hammer.ast
+  :
+   [ glob ../src/*.cpp ]
+   [ rglob ../include/*.h ]
+   @/hammer/parscore
+   @/hammer/core_objects
+   @/boost/ptr_container/<version>1.36.0
+  :
+   @<include>../include
+   <link>static
+  ;

@@ -1,0 +1,8 @@
+lib hammer.parscore
+   :
+    [ glob ../src/*.cpp ]
+    /libantlr3c/<version>3.1.1
+   :
+    @<include>../include
+    <link>static
+   ;

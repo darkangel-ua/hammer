@@ -14,7 +14,14 @@ namespace{
       parser_context() : input_(NULL) {}
       ~parser_context()
       {
-
+         if (input_)
+         {
+//            langAST_.tree->free(langAST_.tree);
+            parser_->free(parser_);
+            tstream_->free(tstream_);
+            lexer_->free(lexer_);
+            input_->free(input_);
+         }
       }
 
       pANTLR3_INPUT_STREAM input_;

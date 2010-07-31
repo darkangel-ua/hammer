@@ -16,7 +16,7 @@ identifier::identifier(const char* v)
 identifier::identifier(const ANTLR3_COMMON_TOKEN_struct* v)
    : lok_(v),
      v_(NULL),
-     length_(v->stop - v->start),
+     length_(v->stop - v->start + 1),
      no_lok_(false)
 {
 }
@@ -50,6 +50,16 @@ std::string identifier::to_string() const
    else
       return std::string(lok_.begin(), lok_.begin() + length_);
 };
+
+const char* identifier::begin() const
+{
+   return no_lok_ ? v_ : lok_.begin();
+}
+
+const char* identifier::end() const
+{
+   return no_lok_ ? v_ + length_: lok_.begin() + length_;
+}
 
 std::ostream& operator << (std::ostream& os, const identifier& v)
 {

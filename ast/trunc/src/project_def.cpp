@@ -14,6 +14,7 @@ bool explicit_project_def::accept(visitor& v) const
 {
    if (v.visit_enter(*this))
    {
+      v.visit(arguments());
    }
 
    return v.visit_leave(*this);

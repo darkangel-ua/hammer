@@ -25,7 +25,11 @@ class identifier
 
       bool operator < (const identifier& rhs) const;
       bool operator == (const identifier& rhs) const;
+      const char* begin() const;
+      const char* end() const;
       std::string to_string() const;
+      // FIXME: posible bug if no_lok_ == true
+      source_location start_lok() const { return lok_; } 
 
    private:
       // FIXME: we need ether source_location pointed on unknown location

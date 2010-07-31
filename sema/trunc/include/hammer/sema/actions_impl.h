@@ -11,7 +11,10 @@ class actions_impl : public actions
    public:
       actions_impl(ast::context& ctx);
       virtual void on_begin_parse(ast::parser_context* ctx) const;
-      virtual const ast::hamfile* on_hamfile(const ast::project_def* p) const;
+      
+      virtual const ast::hamfile* 
+         on_hamfile(const ast::project_def* p,
+                    const ast::statements_t& statements) const;
       
       virtual const ast::project_def* 
          on_implicit_project_def() const;
@@ -28,7 +31,11 @@ class actions_impl : public actions
 
       virtual const ast::expression* 
          on_path_like_seq(const parscore::identifier& first, 
-         const parscore::identifier& last) const;
+                          const parscore::identifier& last) const;
+
+      virtual const ast::expression* 
+         on_target_or_rule_call(const parscore::identifier& rule_name, 
+                                const ast::expressions_t& arguments) const;
    
    private:
       ast::context& ctx_;

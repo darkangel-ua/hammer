@@ -11,11 +11,13 @@ options
 {
 #include <hammer/sema/actions.h>
 #include <hammer/parscore/identifier.h>
+#include <hammer/ast/expression.h>
 #define SEMA static_cast<const hammer::sema::actions*>(PARSER->super)
 }
 
 hamfile returns [const hammer::ast::hamfile* result]
-        : ^(HAMFILE project_def) { result = SEMA->on_hamfile($project_def.result); }
+@init { hammer::ast::statements_t statements; }
+        : ^(HAMFILE project_def statement[&statements]*) { result = SEMA->on_hamfile($project_def.result, statements); }
         ;
         
 project_def returns[const hammer::ast::project_def* result]
@@ -23,8 +25,15 @@ project_def returns[const hammer::ast::project_def* result]
         : IMPLICIT_PROJECT_DEF { result = SEMA->on_implicit_project_def(); }
         | ^(EXPLICIT_PROJECT_DEF p='project' arguments[&args]) { result = SEMA->on_explicit_project_def($p->getToken($p), args); }
         ;
-//statement : target_def_or_rule_call ;
-//target_def_or_rule_call : ^(TARGET_DECL_OR_RULE_CALL ID arguments); 
+
+statement[hammer::ast::statements_t* statements]
+	: target_def_or_rule_call { statements->push_back($target_def_or_rule_call.result); }
+	;
+
+target_def_or_rule_call returns[const hammer::ast::expression* result] 
+@init { hammer::ast::expressions_t args; }
+	: ^(TARGET_DECL_OR_RULE_CALL name=ID arguments[&args]) { result = SEMA->on_target_or_rule_call($name->getToken($name), args); }
+	; 
 
 arguments[hammer::ast::expressions_t* args]
         : ^(ARGUMENTS (expression { args->push_back($expression.result); })* )

@@ -6,14 +6,16 @@
 namespace hammer{ namespace parscore{
 
 class identifier;
-
 }}
 
 namespace hammer{ namespace ast{
 
 class expression;
+class statement;
+
 typedef std::vector<const expression*> expressions_t;
 typedef std::vector<parscore::identifier> identifiers_t;
+typedef std::vector<const statement*> statements_t;
    
 }}
 

@@ -15,7 +15,7 @@ class path_like_seq : public expression
            last_(last)
       {
       }
-
+      parscore::identifier to_identifier() const;
       virtual bool accept(visitor& v) const;
    
    private:

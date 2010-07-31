@@ -3,13 +3,11 @@
 
 #include <vector>
 #include <hammer/ast/node.h>
+#include <hammer/ast/types.h>
 
 namespace hammer{namespace ast{
 
 class project_def;
-class statement;
-
-typedef std::vector<const statement*> statements_t;
 
 class hamfile : public node
 {

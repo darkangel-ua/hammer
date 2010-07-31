@@ -10,9 +10,7 @@ bool hamfile::accept(visitor& v) const
    if (v.visit_enter(*this) &&
        project_->accept(v))
    {
-      for(statements_t::const_iterator i = statements_.begin(), last = statements_.end(); i != last; ++i)
-         if (!(**i).accept(v))
-            break;
+      v.visit(statements_);
    }
 
    return v.visit_leave(*this);

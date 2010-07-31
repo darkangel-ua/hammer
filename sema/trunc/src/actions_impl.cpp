@@ -18,9 +18,11 @@ void actions_impl::on_begin_parse(ast::parser_context* ctx) const
    ctx_.set_parser_context(std::auto_ptr<ast::parser_context>(ctx));
 }
 
-const ast::hamfile* actions_impl::on_hamfile(const ast::project_def* p) const
+const ast::hamfile* 
+actions_impl::on_hamfile(const ast::project_def* p,
+                         const ast::statements_t& statements) const
 {
-   return new (ctx_) ast::hamfile(p, ast::statements_t());
+   return new (ctx_) ast::hamfile(p, statements);
 }
 
 const ast::project_def* actions_impl::on_implicit_project_def() const
@@ -52,6 +54,13 @@ actions_impl::on_path_like_seq(const parscore::identifier& first,
                                const parscore::identifier& last) const
 {
    return new (ctx_) ast::path_like_seq(first, last);
+}
+
+const ast::expression* 
+actions_impl::on_target_or_rule_call(const parscore::identifier& rule_name, 
+                                     const ast::expressions_t& arguments) const
+{
+   return new (ctx_) ast::rule_invocation(rule_name, arguments);
 }
 
 }}

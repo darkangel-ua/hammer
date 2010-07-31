@@ -18,9 +18,14 @@ class ast_xml_printer : public visitor
       virtual bool visit(const implicit_project_def& v);
       virtual bool visit_enter(const rule_invocation& v);
       virtual bool visit_leave(const rule_invocation& v);
+      virtual bool visit_enter(const list_of& v);
+      virtual bool visit_leave(const list_of& v);
       virtual bool visit(const empty_expr& v);
       virtual bool visit(const id_expr& v);
       virtual bool visit(const path_like_seq& v);
+
+      virtual bool visit(const statements_t& v);
+      virtual bool visit(const expressions_t& v);
    
    private:
       std::ostream& os_;

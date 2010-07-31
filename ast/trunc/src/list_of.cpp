@@ -5,7 +5,12 @@ namespace hammer{ namespace ast{
 
 bool list_of::accept(visitor& v) const
 {
-   return true;
+   if (v.visit_enter(*this))
+   {
+      v.visit(values_);
+   }
+
+   return v.visit_leave(*this);
 }
 
 }}

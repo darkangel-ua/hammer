@@ -13,6 +13,7 @@ IMPLICIT_PROJECT_DEF;
 TARGET_DECL_OR_RULE_CALL;
 TARGET_REF;
 TARGET_NAME;
+EMPTY_TARGET_NAME;
 ARGUMENTS;
 EXPRESSION;
 EMPTY_EXPRESSION;
@@ -28,11 +29,11 @@ CONDITION;
 {
 }
 
-hamfile       : project_def target_decl_or_rule_call* -> ^(HAMFILE project_def? target_decl_or_rule_call*);
-project_def   : WS* 'project' arguments WS* ';' -> ^(EXPLICIT_PROJECT_DEF 'project' arguments)
+hamfile       : WS* project_def target_decl_or_rule_call* -> ^(HAMFILE project_def? target_decl_or_rule_call*);
+project_def   : 'project' arguments WS* ';' WS* -> ^(EXPLICIT_PROJECT_DEF 'project' arguments)
               | -> IMPLICIT_PROJECT_DEF;
-target_decl_or_rule_call : target_decl_or_rule_call_impl WS* ';' -> target_decl_or_rule_call_impl;
-target_decl_or_rule_call_impl : WS* ID arguments -> ^(TARGET_DECL_OR_RULE_CALL ID arguments);
+target_decl_or_rule_call : target_decl_or_rule_call_impl WS* ';' WS* -> target_decl_or_rule_call_impl;
+target_decl_or_rule_call_impl : ID arguments -> ^(TARGET_DECL_OR_RULE_CALL ID arguments);
 arguments     : WS+ expression (WS+ ':' argument)* -> ^(ARGUMENTS expression argument*)
               | -> ^(ARGUMENTS);
 argument         : WS+ expression -> expression
@@ -51,19 +52,19 @@ feature       : feature_impl -> ^(FEATURE feature_impl);
 feature_impl : '<' ID '>' feature_value -> ID feature_value;
 feature_value : path_like_seq
               | '(' target_ref ')' -> target_ref;
-path_like_seq : '/' path_like_seq_impl -> ^(PATH_LIKE_SEQ SLASH path_like_seq_impl)
+path_like_seq : SLASH path_like_seq_impl -> ^(PATH_LIKE_SEQ SLASH path_like_seq_impl)
 	      |	path_like_seq_impl -> ^(PATH_LIKE_SEQ path_like_seq_impl);
 path_like_seq_impl : ID ('/' ID)* '/'? -> ID+;
 target_ref : path_like_seq target_ref_impl -> ^(TARGET_REF path_like_seq target_ref_impl)
            | public_tag path_like_seq target_ref_impl? -> ^(TARGET_REF public_tag path_like_seq target_ref_impl?);
-target_ref_impl : target_props -> TARGET_NAME target_props
+target_ref_impl : target_props -> ^(TARGET_NAME EMPTY_TARGET_NAME) target_props
                 | target_name_seq target_props?; 
 target_name_seq : '//' ID -> ^(TARGET_NAME ID);
 target_props : (WS* '/' feature)+ -> ^(FEATURE_SET feature+);
 list_of : list_of_impl (WS+ list_of_impl)* -> ^(LIST_OF list_of_impl+);
 list_of_impl : path_like_seq
              | target_ref
-             | '[' target_decl_or_rule_call_impl WS* ']' -> target_decl_or_rule_call_impl;
+             | '[' WS* target_decl_or_rule_call_impl WS* ']' -> target_decl_or_rule_call_impl;
 public_tag : '@' WS* -> PUBLIC_TAG;
              
 SLASH : '/';

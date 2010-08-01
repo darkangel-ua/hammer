@@ -17,6 +17,7 @@ class source_location
 
       // FIXME: bad name
       const char* begin() const;
+      bool valid() const { return antlr_token_ != NULL; }
 
    private:
       const ANTLR3_COMMON_TOKEN_struct* antlr_token_;

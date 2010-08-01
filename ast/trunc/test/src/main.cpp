@@ -50,7 +50,7 @@ init_unit_test_suite( int argc, char* argv[] )
 
    // Because we have massive memleaks we disable leak reporting until we resolve memleaks
 //   _CrtSetDbgFlag(_CrtSetDbgFlag( _CRTDBG_REPORT_FLAG ) & ~_CRTDBG_LEAK_CHECK_DF);
-//   _CrtSetBreakAlloc(822);
+//   _CrtSetBreakAlloc(1559);
 
    test_suite* ts = BOOST_TEST_SUITE("main");
    for(fs::directory_iterator i(test_data_path); i != fs::directory_iterator(); ++i)

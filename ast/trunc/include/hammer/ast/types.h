@@ -12,10 +12,12 @@ namespace hammer{ namespace ast{
 
 class expression;
 class statement;
+class feature;
 
 typedef std::vector<const expression*> expressions_t;
 typedef std::vector<parscore::identifier> identifiers_t;
 typedef std::vector<const statement*> statements_t;
+typedef std::vector<const feature*> features_t;
    
 }}
 

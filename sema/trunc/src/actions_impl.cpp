@@ -5,6 +5,9 @@
 #include <hammer/ast/expression.h>
 #include <hammer/ast/list_of.h>
 #include <hammer/ast/path_like_seq.h>
+#include <hammer/ast/feature_set.h>
+#include <hammer/ast/feature.h>
+#include <hammer/ast/target_ref.h>
 
 namespace hammer{namespace sema{
 
@@ -49,7 +52,7 @@ actions_impl::on_list_of(const ast::expressions_t& e) const
    return new (ctx_) ast::list_of(e);
 }
 
-const ast::expression* 
+const ast::path_like_seq* 
 actions_impl::on_path_like_seq(const parscore::identifier& first, 
                                const parscore::identifier& last) const
 {
@@ -61,6 +64,27 @@ actions_impl::on_target_or_rule_call(const parscore::identifier& rule_name,
                                      const ast::expressions_t& arguments) const
 {
    return new (ctx_) ast::rule_invocation(rule_name, arguments);
+}
+
+const ast::feature_set* 
+actions_impl::on_feature_set(const ast::features_t& features) const
+{
+   return new (ctx_) ast::feature_set(features);
+}
+
+const ast::feature*
+actions_impl::on_simple_feature(const parscore::identifier& name,
+                                const ast::expression* value) const
+{
+   return new (ctx_) ast::simple_feature(name, value);
+}
+
+const ast::expression*
+actions_impl::on_target_ref(const ast::path_like_seq* head,
+                            const parscore::identifier& target_name,
+                            const ast::feature_set* properties) const
+{
+   return new (ctx_) ast::target_ref(head, target_name, properties);
 }
 
 }}

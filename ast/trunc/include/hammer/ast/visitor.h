@@ -14,6 +14,9 @@ class empty_expr;
 class id_expr;
 class path_like_seq;
 class list_of;
+class feature_set;
+class simple_feature;
+class target_ref;
 
 class visitor
 {
@@ -27,12 +30,18 @@ class visitor
       virtual bool visit_leave(const rule_invocation& v) { return true; }
       virtual bool visit_enter(const list_of& v) { return true; }
       virtual bool visit_leave(const list_of& v) { return true; }
+      virtual bool visit_enter(const feature_set& v) { return true; }
+      virtual bool visit_leave(const feature_set& v) { return true; }
       virtual bool visit(const empty_expr& v) { return true; }
       virtual bool visit(const id_expr& v) { return true; }
       virtual bool visit(const path_like_seq& v) { return true; }
+      virtual bool visit(const simple_feature& v) { return true; }
+      virtual bool visit(const target_ref& v) { return true; }
+      
       // FIXME: May this is wrong and we should make statements separate class?
       virtual bool visit(const statements_t& v) { return true; } 
       virtual bool visit(const expressions_t& v) { return true; } 
+      virtual bool visit(const features_t& v) { return true; } 
 };
 
 }}

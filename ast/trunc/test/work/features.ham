@@ -1,0 +1,7 @@
+exe test 
+   : 
+    main.cpp 
+   : 
+    <define>FOO 
+    <define>BOO
+   ;

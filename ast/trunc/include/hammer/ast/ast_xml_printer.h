@@ -20,12 +20,17 @@ class ast_xml_printer : public visitor
       virtual bool visit_leave(const rule_invocation& v);
       virtual bool visit_enter(const list_of& v);
       virtual bool visit_leave(const list_of& v);
+      virtual bool visit_enter(const feature_set& v);
+      virtual bool visit_leave(const feature_set& v);
       virtual bool visit(const empty_expr& v);
       virtual bool visit(const id_expr& v);
       virtual bool visit(const path_like_seq& v);
+      virtual bool visit(const simple_feature& v);
+      virtual bool visit(const target_ref& v);
 
       virtual bool visit(const statements_t& v);
       virtual bool visit(const expressions_t& v);
+      virtual bool visit(const features_t& v);
    
    private:
       std::ostream& os_;

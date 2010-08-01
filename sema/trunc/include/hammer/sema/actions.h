@@ -10,6 +10,8 @@ namespace hammer{ namespace ast{
    class expression;
    class parser_context;
    class statement;
+   class path_like_seq;
+   class feature_set;
 }}
 
 namespace hammer{namespace parscore{
@@ -38,13 +40,25 @@ class actions
       virtual const ast::expression* 
          on_list_of(const ast::expressions_t& e) const = 0;
 
-      virtual const ast::expression* 
+      virtual const ast::path_like_seq* 
          on_path_like_seq(const parscore::identifier& first, 
                           const parscore::identifier& last) const = 0;
       
       virtual const ast::expression* 
          on_target_or_rule_call(const parscore::identifier& rule_name, 
                                 const ast::expressions_t& arguments) const = 0;
+
+      virtual const ast::feature_set* 
+         on_feature_set(const ast::features_t& features) const = 0;
+
+      virtual const ast::feature* 
+         on_simple_feature(const parscore::identifier& name,
+                           const ast::expression* value) const = 0;
+      
+      virtual const ast::expression*
+         on_target_ref(const ast::path_like_seq* head,
+                       const parscore::identifier& target_name,
+                       const ast::feature_set* properties) const = 0;
 };
 
 

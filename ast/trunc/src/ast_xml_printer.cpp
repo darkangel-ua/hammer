@@ -2,6 +2,9 @@
 #include <hammer/ast/ast_xml_printer.h>
 #include <hammer/ast/project_def.h>
 #include <hammer/ast/path_like_seq.h>
+#include <hammer/ast/feature.h>
+#include <hammer/ast/feature_set.h>
+#include <hammer/ast/target_ref.h>
 #include <iostream>
 #include <iomanip>
 
@@ -32,6 +35,7 @@ bool ast_xml_printer::visit_leave(const hamfile& v)
 {
    os_ << "</hamfile>\n";
    indent_ -= 3;
+   
    return true; 
 }
 
@@ -70,6 +74,7 @@ bool ast_xml_printer::visit_leave(const rule_invocation& v)
 { 
    indent_ -= 3;
    os_ << std::setw(indent_) << ' ' << "</rule_invocation>\n";
+   
    return true; 
 }
 
@@ -85,6 +90,7 @@ bool ast_xml_printer::visit_leave(const list_of& v)
 {
    indent_ -= 3;
    os_ << std::setw(indent_) << ' ' << "</list_of>\n";
+   
    return true; 
 }
 
@@ -101,6 +107,7 @@ bool ast_xml_printer::visit(const id_expr& v)
 bool ast_xml_printer::visit(const path_like_seq& v)
 {
    os_ << std::setw(indent_) << ' ' << "<path_like_seq value=\"" << v.to_identifier() << "\"/>\n";
+
    return true;
 }
 
@@ -112,18 +119,31 @@ bool ast_xml_printer::visit(const statements_t& v)
    os_ << std::setw(indent_) << ' ' << "<statements>\n";
    indent_ += 3;
 
-   bool result = true;
-
    for(statements_t::const_iterator i = v.begin(), last = v.end(); i != last; ++i)
-      if (!(**i).accept(*this))
-      {
-         result = false;
-         break;
-      }
+      (**i).accept(*this);
 
    indent_ -= 3;
    os_ << std::setw(indent_) << ' ' << "</statements>\n";
-   return result;
+   
+   return true;
+}
+
+bool ast_xml_printer::visit(const features_t& v)
+{
+   if (v.empty())
+      return true; 
+
+   os_ << std::setw(indent_) << ' ' << "<features>\n";
+   indent_ += 3;
+
+   for(features_t::const_iterator i = v.begin(), last = v.end(); i != last; ++i)
+      (**i).accept(*this);
+
+   indent_ -= 3;
+   os_ << std::setw(indent_) << ' ' << "</features>\n";
+
+   return true;
+
 }
 
 bool ast_xml_printer::visit(const expressions_t& v)
@@ -134,18 +154,74 @@ bool ast_xml_printer::visit(const expressions_t& v)
    os_ << std::setw(indent_) << ' ' << "<expressions>\n";
    indent_ += 3;
 
-   bool result = true;
-
    for(expressions_t::const_iterator i = v.begin(), last = v.end(); i != last; ++i)
-      if (!(**i).accept(*this))
-      {
-         result = false;
-         break;
-      }
+      (**i).accept(*this);
 
    indent_ -= 3;
    os_ << std::setw(indent_) << ' ' << "</expressions>\n";
-   return result;
+
+   return true;
+}
+
+bool ast_xml_printer::visit_enter(const feature_set& v)
+{
+   os_ << std::setw(indent_) << ' ' << "<feature_set>\n";
+   indent_ += 3;
+
+   return true; 
+}
+
+bool ast_xml_printer::visit_leave(const feature_set& v)
+{
+   indent_ -= 3;
+   os_ << std::setw(indent_) << ' ' << "</feature_set>\n";
+
+   return true; 
+}
+
+bool ast_xml_printer::visit(const simple_feature& v)
+{
+   os_ << std::setw(indent_) << ' ' << "<simple_feature name=\"" << v.name() << "\">\n";
+
+   indent_ += 3;
+      os_ << std::setw(indent_) << ' ' << "<value>\n";
+      indent_ += 3;
+         v.value()->accept(*this);
+      indent_ -= 3;
+      os_ << std::setw(indent_) << ' ' << "</value>\n";
+   indent_ -= 3;
+
+   os_ << std::setw(indent_) << ' ' << "</simple_feature>\n";
+
+   return true;
+}
+
+bool ast_xml_printer::visit(const target_ref& v)
+{
+   os_ << std::setw(indent_) << ' ' << "<target_ref head=\"" << v.head()->to_identifier() << "\"\n";
+   os_ << std::setw(indent_) << ' ' << "            target_name=\"";
+   if (v.has_target_name())
+      os_ << v.target_name();
+   os_ << "\">\n";
+
+   indent_ += 3;
+
+      if (v.properties())
+      {
+         os_ << std::setw(indent_) << ' ' << "<properties>\n";
+         indent_ += 3;
+            v.properties()->accept(*this);
+         indent_ -= 3;
+         os_ << std::setw(indent_) << ' ' << "</properties>\n";
+      }
+      else
+         os_ << std::setw(indent_) << ' ' << "<properties/>\n";
+
+   indent_ -= 3;
+
+   os_ << std::setw(indent_) << ' ' << "</target_ref>\n";
+
+   return true;
 }
 
 }}

@@ -21,6 +21,12 @@ identifier::identifier(const ANTLR3_COMMON_TOKEN_struct* v)
 {
 }
 
+identifier::identifier()
+   : v_(NULL), 
+     no_lok_(true)
+{
+}
+
 bool identifier::operator < (const identifier& rhs) const
 {
    const char* lhs_v = no_lok_ ? v_ : lok_.begin();

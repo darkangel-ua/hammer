@@ -22,6 +22,7 @@ class identifier
 
       identifier(const char* v);
       identifier(const ANTLR3_COMMON_TOKEN_struct* v);
+      identifier();
 
       bool operator < (const identifier& rhs) const;
       bool operator == (const identifier& rhs) const;
@@ -30,6 +31,7 @@ class identifier
       std::string to_string() const;
       // FIXME: posible bug if no_lok_ == true
       source_location start_lok() const { return lok_; } 
+      bool valid() const { return (no_lok_ && v_) || lok_.valid(); }
 
    private:
       // FIXME: we need ether source_location pointed on unknown location

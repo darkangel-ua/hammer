@@ -55,15 +55,22 @@ feature_set returns[const hammer::ast::feature_set* result]
  	;
 
 feature returns[const hammer::ast::feature* result]
-	: simple_feature { result = $simple_feature.result; }
+	: simple_feature { result = $simple_feature.result; } 
+	| conditional_feature { result = $conditional_feature.result; }
 	;
-
+	
+conditional_feature returns[const hammer::ast::feature* result]
+@init { hammer::ast::features_t features; }
+	: ^(FEATURE ^(CONDITIONAL_FEATURE (con=simple_feature { features.push_back($con.result); })+ COLON res=simple_feature)) { result = SEMA->on_conditional_feature(features, $res.result); }
+	;
+	
 simple_feature returns[const hammer::ast::feature* result]
 	: ^(FEATURE name=ID feature_value) { result = SEMA->on_simple_feature($name->getToken($name), $feature_value.result); }
 	;
 
 feature_value returns[const hammer::ast::expression* result]
 	: path_like_seq { result = $path_like_seq.result; }
+	| target_ref { result = $target_ref.result; }
 	;
 
 list_of[hammer::ast::expressions_t* args]

@@ -26,6 +26,7 @@ class ast_xml_printer : public visitor
       virtual bool visit(const id_expr& v);
       virtual bool visit(const path_like_seq& v);
       virtual bool visit(const simple_feature& v);
+      virtual bool visit(const conditional_feature& v);
       virtual bool visit(const target_ref& v);
 
       virtual bool visit(const statements_t& v);

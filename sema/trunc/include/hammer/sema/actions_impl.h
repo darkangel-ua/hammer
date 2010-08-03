@@ -43,6 +43,10 @@ class actions_impl : public actions
       virtual const ast::feature* 
          on_simple_feature(const parscore::identifier& name,
          const ast::expression* value) const;
+
+      virtual const ast::feature* 
+         on_conditional_feature(const ast::features_t& features,
+                                const ast::expression* value) const;
    
       virtual const ast::expression*
          on_target_ref(const ast::path_like_seq* head,

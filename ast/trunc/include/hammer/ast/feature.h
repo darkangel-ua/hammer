@@ -27,5 +27,23 @@ class simple_feature : public feature
       const expression* value_;
 };
 
+class conditional_feature : public feature
+{
+   public:
+      conditional_feature(const features_t& features, 
+                          const expression* value)
+        : features_(features),
+          value_(value)
+      {}
+      
+      const features_t& features() const { return features_; }
+      const expression* value() const { return value_; }
+      virtual bool accept(visitor& v) const;
+
+   private:
+      features_t features_;
+      const expression* value_;
+};
+
 }}
 #endif //h_66fabe72_d8a5_489a_a602_95149c6b80c4

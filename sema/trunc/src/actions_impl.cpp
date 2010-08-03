@@ -79,6 +79,13 @@ actions_impl::on_simple_feature(const parscore::identifier& name,
    return new (ctx_) ast::simple_feature(name, value);
 }
 
+const ast::feature* 
+actions_impl::on_conditional_feature(const ast::features_t& features,
+                                     const ast::expression* value) const
+{
+   return new (ctx_) ast::conditional_feature(features, value);
+}
+
 const ast::expression*
 actions_impl::on_target_ref(const ast::path_like_seq* head,
                             const parscore::identifier& target_name,

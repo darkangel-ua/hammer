@@ -4,4 +4,6 @@ exe test
    : 
     <define>FOO 
     <define>BOO
+    <use>(/boost/optional/<version>1.36.0)
+    <link>shared:<define>SHARED
    ;

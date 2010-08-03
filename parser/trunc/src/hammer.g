@@ -22,7 +22,7 @@ PATH_LIKE_SEQ;
 FEATURE_SET;
 FEATURE;
 PUBLIC_TAG;
-CONDITION;
+CONDITIONAL_FEATURE;
 }
 
 @parser::preincludes
@@ -44,10 +44,10 @@ feature_set   : feature_set_feature (WS+ feature_set_feature)* -> ^(FEATURE_SET 
 feature_set_feature : public_tag? feature_set_feature_impl -> ^(FEATURE public_tag? feature_set_feature_impl);
 feature_set_feature_impl : (conditional_feature)=> conditional_feature
 			 | feature_impl ;
-conditional_feature : condition feature;
-condition : feature condition_impl -> ^(CONDITION feature condition_impl);
+conditional_feature : condition feature -> ^(CONDITIONAL_FEATURE condition feature);
+condition : feature condition_impl;
 // colon must stay here because if it is not syntactic predicate will not work
-condition_impl : (',' feature)* ':' -> feature* ':';
+condition_impl : (',' feature)* COLON -> feature* COLON;
 feature       : feature_impl -> ^(FEATURE feature_impl);
 feature_impl : '<' ID '>' feature_value -> ID feature_value;
 feature_value : path_like_seq

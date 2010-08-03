@@ -196,6 +196,25 @@ bool ast_xml_printer::visit(const simple_feature& v)
    return true;
 }
 
+bool ast_xml_printer::visit(const conditional_feature& v)
+{
+   os_ << std::setw(indent_) << ' ' << "<conditional_feature>\n";
+
+   indent_ += 3;
+      visit(v.features());
+      os_ << std::setw(indent_) << ' ' << "<value>\n";
+      indent_ += 3;
+         v.value()->accept(*this);
+      indent_ -= 3;
+      os_ << std::setw(indent_) << ' ' << "</value>\n";
+   indent_ -= 3;
+
+   os_ << std::setw(indent_) << ' ' << "</simple_feature>\n";
+
+   return true;
+
+}
+
 bool ast_xml_printer::visit(const target_ref& v)
 {
    os_ << std::setw(indent_) << ' ' << "<target_ref head=\"" << v.head()->to_identifier() << "\"\n";

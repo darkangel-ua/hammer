@@ -16,6 +16,7 @@ class path_like_seq;
 class list_of;
 class feature_set;
 class simple_feature;
+class conditional_feature;
 class target_ref;
 
 class visitor
@@ -36,6 +37,7 @@ class visitor
       virtual bool visit(const id_expr& v) { return true; }
       virtual bool visit(const path_like_seq& v) { return true; }
       virtual bool visit(const simple_feature& v) { return true; }
+      virtual bool visit(const conditional_feature& v) { return true; }
       virtual bool visit(const target_ref& v) { return true; }
       
       // FIXME: May this is wrong and we should make statements separate class?

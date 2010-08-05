@@ -10,22 +10,22 @@ class target_ref : public expression
    public:
       target_ref(const path_like_seq* head,
                  const parscore::identifier& target_name,
-                 const feature_set* properties)
+                 const requirement_set* requirements)
          : head_(head),
            target_name_(target_name),
-           properties_(properties)
+           requirements_(requirements)
       {}
 
       const path_like_seq* head() const { return head_; }
       const parscore::identifier& target_name() const { return target_name_; }
-      const feature_set* properties() const { return properties_; }
+      const requirement_set* requirements() const { return requirements_; }
       bool has_target_name() const;
       virtual bool accept(visitor& v) const;
    
    private:
       const path_like_seq* head_;
       parscore::identifier target_name_;
-      const feature_set* properties_;
+      const requirement_set* requirements_;
 };
 
 }}

@@ -37,21 +37,21 @@ class actions_impl : public actions
          on_target_or_rule_call(const parscore::identifier& rule_name, 
                                 const ast::expressions_t& arguments) const;
 
-      virtual const ast::feature_set* 
-         on_feature_set(const ast::features_t& features) const;
+      virtual const ast::requirement_set* 
+         on_requirement_set(const ast::requirements_t& requirements) const;
 
-      virtual const ast::feature* 
-         on_simple_feature(const parscore::identifier& name,
-         const ast::expression* value) const;
+      virtual const ast::requirement* 
+         on_simple_requirement(const parscore::identifier& name,
+                               const ast::expression* value) const;
 
-      virtual const ast::feature* 
-         on_conditional_feature(const ast::features_t& features,
+      virtual const ast::requirement* 
+         on_conditional_requirement(const ast::requirements_t& requirements,
                                 const ast::expression* value) const;
    
       virtual const ast::expression*
          on_target_ref(const ast::path_like_seq* head,
                        const parscore::identifier& target_name,
-                       const ast::feature_set* properties) const;
+                       const ast::requirement_set* requirements) const;
 
    private:
       ast::context& ctx_;

@@ -11,8 +11,8 @@ options
 {
 #include <hammer/sema/actions.h>
 #include <hammer/parscore/identifier.h>
-#include <hammer/ast/feature_set.h>
-#include <hammer/ast/feature.h>
+#include <hammer/ast/requirement_set.h>
+#include <hammer/ast/requirement.h>
 #include <hammer/ast/path_like_seq.h>
 
 #define SEMA static_cast<const hammer::sema::actions*>(PARSER->super)
@@ -46,29 +46,29 @@ expression returns[const hammer::ast::expression* result]
 @init { hammer::ast::expressions_t args; }
 	: EMPTY_EXPRESSION { result = SEMA->on_empty_expr(); }
         | list_of[&args] { result = SEMA->on_list_of(args); }
-        | feature_set { result = $feature_set.result; }
+        | requirement_set { result = $requirement_set.result; }
         ;
 
-feature_set returns[const hammer::ast::feature_set* result]
-@init { hammer::ast::features_t features; }
- 	: ^(FEATURE_SET (feature { features.push_back($feature.result); })+) { result = SEMA->on_feature_set(features); }
+requirement_set returns[const hammer::ast::requirement_set* result]
+@init { hammer::ast::requirements_t requirements; }
+ 	: ^(REQUIREMENT_SET (requirement { requirements.push_back($requirement.result); })+) { result = SEMA->on_requirement_set(requirements); }
  	;
 
-feature returns[const hammer::ast::feature* result]
-	: simple_feature { result = $simple_feature.result; } 
-	| conditional_feature { result = $conditional_feature.result; }
+requirement returns[const hammer::ast::requirement* result]
+	: simple_requirement { result = $simple_requirement.result; } 
+	| conditional_requirement { result = $conditional_requirement.result; }
 	;
 	
-conditional_feature returns[const hammer::ast::feature* result]
-@init { hammer::ast::features_t features; }
-	: ^(FEATURE ^(CONDITIONAL_FEATURE (con=simple_feature { features.push_back($con.result); })+ COLON res=simple_feature)) { result = SEMA->on_conditional_feature(features, $res.result); }
+conditional_requirement returns[const hammer::ast::requirement* result]
+@init { hammer::ast::requirements_t requirements; }
+	: ^(REQUIREMENT ^(CONDITIONAL_REQUIREMENT (con=simple_requirement { requirements.push_back($con.result); })+ COLON res=simple_requirement)) { result = SEMA->on_conditional_requirement(requirements, $res.result); }
 	;
 	
-simple_feature returns[const hammer::ast::feature* result]
-	: ^(FEATURE name=ID feature_value) { result = SEMA->on_simple_feature($name->getToken($name), $feature_value.result); }
+simple_requirement returns[const hammer::ast::requirement* result]
+	: ^(REQUIREMENT name=ID requirement_value) { result = SEMA->on_simple_requirement($name->getToken($name), $requirement_value.result); }
 	;
 
-feature_value returns[const hammer::ast::expression* result]
+requirement_value returns[const hammer::ast::expression* result]
 	: path_like_seq { result = $path_like_seq.result; }
 	| target_ref { result = $target_ref.result; }
 	;
@@ -85,7 +85,7 @@ list_of_impl returns[const hammer::ast::expression* result ]
 
 target_ref returns[const hammer::ast::expression* result]
 @init { hammer::parscore::identifier name; } 
-	: ^(TARGET_REF path_like_seq target_ref_name[&name] target_ref_properties) { result = SEMA->on_target_ref($path_like_seq.result, name, $target_ref_properties.result); }
+	: ^(TARGET_REF path_like_seq target_ref_name[&name] target_ref_requirements) { result = SEMA->on_target_ref($path_like_seq.result, name, $target_ref_requirements.result); }
 	;
 
 target_ref_name[hammer::parscore::identifier* name] 
@@ -93,8 +93,8 @@ target_ref_name[hammer::parscore::identifier* name]
 	| ^(TARGET_NAME ID) { *name = hammer::parscore::identifier($ID->getToken($ID)); }
 	;
 
-target_ref_properties returns[const hammer::ast::feature_set* result]
-	: feature_set { result = $feature_set.result; }
+target_ref_requirements returns[const hammer::ast::requirement_set* result]
+	: requirement_set { result = $requirement_set.result; }
 	| { result = NULL; }
 	;
 

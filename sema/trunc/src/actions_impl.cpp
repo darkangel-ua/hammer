@@ -5,8 +5,8 @@
 #include <hammer/ast/expression.h>
 #include <hammer/ast/list_of.h>
 #include <hammer/ast/path_like_seq.h>
-#include <hammer/ast/feature_set.h>
-#include <hammer/ast/feature.h>
+#include <hammer/ast/requirement_set.h>
+#include <hammer/ast/requirement.h>
 #include <hammer/ast/target_ref.h>
 
 namespace hammer{namespace sema{
@@ -66,32 +66,32 @@ actions_impl::on_target_or_rule_call(const parscore::identifier& rule_name,
    return new (ctx_) ast::rule_invocation(rule_name, arguments);
 }
 
-const ast::feature_set* 
-actions_impl::on_feature_set(const ast::features_t& features) const
+const ast::requirement_set* 
+actions_impl::on_requirement_set(const ast::requirements_t& requirements) const
 {
-   return new (ctx_) ast::feature_set(features);
+   return new (ctx_) ast::requirement_set(requirements);
 }
 
-const ast::feature*
-actions_impl::on_simple_feature(const parscore::identifier& name,
+const ast::requirement*
+actions_impl::on_simple_requirement(const parscore::identifier& name,
                                 const ast::expression* value) const
 {
-   return new (ctx_) ast::simple_feature(name, value);
+   return new (ctx_) ast::simple_requirement(name, value);
 }
 
-const ast::feature* 
-actions_impl::on_conditional_feature(const ast::features_t& features,
-                                     const ast::expression* value) const
+const ast::requirement* 
+actions_impl::on_conditional_requirement(const ast::requirements_t& requirements,
+                                         const ast::expression* value) const
 {
-   return new (ctx_) ast::conditional_feature(features, value);
+   return new (ctx_) ast::conditional_requirement(requirements, value);
 }
 
 const ast::expression*
 actions_impl::on_target_ref(const ast::path_like_seq* head,
                             const parscore::identifier& target_name,
-                            const ast::feature_set* properties) const
+                            const ast::requirement_set* requirements) const
 {
-   return new (ctx_) ast::target_ref(head, target_name, properties);
+   return new (ctx_) ast::target_ref(head, target_name, requirements);
 }
 
 }}

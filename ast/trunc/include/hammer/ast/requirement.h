@@ -5,14 +5,14 @@
 
 namespace hammer{ namespace ast{
 
-class feature : public expression
+class requirement : public expression
 {
 };
 
-class simple_feature : public feature
+class simple_requirement : public requirement
 {
    public:
-      simple_feature(const parscore::identifier& name, 
+      simple_requirement(const parscore::identifier& name, 
                      const expression* value)
          : name_(name),
            value_(value)
@@ -27,21 +27,21 @@ class simple_feature : public feature
       const expression* value_;
 };
 
-class conditional_feature : public feature
+class conditional_requirement : public requirement
 {
    public:
-      conditional_feature(const features_t& features, 
+      conditional_requirement(const requirements_t& features, 
                           const expression* value)
         : features_(features),
           value_(value)
       {}
       
-      const features_t& features() const { return features_; }
+      const requirements_t& features() const { return features_; }
       const expression* value() const { return value_; }
       virtual bool accept(visitor& v) const;
 
    private:
-      features_t features_;
+      requirements_t features_;
       const expression* value_;
 };
 

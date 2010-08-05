@@ -6,18 +6,18 @@
 
 namespace hammer{ namespace ast{
 
-class feature_set : public expression
+class requirement_set : public expression
 {
    public:
-      feature_set(const features_t& features) 
-         : features_(features) 
+      requirement_set(const requirements_t& requirements) 
+         : requirements_(requirements) 
       {}
       
-      const features_t& features() const { return features_; }
+      const requirements_t& requirements() const { return requirements_; }
       virtual bool accept(visitor& v) const;
       
    private:
-      features_t features_;
+      requirements_t requirements_;
 };
 
 }}

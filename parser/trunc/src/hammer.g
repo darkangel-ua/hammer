@@ -19,10 +19,10 @@ EXPRESSION;
 EMPTY_EXPRESSION;
 LIST_OF;
 PATH_LIKE_SEQ;
-FEATURE_SET;
-FEATURE;
+REQUIREMENT_SET;
+REQUIREMENT;
 PUBLIC_TAG;
-CONDITIONAL_FEATURE;
+CONDITIONAL_REQUIREMENT;
 }
 
 @parser::preincludes
@@ -38,29 +38,29 @@ arguments     : WS+ expression (WS+ ':' argument)* -> ^(ARGUMENTS expression arg
               | -> ^(ARGUMENTS);
 argument         : WS+ expression -> expression
               | -> EMPTY_EXPRESSION; 
-expression    : feature_set -> feature_set
+expression    : requirement_set -> requirement_set
               | list_of ;
-feature_set   : feature_set_feature (WS+ feature_set_feature)* -> ^(FEATURE_SET feature_set_feature+);
-feature_set_feature : public_tag? feature_set_feature_impl -> ^(FEATURE public_tag? feature_set_feature_impl);
-feature_set_feature_impl : (conditional_feature)=> conditional_feature
-			 | feature_impl ;
-conditional_feature : condition feature -> ^(CONDITIONAL_FEATURE condition feature);
-condition : feature condition_impl;
+requirement_set   : requirements_requirement (WS+ requirements_requirement)* -> ^(REQUIREMENT_SET requirements_requirement+);
+requirements_requirement : public_tag? requirements_requirement_impl -> ^(REQUIREMENT public_tag? requirements_requirement_impl);
+requirements_requirement_impl : (conditional_requirement)=> conditional_requirement
+			 | requirement_impl ;
+conditional_requirement : condition requirement -> ^(CONDITIONAL_REQUIREMENT condition requirement);
+condition : requirement condition_impl;
 // colon must stay here because if it is not syntactic predicate will not work
-condition_impl : (',' feature)* COLON -> feature* COLON;
-feature       : feature_impl -> ^(FEATURE feature_impl);
-feature_impl : '<' ID '>' feature_value -> ID feature_value;
-feature_value : path_like_seq
+condition_impl : (',' requirement)* COLON -> requirement* COLON;
+requirement       : requirement_impl -> ^(REQUIREMENT requirement_impl);
+requirement_impl : '<' ID '>' requirement_value -> ID requirement_value;
+requirement_value : path_like_seq
               | '(' target_ref ')' -> target_ref;
 path_like_seq : SLASH path_like_seq_impl -> ^(PATH_LIKE_SEQ SLASH path_like_seq_impl)
 	      |	path_like_seq_impl -> ^(PATH_LIKE_SEQ path_like_seq_impl);
 path_like_seq_impl : ID ('/' ID)* '/'? -> ID+;
 target_ref : path_like_seq target_ref_impl -> ^(TARGET_REF path_like_seq target_ref_impl)
            | public_tag path_like_seq target_ref_impl? -> ^(TARGET_REF public_tag path_like_seq target_ref_impl?);
-target_ref_impl : target_props -> ^(TARGET_NAME EMPTY_TARGET_NAME) target_props
-                | target_name_seq target_props?; 
+target_ref_impl : target_requirements -> ^(TARGET_NAME EMPTY_TARGET_NAME) target_requirements
+                | target_name_seq target_requirements?; 
 target_name_seq : '//' ID -> ^(TARGET_NAME ID);
-target_props : (WS* '/' feature)+ -> ^(FEATURE_SET feature+);
+target_requirements : (WS* '/' requirement)+ -> ^(REQUIREMENT_SET requirement+);
 list_of : list_of_impl (WS+ list_of_impl)* -> ^(LIST_OF list_of_impl+);
 list_of_impl : path_like_seq
              | target_ref

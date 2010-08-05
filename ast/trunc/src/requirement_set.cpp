@@ -1,12 +1,12 @@
 #include "stdafx.h"
-#include <hammer/ast/feature_set.h>
+#include <hammer/ast/requirement_set.h>
 
 namespace hammer{ namespace ast{
 
-bool feature_set::accept(visitor& v) const
+bool requirement_set::accept(visitor& v) const
 {
    if (v.visit_enter(*this))
-      v.visit(features_);
+      v.visit(requirements_);
 
    return v.visit_leave(*this);
 }

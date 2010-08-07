@@ -16,6 +16,7 @@ namespace hammer{ namespace ast{
 
 namespace hammer{namespace parscore{
    class identifier;
+   class source_location;
 }}
 
 namespace hammer{namespace sema{
@@ -52,15 +53,18 @@ class actions
          on_requirement_set(const ast::requirements_t& requirements) const = 0;
 
       virtual const ast::requirement* 
-         on_simple_requirement(const parscore::identifier& name,
+         on_simple_requirement(parscore::source_location public_tag_loc,
+                               const parscore::identifier& name,
                                const ast::expression* value) const = 0;
 
       virtual const ast::requirement* 
-         on_conditional_requirement(const ast::requirements_t& requirements,
-                                const ast::expression* value) const = 0;
+         on_conditional_requirement(parscore::source_location public_tag_loc,
+                                    const ast::requirements_t& requirements,
+                                    const ast::expression* value) const = 0;
       
       virtual const ast::expression*
-         on_target_ref(const ast::path_like_seq* head,
+         on_target_ref(parscore::source_location public_tag,
+                       const ast::path_like_seq* head,
                        const parscore::identifier& target_name,
                        const ast::requirement_set* requirements) const = 0;
 };

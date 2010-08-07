@@ -1,0 +1,7 @@
+lib foo 
+   :
+    @/bar
+   :
+    @<define>FOO
+    @<link>shared:<define>BAR
+   ;

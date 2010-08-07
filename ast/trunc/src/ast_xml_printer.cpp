@@ -181,7 +181,8 @@ bool ast_xml_printer::visit_leave(const requirement_set& v)
 
 bool ast_xml_printer::visit(const simple_requirement& v)
 {
-   os_ << std::setw(indent_) << ' ' << "<simple_requirement name=\"" << v.name() << "\">\n";
+   os_ << std::setw(indent_) << ' ' << "<simple_requirement public=\"" << v.is_public() << "\"\n";
+   os_ << std::setw(indent_) << ' ' << "                    name=\"" << v.name() << "\">\n";
 
    indent_ += 3;
       os_ << std::setw(indent_) << ' ' << "<value>\n";
@@ -198,7 +199,7 @@ bool ast_xml_printer::visit(const simple_requirement& v)
 
 bool ast_xml_printer::visit(const conditional_requirement& v)
 {
-   os_ << std::setw(indent_) << ' ' << "<conditional_requirement>\n";
+   os_ << std::setw(indent_) << ' ' << "<conditional_requirement public=\"" << v.is_public() << "\">\n";
 
    indent_ += 3;
       visit(v.features());
@@ -217,7 +218,8 @@ bool ast_xml_printer::visit(const conditional_requirement& v)
 
 bool ast_xml_printer::visit(const target_ref& v)
 {
-   os_ << std::setw(indent_) << ' ' << "<target_ref head=\"" << v.head()->to_identifier() << "\"\n";
+   os_ << std::setw(indent_) << ' ' << "<target_ref public=\"" << v.is_public() << "\"\n";
+   os_ << std::setw(indent_) << ' ' << "            head=\"" << v.head()->to_identifier() << "\"\n";
    os_ << std::setw(indent_) << ' ' << "            target_name=\"";
    if (v.has_target_name())
       os_ << v.target_name();

@@ -21,7 +21,6 @@ LIST_OF;
 PATH_LIKE_SEQ;
 REQUIREMENT_SET;
 REQUIREMENT;
-PUBLIC_TAG;
 CONDITIONAL_REQUIREMENT;
 }
 
@@ -65,9 +64,10 @@ list_of : list_of_impl (WS+ list_of_impl)* -> ^(LIST_OF list_of_impl+);
 list_of_impl : path_like_seq
              | target_ref
              | '[' WS* target_decl_or_rule_call_impl WS* ']' -> target_decl_or_rule_call_impl;
-public_tag : '@' WS* -> PUBLIC_TAG;
+public_tag : PUBLIC_TAG WS* -> PUBLIC_TAG;
              
 SLASH : '/';
+PUBLIC_TAG : '@';
 ID : ('a'..'z' | 'A'..'Z' | '0'..'9' | '.' | '-' | '_'| '=' | '*')+  
 	      | STRING ;//{ LEXSTATE->type = _type; {pANTLR3_COMMON_TOKEN t = LEXER->emit(LEXER); ++t->start, --t->stop; t->type = _type;} };
 COLON : ':';

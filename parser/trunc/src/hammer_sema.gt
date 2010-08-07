@@ -60,12 +60,20 @@ requirement returns[const hammer::ast::requirement* result]
 	;
 	
 conditional_requirement returns[const hammer::ast::requirement* result]
-@init { hammer::ast::requirements_t requirements; }
-	: ^(REQUIREMENT ^(CONDITIONAL_REQUIREMENT (con=simple_requirement { requirements.push_back($con.result); })+ COLON res=simple_requirement)) { result = SEMA->on_conditional_requirement(requirements, $res.result); }
+@init 
+{ 
+   hammer::ast::requirements_t requirements; 
+   hammer::parscore::source_location tag_loc;
+}
+	: ^(REQUIREMENT public_tag[&tag_loc] ^(CONDITIONAL_REQUIREMENT (con=simple_requirement { requirements.push_back($con.result); })+ COLON res=simple_requirement)) { result = SEMA->on_conditional_requirement(tag_loc, requirements, $res.result); }
 	;
 	
 simple_requirement returns[const hammer::ast::requirement* result]
-	: ^(REQUIREMENT name=ID requirement_value) { result = SEMA->on_simple_requirement($name->getToken($name), $requirement_value.result); }
+@init
+{
+   hammer::parscore::source_location tag_loc;
+}
+	: ^(REQUIREMENT public_tag[&tag_loc] name=ID requirement_value) { result = SEMA->on_simple_requirement(tag_loc, $name->getToken($name), $requirement_value.result); }
 	;
 
 requirement_value returns[const hammer::ast::expression* result]
@@ -84,13 +92,24 @@ list_of_impl returns[const hammer::ast::expression* result ]
 	;
 
 target_ref returns[const hammer::ast::expression* result]
-@init { hammer::parscore::identifier name; } 
-	: ^(TARGET_REF path_like_seq target_ref_name[&name] target_ref_requirements) { result = SEMA->on_target_ref($path_like_seq.result, name, $target_ref_requirements.result); }
+@init 
+{ 
+   hammer::parscore::identifier name;
+   hammer::parscore::source_location public_tag_loc;
+} 
+	: ^(TARGET_REF public_tag[&public_tag_loc] path_like_seq target_ref_name[&name] target_ref_requirements) 
+		{ result = SEMA->on_target_ref(public_tag_loc, $path_like_seq.result, name, $target_ref_requirements.result); }
+	;
+
+public_tag[hammer::parscore::source_location* tag_loc] 
+	: PUBLIC_TAG { *tag_loc = hammer::parscore::source_location($PUBLIC_TAG->getToken($PUBLIC_TAG)); } 
+	|
 	;
 
 target_ref_name[hammer::parscore::identifier* name] 
 	: ^(TARGET_NAME EMPTY_TARGET_NAME)
 	| ^(TARGET_NAME ID) { *name = hammer::parscore::identifier($ID->getToken($ID)); }
+	| 
 	;
 
 target_ref_requirements returns[const hammer::ast::requirement_set* result]

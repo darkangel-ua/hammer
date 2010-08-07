@@ -7,14 +7,26 @@ namespace hammer{ namespace ast{
 
 class requirement : public expression
 {
+   public:
+      requirement(parscore::source_location public_tag)
+         : public_tag_(public_tag)
+      {}
+      
+      parscore::source_location public_tag() const { return public_tag_; }
+      bool is_public() const { return public_tag().valid(); }
+
+   private:
+      parscore::source_location public_tag_;
 };
 
 class simple_requirement : public requirement
 {
    public:
-      simple_requirement(const parscore::identifier& name, 
-                     const expression* value)
-         : name_(name),
+      simple_requirement(parscore::source_location public_tag_loc,
+                         const parscore::identifier& name, 
+                         const expression* value)
+         : requirement(public_tag_loc),
+           name_(name),
            value_(value)
       {}
 
@@ -30,9 +42,11 @@ class simple_requirement : public requirement
 class conditional_requirement : public requirement
 {
    public:
-      conditional_requirement(const requirements_t& features, 
-                          const expression* value)
-        : features_(features),
+      conditional_requirement(parscore::source_location public_tag_loc, 
+                              const requirements_t& features, 
+                              const expression* value)
+        : requirement(public_tag_loc),
+          features_(features),
           value_(value)
       {}
       

@@ -41,15 +41,18 @@ class actions_impl : public actions
          on_requirement_set(const ast::requirements_t& requirements) const;
 
       virtual const ast::requirement* 
-         on_simple_requirement(const parscore::identifier& name,
+         on_simple_requirement(parscore::source_location public_tag_loc,
+                               const parscore::identifier& name,
                                const ast::expression* value) const;
 
       virtual const ast::requirement* 
-         on_conditional_requirement(const ast::requirements_t& requirements,
-                                const ast::expression* value) const;
+         on_conditional_requirement(parscore::source_location public_tag_loc,
+                                    const ast::requirements_t& requirements,
+                                    const ast::expression* value) const;
    
       virtual const ast::expression*
-         on_target_ref(const ast::path_like_seq* head,
+         on_target_ref(parscore::source_location public_tag,
+                       const ast::path_like_seq* head,
                        const parscore::identifier& target_name,
                        const ast::requirement_set* requirements) const;
 

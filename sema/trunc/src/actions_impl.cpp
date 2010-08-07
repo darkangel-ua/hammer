@@ -73,25 +73,28 @@ actions_impl::on_requirement_set(const ast::requirements_t& requirements) const
 }
 
 const ast::requirement*
-actions_impl::on_simple_requirement(const parscore::identifier& name,
-                                const ast::expression* value) const
+actions_impl::on_simple_requirement(parscore::source_location public_tag_loc,
+                                    const parscore::identifier& name,
+                                    const ast::expression* value) const
 {
-   return new (ctx_) ast::simple_requirement(name, value);
+   return new (ctx_) ast::simple_requirement(public_tag_loc, name, value);
 }
 
 const ast::requirement* 
-actions_impl::on_conditional_requirement(const ast::requirements_t& requirements,
+actions_impl::on_conditional_requirement(parscore::source_location public_tag_loc,
+                                         const ast::requirements_t& requirements,
                                          const ast::expression* value) const
 {
-   return new (ctx_) ast::conditional_requirement(requirements, value);
+   return new (ctx_) ast::conditional_requirement(public_tag_loc, requirements, value);
 }
 
 const ast::expression*
-actions_impl::on_target_ref(const ast::path_like_seq* head,
+actions_impl::on_target_ref(parscore::source_location public_tag,
+                            const ast::path_like_seq* head,
                             const parscore::identifier& target_name,
                             const ast::requirement_set* requirements) const
 {
-   return new (ctx_) ast::target_ref(head, target_name, requirements);
+   return new (ctx_) ast::target_ref(public_tag, head, target_name, requirements);
 }
 
 }}

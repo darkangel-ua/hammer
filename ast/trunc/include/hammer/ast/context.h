@@ -4,9 +4,10 @@
 #include <vector>
 #include <cassert>
 
-namespace hammer{ namespace core{ namespace rules{
-   class manager;
-}}}
+namespace hammer{
+   class rule_manager;
+   class diagnostic;
+}
 
 namespace hammer{ namespace ast{
 
@@ -21,22 +22,26 @@ class parser_context
 class context
 {
    public:
-      context(const core::rules::manager& rule_manager)
-         : rule_manager_(rule_manager)
+      context(const hammer::rule_manager& rule_manager,
+              const hammer::diagnostic& diag)
+         : rule_manager_(rule_manager),
+           diag_(diag)
       {
       }
+
       ~context();
-      const hammer::ast::hamfile* hamfile() const { return hamfile_; }
       void* allocate(size_t bytes, size_t alignment);
       void set_parser_context(std::auto_ptr<parser_context>& p_ctx)
       {
          parser_context_ = p_ctx;
       }
 
-   private:
-      const core::rules::manager& rule_manager_;
-      std::vector<char*> allocated_blocks_;
+      const hammer::rule_manager& rule_manager_;
+      const hammer::diagnostic& diag_;
       const hammer::ast::hamfile* hamfile_;
+
+   private:
+      std::vector<char*> allocated_blocks_;
       std::auto_ptr<parser_context> parser_context_;
 };
 

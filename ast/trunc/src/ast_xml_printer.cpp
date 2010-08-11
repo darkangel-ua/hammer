@@ -5,6 +5,7 @@
 #include <hammer/ast/requirement.h>
 #include <hammer/ast/requirement_set.h>
 #include <hammer/ast/target_ref.h>
+#include <hammer/ast/feature.h>
 #include <iostream>
 #include <iomanip>
 
@@ -143,7 +144,23 @@ bool ast_xml_printer::visit(const requirements_t& v)
    os_ << std::setw(indent_) << ' ' << "</requirements>\n";
 
    return true;
+}
 
+bool ast_xml_printer::visit(const features_t& v)
+{
+   if (v.empty())
+      return true; 
+
+   os_ << std::setw(indent_) << ' ' << "<features>\n";
+   indent_ += 3;
+
+   for(features_t::const_iterator i = v.begin(), last = v.end(); i != last; ++i)
+      (**i).accept(*this);
+
+   indent_ -= 3;
+   os_ << std::setw(indent_) << ' ' << "</features>\n";
+
+   return true;
 }
 
 bool ast_xml_printer::visit(const expressions_t& v)
@@ -181,15 +198,10 @@ bool ast_xml_printer::visit_leave(const requirement_set& v)
 
 bool ast_xml_printer::visit(const simple_requirement& v)
 {
-   os_ << std::setw(indent_) << ' ' << "<simple_requirement public=\"" << v.is_public() << "\"\n";
-   os_ << std::setw(indent_) << ' ' << "                    name=\"" << v.name() << "\">\n";
+   os_ << std::setw(indent_) << ' ' << "<simple_requirement public=\"" << v.is_public() << "\">\n";
 
    indent_ += 3;
-      os_ << std::setw(indent_) << ' ' << "<value>\n";
-      indent_ += 3;
-         v.value()->accept(*this);
-      indent_ -= 3;
-      os_ << std::setw(indent_) << ' ' << "</value>\n";
+      v.value()->accept(*this);
    indent_ -= 3;
 
    os_ << std::setw(indent_) << ' ' << "</simple_requirement>\n";
@@ -233,6 +245,23 @@ bool ast_xml_printer::visit(const target_ref& v)
    indent_ -= 3;
 
    os_ << std::setw(indent_) << ' ' << "</target_ref>\n";
+
+   return true;
+}
+
+bool ast_xml_printer::visit(const feature& v)
+{
+   os_ << std::setw(indent_) << ' ' << "<feature name=\"" << v.name() << "\">\n";
+
+   indent_ += 3;
+      os_ << std::setw(indent_) << ' ' << "<value>\n";
+      indent_ += 3;
+         v.value()->accept(*this);
+      indent_ -= 3;
+      os_ << std::setw(indent_) << ' ' << "</value>\n";
+   indent_ -= 3;
+
+   os_ << std::setw(indent_) << ' ' << "</feature>\n";
 
    return true;
 }

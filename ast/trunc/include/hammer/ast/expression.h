@@ -11,6 +11,11 @@ class expression : public statement
    public:
 };
 
+class error_expression : public statement
+{
+   public:
+};
+
 class empty_expr : public expression
 {
    public:

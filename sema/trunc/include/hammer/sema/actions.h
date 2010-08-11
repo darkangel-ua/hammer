@@ -7,9 +7,7 @@ namespace hammer{ namespace ast{
    class hamfile;
    class project_def;
    class rule_invocation;
-   class expression;
    class parser_context;
-   class statement;
    class path_like_seq;
    class requirement_set;
 }}
@@ -52,15 +50,18 @@ class actions
       virtual const ast::requirement_set* 
          on_requirement_set(const ast::requirements_t& requirements) const = 0;
 
+      virtual const ast::feature*
+         on_feature(parscore::identifier name,
+                    const ast::expression* value) const = 0;
+
       virtual const ast::requirement* 
          on_simple_requirement(parscore::source_location public_tag_loc,
-                               const parscore::identifier& name,
-                               const ast::expression* value) const = 0;
+                               const ast::feature* value) const = 0;
 
       virtual const ast::requirement* 
          on_conditional_requirement(parscore::source_location public_tag_loc,
-                                    const ast::requirements_t& requirements,
-                                    const ast::expression* value) const = 0;
+                                    const ast::features_t& features,
+                                    const ast::feature* value) const = 0;
       
       virtual const ast::expression*
          on_target_ref(parscore::source_location public_tag,

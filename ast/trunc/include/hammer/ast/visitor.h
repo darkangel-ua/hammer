@@ -18,6 +18,7 @@ class requirement_set;
 class simple_requirement;
 class conditional_requirement;
 class target_ref;
+class feature;
 
 class visitor
 {
@@ -39,11 +40,13 @@ class visitor
       virtual bool visit(const simple_requirement& v) { return true; }
       virtual bool visit(const conditional_requirement& v) { return true; }
       virtual bool visit(const target_ref& v) { return true; }
+      virtual bool visit(const feature& v) { return true; }
       
       // FIXME: May this is wrong and we should make statements separate class?
       virtual bool visit(const statements_t& v) { return true; } 
       virtual bool visit(const expressions_t& v) { return true; } 
       virtual bool visit(const requirements_t& v) { return true; } 
+      virtual bool visit(const features_t& v) { return true; } 
 };
 
 }}

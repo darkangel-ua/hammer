@@ -28,10 +28,12 @@ class ast_xml_printer : public visitor
       virtual bool visit(const simple_requirement& v);
       virtual bool visit(const conditional_requirement& v);
       virtual bool visit(const target_ref& v);
+      virtual bool visit(const feature& v);
 
       virtual bool visit(const statements_t& v);
       virtual bool visit(const expressions_t& v);
       virtual bool visit(const requirements_t& v);
+      virtual bool visit(const features_t& v); 
    
    private:
       std::ostream& os_;

@@ -5,6 +5,8 @@
 
 namespace hammer{ namespace ast{
 
+class feature;
+
 class requirement : public expression
 {
    public:
@@ -23,40 +25,36 @@ class simple_requirement : public requirement
 {
    public:
       simple_requirement(parscore::source_location public_tag_loc,
-                         const parscore::identifier& name, 
-                         const expression* value)
+                         const feature* value)
          : requirement(public_tag_loc),
-           name_(name),
            value_(value)
       {}
 
-      const parscore::identifier& name() const { return name_; }
-      const expression* value() const { return value_; }
+      const feature* value() const { return value_; }
       virtual bool accept(visitor& v) const;
    
    private:
-      parscore::identifier name_;
-      const expression* value_;
+      const feature* value_;
 };
 
 class conditional_requirement : public requirement
 {
    public:
       conditional_requirement(parscore::source_location public_tag_loc, 
-                              const requirements_t& features, 
-                              const expression* value)
+                              const features_t& features, 
+                              const feature* value)
         : requirement(public_tag_loc),
           features_(features),
           value_(value)
       {}
       
-      const requirements_t& features() const { return features_; }
-      const expression* value() const { return value_; }
+      const features_t& features() const { return features_; }
+      const feature* value() const { return value_; }
       virtual bool accept(visitor& v) const;
 
    private:
-      requirements_t features_;
-      const expression* value_;
+      features_t features_;
+      const feature* value_;
 };
 
 }}

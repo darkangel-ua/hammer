@@ -1,14 +1,13 @@
 tree grammar hammer_sema;
 
-options
-{ 
+options { 
         language = C; 
         tokenVocab = hammer;
         ASTLabelType = pANTLR3_BASE_TREE;
 }
 
-@header
-{
+@header {
+
 #include <hammer/sema/actions.h>
 #include <hammer/parscore/identifier.h>
 #include <hammer/ast/requirement_set.h>
@@ -60,23 +59,23 @@ requirement returns[const hammer::ast::requirement* result]
 	;
 	
 conditional_requirement returns[const hammer::ast::requirement* result]
-@init 
-{ 
-   hammer::ast::requirements_t requirements; 
+@init { 
+   hammer::ast::features_t features; 
    hammer::parscore::source_location tag_loc;
 }
-	: ^(REQUIREMENT public_tag[&tag_loc] ^(CONDITIONAL_REQUIREMENT (con=simple_requirement { requirements.push_back($con.result); })+ COLON res=simple_requirement)) { result = SEMA->on_conditional_requirement(tag_loc, requirements, $res.result); }
+	: ^(REQUIREMENT public_tag[&tag_loc] ^(CONDITION (con=feature { features.push_back($con.result); })+ COLON) res=feature) { result = SEMA->on_conditional_requirement(tag_loc, features, $res.result); }
 	;
 	
 simple_requirement returns[const hammer::ast::requirement* result]
-@init
-{
-   hammer::parscore::source_location tag_loc;
-}
-	: ^(REQUIREMENT public_tag[&tag_loc] name=ID requirement_value) { result = SEMA->on_simple_requirement(tag_loc, $name->getToken($name), $requirement_value.result); }
+@init { hammer::parscore::source_location tag_loc; }
+	: ^(REQUIREMENT public_tag[&tag_loc] feature) { result = SEMA->on_simple_requirement(tag_loc, $feature.result); }
 	;
 
-requirement_value returns[const hammer::ast::expression* result]
+feature returns[const hammer::ast::feature* result]
+	: ^(FEATURE ID feature_value) { result = SEMA->on_feature($ID->getToken($ID), $feature_value.result); }
+	;
+	
+feature_value returns[const hammer::ast::expression* result]
 	: path_like_seq { result = $path_like_seq.result; }
 	| target_ref { result = $target_ref.result; }
 	;

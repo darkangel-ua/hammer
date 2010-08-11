@@ -11,6 +11,7 @@
 #include <hammer/ast/ast_xml_printer.h>
 #include <hammer/ast/hamfile.h>
 #include <hammer/core/rule_manager.h>
+#include <hammer/core/diagnostic.h>
 
 boost::filesystem::path test_data_path;
 
@@ -19,10 +20,18 @@ using namespace hammer;
 using namespace boost::unit_test;
 namespace fs = boost::filesystem;
 
+static void lib_rule(const parscore::identifier& id)
+{
+
+}
+
 void test_function(const fs::path& hamfile)
 {
-   core::rules::manager rule_manager;
-   ast::context ctx(rule_manager);
+   rule_manager rule_manager;
+   stringstream error_stream;
+   streamed_diagnostic diag(error_stream);
+   rule_manager.add_target("lib", boost::function<void(const parscore::identifier&)>(&lib_rule));
+   ast::context ctx(rule_manager, diag);
    sema::actions_impl actions(ctx);
    const ast::hamfile* ast_top = parser::parser::parse(hamfile, actions);
 

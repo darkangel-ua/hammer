@@ -8,6 +8,9 @@
 #include <hammer/ast/requirement_set.h>
 #include <hammer/ast/requirement.h>
 #include <hammer/ast/target_ref.h>
+#include <hammer/ast/feature.h>
+#include <hammer/core/rule_manager.h>
+#include <hammer/core/diagnostic.h>
 
 namespace hammer{namespace sema{
 
@@ -63,6 +66,16 @@ const ast::expression*
 actions_impl::on_target_or_rule_call(const parscore::identifier& rule_name, 
                                      const ast::expressions_t& arguments) const
 {
+   rule_manager::const_iterator i = ctx_.rule_manager_.find(rule_name);
+   if (i != ctx_.rule_manager_.end())
+   {
+//       if (i->arguments().size() != arguments.size())
+//       {
+//          ctx_.diag_.error("%s does not take %d arguments") << () ;
+//          return &ctx_.error_expression_;
+//       }
+   }
+
    return new (ctx_) ast::rule_invocation(rule_name, arguments);
 }
 
@@ -72,20 +85,26 @@ actions_impl::on_requirement_set(const ast::requirements_t& requirements) const
    return new (ctx_) ast::requirement_set(requirements);
 }
 
+const ast::feature*
+actions_impl::on_feature(parscore::identifier name,
+                         const ast::expression* value) const
+{
+   return new (ctx_) ast::feature(name, value);
+}
+
 const ast::requirement*
 actions_impl::on_simple_requirement(parscore::source_location public_tag_loc,
-                                    const parscore::identifier& name,
-                                    const ast::expression* value) const
+                                    const ast::feature* value) const
 {
-   return new (ctx_) ast::simple_requirement(public_tag_loc, name, value);
+   return new (ctx_) ast::simple_requirement(public_tag_loc, value);
 }
 
 const ast::requirement* 
 actions_impl::on_conditional_requirement(parscore::source_location public_tag_loc,
-                                         const ast::requirements_t& requirements,
-                                         const ast::expression* value) const
+                                         const ast::features_t& features,
+                                         const ast::feature* value) const
 {
-   return new (ctx_) ast::conditional_requirement(public_tag_loc, requirements, value);
+   return new (ctx_) ast::conditional_requirement(public_tag_loc, features, value);
 }
 
 const ast::expression*

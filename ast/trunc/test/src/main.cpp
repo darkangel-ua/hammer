@@ -4,6 +4,7 @@
 #include <boost/filesystem/convenience.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/bind.hpp>
+#include <boost/assign/std/vector.hpp>
 #include <iostream>
 #include <hammer/parser/parser.h>
 #include <hammer/sema/actions_impl.h>
@@ -18,6 +19,7 @@ boost::filesystem::path test_data_path;
 using namespace std; 
 using namespace hammer;
 using namespace boost::unit_test;
+using namespace boost::assign;
 namespace fs = boost::filesystem;
 
 static void lib_rule(const parscore::identifier& id)
@@ -30,7 +32,10 @@ void test_function(const fs::path& hamfile)
    rule_manager rule_manager;
    stringstream error_stream;
    streamed_diagnostic diag(error_stream);
-   rule_manager.add_target("lib", boost::function<void(const parscore::identifier&)>(&lib_rule));
+   vector<parscore::identifier> lib_arg_names;
+   lib_arg_names += "target-name";
+   rule_manager.add_target("lib", boost::function<void(const parscore::identifier&)>(&lib_rule),
+                           lib_arg_names);
    ast::context ctx(rule_manager, diag);
    sema::actions_impl actions(ctx);
    const ast::hamfile* ast_top = parser::parser::parse(hamfile, actions);
@@ -59,7 +64,7 @@ init_unit_test_suite( int argc, char* argv[] )
 
    // Because we have massive memleaks we disable leak reporting until we resolve memleaks
 //   _CrtSetDbgFlag(_CrtSetDbgFlag( _CRTDBG_REPORT_FLAG ) & ~_CRTDBG_LEAK_CHECK_DF);
-//   _CrtSetBreakAlloc(1559);
+//   _CrtSetBreakAlloc(1935);
 
    test_suite* ts = BOOST_TEST_SUITE("main");
    for(fs::directory_iterator i(test_data_path); i != fs::directory_iterator(); ++i)

@@ -1,0 +1,4 @@
+project foo 
+   : requirements = <define>FOO <link>static
+   : usage-requirements = <define>BAR
+   ;

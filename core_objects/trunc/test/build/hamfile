@@ -4,6 +4,7 @@ testing.run
     /hammer/parscore
     /hammer/core_objects
     /boost/test//utf/<version>1.36.0/<link>static 
+    /boost/assign/<version>1.36.0 
    :
    :
    :

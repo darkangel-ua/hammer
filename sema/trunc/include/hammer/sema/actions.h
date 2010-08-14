@@ -37,6 +37,10 @@ class actions
          on_empty_expr() const = 0;
 
       virtual const ast::expression* 
+         on_named_expr(const parscore::identifier& name,
+                       const ast::expression* value) const = 0;
+
+      virtual const ast::expression* 
          on_list_of(const ast::expressions_t& e) const = 0;
 
       virtual const ast::path_like_seq* 

@@ -20,7 +20,7 @@ namespace{
             parser_->free(parser_);
             tstream_->free(tstream_);
             lexer_->free(lexer_);
-            input_->free(input_);
+            input_->close(input_);
          }
       }
 
@@ -70,8 +70,8 @@ const ast::hamfile* parser::parse_impl()
    hammer_sema->pTreeParser->super = const_cast<sema::actions*>(&actions_);
    const ast::hamfile* result = hammer_sema->hamfile(hammer_sema);
 
-   hammer_sema->free(hammer_sema);
    nodes->free(nodes);
+   hammer_sema->free(hammer_sema);
 
    return result;
 }

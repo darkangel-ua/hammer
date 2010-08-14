@@ -50,6 +50,13 @@ actions_impl::on_empty_expr() const
 }
 
 const ast::expression* 
+actions_impl::on_named_expr(const parscore::identifier& name,
+                            const ast::expression* value) const
+{
+   return new(ctx_) ast::named_expr(name, value);
+}
+
+const ast::expression* 
 actions_impl::on_list_of(const ast::expressions_t& e) const
 {
    return new (ctx_) ast::list_of(e);

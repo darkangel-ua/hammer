@@ -13,4 +13,9 @@ bool id_expr::accept(visitor& v) const
    return v.visit(*this);
 }
 
+bool named_expr::accept(visitor& v) const
+{
+   return v.visit(*this);
+}
+
 }}

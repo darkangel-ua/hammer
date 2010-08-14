@@ -34,7 +34,25 @@ class id_expr : public expression
       parscore::identifier id_;
 };
 
-}}
+class named_expr : public expression
+{
+   public:
+      named_expr(const parscore::identifier& name,
+                 const expression* value)
+                 : name_(name),
+                   value_(value)
+      {
+      }
+   
+      const parscore::identifier& name() const { return name_; }
+      const expression* value() const { return value_; }
+      virtual bool accept(visitor& v) const;
 
+   private:
+      parscore::identifier name_;
+      const expression* value_;
+};
+
+}}
 
 #endif //h_8babae10_1ba8_479f_ae25_e20b77eb41dc

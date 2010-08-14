@@ -1,9 +1,9 @@
 grammar hammer;
 
 options{ 
-   language = Java; 
+   language = C; 
    output = AST;
-//   ASTLabelType = pANTLR3_BASE_TREE;
+   ASTLabelType = pANTLR3_BASE_TREE;
 }
 
 tokens{
@@ -15,6 +15,7 @@ TARGET_REF;
 TARGET_NAME;
 EMPTY_TARGET_NAME;
 ARGUMENTS;
+NAMED_EXPRESSION;
 EXPRESSION;
 EMPTY_EXPRESSION;
 LIST_OF;
@@ -33,10 +34,16 @@ project_def   : 'project' arguments WS* ';' WS* -> ^(EXPLICIT_PROJECT_DEF 'proje
               | -> IMPLICIT_PROJECT_DEF;
 target_decl_or_rule_call : target_decl_or_rule_call_impl WS* ';' WS* -> target_decl_or_rule_call_impl;
 target_decl_or_rule_call_impl : ID arguments -> ^(TARGET_DECL_OR_RULE_CALL ID arguments);
-arguments     : WS+ expression (WS+ ':' argument)* -> ^(ARGUMENTS expression argument*)
+arguments     : WS+ non_empty_argument (WS+ ':' argument)* -> ^(ARGUMENTS non_empty_argument argument*)
               | -> ^(ARGUMENTS);
-argument         : WS+ expression -> expression
+
+non_empty_argument 	: expression
+ 		        | argument_name expression -> ^(NAMED_EXPRESSION argument_name expression)
+ 			;		
+
+argument      : WS+ non_empty_argument -> non_empty_argument
               | -> EMPTY_EXPRESSION; 
+argument_name : ID WS* '=' WS* -> ID;
 expression    : requirement_set -> requirement_set
               | list_of ;
 feature : '<' ID '>' feature_value -> ^(FEATURE ID feature_value);

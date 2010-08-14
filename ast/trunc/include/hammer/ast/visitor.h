@@ -11,6 +11,7 @@ class implicit_project_def;
 class rule_invocation;
 class rule_arguments;
 class empty_expr;
+class named_expr;
 class id_expr;
 class path_like_seq;
 class list_of;
@@ -36,6 +37,7 @@ class visitor
       virtual bool visit_leave(const requirement_set& v) { return true; }
       virtual bool visit(const empty_expr& v) { return true; }
       virtual bool visit(const id_expr& v) { return true; }
+      virtual bool visit(const named_expr& v) { return true; }
       virtual bool visit(const path_like_seq& v) { return true; }
       virtual bool visit(const simple_requirement& v) { return true; }
       virtual bool visit(const conditional_requirement& v) { return true; }

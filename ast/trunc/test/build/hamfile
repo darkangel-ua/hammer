@@ -14,6 +14,7 @@ testing.run
     /hammer/sema
     /boost/filesystem/<version>1.36.0/<link>static 
     /boost/test//utf/<version>1.36.0/<link>static 
+    /boost/assign/<version>1.36.0
    :
    :
     ../work/.

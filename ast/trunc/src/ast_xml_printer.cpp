@@ -105,6 +105,18 @@ bool ast_xml_printer::visit(const id_expr& v)
    return true; 
 }
 
+bool ast_xml_printer::visit(const named_expr& v)
+{
+   os_ << std::setw(indent_) << ' ' << "<named_expr name=\"" << v.name() << "\">\n";
+   
+   indent_ += 3;
+      v.value()->accept(*this);
+   indent_ -= 3;
+
+   os_ << std::setw(indent_) << ' ' << "</named_expr>\n";
+   return true;   
+}
+
 bool ast_xml_printer::visit(const path_like_seq& v)
 {
    os_ << std::setw(indent_) << ' ' << "<path_like_seq value=\"" << v.to_identifier() << "\"/>\n";

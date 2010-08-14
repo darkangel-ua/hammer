@@ -38,9 +38,18 @@ target_def_or_rule_call returns[const hammer::ast::expression* result]
 	; 
 
 arguments[hammer::ast::expressions_t* args]
-        : ^(ARGUMENTS (expression { args->push_back($expression.result); })* )
+        : ^(ARGUMENTS (argument { args->push_back($argument.result); })* )
         ;
 
+argument returns[const hammer::ast::expression* result]
+	: expression { result = $expression.result; }
+	| named_expression { result = $named_expression.result; }
+	;
+	
+named_expression returns[const hammer::ast::expression* result]
+	: ^(NAMED_EXPRESSION ID expression { result = SEMA->on_named_expr($ID->getToken($ID), $expression.result); } ) 
+	;	
+	
 expression returns[const hammer::ast::expression* result]
 @init { hammer::ast::expressions_t args; }
 	: EMPTY_EXPRESSION { result = SEMA->on_empty_expr(); }

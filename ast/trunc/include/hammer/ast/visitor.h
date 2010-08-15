@@ -10,6 +10,7 @@ class explicit_project_def;
 class implicit_project_def;
 class rule_invocation;
 class rule_arguments;
+class error_expression;
 class empty_expr;
 class named_expr;
 class id_expr;
@@ -20,6 +21,7 @@ class simple_requirement;
 class conditional_requirement;
 class target_ref;
 class feature;
+class source_decl;
 
 class visitor
 {
@@ -35,6 +37,7 @@ class visitor
       virtual bool visit_leave(const list_of& v) { return true; }
       virtual bool visit_enter(const requirement_set& v) { return true; }
       virtual bool visit_leave(const requirement_set& v) { return true; }
+      virtual bool visit(const error_expression& v) { return true; }
       virtual bool visit(const empty_expr& v) { return true; }
       virtual bool visit(const id_expr& v) { return true; }
       virtual bool visit(const named_expr& v) { return true; }
@@ -43,6 +46,7 @@ class visitor
       virtual bool visit(const conditional_requirement& v) { return true; }
       virtual bool visit(const target_ref& v) { return true; }
       virtual bool visit(const feature& v) { return true; }
+      virtual bool visit(const source_decl& v) { return true; }
       
       // FIXME: May this is wrong and we should make statements separate class?
       virtual bool visit(const statements_t& v) { return true; } 

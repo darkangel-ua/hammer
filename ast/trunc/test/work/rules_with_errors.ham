@@ -1,1 +1,2 @@
-lib ;
+lib ; #error: Target 'lib' not enought arguments
+bar ; #error: Target or rule 'bar' was not defined

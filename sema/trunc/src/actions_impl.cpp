@@ -82,6 +82,11 @@ actions_impl::on_target_or_rule_call(const parscore::identifier& rule_name,
 //          return &ctx_.error_expression_;
 //       }
    }
+   else
+   {
+      ctx_.diag_.error(rule_name.start_lok(), "Target or rule '%s' was not defined") << rule_name;      
+      return new (ctx_) ast::error_expression();
+   }
 
    return new (ctx_) ast::rule_invocation(rule_name, arguments);
 }

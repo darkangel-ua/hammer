@@ -35,7 +35,7 @@ bool identifier::operator < (const identifier& rhs) const
    if (length_ != rhs.length_)
       return length_ < rhs.length_;
 
-   return std::strcmp(lhs_v, rhs_v) < 0;
+   return std::strncmp(lhs_v, rhs_v, length_) < 0;
 }
 
 bool identifier::operator == (const identifier& rhs) const
@@ -46,7 +46,10 @@ bool identifier::operator == (const identifier& rhs) const
    const char* lhs_v = no_lok_ ? v_ : lok_.begin();
    const char* rhs_v = rhs.no_lok_ ? rhs.v_ : rhs.lok_.begin();
 
-   return std::strcmp(lhs_v, rhs_v) == 0;
+   if (length_ != rhs.length_)
+      return false;
+
+   return std::strncmp(lhs_v, rhs_v, length_) == 0;
 }
 
 std::string identifier::to_string() const

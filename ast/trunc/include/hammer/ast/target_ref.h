@@ -2,8 +2,12 @@
 #define h_bd428576_c9b2_4eb5_8a5a_1fe3dd0e85cb
 
 #include <hammer/ast/expression.h>
+#include <hammer/parscore/identifier.h>
 
 namespace hammer{namespace ast{
+
+class path_like_seq;
+class requirement_set;
 
 class target_ref : public expression
 {
@@ -12,7 +16,7 @@ class target_ref : public expression
                  const path_like_seq* head,
                  const parscore::identifier& target_name,
                  const requirement_set* requirements)
-         : public_tag_(public_tag), 
+         : public_tag_(public_tag),
            head_(head),
            target_name_(target_name),
            requirements_(requirements)

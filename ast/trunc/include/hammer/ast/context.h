@@ -23,7 +23,7 @@ class context
 {
    public:
       context(const hammer::rule_manager& rule_manager,
-              const hammer::diagnostic& diag)
+              hammer::diagnostic& diag)
          : rule_manager_(rule_manager),
            diag_(diag)
       {
@@ -37,7 +37,7 @@ class context
       }
 
       const hammer::rule_manager& rule_manager_;
-      const hammer::diagnostic& diag_;
+      hammer::diagnostic& diag_;
       const hammer::ast::hamfile* hamfile_;
 
    private:

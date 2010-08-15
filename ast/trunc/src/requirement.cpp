@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include <hammer/ast/requirement.h>
+#include <hammer/ast/visitor.h>
 
 namespace hammer{ namespace ast{
 

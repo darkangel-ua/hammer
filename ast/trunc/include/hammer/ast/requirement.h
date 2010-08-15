@@ -2,6 +2,7 @@
 #define h_66fabe72_d8a5_489a_a602_95149c6b80c4
 
 #include <hammer/ast/expression.h>
+#include <hammer/ast/types.h>
 
 namespace hammer{ namespace ast{
 

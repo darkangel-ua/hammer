@@ -7,9 +7,14 @@ using namespace std;
 
 namespace hammer{ 
 
+diagnostic::diagnostic() : error_count_(0) 
+{}
+
 diagnostic_builder diagnostic::error(parscore::source_location loc, 
                                      const char* message)
 {
+   ++error_count_;
+
    type_ = type::error;
    loc_ = loc;
    message_ = message;
@@ -19,18 +24,27 @@ diagnostic_builder diagnostic::error(parscore::source_location loc,
    return diagnostic_builder(this);
 }
 
+void diagnostic::format_location()
+{
+   stream_ << loc_.full_source_name() << '(' << loc_.line() << ") : ";
+}
+
 void diagnostic::format_message()
 {
+   assert(message_);
    stream_.str(string());
 
-   int arg_pos = 0;
+   format_location();
+   stream_ << "error: ";
+
+   size_t arg_pos = 0;
    while(*message_ != 0)
    {
       switch(*message_)
       {
          case '%':
          {
-            assert(arg_pos == args_.size() && "Too much argument");
+            assert(arg_pos < args_.size() && "Too much argument");
             
             ++message_;
             assert(*message_ && "Missing argument type specifier");
@@ -81,9 +95,12 @@ void diagnostic::format_message()
             break;
          }
       }
+      
+      ++message_;
    }
-   
+
    report(stream_.str().c_str());
+   message_ = NULL;
 }
 
 void streamed_diagnostic::report(const char* formated_message)

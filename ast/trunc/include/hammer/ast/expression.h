@@ -11,9 +11,10 @@ class expression : public statement
    public:
 };
 
-class error_expression : public statement
+class error_expression : public expression
 {
    public:
+      virtual bool accept(visitor& v) const;
 };
 
 class empty_expr : public expression
@@ -52,6 +53,8 @@ class named_expr : public expression
       parscore::identifier name_;
       const expression* value_;
 };
+
+bool is_error_expr(const expression* e);
 
 }}
 

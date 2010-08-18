@@ -21,6 +21,7 @@ class rule_invocation : public expression
       const parscore::identifier& name() const { return name_; }
       const expressions_t& arguments() const { return arguments_; }
 
+      virtual parscore::source_location start_loc() const { return name_.start_lok(); }
       virtual bool accept(visitor& v) const;
 
    private:

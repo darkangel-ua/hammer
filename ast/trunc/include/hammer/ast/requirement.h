@@ -32,6 +32,7 @@ class simple_requirement : public requirement
       {}
 
       const feature* value() const { return value_; }
+      virtual parscore::source_location start_loc() const;
       virtual bool accept(visitor& v) const;
    
    private:
@@ -51,6 +52,7 @@ class conditional_requirement : public requirement
       
       const features_t& features() const { return features_; }
       const feature* value() const { return value_; }
+      virtual parscore::source_location start_loc() const;
       virtual bool accept(visitor& v) const;
 
    private:

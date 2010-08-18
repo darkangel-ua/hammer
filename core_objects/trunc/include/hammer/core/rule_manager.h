@@ -63,6 +63,8 @@ typedef std::vector<rule_argument> rule_arguments;
 class rule_declaration
 {
    public:
+      typedef rule_arguments::const_iterator const_iterator;
+
       rule_declaration(parscore::identifier name,
                 const rule_arguments& args,
                 const rule_argument& result,
@@ -76,7 +78,11 @@ class rule_declaration
       const parscore::identifier& name() const { return name_; }
       const rule_argument& result() const { return result_; }
       const rule_arguments& arguments() const { return args_; }
+      const_iterator begin() const { return args_.begin(); }
+      const_iterator end() const { return args_.end(); }
+      const_iterator find(const parscore::identifier& arg_name) const;
       bool is_target() const { return is_target_; }
+      
 
    private:
       parscore::identifier name_;

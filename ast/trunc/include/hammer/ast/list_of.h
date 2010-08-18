@@ -12,6 +12,8 @@ class list_of : public expression
       list_of(const expressions_t& values)
          : values_(values)
       {}
+
+      virtual parscore::source_location start_loc() const { return values_.front()->start_loc(); }
       virtual bool accept(visitor& v) const;
    
    private:

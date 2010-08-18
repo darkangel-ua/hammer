@@ -9,11 +9,10 @@ namespace hammer{ namespace ast{
 class requirement_set : public expression
 {
    public:
-      requirement_set(const requirements_t& requirements) 
-         : requirements_(requirements) 
-      {}
+      requirement_set(const requirements_t& requirements);
       
       const requirements_t& requirements() const { return requirements_; }
+      virtual parscore::source_location start_loc() const;
       virtual bool accept(visitor& v) const;
       
    private:

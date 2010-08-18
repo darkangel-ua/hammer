@@ -16,6 +16,7 @@ class feature : public expression
 
       const parscore::identifier& name() const { return name_; }
       const expression* value() const { return value_; }
+      virtual parscore::source_location start_loc() const { return name_.start_lok(); }
       virtual bool accept(visitor& v) const;
    
    private:

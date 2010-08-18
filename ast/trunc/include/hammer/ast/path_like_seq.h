@@ -15,7 +15,9 @@ class path_like_seq : public expression
            last_(last)
       {
       }
+
       parscore::identifier to_identifier() const;
+      virtual parscore::source_location start_loc() const { return first_.start_lok(); }
       virtual bool accept(visitor& v) const;
    
    private:

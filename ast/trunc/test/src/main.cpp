@@ -210,7 +210,7 @@ init_unit_test_suite( int argc, char* argv[] )
       if (i->path().filename() != ".svn" &&
           extension(i->path()) == ".ham")
       {
-         ts->add(make_test_case(boost::bind(&test_function, i->path()), i->path().filename()));
+         ts->add(make_test_case(boost::bind(&test_function, i->path()), basename(i->path())));
       }
 
    framework::master_test_suite().add(ts);

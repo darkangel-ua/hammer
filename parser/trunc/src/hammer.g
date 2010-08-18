@@ -73,7 +73,7 @@ public_tag : PUBLIC_TAG WS* -> PUBLIC_TAG;
              
 SLASH : '/';
 PUBLIC_TAG : '@';
-ID : ('a'..'z' | 'A'..'Z' | '0'..'9' | '.' | '-' | '_'| '=' | '*')+  
+ID : ('a'..'z' | 'A'..'Z' | '0'..'9' | '.' | '-' | '_'| '*')+  
 	      | STRING ;//{ LEXSTATE->type = _type; {pANTLR3_COMMON_TOKEN t = LEXER->emit(LEXER); ++t->start, --t->stop; t->type = _type;} };
 COLON : ':';
 fragment 

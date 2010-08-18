@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include <hammer/ast/expression.h>
 #include <hammer/ast/visitor.h>
+#include <hammer/ast/casts.h>
 
 namespace hammer{ namespace ast{
 
@@ -28,5 +29,17 @@ bool is_error_expr(const expression* e)
 {
    return dynamic_cast<const error_expression*>(e);
 }
+
+template<>
+bool is_a<named_expr>(const node& v) { return dynamic_cast<const named_expr*>(&v); }
+
+template<>
+bool is_a<empty_expr>(const node& v) { return dynamic_cast<const empty_expr*>(&v); }
+
+template<>
+const named_expr& as<named_expr>(const node& v) { return dynamic_cast<const named_expr&>(v); }
+
+template<>
+const empty_expr& as<empty_expr>(const node& v) { return dynamic_cast<const empty_expr&>(v); }
 
 }}

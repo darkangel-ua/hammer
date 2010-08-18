@@ -8,9 +8,12 @@ namespace hammer{namespace ast{
 class source_decl : public expression
 {
    public:
-      source_decl(const expression* sources) : sources_(sources) {}
+      source_decl(const expression* sources) 
+         : sources_(sources) 
+      {}
       
       const expression* sources() const { return sources_; }
+      virtual parscore::source_location start_loc() const { return sources_->start_loc(); }
       virtual bool accept(visitor& v) const;
 
    private:

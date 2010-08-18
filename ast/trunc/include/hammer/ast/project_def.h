@@ -14,6 +14,7 @@ class implicit_project_def : public project_def
 {
    public:
       virtual bool accept(visitor& v) const;
+      virtual parscore::source_location start_loc() const { return parscore::source_location(); }
 };
 
 class explicit_project_def : public project_def,
@@ -22,6 +23,8 @@ class explicit_project_def : public project_def,
    public:
       explicit_project_def(const parscore::identifier& rule_name,
                            const expressions_t& arguments);
+
+      virtual parscore::source_location start_loc() const { return rule_invocation::start_loc(); }
       virtual bool accept(visitor& v) const;
 };
 

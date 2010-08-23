@@ -31,6 +31,9 @@ bool is_error_expr(const expression* e)
 }
 
 template<>
+bool is_a<error_expression>(const node& v) { return dynamic_cast<const error_expression*>(&v); }
+
+template<>
 bool is_a<named_expr>(const node& v) { return dynamic_cast<const named_expr*>(&v); }
 
 template<>

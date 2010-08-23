@@ -74,6 +74,16 @@ actions_impl::on_path_like_seq(const parscore::identifier& first,
    return new (ctx_) ast::path_like_seq(first, last);
 }
 
+static int required_argument_count(const rule_declaration& rule_decl)
+{
+   int result = 0;
+   for(rule_declaration::const_iterator i = rule_decl.begin(), last = rule_decl.end(); i != last; ++i)
+      if (!i->is_optional())
+         ++result;
+
+   return result;
+}
+
 static
 expressions_t process_arguments(const parscore::identifier& rule_name,
                                 const rule_declaration& rule_decl, 
@@ -84,6 +94,8 @@ expressions_t process_arguments(const parscore::identifier& rule_name,
    expressions_t result;
    processed_arguments_t pargs;
    bool only_named = false;
+   rule_declaration::const_iterator ra = rule_decl.begin();
+   int required_argument_used = 0;
    for(expressions_t::const_iterator i = arguments.begin(), last = arguments.end(); i != last; ++i)
    {
       if (is_a<named_expr>(**i))
@@ -92,7 +104,7 @@ expressions_t process_arguments(const parscore::identifier& rule_name,
          rule_declaration::const_iterator r = rule_decl.find(arg_name);
          if (r == rule_decl.end())
          {
-            ctx.diag_.error(arg_name.start_lok(), "%s '%s' doesn't have named argument '%s'") 
+            ctx.diag_.error(arg_name.start_lok(), "%s '%s' does not have named argument '%s'") 
                << (rule_decl.is_target() ? "Target" : "Rule") 
                << rule_name 
                << arg_name;
@@ -100,25 +112,64 @@ expressions_t process_arguments(const parscore::identifier& rule_name,
             result.push_back(new (ctx) error_expression((**i).start_loc()));
          }
          else
+         {
+            if (!r->is_optional())
+               ++required_argument_used;
+
             result.push_back(*i);
+         }
 
          only_named = true;
       }
       else
       {
-         if (only_named)
+         // too many arguments
+         if (ra == rule_decl.end())
          {
-//             ctx.diag_.error((**i).start_lok(), "%s '%s' doesn't have named argument '%s'") 
-//                << (rule_decl.is_target() ? "Target" : "Rule") 
-//                << rule_name 
-//                << arg_name;
-            
+            result.push_back(*i);
+            ++required_argument_used;
+            continue;
          }
 
-         result.push_back(*i);
+         if (is_a<error_expression>(**i))
+         {
+            if (!ra->is_optional())
+               ++required_argument_used;
+            
+            result.push_back(*i);
+         }
+         else
+            if (only_named)
+            {
+               ctx.diag_.error((**i).start_loc(), "Named argument expected");
+               return result;
+            }
+            else
+            {
+               if (!ra->is_optional())
+                  ++required_argument_used;
+
+               result.push_back(*i);
+            }
       }
+
+      if (ra != rule_decl.end())
+         ++ra;
    }
    
+   int rac = required_argument_count(rule_decl);
+   if (rac > required_argument_used)
+   {
+      ctx.diag_.error(rule_name.start_lok(), "%s '%s': not enough arguments")
+         << (rule_decl.is_target() ? "Target" : "Rule") << rule_name;
+   }
+
+   if (ra == rule_decl.end() && rac != required_argument_used)
+   {
+      ctx.diag_.error(rule_name.start_lok(), "%s '%s': too many arguments")
+         << (rule_decl.is_target() ? "Target" : "Rule") << rule_name;
+   }
+
    return result;
 }
 

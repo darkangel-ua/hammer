@@ -1,3 +1,5 @@
-lib ; #error: Target 'lib' not enought arguments
+lib ; #error: Target 'lib': not enough arguments
 bar ; #error: Target or rule 'bar' was not defined
-lib foo=bar ; #error: Target 'lib' doesn't have named argument 'foo'
+lib bar : foo=bar ; #error: Target 'lib' does not have named argument 'foo'
+lib requirements= : <define>FOO ; #error: Named argument expected
+lib foo : : : : : : : : ; #error: Target 'lib': too many arguments

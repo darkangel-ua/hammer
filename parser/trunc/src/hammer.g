@@ -38,13 +38,19 @@ arguments     : WS+ non_empty_argument (WS+ ':' argument)* -> ^(ARGUMENTS non_em
               | -> ^(ARGUMENTS);
 
 non_empty_argument 	: expression
- 		        | argument_name expression -> ^(NAMED_EXPRESSION argument_name expression)
+ 		        | named_argument
  			;		
+named_argument 	: argument_name named_argument_expression -> ^(NAMED_EXPRESSION argument_name named_argument_expression)
+		;
 
+named_argument_expression 	: (WS+ ':')=> ->EMPTY_EXPRESSION
+				| WS* expression -> expression
+				;		
+				
 argument      : WS+ non_empty_argument -> non_empty_argument
               | -> EMPTY_EXPRESSION; 
-argument_name : ID WS* '=' WS* -> ID;
-expression    : requirement_set -> requirement_set
+argument_name : ID WS* '=' -> ID;
+expression    : requirement_set
               | list_of ;
 feature : '<' ID '>' feature_value -> ^(FEATURE ID feature_value);
 feature_value : path_like_seq

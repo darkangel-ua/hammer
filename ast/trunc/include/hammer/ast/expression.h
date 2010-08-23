@@ -3,7 +3,6 @@
 
 #include <hammer/ast/statement.h>
 #include <hammer/parscore/identifier.h>
-#include <hammer/parscore/identifier.h>
 
 namespace hammer{ namespace ast{
 

@@ -35,6 +35,8 @@ namespace
             : project_output_dir_(project_output_dir)
          {}
 
+         virtual ~fake_environment() {}
+
          virtual bool run_shell_commands(const std::vector<std::string>& cmds, const location_t& working_dir) const { return true; }
          virtual bool run_shell_commands(std::string& captured_output, const std::vector<std::string>& cmds, const location_t& working_dir) const { return true; }
          virtual bool run_shell_commands(std::ostream& captured_output_stream, const std::vector<std::string>& cmds, const location_t& working_dir) const { return true; }
@@ -385,9 +387,10 @@ void msvc_project::write_configurations(std::ostream& s) const
            "         IntermediateDirectory=\"$(ConfigurationName)\"\n"
            "         ConfigurationType=\"" << cfg_type << "\"\n";
 
-      configuration_options_.write(s, *i->node_, fake_environment(project_output_dir()));
+      fake_environment fe(project_output_dir());
+      configuration_options_.write(s, *i->node_, fe);
 
-      write_compiler_options(s, compiller_options_, *i->node_, fake_environment(project_output_dir()));
+      write_compiler_options(s, compiller_options_, *i->node_, fe);
 
       switch(cfg_type)
       {
@@ -396,7 +399,7 @@ void msvc_project::write_configurations(std::ostream& s) const
          {
             s << "         <Tool\n"
                  "            Name=\"VCLinkerTool\"\n";
-            linker_options_.write(s, *i->node_, fake_environment(project_output_dir()));
+            linker_options_.write(s, *i->node_, fe);
             s << "         />\n";
          }
          break;
@@ -411,7 +414,7 @@ void msvc_project::write_configurations(std::ostream& s) const
               "            Name=\"VCPostBuildEventTool\"\n"
            << "            CommandLine=\"$(TargetPath) ";
 
-         post_build_step_.write(s, *i->real_node_, fake_environment(project_output_dir()));
+         post_build_step_.write(s, *i->real_node_, fe);
          
          s << "         />\n";
       }

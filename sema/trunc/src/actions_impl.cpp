@@ -12,6 +12,7 @@
 #include <hammer/ast/casts.h>
 #include <hammer/core/rule_manager.h>
 #include <hammer/core/diagnostic.h>
+#include <set>
 
 using namespace std;
 using namespace hammer::ast;
@@ -49,9 +50,9 @@ actions_impl::on_explicit_project_def(const parscore::identifier& name,
 }
 
 const ast::expression* 
-actions_impl::on_empty_expr() const
+actions_impl::on_empty_expr(const parscore::identifier& next_token) const
 {
-   return new (ctx_) ast::empty_expr(parscore::source_location());
+   return new (ctx_) ast::empty_expr(next_token);
 }
 
 const ast::expression* 
@@ -84,15 +85,98 @@ static int required_argument_count(const rule_declaration& rule_decl)
    return result;
 }
 
+static const expression*
+process_identifier_arg(const rule_argument& ra, const expression* arg, context& ctx)
+{
+   if (const list_of* list = as<list_of>(arg))
+      if(list->values().size() == 1)
+         if (const ast::path_like_seq* pls = as<ast::path_like_seq>(list->values().front()))
+            if (pls->is_simple())
+               return new (ctx) id_expr(pls->to_identifier());
+   
+   ctx.diag_.error(arg->start_loc(), "Argument '%s': must be simple identifier") << ra.name();
+   return new (ctx) error_expression(arg);
+}
+
+static const expression*
+process_feature_set_arg(const rule_argument& ra, const expression* arg, context& ctx)
+{
+   return new (ctx) error_expression(arg);
+}
+
+static const expression*
+process_sources_decl_arg(const rule_argument& ra, const expression* arg, context& ctx)
+{
+   return new (ctx) error_expression(arg);
+}
+
+static const expression*
+process_requirements_decl_arg(const rule_argument& ra, const expression* arg, context& ctx)
+{
+   return new (ctx) error_expression(arg);
+}
+
+static const expression*
+process_path_like_seq_arg(const rule_argument& ra, const expression* arg, context& ctx)
+{
+   if (const list_of* list = as<list_of>(arg))
+      if(list->values().size() == 1)
+         if (const ast::path_like_seq* pls = as<ast::path_like_seq>(list->values().front()))
+            return arg;
+
+   ctx.diag_.error(arg->start_loc(), "Argument '%s': must be path like sequence") << ra.name();
+   return new (ctx) error_expression(arg);
+}
+
+static const expression* 
+process_one_arg(const rule_argument& ra, const expression* arg, ast::context& ctx)
+{
+   if (!ra.is_optional() && is_a<empty_expr>(arg))
+   {
+      ctx.diag_.error(arg->start_loc(), "Required argument '%s' expected before '%s'")
+         << ra.name() 
+         << as<empty_expr>(arg)->next_token();
+
+      return new (ctx) error_expression(arg->start_loc());
+   }
+
+   if (ra.is_optional() && is_a<empty_expr>(arg))
+      return arg;
+
+   switch(ra.type())
+   {
+      case rule_argument_type::IDENTIFIER:
+         return process_identifier_arg(ra, arg, ctx);
+
+      case rule_argument_type::FEATURE_SET:
+         return process_feature_set_arg(ra, arg, ctx);
+
+      case rule_argument_type::SOURCES_DECL:
+         return process_sources_decl_arg(ra, arg, ctx);
+
+      case rule_argument_type::REQUIREMENTS_DECL:
+         return process_requirements_decl_arg(ra, arg, ctx);
+
+      case rule_argument_type::PATH_LIKE_SEQ:
+         return process_path_like_seq_arg(ra, arg, ctx);
+
+      default:
+         assert(false && "Unknown argument type");
+         abort();
+         throw;
+   }
+}
+
 static
 expressions_t process_arguments(const parscore::identifier& rule_name,
                                 const rule_declaration& rule_decl, 
                                 const ast::expressions_t& arguments,
                                 ast::context& ctx)
 {
-   typedef vector<pair<const expression*, const rule_argument*> > processed_arguments_t;
+   typedef std::set<const rule_argument*> used_named_args_t;
    expressions_t result;
-   processed_arguments_t pargs;
+   used_named_args_t used_named_args;
+
    bool only_named = false;
    rule_declaration::const_iterator ra = rule_decl.begin();
    int required_argument_used = 0;
@@ -111,17 +195,30 @@ expressions_t process_arguments(const parscore::identifier& rule_name,
 
             result.push_back(new (ctx) error_expression((**i).start_loc()));
          }
-         else
+         else // named argument founded
          {
-            if (!r->is_optional())
-               ++required_argument_used;
+            if (used_named_args.find(&*r) != used_named_args.end())
+            {
+               ctx.diag_.error(arg_name.start_lok(), "%s '%s': named argument '%s' used more than once") 
+                  << (rule_decl.is_target() ? "Target" : "Rule") 
+                  << rule_name 
+                  << arg_name;
+               
+               result.push_back(new (ctx) error_expression((**i).start_loc()));
+            }
+            else 
+            {
+               used_named_args.insert(&*r);
+               if (!r->is_optional())
+                  ++required_argument_used;
 
-            result.push_back(*i);
+               result.push_back(*i);
+            }
          }
 
          only_named = true;
       }
-      else
+      else // unnamed argument
       {
          // too many arguments
          if (ra == rule_decl.end())
@@ -149,7 +246,7 @@ expressions_t process_arguments(const parscore::identifier& rule_name,
                if (!ra->is_optional())
                   ++required_argument_used;
 
-               result.push_back(*i);
+               result.push_back(process_one_arg(*ra, *i, ctx));
             }
       }
 
@@ -182,7 +279,7 @@ actions_impl::on_target_or_rule_call(const parscore::identifier& rule_name,
       return new (ctx_) ast::rule_invocation(rule_name, process_arguments(rule_name, i->second, arguments, ctx_));
    else
    {
-      ctx_.diag_.error(rule_name.start_lok(), "Target or rule '%s' was not defined") << rule_name;      
+      ctx_.diag_.error(rule_name.start_lok(), "Target or rule '%s' was not defined") << rule_name;
       return new (ctx_) ast::error_expression(rule_name.start_lok());
    }
 

@@ -20,8 +20,12 @@ class error_expression : public expression
    public:
       error_expression(const parscore::source_location& loc) 
          : loc_(loc) 
-      {
-      }
+      {}
+
+      error_expression(const expression* e) 
+         : loc_(e->start_loc()) 
+      {}
+
       virtual parscore::source_location start_loc() const { return loc_; }
 
       virtual bool accept(visitor& v) const;
@@ -33,16 +37,16 @@ class error_expression : public expression
 class empty_expr : public expression
 {
    public:
-      empty_expr(const parscore::source_location& loc)
-         : loc_(loc)
-      {
-      }
+      empty_expr(const parscore::identifier& next)
+         : next_(next)
+      {}
 
-      virtual parscore::source_location start_loc() const { return loc_; }
+      virtual parscore::source_location start_loc() const { return next_.start_lok(); }
       virtual bool accept(visitor& v) const;
+      const parscore::identifier& next_token() const { return next_; }
 
    private:
-      parscore::source_location loc_;
+      parscore::identifier next_;
 };
 
 class id_expr : public expression

@@ -43,12 +43,12 @@ static void exe_rule(const parscore::identifier& id,
 
 }
 
-static void glob_rule(const parscore::identifier& pattern)
+static void glob_rule(const hammer::path_like_seq& pattern)
 {
 
 }
 
-static void rglob_rule(const parscore::identifier& pattern)
+static void rglob_rule(const hammer::path_like_seq& pattern)
 {
 
 }
@@ -57,7 +57,7 @@ typedef std::map<int, std::pair<std::string, diagnostic::type::value> > expected
 
 class checked_diagnostic : public diagnostic
 {
-   public:
+   public:               
       checked_diagnostic(const expected_diags_t& expected_diags)
          : expected_diags_(expected_diags)
       {
@@ -91,11 +91,13 @@ void checked_diagnostic::report(const char* formated_message)
       
       expected_diags_t::const_iterator i = expected_diags_.find(line);
       if (i == expected_diags_.end())
-         BOOST_CHECK(false && "Unexpected diagnostic");
-
-      checked_lines_.insert(line);
-      BOOST_CHECK_EQUAL(i->second.second, type);
-      BOOST_CHECK_EQUAL(i->second.first, m[3]);
+         BOOST_CHECK_MESSAGE(false, "Unexpected diagnostic: " + m[3]);
+      else
+      {
+         checked_lines_.insert(line);
+         BOOST_CHECK_EQUAL(i->second.second, type);
+         BOOST_CHECK_EQUAL(i->second.first, m[3]);
+      }
    }
    else
       BOOST_CHECK(false && "Unknown diagnostic format");
@@ -160,7 +162,7 @@ void test_function(const fs::path& hamfile)
       vector<parscore::identifier> arg_names;
       arg_names += "pattern";
       rule_manager.add_target("glob", 
-                              boost::function<void(const parscore::identifier&)>(&glob_rule),
+                              boost::function<void(const hammer::path_like_seq&)>(&glob_rule),
                               arg_names);
    }
 
@@ -168,7 +170,7 @@ void test_function(const fs::path& hamfile)
       vector<parscore::identifier> arg_names;
       arg_names += "pattern";
       rule_manager.add_target("rglob", 
-                              boost::function<void(const parscore::identifier&)>(&rglob_rule),
+                              boost::function<void(const hammer::path_like_seq&)>(&rglob_rule),
                               arg_names);
    }
 

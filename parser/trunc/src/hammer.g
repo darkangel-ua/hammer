@@ -30,25 +30,32 @@ FEATURE;
 }
 
 hamfile       : WS* project_def target_decl_or_rule_call* -> ^(HAMFILE project_def? target_decl_or_rule_call*);
-project_def   : 'project' arguments WS* ';' WS* -> ^(EXPLICIT_PROJECT_DEF 'project' arguments)
+project_def   : 'project' arguments WS* EXP_END WS* -> ^(EXPLICIT_PROJECT_DEF 'project' arguments EXP_END)
               | -> IMPLICIT_PROJECT_DEF;
-target_decl_or_rule_call : target_decl_or_rule_call_impl WS* ';' WS* -> target_decl_or_rule_call_impl;
-target_decl_or_rule_call_impl : ID arguments -> ^(TARGET_DECL_OR_RULE_CALL ID arguments);
-arguments     : WS+ non_empty_argument (WS+ ':' argument)* -> ^(ARGUMENTS non_empty_argument argument*)
-              | -> ^(ARGUMENTS);
 
+target_decl_or_rule_call : target_decl_or_rule_call_impl WS* EXP_END WS* -> target_decl_or_rule_call_impl EXP_END;
+target_decl_or_rule_call_impl : ID arguments -> ^(TARGET_DECL_OR_RULE_CALL ID arguments);
+
+arguments	: (WS+ ';')=> -> ^(ARGUMENTS)
+              	|  argument args_leaf* -> ^(ARGUMENTS argument args_leaf*)
+		;
+args_leaf : WS+ COLON argument -> COLON argument 
+	  ;
 non_empty_argument 	: expression
  		        | named_argument
  			;		
 named_argument 	: argument_name named_argument_expression -> ^(NAMED_EXPRESSION argument_name named_argument_expression)
 		;
 
-named_argument_expression 	: (WS+ ':')=> ->EMPTY_EXPRESSION
+named_argument_expression 	: (WS+ ':')=> -> EMPTY_EXPRESSION
+				| (WS+ ';')=> -> EMPTY_EXPRESSION
 				| WS* expression -> expression
 				;		
 				
-argument      : WS+ non_empty_argument -> non_empty_argument
-              | -> EMPTY_EXPRESSION; 
+argument	: (WS+ ':')=> -> EMPTY_EXPRESSION
+		| (WS+ ';')=> -> EMPTY_EXPRESSION
+	      	| WS+ non_empty_argument -> non_empty_argument
+	      	;
 argument_name : ID WS* '=' -> ID;
 expression    : requirement_set
               | list_of ;
@@ -82,6 +89,8 @@ PUBLIC_TAG : '@';
 ID : ('a'..'z' | 'A'..'Z' | '0'..'9' | '.' | '-' | '_'| '*')+  
 	      | STRING ;//{ LEXSTATE->type = _type; {pANTLR3_COMMON_TOKEN t = LEXER->emit(LEXER); ++t->start, --t->stop; t->type = _type;} };
 COLON : ':';
+EXP_END : ';';
+
 fragment 
 STRING : '"' STRING_ID '"';
 fragment

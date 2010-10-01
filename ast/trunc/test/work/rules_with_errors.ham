@@ -3,3 +3,6 @@ bar ; #error: Target or rule 'bar' was not defined
 lib bar : foo=bar ; #error: Target 'lib' does not have named argument 'foo'
 lib requirements= : <define>FOO ; #error: Named argument expected
 lib foo : : : : : : : : ; #error: Target 'lib': too many arguments
+lib foo : requirements= : requirements= ; #error: Target 'lib': named argument 'requirements' used more than once
+lib requirements= ; #error: Target 'lib': not enough arguments
+lib : ; #error: Required argument 'target-name' expected before ':'

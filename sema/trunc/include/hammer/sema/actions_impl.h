@@ -24,7 +24,7 @@ class actions_impl : public actions
                                  const ast::expressions_t& expressions) const;
 
       virtual const ast::expression* 
-         on_empty_expr() const;
+         on_empty_expr(const parscore::identifier& next_token) const;
 
       virtual const ast::expression* 
          on_named_expr(const parscore::identifier& name,

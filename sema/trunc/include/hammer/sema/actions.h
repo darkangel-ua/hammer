@@ -34,7 +34,7 @@ class actions
          on_explicit_project_def(const parscore::identifier& name, 
                                  const ast::expressions_t& expressions) const = 0;
       virtual const ast::expression* 
-         on_empty_expr() const = 0;
+         on_empty_expr(const parscore::identifier& next_token) const = 0;
 
       virtual const ast::expression* 
          on_named_expr(const parscore::identifier& name,

@@ -17,6 +17,7 @@ class path_like_seq : public expression
       }
 
       parscore::identifier to_identifier() const;
+      bool is_simple() const;
       virtual parscore::source_location start_loc() const { return first_.start_lok(); }
       virtual bool accept(visitor& v) const;
    

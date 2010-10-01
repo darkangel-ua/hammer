@@ -429,11 +429,25 @@ namespace
       }
       else
       {
-         cout << "...updating source '" << opts.just_one_source_ << "'...\n";
-         builder builder(build_environment, interrupt_flag, opts.worker_count_, true);
+         cout << "...updating source '" << opts.just_one_source_ << "'..." << endl;
+         builder builder(build_environment, interrupt_flag, opts.worker_count_, false);
          nodes_t source_nodes = find_nodes_for_source_name(nodes, pstring(e.pstring_pool(), opts.just_one_source_));
+
+         actuality_checker checker(e, build_environment);
+         cout << "...checking targets for update... " << flush;
+         size_t target_to_update_count = checker.check(source_nodes);
+         cout << "Done." << endl;
+         
+         mark_to_update(source_nodes);
+
+         if (opts.dump_targets_to_update_)
+         {
+            ofstream f("targets-to-update.txt", std::ios_base::trunc);
+            dump_targets_to_update(f, source_nodes, build_environment);
+         }
+
          builder::result build_result = builder.build(source_nodes);
-         cout << "...updated source '" << opts.just_one_source_ << "'...\n";
+         cout << "...updated source '" << opts.just_one_source_ << "'..." << endl;
       }
    }
 
@@ -505,28 +519,28 @@ int main(int argc, char** argv)
       fs::path startup_script = data_path / "scripts/startup.ham";
 
       if (opts.debug_level_ > 0)
-         cout << "...Full path to script is '" << startup_script << "'\n";
+         cout << "...Full path to script is '" << startup_script << "'\n" << flush;
 
       if (opts.debug_level_ > 0)
-         cout << "...Loading startup script... ";
+         cout << "...Loading startup script... " << flush;
 
       engine.load_hammer_script(startup_script);
       types::register_standart_types(engine.get_type_registry(), engine.feature_registry());
 
       if (opts.debug_level_ > 0)
-         cout << "Done\n";
+         cout << "Done" << endl;
 
       if (opts.debug_level_ > 0)
-         cout << "...Installing generators... ";
+         cout << "...Installing generators... " << flush;
 
       engine.generators().insert(std::auto_ptr<generator>(new copy_generator(engine)));
       add_testing_generators(engine, engine.generators());
 
       if (opts.debug_level_ > 0)
-         cout << "Done\n";
+         cout << "Done" << endl;
       
       if (opts.debug_level_ > 0)
-         cout << "...Installing scanners... ";
+         cout << "...Installing scanners... " << flush;
 
       boost::shared_ptr<scanner> c_scaner(new hammer::c_scanner);
       engine.scanner_manager().register_scanner(engine.get_type_registry().get(types::CPP), c_scaner);
@@ -534,16 +548,16 @@ int main(int argc, char** argv)
       engine.scanner_manager().register_scanner(engine.get_type_registry().get(types::RC), c_scaner);
 
       if (opts.debug_level_ > 0)
-         cout << "Done\n";
+         cout << "Done" << endl;
 
       if (opts.debug_level_ > 0)
-         cout << "...Registering known toolsets... ";
+         cout << "...Registering known toolsets... " << flush;
 
       engine.toolset_manager().add_toolset(auto_ptr<toolset>(new msvc_toolset));
       engine.toolset_manager().add_toolset(auto_ptr<toolset>(new gcc_toolset));
 
       if (opts.debug_level_ > 0)
-         cout << "Done\n";
+         cout << "Done" << endl;
 
       engine.call_resolver().insert("use-toolset", boost::function<void (project*, pstring&, pstring&, pstring*)>(boost::bind(use_toolset_rule, _1, boost::ref(engine), _2, _3, _4)));
 
@@ -556,11 +570,11 @@ int main(int argc, char** argv)
       else
       {
          if (opts.debug_level_ > 0)
-            cout << "...Loading user-config.ham at '" << user_config_script.native_file_string() << "'...";
+            cout << "...Loading user-config.ham at '" << user_config_script.native_file_string() << "'..." << flush;
 
          engine.load_hammer_script(user_config_script);
          if (opts.debug_level_ > 0)
-            cout << "Done\n";
+            cout << "Done" << endl;
       }
 
       if (!has_configured_toolsets(engine))
@@ -571,7 +585,7 @@ int main(int argc, char** argv)
          cerr << "WARNING!!!WARNING!!!WARNING!!!WARNING!!!\n"
                  "No toolsets are configured and no one toolset founded by auto-configure!\n"
                  "Please, specify some toolset in $(HOME)/user-config.ham to operate properly.\n"
-                 "WARNING!!!WARNING!!!WARNING!!!WARNING!!!\n\n";
+                 "WARNING!!!WARNING!!!WARNING!!!WARNING!!!\n\n" << flush;
       }
 
       if (vm.count("generate-projects-locally"))
@@ -607,14 +621,17 @@ int main(int argc, char** argv)
          build_request->join("host-os", engine.feature_registry().get_def("host-os").get_default().c_str());
 
       if (opts.debug_level_ > 0)
-         cout << "...Loading project at '" << fs::current_path() << "'... ";
+         cout << "...Loading project at '" << fs::current_path() << "'... " << flush;
       
       const project& project_to_build = engine.load_project(fs::current_path());
       if (opts.debug_level_ > 0)
-         cout << "Done\n";
+         cout << "Done" << endl;
 
-      if (targets.empty())
+      if (targets.empty() || targets.size() == 1 && targets[0] == "all")
+      {
+         targets.clear();
          add_all_targets(targets, project_to_build);
+      }
 
       if (opts.debug_level_ > 0)
       {
@@ -629,19 +646,19 @@ int main(int argc, char** argv)
 
             cout << *i;
          }
-         cout << "\n";
+         cout << endl;
       }
 
-      cout << "...instantiating... ";
+      cout << "...instantiating... " << flush;
       vector<basic_target*> instantiated_targets(instantiate_targets(targets, project_to_build, *build_request));
-      cout << "Done.\n";
+      cout << "Done." << endl;
 
       if (vm.count("instantiate"))
          return 0;
 
-      cout << "...generating build graph... ";
+      cout << "...generating build graph... " << flush;
       nodes_t nodes(generate_targets(instantiated_targets));
-      cout << "Done.\n";
+      cout << "Done." << endl;
       
       if (vm.count("generate"))
          return 0;

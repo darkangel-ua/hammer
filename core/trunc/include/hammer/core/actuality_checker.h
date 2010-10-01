@@ -31,6 +31,8 @@ namespace hammer
          bool check(boost::posix_time::ptime& max_target_time, std::size_t& nodes_to_update, build_node& node);
          scanner_context& get_scanner_context(const target_type& t, const scanner& s);
    };
+
+   void mark_to_update(build_nodes_t& nodes);
 }
 
 #endif //h_2d289661_69e9_45eb_a229_665542ce6533

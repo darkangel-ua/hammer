@@ -395,7 +395,7 @@ void dump_for_hash(std::ostream& s, const feature_set& fs, bool dump_all)
       }
    }
    
-   std::sort(features.begin(), features.end(), &less_by_name);
+   std::stable_sort(features.begin(), features.end(), &less_by_name);
 
    bool first = true;
    for(features_t::const_iterator i = features.begin(), last = features.end(); i != last; ++i)

@@ -35,26 +35,41 @@ scanner_context& actuality_checker::get_scanner_context(const target_type& t, co
 }
 
 // go deep in down nodes and mark all of they as needed to update, including dependency nodes
-static void mark_to_update(build_node& node, std::size_t& nodes_to_update, const main_target& products_owner)
+static void mark_to_update(build_node& node, 
+                           std::size_t& nodes_to_update, 
+                           const main_target& products_owner,
+                           bool process_dependencies = true)
 {
    for(build_node::nodes_t::iterator i = node.down_.begin(), last = node.down_.end(); i != last; ++i)
       if (&(**i).products_owner() == &products_owner)
       {
          (**i).up_to_date(boost::tribool::false_value);
          (**i).timestamp(pos_infin);
-         mark_to_update(**i, nodes_to_update, products_owner);
+         mark_to_update(**i, nodes_to_update, products_owner, process_dependencies);
          ++nodes_to_update;
       }
+   
+   // (FIXME: WHY?!!!) We should mark dependencies also if they was generated as part of main_target generation process
+   if (process_dependencies)
+      for(build_node::nodes_t::iterator i = node.dependencies_.begin(), last = node.dependencies_.end(); i != last; ++i)
+         if (&(**i).products_owner() == &products_owner)
+         {
+            (**i).up_to_date(boost::tribool::false_value);
+            (**i).timestamp(pos_infin);
+            mark_to_update(**i, nodes_to_update, products_owner, process_dependencies);
+            ++nodes_to_update;
+         }
+}
 
-   // we should mark dependencies also if they was generated as part of main_target generation process
-   for(build_node::nodes_t::iterator i = node.dependencies_.begin(), last = node.dependencies_.end(); i != last; ++i)
-      if (&(**i).products_owner() == &products_owner)
-      {
-         (**i).up_to_date(boost::tribool::false_value);
-         (**i).timestamp(pos_infin);
-         mark_to_update(**i, nodes_to_update, products_owner);
-         ++nodes_to_update;
-      }
+void mark_to_update(build_nodes_t& nodes)
+{
+   size_t tmp = 0;
+   for(size_t i = 0; i < nodes.size(); ++i)
+   {
+      nodes[i]->up_to_date(boost::tribool::false_value);
+      nodes[i]->timestamp(pos_infin);
+      mark_to_update(*nodes[i], tmp, nodes[i]->products_owner(), false);
+   }
 }
 
 bool actuality_checker::check(boost::posix_time::ptime& max_target_time, std::size_t& nodes_to_update, build_node& node)

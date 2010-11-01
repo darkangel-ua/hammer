@@ -51,7 +51,6 @@ namespace{
    {
       assert(node.products_.size() == 1);
       assert(node.sources_.size() == 1);
-      assert(dynamic_cast<const copy_target*>(node.products_.front()) != NULL);
 
       location_t destination = node.products_.front()->location() / 
                                node.products_.front()->name().to_string();

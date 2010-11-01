@@ -22,7 +22,9 @@ typedef std::map<pstring /*name*/, const basic_meta_target*> meta_targets_t;
 eclipse_cdt_project::eclipse_cdt_project(const eclipse_cdt_workspace& workspace,
                                          const hammer::project& project)
    : workspace_(workspace),
-     project_(project)
+     project_(project),
+     is_master_project_(false),
+     should_copy_dependencies_(false)
 {
 
 }
@@ -174,11 +176,16 @@ void eclipse_cdt_project::write_eclipse_project_file() const
    boost::regex pattern("(\\{project_name\\})|"
                         "(\\{build_command\\})|"
                         "(\\{build_location\\})|"
-                        "(\\{links\\})");
+                        "(\\{links\\})|"
+                        "(\\{master-tag\\})"
+                        );
+
    string format_string("(?1" + escape_for_regex(project_name_) + ")"
                         "(?2d\\:/bin/dhammer\\.cmd)"
                         "(?3" + escape_for_regex(project_.location().string()) + ")"
-                        "(?4" + links_ + ")");
+                        "(?4" + links_ + ")" +
+                        string(is_master_project_ ? "(?5master-project)" : "(?5)")
+                        );
    boost::filesystem::ofstream f(workspace_.get_output_path() / project_name_ / ".project", std::ios_base::trunc);
    boost::filesystem::ifstream template_file(workspace_.get_templates_dir() / ".project");
    std::string template_content;
@@ -208,7 +215,8 @@ void eclipse_cdt_project::write_cdt_project_file() const
                         "(\\{build_command\\})|"
                         "(\\{build_location\\})|"
                         "(\\{project_id\\})|"
-                        "(\\{includes\\})"
+                        "(\\{includes\\})|"
+                        "(\\{build_arguments\\})"
                         );
    string format_string("(?1 " + configuration_id_ + ")"
                         "(?2 " + toolchain_id_ + ")"
@@ -226,6 +234,7 @@ void eclipse_cdt_project::write_cdt_project_file() const
                         "(?14" + escape_for_regex(project_.location().string()) + ")"
                         "(?15 " + project_id_ + ")"
                         "(?16" + includes_ + ")"
+                        "(?17" + (should_copy_dependencies_ ? "--copy-dependencies" : "") + ")"
                         );
 
    boost::filesystem::ofstream f(workspace_.get_output_path() / project_name_ / ".cproject", std::ios_base::trunc);

@@ -100,7 +100,7 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
                                   "\""));
 
    shared_ptr<fs_argument_writer> link_flags(new fs_argument_writer("link_flags", e.feature_registry()));
-   link_flags->add("<debug-symbols>on", "/DEBUG").
+   link_flags->add("<debug-symbols>on", "/DEBUG /INCREMENTAL").
                add("<debug-symbols>on/<runtime-debugging>off", "/OPT:REF,ICF").
                add("<user-interface>console", "/subsystem:console").
                add("<user-interface>gui", "/subsystem:windows").
@@ -114,7 +114,7 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
            add("<optimization>space", "/O1").
            add("<optimization>off", "/Od").
            add("<debug-symbols>on/<debug-store>object", "/Z7").
-           add("<debug-symbols>on/<debug-store>database", "/Zi").
+           add("<debug-symbols>on/<debug-store>database", "/ZI").
            add("<inlining>off", "/Ob0").
            add("<inlining>on", "/Ob1").
            add("<inlining>full", "/Ob2").
@@ -300,10 +300,12 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
    // ... -> EXE
    { 
       shared_ptr<source_argument_writer> obj_sources(new source_argument_writer("obj_sources", e.get_type_registry().get(types::OBJ)));
+      shared_ptr<product_argument_writer> exe_product_unc(new product_argument_writer("exe_product_unc", e.get_type_registry().get(types::EXE),
+                                                                                      product_argument_writer::output_strategy::FULL_UNC_PATH));
       shared_ptr<product_argument_writer> exe_product(new product_argument_writer("exe_product", e.get_type_registry().get(types::EXE)));
       shared_ptr<product_argument_writer> exe_manifest_product(new product_argument_writer("exe_manifest_product", e.get_type_registry().get(types::EXE_MANIFEST)));
       auto_ptr<cmdline_action> exe_action(new cmdline_action("link-exe", exe_product));
-      cmdline_builder exe_cmd(config_data.linker_.native_file_string() + " /nologo /MANIFEST $(link_flags) $(user_link_flags) $(searched_lib_searched_dirs) /out:\"$(exe_product)\" $(obj_sources) $(res_sources) $(static_lib_sources) $(prebuilt_lib_sources) $(searched_lib_sources) $(import_lib_sources)\n"
+      cmdline_builder exe_cmd(config_data.linker_.native_file_string() + " /nologo /MANIFEST $(link_flags) $(user_link_flags) $(searched_lib_searched_dirs) /out:\"$(exe_product_unc)\" $(obj_sources) $(res_sources) $(static_lib_sources) $(prebuilt_lib_sources) $(searched_lib_sources) $(import_lib_sources)\n"
                               "if %ERRORLEVEL% NEQ 0 EXIT %ERRORLEVEL%\n"
                               "if exist \"$(exe_manifest_product)\" (" + config_data.manifest_tool_.native_file_string() + " -nologo -manifest \"$(exe_manifest_product)\" \"-outputresource:$(exe_product)\")");
       exe_cmd += link_flags;
@@ -316,6 +318,7 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
       exe_cmd += searched_lib_sources;
       exe_cmd += import_lib_sources;
       exe_cmd += exe_product;
+      exe_cmd += exe_product_unc;
       exe_cmd += exe_manifest_product;
       *exe_action += setup_vars;
       *exe_action += exe_cmd;
@@ -368,16 +371,19 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
    { 
       shared_ptr<source_argument_writer> obj_sources(new source_argument_writer("obj_sources", e.get_type_registry().get(types::OBJ)));
       shared_ptr<product_argument_writer> import_lib_product(new product_argument_writer("import_lib_product", e.get_type_registry().get(types::IMPORT_LIB)));
-      shared_ptr<product_argument_writer> shared_lib_product(new product_argument_writer("shared_lib_product", e.get_type_registry().get(types::SHARED_LIB)));
+      shared_ptr<product_argument_writer> shared_lib_rel_product(new product_argument_writer("shared_lib_rel_product", e.get_type_registry().get(types::SHARED_LIB)));
+      shared_ptr<product_argument_writer> shared_lib_product(new product_argument_writer("shared_lib_product", e.get_type_registry().get(types::SHARED_LIB), 
+                                                                                         product_argument_writer::output_strategy::FULL_UNC_PATH));
       shared_ptr<product_argument_writer> dll_manifest_product(new product_argument_writer("dll_manifest_product", e.get_type_registry().get(types::DLL_MANIFEST)));
-      cmdline_builder shared_lib_cmd(config_data.linker_.native_file_string() + " \"@$(shared_lib_product).rsp\"\n"
+      cmdline_builder shared_lib_cmd(config_data.linker_.native_file_string() + " \"@$(shared_lib_rel_product).rsp\"\n"
                                      "if %ERRORLEVEL% NEQ 0 EXIT %ERRORLEVEL%\n"
-                                     "if exist \"$(dll_manifest_product)\" (" + config_data.manifest_tool_.native_file_string() + " -nologo -manifest \"$(dll_manifest_product)\" \"-outputresource:$(shared_lib_product)\")");
+                                     "if exist \"$(dll_manifest_product)\" (" + config_data.manifest_tool_.native_file_string() + " -nologo -manifest \"$(dll_manifest_product)\" \"-outputresource:$(shared_lib_rel_product)\")");
       
       shared_lib_cmd += shared_lib_product;
+      shared_lib_cmd += shared_lib_rel_product;
       shared_lib_cmd += dll_manifest_product;
 
-      cmdline_builder shared_lib_rsp(" /nologo /DLL /MANIFEST $(link_flags) $(user_link_flags) $(searched_lib_searched_dirs) /out:\"$(shared_lib_product)\" /IMPLIB:\"$(import_lib_product)\" $(obj_sources) $(res_sources) $(static_lib_sources) $(prebuilt_lib_sources) $(searched_lib_sources) $(import_lib_sources)");
+      cmdline_builder shared_lib_rsp(" /OUT:\"$(shared_lib_product)\" /NOLOGO /DLL /MANIFEST $(link_flags) $(user_link_flags) $(searched_lib_searched_dirs) /IMPLIB:\"$(import_lib_product)\" $(obj_sources) $(res_sources) $(static_lib_sources) $(prebuilt_lib_sources) $(searched_lib_sources) $(import_lib_sources)");
       shared_lib_rsp += link_flags;
       shared_lib_rsp += user_link_flags;
       shared_lib_rsp += searched_lib_searched_dirs;
@@ -391,7 +397,7 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
       shared_lib_rsp += shared_lib_product;
       shared_lib_rsp += dll_manifest_product;
 
-      auto_ptr<cmdline_action> shared_lib_action(new cmdline_action("link-shared-lib", shared_lib_product, shared_lib_rsp));
+      auto_ptr<cmdline_action> shared_lib_action(new cmdline_action("link-shared-lib", shared_lib_rel_product, shared_lib_rsp));
       *shared_lib_action += setup_vars;
       *shared_lib_action += shared_lib_cmd;
 

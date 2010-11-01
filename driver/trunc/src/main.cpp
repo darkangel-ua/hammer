@@ -28,6 +28,7 @@
 #include <hammer/core/actuality_checker.h>
 #include <hammer/core/generator_registry.h>
 #include <hammer/core/types.h>
+#include <hammer/core/copy_target.h>
 
 #include <hammer/core/toolsets/msvc_toolset.h>
 #include <hammer/core/toolsets/gcc_toolset.h>
@@ -35,6 +36,7 @@
 #include <hammer/core/scaner_manager.h>
 #include <hammer/core/c_scanner.h>
 #include <hammer/core/generic_batcher.h>
+#include <hammer/core/collect_nodes.h>
 
 #include "user_config_location.h"
 #include "get_data_path.h"
@@ -89,7 +91,8 @@ namespace
                          dump_targets_to_update_(false),
                          hammer_output_dir_(".hammer"),
                          debug_level_(0),
-                         worker_count_(get_number_of_processors())
+                         worker_count_(get_number_of_processors()),
+                         copy_dependencies_(false)
       {}
 
       vector<string> build_request_options_;
@@ -103,6 +106,7 @@ namespace
       int debug_level_;
       std::string just_one_source_;
       unsigned worker_count_;
+      bool copy_dependencies_;
    };
 
    po::positional_options_description build_request_options;
@@ -126,7 +130,9 @@ namespace
          ("debug,d", po::value<int>(&opts.debug_level_), "specify verbosity level")
          ("disable-batcher", "do not build many sources at once")
          ("just-one-source,s", po::value<string>(&opts.just_one_source_), "build unconditionally specified source")
-         ("jobs,j", po::value<unsigned>(&opts.worker_count_), "concurrency level");
+         ("jobs,j", po::value<unsigned>(&opts.worker_count_), "concurrency level")
+         ("copy-dependencies", "copy shared modules to output dir when building excecutable")
+         ;
 
       return desc;
    }
@@ -287,11 +293,12 @@ namespace
       solution.write();
    }
 
-   void generate_eclipse_workspace(const nodes_t& nodes)
+   void generate_eclipse_workspace(const nodes_t& nodes, const project& master_project)
    {
       project_generators::eclipse_cdt_workspace workspace("c:\\hammer-eclipse-test", 
                                                           nodes, 
-                                                          "d:/bin/hammer/eclipse-cdt-templates");
+                                                          "d:/bin/hammer/eclipse-cdt-templates",
+                                                          master_project);
       workspace.construct();
       workspace.write();
    }
@@ -485,6 +492,76 @@ namespace
       cout << "Done.\n"
            << r.cleaned_target_count_ << " targets was cleaned.\n";
    }
+
+   class dep_copy_target : public file_target
+   {
+      public:
+         dep_copy_target(const location_t& destination, 
+                         const main_target* mt, const pstring& name,
+                         const target_type* t, const feature_set* f)
+            : file_target(mt, name, t, f), destination_(destination)
+         {}
+
+         virtual const location_t& location() const
+         {
+            return destination_;
+         }
+      
+      private:
+         location_t destination_;
+   };
+
+   void add_copy_dependencies_nodes(nodes_t& nodes, engine& e)
+   {
+      // collect all executables
+      build_node::sources_t executables;
+      {
+         std::set<const build_node*> visited_nodes;      
+         std::vector<const target_type*> types_to_collect;
+         types_to_collect.push_back(&e.get_type_registry().get(types::EXE));
+         collect_nodes(executables, visited_nodes, nodes, types_to_collect, /*recursive=*/false);
+      }
+      
+      if (executables.empty())
+         return;
+
+      if (executables.size() != 1)
+         throw std::runtime_error("Dependency copying working only with one exe target");
+
+      // collect all shared lib that needed for executables
+      build_node::sources_t shared_libs;
+      {
+         std::set<const build_node*> visited_nodes;      
+         std::vector<const target_type*> types_to_collect;
+         types_to_collect.push_back(&e.get_type_registry().get(types::SHARED_LIB));
+         collect_nodes(shared_libs, visited_nodes, nodes, types_to_collect, /*recursive=*/true);
+      }
+      
+      const generator& copy_generator = *e.generators()
+                                          .find_viable_generators(e.get_type_registry().get(types::COPIED), 
+                                                                  true, *e.feature_registry().make_set()).at(0);
+      
+      nodes_t copy_nodes;
+      for(build_node::sources_t::const_iterator i = shared_libs.begin(), last = shared_libs.end(); i != last; ++i)
+      {
+         boost::intrusive_ptr<build_node> new_node(new build_node(executables[0].source_node_->products_owner(), false));
+         new_node->targeting_type_ = &e.get_type_registry().get(types::COPIED);
+         new_node->action(copy_generator.action());
+         new_node->sources_.push_back(*i);
+         new_node->down_.push_back(i->source_node_);
+
+         dep_copy_target* new_target = new dep_copy_target(executables[0].source_target_->location(),
+                                                           &new_node->products_owner(), 
+                                                           i->source_target_->name(), 
+                                                           new_node->targeting_type_, 
+                                                           &executables[0].source_target_->properties());
+         new_node->products_.push_back(new_target);
+
+         copy_nodes.push_back(new_node);
+      }
+
+      nodes.insert(nodes.end(), copy_nodes.begin(), copy_nodes.end());
+   }
 }
 
 
@@ -603,6 +680,9 @@ int main(int argc, char** argv)
       if (vm.count("dump-targets-to-update"))
          opts.dump_targets_to_update_ = true;
 
+      if (vm.count("copy-dependencies"))
+         opts.copy_dependencies_ = true;
+
       if (vm.count("build-request"))
          resolve_arguments(targets, build_request, engine.feature_registry(), vm["build-request"].as<vector<string> >());
 
@@ -657,7 +737,11 @@ int main(int argc, char** argv)
          return 0;
 
       cout << "...generating build graph... " << flush;
+      
       nodes_t nodes(generate_targets(instantiated_targets));
+      if (opts.copy_dependencies_)
+         add_copy_dependencies_nodes(nodes, engine);
+
       cout << "Done." << endl;
       
       if (vm.count("generate"))
@@ -675,7 +759,7 @@ int main(int argc, char** argv)
          generate_msvc80_solution(nodes, project_to_build);
       else
          if (vm.count("eclipse-cdt"))
-            generate_eclipse_workspace(nodes);
+            generate_eclipse_workspace(nodes, project_to_build);
          else
             run_build(nodes, engine, opts);
 

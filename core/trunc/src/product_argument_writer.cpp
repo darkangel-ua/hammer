@@ -10,8 +10,10 @@
 namespace hammer{
 
 product_argument_writer::product_argument_writer(const std::string& name,
-                                                 const target_type& t)
-   : targets_argument_writer(name, t)
+                                                 const target_type& t,
+                                                 output_strategy::value strategy)
+   : targets_argument_writer(name, t),
+     output_strategy_(strategy)
 {
 }
 
@@ -28,8 +30,27 @@ void product_argument_writer::write_impl(std::ostream& output, const build_node&
       {
          // FIXME: по идее именно сдесь лучше всего вычислять суфикс для продукта, а не на стадии генераторов
 //         location_t product_path = relative_path((**i).mtarget()->intermediate_dir(), environment.current_directory()) / (**i).name().to_string();
-         location_t product_path = relative_path((**i).get_main_target()->intermediate_dir(), (**i).get_main_target()->location()) / (**i).name().to_string();
-         output << product_path.native_file_string();
+         switch(output_strategy_)
+         {
+            case output_strategy::RELATIVE_TO_MAIN_TARGET:
+            {
+               location_t product_path = relative_path((**i).get_main_target()->intermediate_dir(), (**i).get_main_target()->location()) / (**i).name().to_string();
+               output << product_path.native_file_string();
+               break;
+            }
+
+            case output_strategy::FULL_UNC_PATH:
+            {
+               location_t product_path = (**i).get_main_target()->intermediate_dir() / (**i).name().to_string();
+               product_path.normalize();
+               output << "\\\\?\\" << product_path.native_file_string();
+               break;
+            }
+
+            default:
+               throw std::runtime_error("Unknown output strategy for product");
+         }
+
          break;
       }
    }

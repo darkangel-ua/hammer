@@ -1,5 +1,5 @@
 project hammer.core : requirements <character-set>multi-byte 
-                                   <define>HAMMER_ENABLE_PRECOMPILED_HEADER
+                                   <toolset>msvc:<define>HAMMER_ENABLE_PRECOMPILED_HEADER
                                    <library>/boost/ptr_container/<version>1.36.0 ;
 
 pch stdafx : ../src/stdafx.cpp ../src/stdafx.h : <toolset>msvc ;

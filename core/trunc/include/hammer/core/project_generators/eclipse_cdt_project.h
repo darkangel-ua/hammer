@@ -18,12 +18,16 @@ namespace hammer{
 
          eclipse_cdt_project(const eclipse_cdt_workspace& workspace,
                              const hammer::project& project);
+         void set_master(bool v) { is_master_project_ = v; }
+         void set_should_copy_dependencies(bool v) { should_copy_dependencies_ = v; }
          void construct(const project_main_targets_t& targets);
          void write() const;
       
       private:
          const eclipse_cdt_workspace& workspace_;
          const hammer::project& project_;
+         bool is_master_project_;
+         bool should_copy_dependencies_;
          
          std::string project_name_;
          std::string project_id_;

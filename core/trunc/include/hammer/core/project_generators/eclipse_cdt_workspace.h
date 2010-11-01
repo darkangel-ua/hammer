@@ -6,6 +6,10 @@
 #include <hammer/core/build_node.h>
 #include <hammer/core/location.h>
 
+namespace hammer{ 
+   class project;
+}
+
 namespace hammer{ namespace project_generators{
 
 class eclipse_cdt_workspace : public boost::noncopyable
@@ -15,7 +19,8 @@ class eclipse_cdt_workspace : public boost::noncopyable
 
       eclipse_cdt_workspace(const location_t& output_path,
                             const build_nodes_t& nodes,
-                            const location_t& templates_dir);
+                            const location_t& templates_dir,
+                            const hammer::project& master_project);
       void construct();
       void write() const;
       const location_t& get_output_path() const;

@@ -5,6 +5,8 @@
 #include <hammer/core/project_generators/eclipse_cdt_project.h>
 #include <hammer/core/project.h>
 #include <hammer/core/main_target.h>
+#include <hammer/core/types.h>
+#include <hammer/core/engine.h>
 #include <boost/filesystem/convenience.hpp>
 
 using namespace std;
@@ -20,12 +22,23 @@ struct eclipse_cdt_workspace::impl_t
    impl_t(const location_t& output_path, 
           const build_nodes_t& nodes,
           const location_t& templates_dir,
+          const hammer::project& master_project,
           eclipse_cdt_workspace& owner) 
       : output_path_(output_path),
         nodes_(nodes),
         templates_dir_(templates_dir),
-        owner_(owner)
-   {}
+        master_project_(master_project),
+        owner_(owner),
+        should_master_copy_dependencies_(false)
+   {
+      const target_type* exe_type = &master_project_.get_engine()->get_type_registry().get(types::EXE);
+      for(build_nodes_t::const_iterator i = nodes.begin(), last = nodes.end(); i != last; ++i)
+         if ((**i).targeting_type_ == exe_type && *(**i).products_owner().get_project() == master_project_)
+         {
+            should_master_copy_dependencies_ = true;
+            break;
+         }
+   }
 
    void fill_projects(const build_node& node, 
                       visited_nodes_t& visited_nodes);
@@ -33,15 +46,19 @@ struct eclipse_cdt_workspace::impl_t
    const location_t output_path_; 
    build_nodes_t nodes_;
    location_t templates_dir_;
+   const hammer::project& master_project_;
+
    projects_t projects_;
    projects_main_targets_t projects_main_targets_;
    eclipse_cdt_workspace& owner_;
+   bool should_master_copy_dependencies_;
 };
 
 eclipse_cdt_workspace::eclipse_cdt_workspace(const location_t& output_path, 
                                              const build_nodes_t& nodes,
-                                             const location_t& templates_dir)
-   : impl_(new impl_t(output_path, nodes, templates_dir, *this)) 
+                                             const location_t& templates_dir,
+                                             const hammer::project& master_project)
+   : impl_(new impl_t(output_path, nodes, templates_dir, master_project, *this)) 
 {
 
 }
@@ -94,8 +111,16 @@ void eclipse_cdt_workspace::impl_t::fill_projects(const build_node& node,
          projects_main_targets_[i->source_node_->products_owner().get_project()].insert(i->source_node_->products_owner().get_main_target());
          
          if (projects_.find(i->source_node_->products_owner().get_project()) == projects_.end())
-            projects_.insert(i->source_node_->products_owner().get_project(), 
-                             std::auto_ptr<eclipse_cdt_project>(new eclipse_cdt_project(owner_, *i->source_node_->products_owner().get_project())));
+         {
+            std::auto_ptr<eclipse_cdt_project> p(new eclipse_cdt_project(owner_, *i->source_node_->products_owner().get_project()));
+            if (*i->source_node_->products_owner().get_project() == master_project_)
+            {
+               p->set_master(true);
+               p->set_should_copy_dependencies(should_master_copy_dependencies_);
+            }
+
+            projects_.insert(i->source_node_->products_owner().get_project(), p);
+         }
       
          fill_projects(*i->source_node_, visited_nodes);
       }
@@ -109,8 +134,13 @@ void eclipse_cdt_workspace::impl_t::fill_projects(const build_node& node,
          projects_main_targets_[(**i).products_owner().get_project()].insert((**i).products_owner().get_main_target());
 
          if (projects_.find((**i).products_owner().get_project()) == projects_.end())
-            projects_.insert((**i).products_owner().get_project(), 
-                             std::auto_ptr<eclipse_cdt_project>(new eclipse_cdt_project(owner_, *(**i).products_owner().get_project())));
+         {
+            std::auto_ptr<eclipse_cdt_project> p(new eclipse_cdt_project(owner_, *(**i).products_owner().get_project()));
+            if (*(**i).products_owner().get_project() == master_project_)
+               p->set_master(true);
+
+            projects_.insert((**i).products_owner().get_project(), p);
+         }
 
          fill_projects(**i, visited_nodes);
       }

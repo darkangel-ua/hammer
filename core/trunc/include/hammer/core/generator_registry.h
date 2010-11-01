@@ -13,18 +13,19 @@ namespace hammer
    {
       public:
          typedef boost::ptr_map<std::string, generator> generators_t;
+         typedef std::vector<const generator*> viable_generators_t;
 
          void insert(std::auto_ptr<generator> g);
          std::vector<boost::intrusive_ptr<build_node> > construct(const main_target* mt) const;
 
+         viable_generators_t 
+         find_viable_generators(const target_type& t, 
+                                bool allow_composite,
+                                const feature_set& build_properties) const;
+
       private:
-         typedef std::vector<const generator*> viable_generators_t;
          generators_t generators_;
 
-         viable_generators_t 
-            find_viable_generators(const target_type& t, 
-                                   bool allow_composite,
-                                   const feature_set& build_properties) const;
 
          bool transform_to_consumable(const generator& target_generator, 
                                       const generator& current_generator,

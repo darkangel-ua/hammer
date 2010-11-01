@@ -342,14 +342,18 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
    { 
       shared_ptr<source_argument_writer> obj_sources(new source_argument_writer("obj_sources", e.get_type_registry().get(types::OBJ)));
       shared_ptr<product_argument_writer> static_lib_product(new product_argument_writer("static_lib_product", e.get_type_registry().get(types::STATIC_LIB)));
+      shared_ptr<product_argument_writer> static_lib_product_unc(new product_argument_writer("static_lib_product_unc", 
+                                                                                             e.get_type_registry().get(types::STATIC_LIB),
+                                                                                             product_argument_writer::output_strategy::FULL_UNC_PATH));
       cmdline_builder static_lib_rsp("$(user_archive_flags) /out:\"$(static_lib_product)\"\n$(obj_sources)");
       static_lib_rsp += user_archive_flags;
       static_lib_rsp += obj_sources;
       static_lib_rsp += static_lib_product;
       cmdline_builder static_lib_cmd("if exist \"$(static_lib_product)\" DEL \"$(static_lib_product)\"\n" +
-                                     config_data.librarian_.native_file_string() + " /nologo \"@$(static_lib_product).rsp\"");
+                                     config_data.librarian_.native_file_string() + " /nologo \"@$(static_lib_product_unc).rsp\"");
       
       static_lib_cmd += static_lib_product;
+      static_lib_cmd += static_lib_product_unc;
       static_lib_cmd += obj_sources;
       auto_ptr<cmdline_action> static_lib_action(new cmdline_action("link-static-lib", static_lib_product, static_lib_rsp));
       *static_lib_action +=setup_vars;

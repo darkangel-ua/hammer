@@ -332,6 +332,9 @@ static void dump_value(std::ostream& s, const feature& f)
          s << dd.source_.target_path();
          if (!dd.source_.target_name().empty())
             s << "//" << dd.source_.target_name();
+         
+          if (f.get_path_data().target_ != NULL)
+             s << " " << f.get_path_data().target_->location();
       }
       else
          s << f.value();

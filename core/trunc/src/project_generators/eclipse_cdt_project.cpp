@@ -230,11 +230,11 @@ void eclipse_cdt_project::write_cdt_project_file() const
                         "(?10 " + c_settings_holder_id_ + ")"
                         "(?11 " + c_holder_intype_id_ + ")"
                         "(?12 " + escape_for_regex(project_name_) + ")"
-                        "(?13d\\:/bin/dhammer\\.cmd)"
+                        "(?13hammer\\.exe)"
                         "(?14" + escape_for_regex(project_.location().string()) + ")"
                         "(?15 " + project_id_ + ")"
                         "(?16" + includes_ + ")"
-                        "(?17" + (should_copy_dependencies_ ? "--copy-dependencies" : "") + ")"
+                        "(?17" + (should_copy_dependencies_ ? "--copy-dependencies mangling=variant" : "") + ")"
                         );
 
    boost::filesystem::ofstream f(workspace_.get_output_path() / project_name_ / ".cproject", std::ios_base::trunc);

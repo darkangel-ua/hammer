@@ -114,7 +114,7 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
            add("<optimization>space", "/O1").
            add("<optimization>off", "/Od").
            add("<debug-symbols>on/<debug-store>object", "/Z7").
-           add("<debug-symbols>on/<debug-store>database", "/ZI").
+           add("<debug-symbols>on/<debug-store>database", "/Zi").
            add("<inlining>off", "/Ob0").
            add("<inlining>on", "/Ob1").
            add("<inlining>full", "/Ob2").

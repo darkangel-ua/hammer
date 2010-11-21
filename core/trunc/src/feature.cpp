@@ -36,9 +36,12 @@ bool feature::operator == (const feature& rhs) const
    if (name() != rhs.name())
       return false;
 
+   // if target_path is global target doesn't matter
    if (attributes().dependency)
       return get_dependency_data().source_ == rhs.get_dependency_data().source_ &&
-             get_path_data().target_ == rhs.get_path_data().target_;
+             (get_dependency_data().source_.target_path_is_global() || 
+              get_path_data().target_ == rhs.get_path_data().target_);
+
    if (attributes().path)
       return value() == rhs.value() &&
              get_path_data().target_ == rhs.get_path_data().target_;

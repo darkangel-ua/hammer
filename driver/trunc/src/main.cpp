@@ -105,8 +105,10 @@ namespace
       std::string hammer_install_dir_;
       int debug_level_;
       std::string just_one_source_;
+      std::string just_one_source_project_path_;
       unsigned worker_count_;
       bool copy_dependencies_;
+      std::string eclipse_workspace_path_;
    };
 
    po::positional_options_description build_request_options;
@@ -124,12 +126,13 @@ namespace
          ("clean-all", "clean all targets recursively")
          ("generate-msvc-8.0-solution,p", "generate msvc-8.0 solution+projects")
          ("generate-projects-locally,l", "when generating build script makes them in one place")
-         ("eclipse-cdt", "generate Eclipse CDT workspace and projects")
+         ("eclipse-cdt", po::value<std::string>(&opts.eclipse_workspace_path_), "generate Eclipse CDT workspace and projects")
          ("hammer-out", po::value<std::string>(&opts.hammer_output_dir_), "specify where hammer will place all its generated output")
          ("install-dir", po::value<std::string>(&opts.hammer_install_dir_), "specify where hammer was installed")
          ("debug,d", po::value<int>(&opts.debug_level_), "specify verbosity level")
          ("disable-batcher", "do not build many sources at once")
          ("just-one-source,s", po::value<string>(&opts.just_one_source_), "build unconditionally specified source")
+         ("just-one-source-project-path", po::value<string>(&opts.just_one_source_project_path_), "path to project where source reside")
          ("jobs,j", po::value<unsigned>(&opts.worker_count_), "concurrency level")
          ("copy-dependencies", "copy shared modules to output dir when building excecutable")
          ;
@@ -293,11 +296,13 @@ namespace
       solution.write();
    }
 
-   void generate_eclipse_workspace(const nodes_t& nodes, const project& master_project)
+   void generate_eclipse_workspace(const nodes_t& nodes, 
+                                   const project& master_project,
+                                   const fs::path& workspace_output_path)
    {
-      project_generators::eclipse_cdt_workspace workspace("c:\\hammer-eclipse-test", 
+      project_generators::eclipse_cdt_workspace workspace(workspace_output_path, 
                                                           nodes, 
-                                                          "d:/bin/hammer/eclipse-cdt-templates",
+                                                          get_data_path() / "eclipse-cdt-templates",
                                                           master_project);
       workspace.construct();
       workspace.write();
@@ -318,70 +323,88 @@ namespace
    typedef boost::unordered_set<const build_node*> visited_nodes_t;
    typedef boost::unordered_set<const meta_target*> top_targets_t;
    
-   // first is signaled that we found source, second - found node to rebuild
-   pair<bool, bool> find_node_for_source_name(nodes_t& result,
-                                              visited_nodes_t& visited_nodes, 
-                                              const boost::intrusive_ptr<build_node>& node,
-                                              const pstring& source_name,
-                                              const top_targets_t& top_targets)
+   bool find_top_source_project_nodes(const build_node& node, 
+                                      nodes_t& result,
+                                      visited_nodes_t& visited_nodes,
+                                      const project* source_project)
    {
-      if (top_targets.find(node->products_owner().get_meta_target()) == top_targets.end())
-         return make_pair(false, false);
+      if (visited_nodes.find(&node) != visited_nodes.end())
+         return false;
 
-      if (visited_nodes.find(node.get()) != visited_nodes.end())
-         return make_pair(false, false);
+      visited_nodes.insert(&node);
 
-      if (node->sources_.empty() && node->products_.size() == 1)
-      {
-         if (node->products_.front()->name() == source_name)
-            return make_pair(true, false);
-         else
-            return make_pair(false, false);
-      }
-
-      visited_nodes.insert(node.get());
-
-      for(nodes_t::const_iterator i = node->down_.begin(), last = node->down_.end(); i != last; ++i)
-      {
-         pair<bool, bool> r = find_node_for_source_name(result, visited_nodes, *i, source_name, top_targets);
-
-         if (r.first && r.second)
+      for(nodes_t::const_iterator i = node.down_.begin(), last = node.down_.end(); i != last; ++i)
+         if ((*i)->products_owner().get_project() == source_project)
          {
-            visited_nodes.erase(node.get());
-            return r;
-         }
-
-         if (r.first)
-         {
-            if (node->is_composite())
-            {
+            if (visited_nodes.find(i->get()) == visited_nodes.end())
                result.push_back(*i);
-               visited_nodes.erase(node.get());
-               return make_pair(true, true);
-            }
-            else
-            {
-               visited_nodes.erase(node.get());
-               return r;
-            }
          }
-      }
-
-      visited_nodes.erase(node.get());
-      return make_pair(false, false);
+         else
+            find_top_source_project_nodes(**i, result, visited_nodes, source_project);
    }
 
-   nodes_t find_nodes_for_source_name(const nodes_t& nodes, const pstring& source_name)
+   nodes_t find_top_source_project_nodes(const nodes_t& nodes, const project* source_project)
    {
-      typedef boost::unordered_set<const meta_target*> top_targets_t;
-      top_targets_t top_targets;
-      for(nodes_t::const_iterator i = nodes.begin(), last = nodes.end(); i != last; ++i)
-         top_targets.insert((**i).products_owner().get_meta_target());
-
       visited_nodes_t visited_nodes;
       nodes_t result;
+
       for(nodes_t::const_iterator i = nodes.begin(), last = nodes.end(); i != last; ++i)
-         find_node_for_source_name(result, visited_nodes, *i, source_name, top_targets);
+         if ((*i)->products_owner().get_project() == source_project)
+         {
+            if (visited_nodes.find(i->get()) == visited_nodes.end())
+               result.push_back(*i);
+         }
+         else
+            find_top_source_project_nodes(**i, result, visited_nodes, source_project);
+
+      return result;
+   }
+
+   bool find_node_for_source_name(build_node_ptr& result, 
+                                  visited_nodes_t& visited_nodes, 
+                                  const boost::intrusive_ptr<build_node>& node,
+                                  const pstring& source_name,
+                                  const project* source_project)
+  {
+      if (visited_nodes.find(node.get()) != visited_nodes.end())
+         return false;
+
+      visited_nodes.insert(node.get());
+      
+      if (node->products_owner().get_project() == source_project)
+         if (node->sources_.empty() && node->products_.size() == 1)
+         { 
+            // founded some source
+            if (node->products_.front()->name() == source_name)
+               return true;
+            else
+               return false;
+         }
+
+      for(nodes_t::const_iterator i = node->down_.begin(), last = node->down_.end(); i != last; ++i)
+         if (find_node_for_source_name(result, visited_nodes, *i, source_name, source_project))
+         {
+            if (!result)
+            {
+               // this node is source node
+               result = *i;
+            }
+
+            return true;
+         }
+
+      return false;
+   }
+
+   build_node_ptr find_nodes_for_source_name(const nodes_t& nodes, 
+                                             const pstring& source_name, 
+                                             const project* source_project)
+   {
+      visited_nodes_t visited_nodes;
+      build_node_ptr result;
+      for(nodes_t::const_iterator i = nodes.begin(), last = nodes.end(); i != last; ++i)
+         if (find_node_for_source_name(result, visited_nodes, *i, source_name, source_project))
+            break;
       
       return result;
    }
@@ -438,22 +461,38 @@ namespace
       {
          cout << "...updating source '" << opts.just_one_source_ << "'..." << endl;
          builder builder(build_environment, interrupt_flag, opts.worker_count_, false);
-         nodes_t source_nodes = find_nodes_for_source_name(nodes, pstring(e.pstring_pool(), opts.just_one_source_));
+         
+         const project* project_for_source = NULL;
+         if (!opts.just_one_source_project_path_.empty())
+            project_for_source = &e.load_project(opts.just_one_source_project_path_);
 
+         build_node_ptr source_node = find_nodes_for_source_name(nodes, pstring(e.pstring_pool(), opts.just_one_source_), project_for_source);
+         nodes_t source_project_nodes = find_top_source_project_nodes(nodes, project_for_source);
+         
+         // collect all nodes prior to main source project nodes
+         nodes_t nodes_to_build;
+         for(nodes_t::const_iterator i = source_project_nodes.begin(), last = source_project_nodes.end(); i!= last; ++i)
+            nodes_to_build.insert(nodes_to_build.end(), (**i).down_.begin(), (**i).down_.end());
+         
+         // remove dups
+         std::sort(nodes_to_build.begin(), nodes_to_build.end());
+         nodes_to_build.erase(std::unique(nodes_to_build.begin(), nodes_to_build.end()), nodes_to_build.end());
+
+         // this source should be rebuilt
+         source_node->up_to_date(boost::tribool::false_value);
+         source_node->timestamp(boost::date_time::pos_infin);
          actuality_checker checker(e, build_environment);
          cout << "...checking targets for update... " << flush;
-         size_t target_to_update_count = checker.check(source_nodes);
+         size_t target_to_update_count = checker.check(nodes_to_build);
          cout << "Done." << endl;
          
-         mark_to_update(source_nodes);
-
          if (opts.dump_targets_to_update_)
          {
             ofstream f("targets-to-update.txt", std::ios_base::trunc);
-            dump_targets_to_update(f, source_nodes, build_environment);
+            dump_targets_to_update(f, nodes_to_build, build_environment);
          }
 
-         builder::result build_result = builder.build(source_nodes);
+         builder::result build_result = builder.build(nodes_to_build);
          cout << "...updated source '" << opts.just_one_source_ << "'..." << endl;
       }
    }
@@ -759,7 +798,7 @@ int main(int argc, char** argv)
          generate_msvc80_solution(nodes, project_to_build);
       else
          if (vm.count("eclipse-cdt"))
-            generate_eclipse_workspace(nodes, project_to_build);
+            generate_eclipse_workspace(nodes, project_to_build, opts.eclipse_workspace_path_);
          else
             run_build(nodes, engine, opts);
 

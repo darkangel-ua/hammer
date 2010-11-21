@@ -3,6 +3,7 @@
 #include <hammer/core/main_target.h>
 #include <hammer/core/meta_target.h>
 #include <hammer/core/feature_set.h>
+#include <hammer/core/feature.h>
 #include <boost/crypto/md5.hpp>
 
 namespace hammer{
@@ -39,10 +40,16 @@ const std::string& basic_target::hash_string() const
 
 std::string basic_target::hash_string(const feature_set& fs, const main_target& mt)
 {
-   std::ostringstream s;
-   dump_for_hash(s, fs);
-   static_cast<const basic_target&>(mt).additional_hash_string_data(s);
-   return boost::crypto::md5(s.str()).to_string();
+   feature_set::const_iterator i = fs.find("mangling");
+   if (i == fs.end() || (**i).value() == "md5")
+   {
+      std::ostringstream s;
+      dump_for_hash(s, fs);
+      static_cast<const basic_target&>(mt).additional_hash_string_data(s);
+      return boost::crypto::md5(s.str()).to_string();
+   }
+   else
+      return fs.get("variant").value().to_string();
 }
 
 const meta_target* basic_target::get_meta_target() const

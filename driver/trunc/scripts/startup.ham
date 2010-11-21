@@ -34,6 +34,7 @@ feature.feature destination : : path no-checks incidental no-defaults ;       # 
 feature.feature recursive : on off : optional no-defaults ;                   # for copy rule
 feature.feature type-to-copy : : free no-defaults ;                           # for copy rule
 feature.feature pch : off create use : generated ;
+feature.feature mangling : md5 variant : optional incidental ;
 
 # testing support
 feature.feature testing.argument : : free ;

@@ -17,6 +17,8 @@ namespace hammer
       public:
          struct path_data
          {
+            path_data() : target_(NULL) {}
+
             const basic_meta_target* target_;
             bool operator < (const path_data& rhs) const { return target_ < rhs.target_; }
             bool operator != (const path_data& rhs) const { return target_ != rhs.target_; } 

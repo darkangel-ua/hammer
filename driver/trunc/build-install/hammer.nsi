@@ -12,8 +12,8 @@
 
   ;Name and file
   Name $(product_name)
-  OutFile "hammer_svn(512)_setup.exe"
-  Caption "Hammer SVN(512) snapshot Setup"
+  OutFile "Hammer_setup.exe"
+  Caption "Hammer Setup"
   ;Default installation folder
   InstallDir "$PROGRAMFILES\Hammer"
   
@@ -60,6 +60,8 @@ Section "Dummy Section" SecDummy
   File template\win32\*.exe
   SetOutPath "$INSTDIR\scripts"
   File ..\scripts\startup.ham
+  SetOutPath "$INSTDIR\eclipse-cdt-templates"
+  File ..\eclipse-cdt-templates\.*
   SetOutPath "$INSTDIR\doc"
   File ..\doc\user_manual.pdf
   SetOutPath "$INSTDIR"

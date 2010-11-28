@@ -181,7 +181,7 @@ void eclipse_cdt_project::write_eclipse_project_file() const
                         );
 
    string format_string("(?1" + escape_for_regex(project_name_) + ")"
-                        "(?2d\\:/bin/dhammer\\.cmd)"
+                        "(?2hammer\\.exe)"
                         "(?3" + escape_for_regex(project_.location().string()) + ")"
                         "(?4" + links_ + ")" +
                         string(is_master_project_ ? "(?5master-project)" : "(?5)")

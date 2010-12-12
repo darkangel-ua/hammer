@@ -15,6 +15,7 @@
 #include <hammer/core/build_action.h>
 #include <hammer/core/basic_target.h>
 #include <hammer/core/target_type.h>
+#include <hammer/core/main_target.h>
 #include "buffered_output_environment.h"
 
 using namespace boost;
@@ -107,14 +108,16 @@ struct builder::impl_t
         unconditional_build_(unconditional_build)
    {}
    
-   result build(nodes_t& nodes);
+   result build(nodes_t& nodes, const project* bounds);
    
    build_queue_node_t& gather_nodes(nodes_to_build_t& nodes_to_build, 
-                                         build_node& node);
+                                         build_node& node,
+                                         const project* bounds);
 
    build_queue_node_t& gather_nodes(nodes_to_build_t& nodes_to_build, 
                                          build_queue_node_t& parent_node, 
-                                         build_node& node);
+                                         build_node& node,
+                                         const project* bounds);
    void task_completition_handler(shared_ptr<worker_ctx_t> ctx);
    void task_handler(shared_ptr<worker_ctx_t> ctx);
    
@@ -142,15 +145,15 @@ builder::~builder()
    delete impl_;
 }
 
-builder::result builder::build(build_node& node)
+builder::result builder::build(build_node& node, const project* bounds)
 {
    nodes_t nodes(1, boost::intrusive_ptr<build_node>(&node));
-   return impl_->build(nodes);
+   return impl_->build(nodes, bounds);
 }
 
-builder::result builder::build(nodes_t& nodes)
+builder::result builder::build(nodes_t& nodes, const project* bounds)
 {
-   return impl_->build(nodes);
+   return impl_->build(nodes, bounds);
 }
 
 void builder::impl_t::task_handler(shared_ptr<worker_ctx_t> ctx)
@@ -235,7 +238,7 @@ void builder::impl_t::task_completition_handler(shared_ptr<worker_ctx_t> ctx)
    }
 }
 
-builder::result builder::impl_t::build(nodes_t& nodes)
+builder::result builder::impl_t::build(nodes_t& nodes, const project* bounds)
 {
    result_ = result();
 
@@ -243,7 +246,7 @@ builder::result builder::impl_t::build(nodes_t& nodes)
    nodes_to_build_t nodes_to_build;
    for(nodes_t::const_iterator i = nodes.begin(), last = nodes.end(); i != last; ++i)
       if (!(**i).up_to_date())
-         gather_nodes(nodes_to_build, **i);
+         gather_nodes(nodes_to_build, **i, bounds);
 
    // make build queue
    build_queue_t build_queue;
@@ -278,14 +281,16 @@ builder::result builder::impl_t::build(nodes_t& nodes)
 build_queue_node_t& 
 builder::impl_t::gather_nodes(nodes_to_build_t& nodes_to_build, 
                               build_queue_node_t& parent_node, 
-                              build_node& node)
+                              build_node& node,
+                              const project* bounds)
 {
    nodes_to_build_t::const_iterator a = nodes_to_build.find(&node);
    if (a == nodes_to_build.end())
    {
       ++parent_node.dependencies_count_;
-      build_queue_node_t& result = gather_nodes(nodes_to_build, node);
+      build_queue_node_t& result = gather_nodes(nodes_to_build, node, bounds);
       result.uses_nodes_.insert(&parent_node);
+
       return result;
    }
    else
@@ -297,7 +302,9 @@ builder::impl_t::gather_nodes(nodes_to_build_t& nodes_to_build,
    }
 }
 
-build_queue_node_t& builder::impl_t::gather_nodes(nodes_to_build_t& nodes_to_build, build_node& node)
+build_queue_node_t& builder::impl_t::gather_nodes(nodes_to_build_t& nodes_to_build,
+                                                  build_node& node,
+                                                  const project* bounds)
 {
    typedef std::vector<build_queue_node_t*> sd_nodes_t;
 
@@ -307,16 +314,20 @@ build_queue_node_t& builder::impl_t::gather_nodes(nodes_to_build_t& nodes_to_bui
    sd_nodes_t sources_nodes;
    for(build_node::sources_t::const_iterator i = node.sources_.begin(), last = node.sources_.end(); i != last; ++i)
       if (!i->source_node_->up_to_date() || unconditional_build_)
-         if (i->source_node_->action())
-            sources_nodes.push_back(&gather_nodes(nodes_to_build, ctx_node, *i->source_node_));
+         if (bounds == NULL || i->source_node_->products_owner().get_project() == bounds) // we don't build nodes that don't belongs to bounds
+            if (i->source_node_->action())
+               sources_nodes.push_back(&gather_nodes(nodes_to_build, ctx_node, *i->source_node_, bounds));
+
    sort(sources_nodes.begin(), sources_nodes.end());
    sources_nodes.erase(unique(sources_nodes.begin(), sources_nodes.end()), sources_nodes.end());
 
    sd_nodes_t dependencies_nodes;
    for(build_node::nodes_t::const_iterator i = node.dependencies_.begin(), last = node.dependencies_.end(); i != last; ++i)
       if (!(**i).up_to_date() || unconditional_build_)
-         if ((**i).action())
-            dependencies_nodes.push_back(&gather_nodes(nodes_to_build, ctx_node, **i));
+         if (bounds == NULL || (**i).products_owner().get_project() == bounds) // we don't build nodes that don't belongs to bounds
+            if ((**i).action())
+               dependencies_nodes.push_back(&gather_nodes(nodes_to_build, ctx_node, **i, bounds));
+
    sort(dependencies_nodes.begin(), dependencies_nodes.end());
    dependencies_nodes.erase(unique(dependencies_nodes.begin(), dependencies_nodes.end()), dependencies_nodes.end());
 

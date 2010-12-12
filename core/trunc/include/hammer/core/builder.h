@@ -6,6 +6,7 @@
 
 namespace hammer
 {
+   class project;
    class builder
    {
       public:
@@ -29,8 +30,8 @@ namespace hammer
                  bool unconditional_build);
          ~builder();
 
-         result build(nodes_t& nodes);
-         result build(build_node& node);
+         result build(nodes_t& nodes, const project* bounds = NULL);
+         result build(build_node& node, const project* bounds = NULL);
 
       private:
          struct impl_t;

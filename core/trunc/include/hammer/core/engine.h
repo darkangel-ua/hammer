@@ -48,6 +48,7 @@ namespace hammer
          const hammer::scanner_manager& scanner_manager() const { return *scanner_manager_; }
          hammer::output_location_strategy& output_location_strategy() { return *output_location_strategy_; }
          void output_location_strategy(boost::shared_ptr<hammer::output_location_strategy>& strategy);
+         void use_project(const project& p, const pstring& project_id_alias, const location_t& project_location);
          ~engine();
 
       private:

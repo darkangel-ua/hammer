@@ -32,6 +32,7 @@
 
 #include <hammer/core/toolsets/msvc_toolset.h>
 #include <hammer/core/toolsets/gcc_toolset.h>
+#include <hammer/core/toolsets/qt_toolset.h>
 #include <hammer/core/toolset_manager.h>
 #include <hammer/core/scaner_manager.h>
 #include <hammer/core/c_scanner.h>
@@ -323,13 +324,13 @@ namespace
    typedef boost::unordered_set<const build_node*> visited_nodes_t;
    typedef boost::unordered_set<const meta_target*> top_targets_t;
    
-   bool find_top_source_project_nodes(const build_node& node, 
+   void find_top_source_project_nodes(const build_node& node,
                                       nodes_t& result,
                                       visited_nodes_t& visited_nodes,
                                       const project* source_project)
    {
       if (visited_nodes.find(&node) != visited_nodes.end())
-         return false;
+         return;
 
       visited_nodes.insert(&node);
 
@@ -454,6 +455,7 @@ namespace
          
          if (build_result.failed_to_build_targets_)
             cout << "...failed updating " << build_result.failed_to_build_targets_ << " targets...\n";
+
          if (build_result.skipped_targets_)
             cout << "...skipped " << build_result.skipped_targets_ << " targets...\n";
       }
@@ -492,8 +494,9 @@ namespace
             dump_targets_to_update(f, nodes_to_build, build_environment);
          }
 
-         builder::result build_result = builder.build(nodes_to_build);
-         cout << "...updated source '" << opts.just_one_source_ << "'..." << endl;
+         cout << "...building source '" << opts.just_one_source_ << "'..."<< endl;
+         builder::result build_result = builder.build(nodes_to_build, project_for_source);
+         cout << "...source '" << opts.just_one_source_ << "' builded."<< endl;
       }
    }
 
@@ -671,6 +674,7 @@ int main(int argc, char** argv)
 
       engine.toolset_manager().add_toolset(auto_ptr<toolset>(new msvc_toolset));
       engine.toolset_manager().add_toolset(auto_ptr<toolset>(new gcc_toolset));
+      engine.toolset_manager().add_toolset(auto_ptr<toolset>(new qt_toolset));
 
       if (opts.debug_level_ > 0)
          cout << "Done" << endl;

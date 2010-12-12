@@ -13,6 +13,8 @@
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/lexical_cast.hpp>
 
+namespace fs = boost::filesystem;
+
 using namespace std;
 
 namespace hammer{ namespace project_generators{
@@ -55,6 +57,15 @@ static string escape_for_regex(const string& s)
    boost::replace_all(result, ".", "\\.");
    boost::replace_all(result, ":", "\\:");
    return result;
+}
+
+static bool directory_has_files(fs::path path)
+{
+   for(fs::directory_iterator i = fs::directory_iterator(path), last = fs::directory_iterator(); i != last; ++i)
+      if (i->status().type() != fs::directory_file)
+         return false;
+
+   return true;
 }
 
 void eclipse_cdt_project::construct(const project_main_targets_t& targets)
@@ -103,21 +114,20 @@ void eclipse_cdt_project::construct(const project_main_targets_t& targets)
    }
    else
    {
-      if (exists(project_.location().branch_path() / "build") &&
-          exists(project_.location().branch_path() / "src") &&
-          exists(project_.location().branch_path() / "include"))
-      {
-         add_link(links_buffer, project_.location().branch_path() / "build", "build");
-         add_link(links_buffer, project_.location().branch_path() / "src", "src");
-         add_link(links_buffer, project_.location().branch_path() / "include", "include");
-      }
-      else
-      {
-         if (project_.location().filename() == "build")
-            add_link(links_buffer, project_.location().branch_path(), "root");
-         else
-            add_link(links_buffer, project_.location(), "root");
-      }
+	   if (directory_has_files(project_.location().branch_path()))
+	   {
+			if (project_.location().filename() == "build")
+				add_link(links_buffer, project_.location().branch_path(), "root");
+			else
+				add_link(links_buffer, project_.location(), "root");
+	   }
+	   else
+	   {
+		   // directory has no files only directories
+		   for(fs::directory_iterator i = fs::directory_iterator(project_.location().branch_path()), last = fs::directory_iterator(); i != last; ++i)
+		      if (i->status().type() == fs::directory_file && i->path().filename() != ".svn")
+		    	  add_link(links_buffer, project_.location().branch_path(), i->path().filename());
+	   }
    }
 
    links_ = escape_for_regex(links_buffer.str());
@@ -181,7 +191,7 @@ void eclipse_cdt_project::write_eclipse_project_file() const
                         );
 
    string format_string("(?1" + escape_for_regex(project_name_) + ")"
-                        "(?2hammer\\.exe)"
+                        "(?2hammer)"
                         "(?3" + escape_for_regex(project_.location().string()) + ")"
                         "(?4" + links_ + ")" +
                         string(is_master_project_ ? "(?5master-project)" : "(?5)")
@@ -230,7 +240,7 @@ void eclipse_cdt_project::write_cdt_project_file() const
                         "(?10 " + c_settings_holder_id_ + ")"
                         "(?11 " + c_holder_intype_id_ + ")"
                         "(?12 " + escape_for_regex(project_name_) + ")"
-                        "(?13hammer\\.exe)"
+                        "(?13hammer)"
                         "(?14" + escape_for_regex(project_.location().string()) + ")"
                         "(?15 " + project_id_ + ")"
                         "(?16" + includes_ + ")"

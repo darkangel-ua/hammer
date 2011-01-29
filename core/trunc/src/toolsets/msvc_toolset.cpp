@@ -421,18 +421,6 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
       g->action(shared_lib_action);
       e.generators().insert(g);
    }
-
-   // ... -> HEADER_LIB
-   { 
-      generator::consumable_types_t source;
-      generator::producable_types_t target;
-      source.push_back(generator::consumable_type(e.get_type_registry().get(types::H), 0, 0));
-      source.push_back(generator::consumable_type(e.get_type_registry().get(types::LIB), 0, 0));
-      target.push_back(generator::produced_type(e.get_type_registry().get(types::HEADER_LIB), 1));
-      auto_ptr<generator> g(new header_lib_generator(e, "header_lib.linker", source, target));
-      e.generators().insert(g);
-   }
-
 }
 
 msvc_toolset::msvc_8_0_data msvc_toolset::resolve_8_0_data(const location_t* toolset_home_) const

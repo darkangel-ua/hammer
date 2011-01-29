@@ -27,7 +27,14 @@ namespace hammer
          virtual void transfer_sources(sources_decl* simple_targets, 
                                        meta_targets_t* meta_targets,
                                        const feature_set& build_request,
-                                       const feature_set* additional_build_properties) const;
+                                       const feature_set* additional_build_properties,
+                                       const basic_meta_target* transfer_target) const;
+         // We should adjust simple targets paths to be related to this target
+         void split_sources_impl(sources_decl* simple_targets, 
+                                 meta_targets_t* meta_targets,
+                                 const sources_decl& sources, 
+                                 const feature_set& build_request,
+                                 const basic_meta_target* transfer_target) const;
    };
 }
 

@@ -1,0 +1,5 @@
+test [ type = EXE; ]
+{
+   main.cpp [ type = CPP; ] {}
+   ./lib1/lib1.cpp [ type = CPP; ] {}
+}

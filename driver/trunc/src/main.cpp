@@ -29,7 +29,7 @@
 #include <hammer/core/generator_registry.h>
 #include <hammer/core/types.h>
 #include <hammer/core/copy_target.h>
-
+#include <hammer/core/header_lib_generator.h>
 #include <hammer/core/toolsets/msvc_toolset.h>
 #include <hammer/core/toolsets/gcc_toolset.h>
 #include <hammer/core/toolsets/qt_toolset.h>
@@ -654,6 +654,7 @@ int main(int argc, char** argv)
 
       engine.generators().insert(std::auto_ptr<generator>(new copy_generator(engine)));
       add_testing_generators(engine, engine.generators());
+      add_header_lib_generator(engine, engine.generators());
 
       if (opts.debug_level_ > 0)
          cout << "Done" << endl;

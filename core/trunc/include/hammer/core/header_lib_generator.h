@@ -5,6 +5,8 @@
 
 namespace hammer
 {
+   class generator_registry;
+
    class header_lib_generator : public generator
    {
       public:
@@ -23,6 +25,8 @@ namespace hammer
       private:
          const target_type& header_type_;
    };
+
+   void add_header_lib_generator(engine& e, generator_registry& gr);
 }
 
 #endif //h_0fd8e948_a41d_4666_a0ec_f5eb11e54c43

@@ -5,6 +5,7 @@
 #include <hammer/core/engine.h>
 #include <hammer/core/feature_registry.h>
 #include <hammer/core/feature_set.h>
+#include <hammer/core/fs_helpers.h>
 
 using namespace std;
 
@@ -37,18 +38,44 @@ void alias_meta_target::instantiate_impl(const main_target* owner,
    }
 }
 
+void alias_meta_target::split_sources_impl(sources_decl* simple_targets, 
+                                           meta_targets_t* meta_targets,
+                                           const sources_decl& sources, 
+                                           const feature_set& build_request,
+                                           const basic_meta_target* transfer_target) const
+{
+   if (location() != transfer_target->location())
+   {
+      location_t prefix = relative_path(location(), transfer_target->location());
+      sources_decl new_simple_targets;
+      split_sources(&new_simple_targets, meta_targets, sources, build_request);
+
+      for(sources_decl::const_iterator i = new_simple_targets.begin(), last = new_simple_targets.end(); i != last; ++i)
+      {
+         location_t new_target = prefix / i->target_path().to_string();
+         new_target.normalize();
+         source_decl sd(*i);
+         sd.target_path(pstring(get_project()->get_engine()->pstring_pool(), new_target.string()), i->type());
+         simple_targets->push_back(sd);
+      }
+   }
+   else
+      split_sources(simple_targets, meta_targets, sources, build_request);
+}
+
 void alias_meta_target::transfer_sources(sources_decl* simple_targets, 
                                          meta_targets_t* meta_targets, 
                                          const feature_set& build_request,
-                                         const feature_set* additional_build_properties) const
+                                         const feature_set* additional_build_properties,
+                                         const basic_meta_target* transfer_target) const
 {
    if (additional_build_properties == NULL)
-      split_sources(simple_targets, meta_targets, sources(), build_request);
+      split_sources_impl(simple_targets, meta_targets, sources(), build_request, transfer_target);
    else
    {
       sources_decl new_simple_targets;
       meta_targets_t new_meta_targets;
-      split_sources(&new_simple_targets, &new_meta_targets, sources(), build_request);
+      split_sources_impl(&new_simple_targets, &new_meta_targets, sources(), build_request, transfer_target);
       
       simple_targets->add_to_source_properties(*additional_build_properties);
       
@@ -62,7 +89,7 @@ void alias_meta_target::transfer_sources(sources_decl* simple_targets,
    }
 
    basic_meta_target::transfer_sources(simple_targets, meta_targets, 
-                                       build_request, additional_build_properties);
+                                       build_request, additional_build_properties, transfer_target);
 }
 
 }

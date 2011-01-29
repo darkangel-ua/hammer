@@ -115,7 +115,7 @@ void basic_meta_target::resolve_meta_target_source(const source_decl& source,
          selected_target.target_->transfer_sources(simple_targets,
                                                    meta_targets,
                                                    *selected_target.resolved_build_request_,
-                                                   source.properties());
+                                                   source.properties(), this);
 			return;
 		}
    }
@@ -132,7 +132,7 @@ void basic_meta_target::resolve_meta_target_source(const source_decl& source,
 		      i->target_->transfer_sources(simple_targets,
                                          meta_targets,
                                          *i->resolved_build_request_,
-                                         source.properties());
+                                         source.properties(), this);
 	      }
       }
       catch(const std::exception& e)
@@ -147,14 +147,16 @@ void basic_meta_target::resolve_meta_target_source(const source_decl& source,
                                                                                            *build_request_with_source_properties);
       selected_target.target_->transfer_sources(simple_targets, meta_targets,
                                                 *selected_target.resolved_build_request_,
-                                                source.properties());
+                                                source.properties(),
+                                                this);
    }
 }
 
 void basic_meta_target::transfer_sources(sources_decl* simple_targets,
                                          meta_targets_t* meta_targets,
                                          const feature_set& build_request,
-                                         const feature_set* additional_build_properties) const
+                                         const feature_set* additional_build_properties,
+                                         const basic_meta_target* transfer_target) const
 {
    meta_targets->push_back(make_pair(this, additional_build_properties));
 }

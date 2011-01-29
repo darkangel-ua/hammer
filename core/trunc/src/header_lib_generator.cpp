@@ -5,6 +5,7 @@
 #include <hammer/core/engine.h>
 #include <hammer/core/type_registry.h>
 #include <hammer/core/header_lib_target.h>
+#include <hammer/core/generator_registry.h>
 
 namespace hammer{
 
@@ -46,6 +47,17 @@ header_lib_generator::construct(const target_type& type_to_construct,
          result.push_back(*i);
    
    return result;
+}
+
+void add_header_lib_generator(engine& e, generator_registry& gr)
+{
+   generator::consumable_types_t source;
+   generator::producable_types_t target;
+   source.push_back(generator::consumable_type(e.get_type_registry().get(types::H), 0, 0));
+   source.push_back(generator::consumable_type(e.get_type_registry().get(types::LIB), 0, 0));
+   target.push_back(generator::produced_type(e.get_type_registry().get(types::HEADER_LIB), 1));
+   std::auto_ptr<generator> g(new header_lib_generator(e, "header_lib.linker", source, target));
+   gr.insert(g);
 }
 
 }

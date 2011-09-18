@@ -6,9 +6,18 @@
 namespace hammer
 {
 
-boost::filesystem::path relative_path(boost::filesystem::path p, 
-                                      const boost::filesystem::path& relative_to)
+static void strip_slesh_dot(boost::filesystem::path& p)
 {
+   if (p.filename() == "." && p.string().size() > 2)
+      p = p.branch_path();
+}
+
+boost::filesystem::path relative_path(boost::filesystem::path p, 
+                                      boost::filesystem::path relative_to)
+{
+   strip_slesh_dot(p);
+   strip_slesh_dot(relative_to);
+
    using namespace boost::filesystem;
    path current = relative_to; 
 

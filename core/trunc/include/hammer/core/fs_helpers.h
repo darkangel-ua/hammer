@@ -6,7 +6,7 @@
 namespace hammer
 {
    boost::filesystem::path relative_path(boost::filesystem::path p, 
-                                         const boost::filesystem::path& relative_to);
+                                         boost::filesystem::path relative_to);
 
 #if defined(_WIN32) && !defined(__MINGW32__)
    boost::filesystem::wpath to_wide(const boost::filesystem::path& narrow_path);

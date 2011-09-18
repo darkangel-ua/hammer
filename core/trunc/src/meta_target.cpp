@@ -179,12 +179,13 @@ namespace hammer{
       mt->dependencies(instantiated_dependency_meta_targets);
       
       transfer_public_sources(*usage_requirements, sources(), get_engine()->feature_registry());
-      compute_usage_requirements(*usage_requirements, *mt_fs, *local_usage_requirements, owner);
+      compute_usage_requirements(*usage_requirements, *mt, *mt_fs, *local_usage_requirements, owner);
       
       result->push_back(mt);
    }
 
    void meta_target::compute_usage_requirements(feature_set& result, 
+                                                const main_target& constructed_target,
                                                 const feature_set& full_build_request,
                                                 const feature_set& computed_usage_requirements,
                                                 const main_target* owner) const

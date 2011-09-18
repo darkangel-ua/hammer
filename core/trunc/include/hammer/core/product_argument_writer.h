@@ -5,6 +5,8 @@
 
 namespace hammer
 {
+   class basic_target;
+
    class product_argument_writer : public targets_argument_writer
    {
       public:
@@ -17,6 +19,7 @@ namespace hammer
 
       protected:
          virtual void write_impl(std::ostream& output, const build_node& node, const build_environment& environment) const;
+         virtual bool accept(const basic_target& t) const;
       
       private:
          output_strategy::value output_strategy_;

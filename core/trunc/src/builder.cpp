@@ -10,7 +10,8 @@
 #include <boost/multi_index/identity.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/pool/object_pool.hpp>
-
+#include <boost/foreach.hpp>
+#include <boost/format.hpp>
 #include <hammer/core/builder.h>
 #include <hammer/core/build_action.h>
 #include <hammer/core/basic_target.h>
@@ -20,6 +21,7 @@
 
 using namespace boost;
 using namespace boost::multi_index;
+using namespace std;
 
 namespace hammer{
 namespace{
@@ -111,15 +113,19 @@ struct builder::impl_t
    result build(nodes_t& nodes, const project* bounds);
    
    build_queue_node_t& gather_nodes(nodes_to_build_t& nodes_to_build, 
-                                         build_node& node,
-                                         const project* bounds);
+                                    build_node& node,
+                                    const project* bounds);
 
    build_queue_node_t& gather_nodes(nodes_to_build_t& nodes_to_build, 
-                                         build_queue_node_t& parent_node, 
-                                         build_node& node,
-                                         const project* bounds);
+                                    build_queue_node_t& parent_node, 
+                                    build_node& node,
+                                    const project* bounds);
    void task_completition_handler(shared_ptr<worker_ctx_t> ctx);
    void task_handler(shared_ptr<worker_ctx_t> ctx);
+
+   
+   void flatter_queue(unordered_set<const build_queue_node_t*>& result, 
+                      const build_queue_node_t& node);
    
    const build_environment& environment_;
    volatile bool& interrupt_flag_;
@@ -158,9 +164,17 @@ builder::result builder::build(nodes_t& nodes, const project* bounds)
 
 void builder::impl_t::task_handler(shared_ptr<worker_ctx_t> ctx)
 {
-   details::buffered_output_environment buffered_environment(environment_);
-   ctx->action_result_ = ctx->node().action()->execute(ctx->node(), buffered_environment);
-   ctx->node().up_to_date(ctx->action_result_ ? boost::tribool::true_value : boost::tribool::false_value);
+   if (ctx->node().action())
+   {
+      details::buffered_output_environment buffered_environment(environment_);
+      ctx->action_result_ = ctx->node().action()->execute(ctx->node(), buffered_environment);
+      ctx->node().up_to_date(ctx->action_result_ ? boost::tribool::true_value : boost::tribool::false_value);
+   }
+   else
+   {
+      ctx->action_result_ = true;
+      ctx->node().up_to_date(boost::tribool::true_value);
+   }
 
    ctx->strand_.post(boost::bind(&impl_t::task_completition_handler, this, ctx));
 }
@@ -236,6 +250,100 @@ void builder::impl_t::task_completition_handler(shared_ptr<worker_ctx_t> ctx)
 
       ctx->queue_.get<0>().erase(current_node_iterator);
    }
+}
+
+void builder::generate_graphviz(std::ostream& os, nodes_t& nodes, const project* bounds)
+{
+   nodes_to_build_t nodes_to_build;
+   for(nodes_t::const_iterator i = nodes.begin(), last = nodes.end(); i != last; ++i)
+      if (!(**i).up_to_date())
+         impl_->gather_nodes(nodes_to_build, **i, bounds);
+
+   unordered_set<const build_queue_node_t*> all_build_nodes;
+   for(nodes_to_build_t::const_iterator i = nodes_to_build.begin(), last = nodes_to_build.end(); i != last; ++i)
+      impl_->flatter_queue(all_build_nodes, *i->second);
+
+   os << "digraph g{graph [rankdir = \"LR\"];\n";
+
+   // write nodes
+   boost::format node_format("\"%s\" [label = \"%s\" "
+                               "shape = \"record\"];\n");
+   BOOST_FOREACH(const build_queue_node_t* n, all_build_nodes)
+   {
+      string labels = (boost::format("%s|dependencies_count = %s") % n % n->dependencies_count_).str();
+      // write build node sources 
+      {
+         labels += "|{src|{";
+         bool first = true;
+         BOOST_FOREACH(const build_node::source_t& s, n->node_->sources_)
+         {
+            if (!first)
+               labels += "|";
+            else
+               first = false;
+            
+            labels += s.source_target_->name().to_string(); 
+         }
+
+         labels += "}}";
+      }
+
+      // write build node products
+      {
+         labels += "|{prod|{";
+         bool first = true;
+         BOOST_FOREACH(const basic_target* p, n->node_->products_)
+         {
+            if (!first)
+               labels += "|";
+            else
+               first = false;
+
+            labels += p->name().to_string(); 
+         }
+
+         labels += "}}";
+      }
+
+      if (!n->uses_nodes_.empty())
+      {
+         stringstream s;
+         bool first = true;
+         BOOST_FOREACH(const build_queue_node_t* un, n->uses_nodes_)
+         {
+            if (!first)
+               s << "|";
+            else
+               first = false;
+
+            s << '<' << un << '>' << ' ' << un; 
+         }
+
+         labels += '|' + s.str();
+      }
+
+      os << (node_format % n % labels);
+   }
+
+   // write uses edges
+   boost::format edge_format("\"%s\" -> \"%s\":\"%s\"\n");
+   BOOST_FOREACH(const build_queue_node_t* n, all_build_nodes)
+      BOOST_FOREACH(const build_queue_node_t* un, n->uses_nodes_)
+         os << (edge_format % un % n % un);
+
+   os << "}";
+}
+
+void builder::impl_t::flatter_queue(unordered_set<const build_queue_node_t*>& result, 
+                                    const build_queue_node_t& node)
+{
+   if (result.find(&node) != result.end())
+      return;
+
+   result.insert(&node);
+
+   BOOST_FOREACH(const build_queue_node_t* n, node.uses_nodes_)
+      flatter_queue(result, *n);
 }
 
 builder::result builder::impl_t::build(nodes_t& nodes, const project* bounds)
@@ -315,8 +423,7 @@ build_queue_node_t& builder::impl_t::gather_nodes(nodes_to_build_t& nodes_to_bui
    for(build_node::sources_t::const_iterator i = node.sources_.begin(), last = node.sources_.end(); i != last; ++i)
       if (!i->source_node_->up_to_date() || unconditional_build_)
          if (bounds == NULL || i->source_node_->products_owner().get_project() == bounds) // we don't build nodes that don't belongs to bounds
-            if (i->source_node_->action())
-               sources_nodes.push_back(&gather_nodes(nodes_to_build, ctx_node, *i->source_node_, bounds));
+            sources_nodes.push_back(&gather_nodes(nodes_to_build, ctx_node, *i->source_node_, bounds));
 
    sort(sources_nodes.begin(), sources_nodes.end());
    sources_nodes.erase(unique(sources_nodes.begin(), sources_nodes.end()), sources_nodes.end());
@@ -325,8 +432,7 @@ build_queue_node_t& builder::impl_t::gather_nodes(nodes_to_build_t& nodes_to_bui
    for(build_node::nodes_t::const_iterator i = node.dependencies_.begin(), last = node.dependencies_.end(); i != last; ++i)
       if (!(**i).up_to_date() || unconditional_build_)
          if (bounds == NULL || (**i).products_owner().get_project() == bounds) // we don't build nodes that don't belongs to bounds
-            if ((**i).action())
-               dependencies_nodes.push_back(&gather_nodes(nodes_to_build, ctx_node, **i, bounds));
+            dependencies_nodes.push_back(&gather_nodes(nodes_to_build, ctx_node, **i, bounds));
 
    sort(dependencies_nodes.begin(), dependencies_nodes.end());
    dependencies_nodes.erase(unique(dependencies_nodes.begin(), dependencies_nodes.end()), dependencies_nodes.end());

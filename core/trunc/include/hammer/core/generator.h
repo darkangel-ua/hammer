@@ -36,9 +36,20 @@ namespace hammer
             bool need_tag_;
          };
 
+         struct construct_result_t
+         {
+            construct_result_t(const build_nodes_t& result) : result_(result) {}
+            construct_result_t(const build_nodes_t& result, const build_nodes_t& deps) 
+               : result_(result), dependencies_(deps) 
+            {}
+
+            build_nodes_t result_;
+            build_nodes_t dependencies_;
+         };
+
          typedef std::vector<consumable_type> consumable_types_t;
          typedef std::vector<produced_type> producable_types_t;
-
+         
          generator(engine& e,
                    const std::string& name,
                    const consumable_types_t& source_types,
@@ -54,13 +65,13 @@ namespace hammer
          const producable_types_t& producable_types() const { return target_types_; }
          const feature_set* constraints() const { return constraints_; }
  
-         virtual std::vector<boost::intrusive_ptr<build_node> >
-            construct(const target_type& type_to_construct, 
-                      const feature_set& props,
-                      const std::vector<boost::intrusive_ptr<build_node> >& sources,
-                      const basic_target* source_target,
-                      const pstring* composite_target_name,
-                      const main_target& owner) const;
+         virtual construct_result_t
+         construct(const target_type& type_to_construct, 
+                   const feature_set& props,
+                   const build_nodes_t& sources,
+                   const basic_target* source_target,
+                   const pstring* composite_target_name,
+                   const main_target& owner) const;
 
          bool is_consumable(const target_type& t) const;
          bool is_composite() const { return composite_; }
@@ -70,6 +81,10 @@ namespace hammer
          template <typename T>
          void action(std::auto_ptr<T>& a) { action_ = a; }
          const build_action* action() const { return action_.get(); } 
+
+      protected:
+         virtual basic_target* create_target(const main_target* mt, const pstring& n, 
+                                             const target_type* t, const feature_set* f) const;
 
       private:
          hammer::engine* engine_;

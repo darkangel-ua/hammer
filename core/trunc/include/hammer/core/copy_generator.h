@@ -10,13 +10,13 @@ namespace hammer
       public:
          copy_generator(hammer::engine& e);
 
-         virtual std::vector<boost::intrusive_ptr<build_node> >
-            construct(const target_type& type_to_construct, 
-                      const feature_set& props,
-                      const std::vector<boost::intrusive_ptr<build_node> >& sources,
-                      const basic_target* t,
-                      const pstring* composite_target_name,
-                      const main_target& owner) const;
+         virtual construct_result_t
+         construct(const target_type& type_to_construct, 
+                   const feature_set& props,
+                   const std::vector<boost::intrusive_ptr<build_node> >& sources,
+                   const basic_target* t,
+                   const pstring* composite_target_name,
+                   const main_target& owner) const;
    };
 }
 

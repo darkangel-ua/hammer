@@ -43,7 +43,7 @@ void register_standart_types(type_registry& tr, feature_registry& fr)
 
    tr.insert(target_type(C, ".c"));
 
-   target_type::suffixes_t h_suffixes = list_of(".h")(".hpp");
+   target_type::suffixes_t h_suffixes = list_of(".h")(".hpp")(".H");
    tr.insert(target_type(H, h_suffixes));
 
    tr.insert(target_type(RC, ".rc"));

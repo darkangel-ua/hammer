@@ -1,4 +1,5 @@
 test [ features = <define>USE_LIB1; ]
 {
    lib2 [ features = <define>USE_LIB1; ] {}   
+   lib1 [] {}
 }

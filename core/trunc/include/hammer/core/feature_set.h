@@ -52,6 +52,8 @@ namespace hammer
          bool operator != (const feature_set& rhs) const { return !(*this == rhs); }
          bool contains(const feature_set& rhs) const;
 
+         feature_registry& owner() { return *fr_; }
+
       private:
          feature_registry* fr_;
          features_t features_;

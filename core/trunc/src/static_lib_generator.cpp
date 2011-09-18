@@ -21,7 +21,7 @@ static_lib_generator::static_lib_generator(hammer::engine& e,
 {
 }
 
-std::vector<boost::intrusive_ptr<build_node> >
+generator::construct_result_t
 static_lib_generator::construct(const target_type& type_to_construct, 
                                 const feature_set& props,
                                 const std::vector<boost::intrusive_ptr<build_node> >& sources,
@@ -46,8 +46,9 @@ static_lib_generator::construct(const target_type& type_to_construct,
          ++i;
    }
 
-   std::vector<boost::intrusive_ptr<build_node> > result(generator::construct(type_to_construct, props, modified_sources, t, name, owner));
-   result.insert(result.end(), extracted_products.begin(), extracted_products.end());
+   construct_result_t result(generator::construct(type_to_construct, props, modified_sources, t, name, owner));
+   result.result_.insert(result.result_.end(), extracted_products.begin(), extracted_products.end());
+
    return result;
 }
 

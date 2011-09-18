@@ -39,6 +39,7 @@ namespace hammer
          const pstring& target_name() const { return target_name_; }
          bool target_path_is_global() const { return !target_path_.empty() && *target_path_.begin() == '/'; }
          const target_type* type() const { return type_; }
+         void set_type(const target_type* v) { type_ = v; }
          // FIXME. feature_set should be ref counted
          feature_set* properties() const { return properties_; }
          bool is_public() const { return public_; }

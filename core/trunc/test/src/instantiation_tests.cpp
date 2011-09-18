@@ -67,3 +67,4 @@ void init_instantiation_tests(const fs::path& test_data_path)
 
    framework::master_test_suite().add(ts);
 }
+             

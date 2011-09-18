@@ -22,7 +22,7 @@ exe_and_shared_lib_generator::exe_and_shared_lib_generator(hammer::engine& e,
 {
 }
 
-std::vector<boost::intrusive_ptr<build_node> >
+generator::construct_result_t
 exe_and_shared_lib_generator::construct(const target_type& type_to_construct, 
                                         const feature_set& props,
                                         const std::vector<boost::intrusive_ptr<build_node> >& sources,

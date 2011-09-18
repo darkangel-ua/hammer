@@ -3,6 +3,7 @@
 
 #include "build_environment.h"
 #include "build_node.h"
+#include <iosfwd>
 
 namespace hammer
 {
@@ -32,6 +33,7 @@ namespace hammer
 
          result build(nodes_t& nodes, const project* bounds = NULL);
          result build(build_node& node, const project* bounds = NULL);
+         void generate_graphviz(std::ostream& os, nodes_t& nodes, const project* bounds = NULL);
 
       private:
          struct impl_t;

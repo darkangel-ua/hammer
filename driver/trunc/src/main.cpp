@@ -18,6 +18,7 @@
 #include <hammer/core/basic_target.h>
 #include <hammer/core/main_target.h>
 #include <hammer/core/meta_target.h>
+#include <hammer/core/project_generators/qmake_pro.h>
 #include <hammer/core/project_generators/msvc_solution.h>
 #include <hammer/core/project_generators/eclipse_cdt_workspace.h>
 #include <hammer/core/copy_generator.h>
@@ -93,7 +94,8 @@ namespace
                          hammer_output_dir_(".hammer"),
                          debug_level_(0),
                          worker_count_(get_number_of_processors()),
-                         copy_dependencies_(false)
+                         copy_dependencies_(false),
+                         write_build_graph_(false)
       {}
 
       vector<string> build_request_options_;
@@ -110,6 +112,7 @@ namespace
       unsigned worker_count_;
       bool copy_dependencies_;
       std::string eclipse_workspace_path_;
+      bool write_build_graph_;
    };
 
    po::positional_options_description build_request_options;
@@ -126,6 +129,7 @@ namespace
          ("dump-targets-to-update", "dump tree of target to update for debuginf purposes")
          ("clean-all", "clean all targets recursively")
          ("generate-msvc-8.0-solution,p", "generate msvc-8.0 solution+projects")
+         ("generate-qmake-pro", "generate qmake projects")
          ("generate-projects-locally,l", "when generating build script makes them in one place")
          ("eclipse-cdt", po::value<std::string>(&opts.eclipse_workspace_path_), "generate Eclipse CDT workspace and projects")
          ("hammer-out", po::value<std::string>(&opts.hammer_output_dir_), "specify where hammer will place all its generated output")
@@ -136,6 +140,7 @@ namespace
          ("just-one-source-project-path", po::value<string>(&opts.just_one_source_project_path_), "path to project where source reside")
          ("jobs,j", po::value<unsigned>(&opts.worker_count_), "concurrency level")
          ("copy-dependencies", "copy shared modules to output dir when building excecutable")
+         ("write-build-graph", "don't build, just write graphviz build-graph.dot for building process");
          ;
 
       return desc;
@@ -297,6 +302,17 @@ namespace
       solution.write();
    }
 
+   void generate_qmake_projects(const nodes_t& nodes, const hammer::project& project_to_build,
+                                const location_t& output_prefix)
+   {
+      project_generators::qmake_pro master_project(project_to_build, output_prefix);
+
+      for(nodes_t::const_iterator i = nodes.begin(), last = nodes.end(); i != last; ++i)
+         master_project.add_target(*i);
+
+      master_project.write();
+   }
+
    void generate_eclipse_workspace(const nodes_t& nodes, 
                                    const project& master_project,
                                    const fs::path& workspace_output_path)
@@ -450,6 +466,13 @@ namespace
 
          cout << "...updating " << target_to_update_count << " targets...\n";
          builder builder(build_environment, interrupt_flag, opts.worker_count_, false);
+         if (opts.write_build_graph_)
+         {
+            ofstream f("build-graph.dot", std::ios_base::trunc);
+            builder.generate_graphviz(f, nodes);
+            return;
+         }
+
          builder::result build_result = builder.build(nodes);
          cout << "...updated " << build_result.updated_targets_ << " targets...\n";
          
@@ -581,7 +604,7 @@ namespace
       
       const generator& copy_generator = *e.generators()
                                           .find_viable_generators(e.get_type_registry().get(types::COPIED), 
-                                                                  true, *e.feature_registry().make_set()).at(0);
+                                                                  true, *e.feature_registry().make_set()).at(0).first;
       
       nodes_t copy_nodes;
       for(build_node::sources_t::const_iterator i = shared_libs.begin(), last = shared_libs.end(); i != last; ++i)
@@ -727,6 +750,9 @@ int main(int argc, char** argv)
       if (vm.count("copy-dependencies"))
          opts.copy_dependencies_ = true;
 
+      if (vm.count("write-build-graph"))
+         opts.write_build_graph_ = true;
+
       if (vm.count("build-request"))
          resolve_arguments(targets, build_request, engine.feature_registry(), vm["build-request"].as<vector<string> >());
 
@@ -805,7 +831,10 @@ int main(int argc, char** argv)
          if (vm.count("eclipse-cdt"))
             generate_eclipse_workspace(nodes, project_to_build, opts.eclipse_workspace_path_);
          else
-            run_build(nodes, engine, opts);
+            if (vm.count("generate-qmake-pro"))
+               generate_qmake_projects(nodes, project_to_build, opts.hammer_output_dir_);
+            else
+               run_build(nodes, engine, opts);
 
       return 0;
    }

@@ -325,12 +325,12 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
 
       generator::consumable_types_t source;
       generator::producable_types_t target;
+      source.push_back(generator::consumable_type(e.get_type_registry().get(types::H), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::OBJ), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::RES), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::STATIC_LIB), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::SEARCHED_STATIC_LIB), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::HEADER_LIB), 0, 0));
-      source.push_back(generator::consumable_type(e.get_type_registry().get(types::H), 0, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::EXE)));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::EXE_MANIFEST)));
       auto_ptr<generator> g(new exe_and_shared_lib_generator(e, "msvc.exe.linker", source, target, true, generator_condition));

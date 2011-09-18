@@ -13,10 +13,10 @@ namespace hammer
    {
       public:
          typedef boost::ptr_map<std::string, generator> generators_t;
-         typedef std::vector<const generator*> viable_generators_t;
+         typedef std::vector<std::pair<const generator*, const target_type* /* type_to_construct */ > > viable_generators_t;
 
          void insert(std::auto_ptr<generator> g);
-         std::vector<boost::intrusive_ptr<build_node> > construct(const main_target* mt) const;
+         build_nodes_t construct(const main_target* mt) const;
 
          viable_generators_t 
          find_viable_generators(const target_type& t, 
@@ -29,17 +29,23 @@ namespace hammer
 
          bool transform_to_consumable(const generator& target_generator, 
                                       const generator& current_generator,
-                                      boost::intrusive_ptr<build_node> t, 
-                                      std::vector<boost::intrusive_ptr<build_node> >* result,
+                                      build_node_ptr t, 
+                                      build_nodes_t* result,
                                       const feature_set& props,
                                       const main_target& owner) const;
          bool transform(const generator& target_generator, 
                         const generator& current_generator, 
                         const basic_target* t,
-                        boost::intrusive_ptr<build_node> target_owner, 
-                        std::vector<boost::intrusive_ptr<build_node> >* result,
+                        build_node_ptr& target_owner, 
+                        build_nodes_t* result,
                         const feature_set& props,
                         const main_target& owner) const;
+         
+         viable_generators_t 
+         find_viable_generators(const target_type& t, 
+                                bool allow_composite,
+                                const feature_set& build_properties,
+                                bool full_match) const;
    };
 }
 

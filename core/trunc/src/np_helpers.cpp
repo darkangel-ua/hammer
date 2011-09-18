@@ -52,7 +52,7 @@ pstring make_product_name(pool& p,
  
    string source_name_without_suffix = std::string(source_name.begin() + slash_pos, 
                                                    source_name.begin() + (source_name.size() - source_suffix.size()));
-   return pstring(p, source_name_without_suffix + hash_suffix + product_type.suffix_for(product_properties));
+   return pstring(p, product_type.prefix_for(product_properties) + source_name_without_suffix + hash_suffix + product_type.suffix_for(product_properties));
 }
 
 pstring make_product_name(pool& p, 
@@ -75,7 +75,7 @@ pstring make_product_name(pool& p,
          hash_suffix += '-' + compute_hash(product_properties, *owner);
       }
 
-      return pstring(p, composite_target_name.to_string() + hash_suffix + product_type.suffix_for(product_properties));
+      return pstring(p, product_type.prefix_for(product_properties) + composite_target_name.to_string() + hash_suffix + product_type.suffix_for(product_properties));
    }
 }
 

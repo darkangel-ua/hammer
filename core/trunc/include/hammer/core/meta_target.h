@@ -35,6 +35,7 @@ namespace hammer
          // compute usage requirements from this main target's usage requirements and 
          // usage requirements that was calculated during instantiation source meta targets
          virtual void compute_usage_requirements(feature_set& result, 
+                                                 const main_target& constructed_target,
                                                  const feature_set& full_build_request,
                                                  const feature_set& computed_usage_requirements,
                                                  const main_target* owner) const;

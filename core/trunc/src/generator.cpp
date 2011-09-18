@@ -41,10 +41,16 @@ bool generator::is_consumable(const target_type& t) const
    return false;
 }
 
-std::vector<boost::intrusive_ptr<build_node> >
+basic_target* generator::create_target(const main_target* mt, const pstring& n, 
+                                       const target_type* t, const feature_set* f) const
+{
+   return new generated_target(mt, n, t, f);
+}
+
+generator::construct_result_t
 generator::construct(const target_type& type_to_construct,
                      const feature_set& props,
-                     const std::vector<boost::intrusive_ptr<build_node> >& sources,
+                     const build_nodes_t& sources,
                      const basic_target* source_target,
                      const pstring* composite_target_name,
                      const main_target& owner) const
@@ -54,7 +60,7 @@ generator::construct(const target_type& type_to_construct,
       boost::intrusive_ptr<build_node> result(new build_node(owner, composite_));
       result->action(action());
 
-      typedef std::vector<boost::intrusive_ptr<build_node> >::const_iterator iter;
+      typedef build_nodes_t::const_iterator iter;
       for(iter i = sources.begin(), last = sources.end(); i != last; ++i)
       {
          bool node_added = false;
@@ -79,13 +85,12 @@ generator::construct(const target_type& type_to_construct,
                                               *i->type_,
                                               props,
                                               i->need_tag_ ? &owner : NULL);
-         result->products_.push_back(new generated_target(&owner,
-                                                          new_name,
-                                                          i->type_, &props));
+
+         result->products_.push_back(create_target(&owner, new_name, i->type_, &props));
       }
 
       result->targeting_type_ = &type_to_construct;
-      return std::vector<boost::intrusive_ptr<build_node> >(1, result);
+      return build_nodes_t(1, result);
    }
    else
    {
@@ -101,9 +106,9 @@ generator::construct(const target_type& type_to_construct,
 
       result->sources_.push_back(build_node::source_t(source_target, sources.front()));
       result->down_.push_back(sources.front());
-      result->products_.push_back(new generated_target(&owner, new_name, producable_types().front().type_, &props));
+      result->products_.push_back(create_target(&owner, new_name, producable_types().front().type_, &props));
       result->targeting_type_ = &type_to_construct;
-      return std::vector<boost::intrusive_ptr<build_node> >(1, result);
+      return build_nodes_t(1, result);
   }
 }
 
@@ -117,7 +122,10 @@ void remove_dups(build_node::nodes_t& nodes)
    using namespace boost::multi_index;
    typedef boost::intrusive_ptr<build_node> node_t;
    typedef multi_index_container<node_t, indexed_by<sequenced<>, ordered_unique<identity<node_t> > > > container_t;
-   
+
+   if (nodes.empty())
+      return;
+
    container_t c;
    container_t::nth_index<0>::type& idx = c.get<0>();
    for(build_node::nodes_t::const_reverse_iterator i = nodes.rbegin(), last = nodes.rend(); i != last; ++i)

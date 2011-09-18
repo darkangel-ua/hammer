@@ -30,6 +30,9 @@ namespace hammer
          // returns 'true' if node needs to be updated
          bool check(boost::posix_time::ptime& max_target_time, std::size_t& nodes_to_update, build_node& node);
          scanner_context& get_scanner_context(const target_type& t, const scanner& s);
+         void mark_to_update(build_node& node, 
+                             std::size_t& nodes_to_update, 
+                             const main_target& products_owner);
    };
 
    void mark_to_update(build_nodes_t& nodes);

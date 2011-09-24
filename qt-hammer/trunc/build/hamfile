@@ -1,0 +1,18 @@
+lib hammerplugin
+  : [ glob ../src/*.cpp ]
+    [ glob ../src/*.h ]
+    ../src/hammerproject.qrc
+    hammerplugin.moc
+    /Qt/QtCreator
+    /Qt//QtGui
+  ;
+
+qt.moc hammerplugin.moc 
+   : 
+    ../src/hammerplugin.h 
+    ../src/hammerprojectmanager.h
+    ../src/hammereditorfactory.h
+    ../src/hammerproject.h
+    ../src/hammertarget.h
+   ;
+explicit hammerplugin.moc ;

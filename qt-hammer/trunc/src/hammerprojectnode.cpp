@@ -1,6 +1,10 @@
 #include <coreplugin/ifile.h>
 #include <QFileInfo>
+
+#include <hammer/core/main_target.h>
+
 #include "hammerprojectnode.h"
+#include "hammerproject.h"
 
 namespace hammer{namespace QtCreator{
 
@@ -10,7 +14,7 @@ HammerProjectNode::HammerProjectNode(HammerProject* project,
      m_project(project),
      m_projectFile(projectFile)
 {
-   setDisplayName(QFileInfo(projectFile->fileName()).completeBaseName());
+   setDisplayName(QString::fromStdString(project->get_main_target().name().to_string()));
 }
 
 Core::IFile *HammerProjectNode::projectFile() const

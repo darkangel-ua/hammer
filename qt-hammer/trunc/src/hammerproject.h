@@ -5,6 +5,7 @@
 #include <coreplugin/ifile.h>
 
 namespace ProjectExplorer{ class IProjectManager; }
+namespace hammer{ class main_target; }
 
 namespace hammer{ namespace QtCreator{
 
@@ -15,8 +16,9 @@ class HammerProjectNode;
 class HammerProject : public ProjectExplorer::Project
 {
       Q_OBJECT
+
    public:
-      HammerProject(ProjectManager *manager, const QString &fileName);
+      HammerProject(ProjectManager *manager, const main_target* mt);
       virtual ~HammerProject();
 
       virtual QList<ProjectExplorer::Project*> dependsOn();
@@ -26,16 +28,18 @@ class HammerProject : public ProjectExplorer::Project
       virtual ProjectExplorer::IProjectManager* projectManager() const;
       virtual ProjectExplorer::ProjectNode *rootProjectNode() const;
       virtual QStringList files(FilesMode fileMode) const;
-   
+
+      const main_target& get_main_target() const { return *m_mainTarget; }
+
    protected:
       virtual bool fromMap(const QVariantMap &map);
    
    private:
       ProjectManager *m_manager;
-      QString m_fileName;
       HammerProjectFile *m_projectFile;
       QString m_projectName;
       HammerProjectNode *m_rootNode;
+      const main_target* m_mainTarget;
 };
 
 class HammerProjectFile : public Core::IFile

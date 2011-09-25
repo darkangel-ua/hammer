@@ -3,6 +3,8 @@ lib hammerplugin
     [ glob ../src/*.h ]
     ../src/hammerproject.qrc
     hammerplugin.moc
+    /hammer/core
+    /boost/foreach/<version>1.36.0
     /Qt/QtCreator
     /Qt//QtGui
   ;

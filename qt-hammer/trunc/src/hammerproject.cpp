@@ -2,6 +2,8 @@
 #include <projectexplorer/projectexplorerconstants.h>
 #include <extensionsystem/pluginmanager.h>
 
+#include <hammer/core/main_target.h>
+
 #include "hammerprojectmanager.h"
 #include "hammerproject.h"
 #include "hammerprojectconstants.h"
@@ -11,18 +13,22 @@
 namespace hammer{ namespace QtCreator{
 
 HammerProject::HammerProject(ProjectManager *manager, 
-                             const QString &fileName)
+                             const main_target* mt)
    : m_manager(manager),
-     m_fileName(fileName)
+     m_mainTarget(mt)
 {
    setProjectContext(Core::Context(PROJECTCONTEXT));
    setProjectLanguage(Core::Context(ProjectExplorer::Constants::LANG_CXX));
    
-   QFileInfo fileInfo(m_fileName);
+   QFileInfo fileInfo(QString::fromStdString(m_mainTarget->location().native_file_string()));
 
    m_projectName = fileInfo.completeBaseName();
-   m_projectFile = new HammerProjectFile(this, fileName);
+   m_projectFile = new HammerProjectFile(this, fileInfo.absoluteFilePath());
    m_rootNode = new HammerProjectNode(this, m_projectFile);
+
+   HammerTargetFactory *factory =
+      ExtensionSystem::PluginManager::instance()->getObject<HammerTargetFactory>();
+   addTarget(factory->create(this, QLatin1String(HAMMER_DESKTOP_TARGET_ID)));
 
    m_manager->registerProject(this);
 }
@@ -74,7 +80,6 @@ HammerProjectFile::HammerProjectFile(HammerProject *parent, QString fileName)
      m_project(parent),
      m_fileName(fileName)
 {
-
 }
 
 bool HammerProject::fromMap(const QVariantMap &map)

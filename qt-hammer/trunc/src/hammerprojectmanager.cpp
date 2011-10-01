@@ -187,7 +187,8 @@ ProjectExplorer::Project *ProjectManager::openProject(const QString &fileName)
     boost::unordered_set<const main_target*> mainTargets;
     gatherAllMainTargets(mainTargets, *topMainTarget);
     BOOST_FOREACH(const main_target* mt, mainTargets)
-       if (!mt->type().equal_or_derived_from(types::SEARCHED_LIB) &&
+       if (mt != topMainTarget &&
+           !mt->type().equal_or_derived_from(types::SEARCHED_LIB) &&
            !mt->type().equal_or_derived_from(types::PREBUILT_SHARED_LIB) &&
            !mt->type().equal_or_derived_from(types::PREBUILT_STATIC_LIB))
        {

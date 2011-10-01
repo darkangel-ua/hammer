@@ -2,16 +2,23 @@
 #define h_51aa0b54_a286_48db_9fa4_f0b7328e74c2
 
 #include <projectexplorer/project.h>
+#include <projectexplorer/toolchain.h>
+#include <projectexplorer/buildstep.h>
 #include <coreplugin/ifile.h>
+
+class QComboBox; 
 
 namespace ProjectExplorer{ class IProjectManager; }
 namespace hammer{ class main_target; }
+namespace Utils { class PathChooser; }
 
 namespace hammer{ namespace QtCreator{
 
 class ProjectManager;
 class HammerProjectFile;
 class HammerProjectNode;
+class HammerBuildConfiguration;
+class HammerTarget;
 
 class HammerProject : public ProjectExplorer::Project
 {
@@ -30,6 +37,11 @@ class HammerProject : public ProjectExplorer::Project
       virtual QStringList files(FilesMode fileMode) const;
 
       const main_target& get_main_target() const { return *m_mainTarget; }
+      ProjectExplorer::ToolChain *toolChain() const;
+      void setToolChain(ProjectExplorer::ToolChain *tc);
+   
+   signals:
+      void toolChainChanged(ProjectExplorer::ToolChain *);
 
    protected:
       virtual bool fromMap(const QVariantMap &map);
@@ -40,6 +52,7 @@ class HammerProject : public ProjectExplorer::Project
       QString m_projectName;
       HammerProjectNode *m_rootNode;
       const main_target* m_mainTarget;
+      ProjectExplorer::ToolChain *m_toolChain;
 };
 
 class HammerProjectFile : public Core::IFile
@@ -68,6 +81,29 @@ class HammerProjectFile : public Core::IFile
    private:
       HammerProject *m_project;
       QString m_fileName;
+};
+
+class HammerBuildSettingsWidget : public ProjectExplorer::BuildConfigWidget
+{
+      Q_OBJECT
+
+   public:
+      HammerBuildSettingsWidget(HammerTarget *target);
+      virtual ~HammerBuildSettingsWidget();
+
+      virtual QString displayName() const;
+      virtual void init(ProjectExplorer::BuildConfiguration *bc);
+
+   private Q_SLOTS:
+      void toolChainSelected(int index);
+      void toolChainChanged(ProjectExplorer::ToolChain *);
+      void updateToolChainList();
+
+   private:
+      HammerTarget *m_target;
+      Utils::PathChooser *m_pathChooser;
+      QComboBox *m_toolChainChooser;
+      HammerBuildConfiguration *m_buildConfiguration;
 };
 
 }}

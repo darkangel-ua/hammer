@@ -16,5 +16,7 @@ qt.moc hammerplugin.moc
     ../src/hammereditorfactory.h
     ../src/hammerproject.h
     ../src/hammertarget.h
+    ../src/hammerbuildconfiguration.h
+    ../src/hammermakestep.h
    ;
 explicit hammerplugin.moc ;

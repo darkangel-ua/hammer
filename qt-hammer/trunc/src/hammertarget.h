@@ -15,7 +15,7 @@ namespace hammer{ namespace QtCreator{
 const char * const HAMMER_DESKTOP_TARGET_ID("HammerProjectManager.HammerTarget");
 
 class HammerProject;
-//class GenericRunConfiguration;
+class HammerBuildConfigurationFactory;
 
 class HammerTargetFactory;
 
@@ -29,13 +29,17 @@ class HammerTarget : public ProjectExplorer::Target
 
       ProjectExplorer::BuildConfigWidget *createConfigWidget();
 
-      HammerProject *genericProject() const;
+      HammerProject *hammerProject() const;
 
       ProjectExplorer::IBuildConfigurationFactory *buildConfigurationFactory() const;
       ProjectExplorer::BuildConfiguration* activeBuildConfiguration() const;
 
    protected:
       bool fromMap(const QVariantMap &map);
+   
+   private:
+      HammerBuildConfigurationFactory *m_buildConfigurationFactory;
+
 };
 
 class HammerTargetFactory : public ProjectExplorer::ITargetFactory

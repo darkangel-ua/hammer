@@ -1,7 +1,10 @@
 #include <coreplugin/ifile.h>
 #include <QFileInfo>
 
+#include <boost/foreach.hpp>
 #include <hammer/core/main_target.h>
+#include <hammer/core/types.h>
+#include <hammer/core/target_type.h>
 
 #include "hammerprojectnode.h"
 #include "hammerproject.h"
@@ -15,6 +18,7 @@ HammerProjectNode::HammerProjectNode(HammerProject* project,
      m_projectFile(projectFile)
 {
    setDisplayName(QString::fromStdString(project->get_main_target().name().to_string()));
+   refresh();
 }
 
 Core::IFile *HammerProjectNode::projectFile() const
@@ -29,6 +33,39 @@ QString HammerProjectNode::projectFilePath() const
 
 void HammerProjectNode::refresh()
 {
+   removeFileNodes(fileNodes(), this);
+   removeFolderNodes(subFolderNodes(), this);
+   
+   FolderNode* srcNode = NULL;
+   FolderNode* incNode = NULL;
+
+   BOOST_FOREACH(const basic_target* bt, m_project->get_main_target().sources())
+   {
+      if (bt->type().equal_or_derived_from(types::CPP) || 
+          bt->type().equal_or_derived_from(types::C))
+      {
+         ProjectExplorer::FileNode* f = new ProjectExplorer::FileNode(QString::fromStdString((bt->location() / bt->name().to_string()).native_file_string()), ProjectExplorer::SourceType, false);
+         if (!srcNode)
+         {
+            srcNode = new FolderNode("src");
+            addFolderNodes(QList<FolderNode*>() << srcNode, this);
+         }
+
+         addFileNodes(QList<ProjectExplorer::FileNode*>() << f, srcNode);
+      }
+      else
+         if (bt->type().equal_or_derived_from(types::H))
+         {
+            ProjectExplorer::FileNode* f = new ProjectExplorer::FileNode(QString::fromStdString((bt->location() / bt->name().to_string()).native_file_string()), ProjectExplorer::HeaderType, false);
+            if (!incNode)
+            {
+               incNode = new FolderNode("include");
+               addFolderNodes(QList<FolderNode*>() << incNode, this);
+            }
+
+            addFileNodes(QList<ProjectExplorer::FileNode*>() << f, incNode);
+         }
+   }
 }
 
 bool HammerProjectNode::hasBuildTargets() const

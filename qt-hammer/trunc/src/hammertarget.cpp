@@ -102,9 +102,7 @@ HammerTarget *HammerTargetFactory::create(ProjectExplorer::Project *parent, cons
     HammerMakeStep *makeStep = new HammerMakeStep(buildSteps);
     buildSteps->insertStep(0, makeStep);
     makeStep->setBuildTarget("debug", /*on=*/true);
-//    bc->setBuildDirectory(hammerProject->projectDirectory());
     t->addBuildConfiguration(bc);
-    t->addDeployConfiguration(t->createDeployConfiguration(ProjectExplorer::Constants::DEFAULT_DEPLOYCONFIGURATION_ID));
 
     // Add a runconfiguration. The CustomExecutableRC one will query the user
     // for its settings, so it is a good choice here.

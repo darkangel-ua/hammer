@@ -19,6 +19,8 @@
 namespace {
    const char * const HAMMER_MS_ID("HammerProjectManager.HammerMakeStep");
    const char * const HAMMER_MS_DISPLAY_NAME(QT_TRANSLATE_NOOP("HammerProjectManager::Internal::HammerMakeStep", "Make"));
+   const char * const HAMMER_MCS_ID("HammerProjectManager.HammerMakeCurrentStep");
+   const char * const HAMMER_MCS_DISPLAY_NAME(QT_TRANSLATE_NOOP("HammerProjectManager::Internal::HammerMakeCurrentStep", "MakeCurrent"));
 
    const char * const BUILD_TARGETS_KEY("HammerProjectManager.HammerMakeStep.BuildTargets");
    const char * const MAKE_ARGUMENTS_KEY("HammerProjectManager.HammerMakeStep.MakeArguments");
@@ -51,6 +53,7 @@ HammerMakeStep::HammerMakeStep(ProjectExplorer::BuildStepList *parent, HammerMak
 void HammerMakeStep::ctor()
 {
    setDefaultDisplayName(QCoreApplication::translate("HammerProjectManager::Internal::HammerMakeStep", HAMMER_MS_DISPLAY_NAME));
+   m_makeCommand = "dhammer";
 }
 
 HammerMakeStep::~HammerMakeStep()
@@ -110,16 +113,7 @@ QString HammerMakeStep::allArguments() const
 
 QString HammerMakeStep::makeCommand() const
 {
-   QString command = m_makeCommand;
-   if (command.isEmpty()) {
-      HammerProject *pro = hammerBuildConfiguration()->hammerTarget()->hammerProject();
-      if (ProjectExplorer::ToolChain *toolChain = pro->toolChain())
-         command = toolChain->makeCommand();
-      else
-         command = QLatin1String("dhammer");
-   }
-
-   return command;
+   return m_makeCommand;
 }
 
 void HammerMakeStep::run(QFutureInterface<bool> &fi)
@@ -151,6 +145,43 @@ void HammerMakeStep::setBuildTarget(const QString &target, bool on)
       old.removeOne(target);
 
    m_buildTargets = old;
+}
+
+HammerMakeCurrentStep::HammerMakeCurrentStep(ProjectExplorer::BuildStepList *parent)
+: AbstractProcessStep(parent, QLatin1String(HAMMER_MCS_ID))
+{
+
+}
+
+ProjectExplorer::BuildStepConfigWidget* 
+HammerMakeCurrentStep::createConfigWidget()
+{
+   return NULL;
+}
+
+bool HammerMakeCurrentStep::init()
+{
+   HammerBuildConfiguration *bc = hammerBuildConfiguration();
+
+   setEnabled(false);
+   ProjectExplorer::ProcessParameters *pp = processParameters();
+   pp->setMacroExpander(bc->macroExpander());
+   pp->setWorkingDirectory(bc->buildDirectory());
+   pp->setEnvironment(bc->environment());
+   pp->setCommand("blabla");
+   pp->setArguments(QString());
+
+   setOutputParser(new ProjectExplorer::GnuMakeParser());
+   if (bc->hammerTarget()->hammerProject()->toolChain())
+      appendOutputParser(bc->hammerTarget()->hammerProject()->toolChain()->outputParser());
+   outputParser()->setWorkingDirectory(pp->effectiveWorkingDirectory());
+
+   return AbstractProcessStep::init();
+}
+
+HammerBuildConfiguration *HammerMakeCurrentStep::hammerBuildConfiguration() const
+{
+   return static_cast<HammerBuildConfiguration *>(buildConfiguration());
 }
 
 HammerMakeStepFactory::HammerMakeStepFactory(QObject *parent) 

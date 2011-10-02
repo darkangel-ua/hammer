@@ -25,6 +25,8 @@
 #include <hammer/core/target_type.h>
 
 #include <QFileInfo>
+#include <QAction>
+
 #include "hammerprojectmanager.h"
 #include "hammerproject.h"
 #include "hammerprojectconstants.h"

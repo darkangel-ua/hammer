@@ -1,9 +1,15 @@
 #include <coreplugin/icontext.h>
 #include <projectexplorer/projectexplorerconstants.h>
 #include <projectexplorer/toolchainmanager.h>
+#include <projectexplorer/headerpath.h>
 #include <extensionsystem/pluginmanager.h>
+#include <cplusplus/ModelManagerInterface.h>
 
 #include <hammer/core/main_target.h>
+#include <hammer/core/feature_set.h>
+#include <hammer/core/feature.h>
+#include <hammer/core/types.h>
+#include <hammer/core/target_type.h>
 
 #include "hammerprojectmanager.h"
 #include "hammerproject.h"
@@ -15,6 +21,7 @@
 #include <QtGui/QFormLayout>
 #include <QtGui/QComboBox>
 #include <utils/pathchooser.h>
+#include <boost/foreach.hpp>
 
 namespace hammer{ namespace QtCreator{
 
@@ -29,19 +36,31 @@ HammerProject::HammerProject(ProjectManager *manager,
    
    QFileInfo fileInfo(QString::fromStdString((m_mainTarget->location() / "hamfile").native_file_string()));
 
-   m_projectName = fileInfo.completeBaseName();
+   m_projectName = QString::fromStdString(mt->name().to_string());
    m_projectFile = new HammerProjectFile(this, fileInfo.absoluteFilePath());
    m_rootNode = new HammerProjectNode(this, m_projectFile);
 
    HammerTargetFactory *factory =
       ExtensionSystem::PluginManager::instance()->getObject<HammerTargetFactory>();
+
    addTarget(factory->create(this, QLatin1String(HAMMER_DESKTOP_TARGET_ID)));
 
+   // setup toolchain 
+   QList<ProjectExplorer::ToolChain*> tcs = ProjectExplorer::ToolChainManager::instance()->toolChains();
+   foreach (ProjectExplorer::ToolChain *tc, tcs)
+      if (tc->typeName() == "MSVC")
+      {
+         m_toolChain = tc;
+         break;
+      }
+
    m_manager->registerProject(this);
+   refresh();
 }
 
 HammerProject::~HammerProject()
 {
+   m_codeModelFuture.cancel();
    m_manager->unregisterProject(this);
 
    delete m_rootNode;
@@ -100,7 +119,87 @@ ProjectExplorer::ProjectNode* HammerProject::rootProjectNode() const
 
 QStringList HammerProject::files(FilesMode fileMode) const
 {
-   return QStringList();
+   QStringList result;
+
+   BOOST_FOREACH(const basic_target* bt, get_main_target().sources())
+   {
+      if (bt->type().equal_or_derived_from(types::CPP) || 
+          bt->type().equal_or_derived_from(types::C))
+      {
+         result.append(QString::fromStdString(bt->full_path().string()));
+      }
+   }
+
+   return result;
+}
+
+void HammerProject::refresh()
+{
+   CPlusPlus::CppModelManagerInterface *modelManager =
+      CPlusPlus::CppModelManagerInterface::instance();
+
+   if (modelManager) {
+      CPlusPlus::CppModelManagerInterface::ProjectInfo pinfo = modelManager->projectInfo(this);
+
+      if (m_toolChain) {
+         pinfo.defines = m_toolChain->predefinedMacros();
+         pinfo.defines += '\n';
+
+         foreach (const ProjectExplorer::HeaderPath &headerPath, m_toolChain->systemHeaderPaths()) {
+            if (headerPath.kind() == ProjectExplorer::HeaderPath::FrameworkHeaderPath)
+               pinfo.frameworkPaths.append(headerPath.path());
+            else
+               pinfo.includePaths.append(headerPath.path());
+         }
+      }
+
+      pinfo.includePaths += allIncludePaths();
+      pinfo.defines += allDefines().join("\n");
+
+      // ### add _defines.
+      pinfo.sourceFiles = files(AllFiles);
+//      pinfo.sourceFiles += generated();
+
+      QStringList filesToUpdate;
+      filesToUpdate = pinfo.sourceFiles;
+      m_codeModelFuture.cancel();
+
+      modelManager->updateProjectInfo(pinfo);
+      m_codeModelFuture = modelManager->updateSourceFiles(filesToUpdate);
+   }
+}
+
+QStringList HammerProject::allIncludePaths() const
+{
+   QStringList result;
+   
+   BOOST_FOREACH(const feature* f, m_mainTarget->properties())
+   {
+      if (f->name() == "include")
+      {
+         location_t l = f->get_path_data().target_->location() / f->value().to_string();
+         l.normalize();
+         result.append(QString::fromStdString(l.native_file_string()));
+      }
+   }
+
+   return result;
+}
+
+QStringList HammerProject::allDefines() const
+{
+   QStringList result;
+   BOOST_FOREACH(const feature* f, m_mainTarget->properties())
+   {
+      if (f->name() == "define")
+      {
+         QString v(f->value().to_string().c_str());
+         v.replace(QString("="), QString(" "));
+         result.append("#define " + v);
+      }
+   }
+
+   return result;
 }
 
 HammerProjectFile::HammerProjectFile(HammerProject *parent, QString fileName)

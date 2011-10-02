@@ -5,6 +5,7 @@
 #include <projectexplorer/toolchain.h>
 #include <projectexplorer/buildstep.h>
 #include <coreplugin/ifile.h>
+#include <QtCore/QFuture>
 
 class QComboBox; 
 
@@ -39,6 +40,7 @@ class HammerProject : public ProjectExplorer::Project
       const main_target& get_main_target() const { return *m_mainTarget; }
       ProjectExplorer::ToolChain *toolChain() const;
       void setToolChain(ProjectExplorer::ToolChain *tc);
+      void refresh();
    
    signals:
       void toolChainChanged(ProjectExplorer::ToolChain *);
@@ -53,6 +55,10 @@ class HammerProject : public ProjectExplorer::Project
       HammerProjectNode *m_rootNode;
       const main_target* m_mainTarget;
       ProjectExplorer::ToolChain *m_toolChain;
+      QFuture<void> m_codeModelFuture;
+
+      QStringList allIncludePaths() const;
+      QStringList allDefines() const;
 };
 
 class HammerProjectFile : public Core::IFile

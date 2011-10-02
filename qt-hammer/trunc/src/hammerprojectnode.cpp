@@ -44,7 +44,7 @@ void HammerProjectNode::refresh()
       if (bt->type().equal_or_derived_from(types::CPP) || 
           bt->type().equal_or_derived_from(types::C))
       {
-         ProjectExplorer::FileNode* f = new ProjectExplorer::FileNode(QString::fromStdString((bt->location() / bt->name().to_string()).native_file_string()), ProjectExplorer::SourceType, false);
+         ProjectExplorer::FileNode* f = new ProjectExplorer::FileNode(QString::fromStdString(bt->full_path().string()), ProjectExplorer::SourceType, false);
          if (!srcNode)
          {
             srcNode = new FolderNode("src");
@@ -56,7 +56,7 @@ void HammerProjectNode::refresh()
       else
          if (bt->type().equal_or_derived_from(types::H))
          {
-            ProjectExplorer::FileNode* f = new ProjectExplorer::FileNode(QString::fromStdString((bt->location() / bt->name().to_string()).native_file_string()), ProjectExplorer::HeaderType, false);
+            ProjectExplorer::FileNode* f = new ProjectExplorer::FileNode(QString::fromStdString(bt->full_path().string()), ProjectExplorer::HeaderType, false);
             if (!incNode)
             {
                incNode = new FolderNode("include");

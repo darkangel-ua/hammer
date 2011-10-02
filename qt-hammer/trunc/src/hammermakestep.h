@@ -49,6 +49,20 @@ class HammerMakeStep : public ProjectExplorer::AbstractProcessStep
       QString m_makeCommand;
 };
 
+class HammerMakeCurrentStep : public ProjectExplorer::AbstractProcessStep
+{
+      Q_OBJECT
+      friend class HammerMakeStepConfigWidget; // TODO remove again?
+      friend class HammerMakeStepFactory;
+
+   public:
+      HammerMakeCurrentStep(ProjectExplorer::BuildStepList *parent);
+
+      HammerBuildConfiguration *hammerBuildConfiguration() const;
+      virtual bool init();
+      virtual ProjectExplorer::BuildStepConfigWidget *createConfigWidget();
+};
+
 class HammerMakeStepConfigWidget :public ProjectExplorer::BuildStepConfigWidget
 {
       Q_OBJECT

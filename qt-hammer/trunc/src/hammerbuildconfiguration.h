@@ -25,10 +25,12 @@ class HammerBuildConfiguration : public ProjectExplorer::BuildConfiguration
       HammerTarget *hammerTarget() const;
 
       virtual QString buildDirectory() const;
+      virtual QVariantMap toMap() const;
 
       ProjectExplorer::IOutputParser *createOutputParser() const;
 
       BuildType buildType() const;
+      virtual bool fromMap(const QVariantMap &map);
 
    protected:
       HammerBuildConfiguration(HammerTarget *parent, HammerBuildConfiguration *source);

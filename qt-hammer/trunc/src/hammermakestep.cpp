@@ -19,8 +19,7 @@
 namespace {
    const char * const HAMMER_MS_ID("HammerProjectManager.HammerMakeStep");
    const char * const HAMMER_MS_DISPLAY_NAME(QT_TRANSLATE_NOOP("HammerProjectManager::Internal::HammerMakeStep", "Make"));
-   const char * const HAMMER_MCS_ID("HammerProjectManager.HammerMakeCurrentStep");
-   const char * const HAMMER_MCS_DISPLAY_NAME(QT_TRANSLATE_NOOP("HammerProjectManager::Internal::HammerMakeCurrentStep", "MakeCurrent"));
+   const char * const HAMMER_MAKE_CURRENT_DISPLAY_NAME(QT_TRANSLATE_NOOP("HammerProjectManager::Internal::HammerMakeCurrentStep", "MakeCurrent"));
 
    const char * const BUILD_TARGETS_KEY("HammerProjectManager.HammerMakeStep.BuildTargets");
    const char * const MAKE_ARGUMENTS_KEY("HammerProjectManager.HammerMakeStep.MakeArguments");
@@ -148,7 +147,13 @@ void HammerMakeStep::setBuildTarget(const QString &target, bool on)
 }
 
 HammerMakeCurrentStep::HammerMakeCurrentStep(ProjectExplorer::BuildStepList *parent)
-: AbstractProcessStep(parent, QLatin1String(HAMMER_MCS_ID))
+: AbstractProcessStep(parent, QLatin1String(HAMMER_MAKE_CURRENT_ID))
+{
+
+}
+
+HammerMakeCurrentStep::HammerMakeCurrentStep(ProjectExplorer::BuildStepList *parent, HammerMakeCurrentStep *bs)
+   : AbstractProcessStep(parent, bs)
 {
 
 }
@@ -159,17 +164,21 @@ HammerMakeCurrentStep::createConfigWidget()
    return NULL;
 }
 
+void HammerMakeCurrentStep::run(QFutureInterface<bool> &fi)
+{
+   AbstractProcessStep::run(fi);
+}
+
 bool HammerMakeCurrentStep::init()
 {
    HammerBuildConfiguration *bc = hammerBuildConfiguration();
 
-   setEnabled(false);
+   setEnabled(true);
    ProjectExplorer::ProcessParameters *pp = processParameters();
    pp->setMacroExpander(bc->macroExpander());
    pp->setWorkingDirectory(bc->buildDirectory());
    pp->setEnvironment(bc->environment());
-   pp->setCommand("blabla");
-   pp->setArguments(QString());
+   pp->setCommand("dhammer");
 
    setOutputParser(new ProjectExplorer::GnuMakeParser());
    if (bc->hammerTarget()->hammerProject()->toolChain())
@@ -177,6 +186,12 @@ bool HammerMakeCurrentStep::init()
    outputParser()->setWorkingDirectory(pp->effectiveWorkingDirectory());
 
    return AbstractProcessStep::init();
+}
+
+void HammerMakeCurrentStep::setTargetToBuid(const QString& target, const QString& projectPath)
+{
+   ProjectExplorer::ProcessParameters *pp = processParameters();
+   pp->setArguments("--just-one-source \"" + target + "\" --just-one-source-project-path \"" + projectPath + "\"");
 }
 
 HammerBuildConfiguration *HammerMakeCurrentStep::hammerBuildConfiguration() const
@@ -203,29 +218,37 @@ bool HammerMakeStepFactory::canCreate(ProjectExplorer::BuildStepList *parent,
 }
 
 ProjectExplorer::BuildStep *HammerMakeStepFactory::create(ProjectExplorer::BuildStepList *parent,
-                                                           const QString &id)
+                                                          const QString &id)
 {
    if (!canCreate(parent, id))
       return NULL;
 
-   return new HammerMakeStep(parent);
+   if (id == HAMMER_MAKE_CURRENT_ID)
+      return new HammerMakeCurrentStep(parent);
+   else
+      return new HammerMakeStep(parent);
 }
 
 bool HammerMakeStepFactory::canClone(ProjectExplorer::BuildStepList *parent,
-                                      ProjectExplorer::BuildStep *source) const
+                                     ProjectExplorer::BuildStep *source) const
 {
    const QString id(source->id());
    return canCreate(parent, id);
 }
 
 ProjectExplorer::BuildStep *HammerMakeStepFactory::clone(ProjectExplorer::BuildStepList *parent,
-                                                          ProjectExplorer::BuildStep *source)
+                                                         ProjectExplorer::BuildStep *source)
 {
    if (!canClone(parent, source))
-      return 0;
-   HammerMakeStep *old(qobject_cast<HammerMakeStep *>(source));
-   Q_ASSERT(old);
-   return new HammerMakeStep(parent, old);
+      return NULL;
+
+   if (HammerMakeStep* old = qobject_cast<HammerMakeStep*>(source))
+      return new HammerMakeStep(parent, old);
+   else
+      if (HammerMakeCurrentStep* old = qobject_cast<HammerMakeCurrentStep*>(source))
+         return new HammerMakeCurrentStep(parent, old);
+      else
+         return NULL;
 }
 
 bool HammerMakeStepFactory::canRestore(ProjectExplorer::BuildStepList *parent,
@@ -254,7 +277,7 @@ QStringList HammerMakeStepFactory::availableCreationIds(ProjectExplorer::BuildSt
    if (parent->target()->project()->id() != QLatin1String(HAMMERPROJECT_ID))
       return QStringList();
 
-   return QStringList() << QLatin1String(HAMMER_MS_ID);
+   return QStringList() << QLatin1String(HAMMER_MS_ID) << QLatin1String(HAMMER_MAKE_CURRENT_ID);
 }
 
 QString HammerMakeStepFactory::displayNameForId(const QString &id) const

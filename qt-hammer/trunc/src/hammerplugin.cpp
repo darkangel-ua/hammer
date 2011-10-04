@@ -10,6 +10,9 @@
 #include <projectexplorer/projectexplorer.h>
 #include <projectexplorer/session.h>
 #include <projectexplorer/projectnodes.h>
+#include <projectexplorer/buildsteplist.h>
+#include <projectexplorer/buildmanager.h>
+#include <projectexplorer/buildconfiguration.h>
 
 #include <QStringList>
 #include <QtPlugin>
@@ -70,7 +73,26 @@ bool HammerPlugin::initialize(const QStringList &arguments, QString *errorMessag
 
 void HammerPlugin::buildCurrentFile()
 {
-    QMessageBox::information(0, tr("Hello World!"), tr("Hello World! Beautiful day today, isn't it?"));
+   using namespace hammer::QtCreator;
+
+   ProjectExplorer::ProjectExplorerPlugin* projectExplorer = ProjectExplorer::ProjectExplorerPlugin::instance();
+   Core::IFile* file = Core::ICore::instance()->editorManager()->currentEditor()->file();
+   if (file)
+   {
+      ProjectExplorer::Project* p = projectExplorer->session()->projectForFile(file->fileName());
+      if (p && p->activeTarget())
+      {
+         ProjectExplorer::Target* target = p->activeTarget();
+         ProjectExplorer::BuildStepList* bsl = p->activeTarget()
+                                                ->activeBuildConfiguration()
+                                                ->stepList(hammer::QtCreator::HAMMER_BC_BUILD_CURRENT_LIST_ID);
+         HammerMakeCurrentStep* step = qobject_cast<HammerMakeCurrentStep*>(bsl->at(0));
+         QDir projectDir(QFileInfo(p->file()->fileName()).dir());
+         step->setTargetToBuid(projectDir.relativeFilePath(file->fileName()), projectDir.absolutePath());
+         projectExplorer->buildManager()
+                        ->buildList(bsl);
+      }
+   }
 }
 
 void HammerPlugin::currentEditorChanged(Core::IEditor* editor)

@@ -3,17 +3,17 @@
 #include "hammermakestep.h"
 #include "hammerproject.h"
 #include "hammertarget.h"
+#include "hammerprojectconstants.h"
 
 #include <projectexplorer/buildsteplist.h>
 #include <projectexplorer/toolchain.h>
 #include <projectexplorer/projectexplorerconstants.h>
+#include <projectexplorer/buildsteplist.h>
 #include <utils/qtcassert.h>
 
 #include <QtGui/QInputDialog>
 
 using ProjectExplorer::BuildConfiguration;
-
-static const char * const HAMMER_BC_ID("HammerProjectManager.HammerBuildConfiguration");
 
 namespace hammer{ namespace QtCreator{
 
@@ -108,16 +108,57 @@ HammerBuildConfiguration* HammerBuildConfigurationFactory::create(ProjectExplore
         return 0;
 
     HammerBuildConfiguration *bc = new HammerBuildConfiguration(target);
+    // we need to add current file build list, and this is only way for now
+    QVariantMap saved_bc = bc->toMap();
+    bc->fromMap(saved_bc);
+
     bc->setDisplayName(buildConfigurationName);
 
-    ProjectExplorer::BuildStepList *buildSteps = bc->stepList(ProjectExplorer::Constants::BUILDSTEPS_BUILD);
-    Q_ASSERT(buildSteps);
-    HammerMakeStep *makeStep = new HammerMakeStep(buildSteps);
-    buildSteps->insertStep(0, makeStep);
-    makeStep->setBuildTarget("all", /* on = */ true);
+    {
+       ProjectExplorer::BuildStepList *buildSteps = bc->stepList(ProjectExplorer::Constants::BUILDSTEPS_BUILD);
+       Q_ASSERT(buildSteps);
+       HammerMakeStep *makeStep = new HammerMakeStep(buildSteps);
+       buildSteps->insertStep(0, makeStep);
+       makeStep->setBuildTarget("all", /*on=*/true);
 
-    target->addBuildConfiguration(bc); // also makes the name unique...
+       target->addBuildConfiguration(bc); // also makes the name unique...
+    }
+
+    {
+       ProjectExplorer::BuildStepList *buildSteps = bc->stepList(HAMMER_BC_BUILD_CURRENT_LIST_ID);
+       Q_ASSERT(buildSteps);
+       HammerMakeCurrentStep *makeStep = new HammerMakeCurrentStep(buildSteps);
+       buildSteps->insertStep(0, makeStep);
+       target->addBuildConfiguration(bc); // also makes the name unique...
+    }
+
     return bc;
+}
+
+// from QtCreator projectexplorer/buildconfiguration.cpp
+static const char* const BUILD_STEP_LIST_COUNT("ProjectExplorer.BuildConfiguration.BuildStepListCount");
+static const char* const BUILD_STEP_LIST_PREFIX("ProjectExplorer.BuildConfiguration.BuildStepList.");
+
+QVariantMap HammerBuildConfiguration::toMap() const
+{
+   QVariantMap result = BuildConfiguration::toMap();
+
+   // we need to add current file build step coz there is no other way to do except toMap/fromMap
+   if (stepList(HAMMER_BC_BUILD_CURRENT_LIST_ID) == NULL)
+   {
+      result[BUILD_STEP_LIST_COUNT] = result[BUILD_STEP_LIST_COUNT].toInt() + 1;
+      ProjectExplorer::BuildStepList* bsl = new ProjectExplorer::BuildStepList(const_cast<HammerBuildConfiguration*>(this), HAMMER_BC_BUILD_CURRENT_LIST_ID);
+      bsl->insertStep(0, new HammerMakeCurrentStep(bsl));
+      result[QString(BUILD_STEP_LIST_PREFIX) + QString::number(result[BUILD_STEP_LIST_COUNT].toInt() - 1)] = bsl->toMap();
+      delete bsl;
+   }
+
+   return result;
+}
+
+bool HammerBuildConfiguration::fromMap(const QVariantMap &map)
+{
+   return ProjectExplorer::BuildConfiguration::fromMap(map);
 }
 
 bool HammerBuildConfigurationFactory::canClone(ProjectExplorer::Target *parent, ProjectExplorer::BuildConfiguration *source) const

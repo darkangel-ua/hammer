@@ -9,6 +9,7 @@
 #include "hammerproject.h"
 #include "hammerbuildconfiguration.h"
 #include "hammermakestep.h"
+#include "hammerprojectconstants.h"
 
 namespace hammer{ namespace QtCreator{
 
@@ -96,17 +97,26 @@ HammerTarget *HammerTargetFactory::create(ProjectExplorer::Project *parent, cons
 
     // Set up BuildConfiguration:
     HammerBuildConfiguration *bc = new HammerBuildConfiguration(t);
+    // we need to add current file build list, and this is only way for now
+    QVariantMap saved_bc = bc->toMap();
+    bc->fromMap(saved_bc);
+
     bc->setDisplayName("debug");
 
-    ProjectExplorer::BuildStepList *buildSteps = bc->stepList(ProjectExplorer::Constants::BUILDSTEPS_BUILD);
-    HammerMakeStep *makeStep = new HammerMakeStep(buildSteps);
-    buildSteps->insertStep(0, makeStep);
-    makeStep->setBuildTarget("debug", /*on=*/true);
-    t->addBuildConfiguration(bc);
-
-    // Add a runconfiguration. The CustomExecutableRC one will query the user
-    // for its settings, so it is a good choice here.
-    t->addRunConfiguration(new ProjectExplorer::CustomExecutableRunConfiguration(t));
+    {
+       ProjectExplorer::BuildStepList *buildSteps = bc->stepList(ProjectExplorer::Constants::BUILDSTEPS_BUILD);
+       HammerMakeStep *makeStep = new HammerMakeStep(buildSteps);
+       buildSteps->insertStep(0, makeStep);
+       makeStep->setBuildTarget("debug", /*on=*/true);
+       t->addBuildConfiguration(bc);
+       t->addRunConfiguration(new ProjectExplorer::CustomExecutableRunConfiguration(t));
+    }
+    {
+       ProjectExplorer::BuildStepList *buildSteps = bc->stepList(HAMMER_BC_BUILD_CURRENT_LIST_ID);
+       Q_ASSERT(buildSteps);
+       HammerMakeCurrentStep *makeStep = new HammerMakeCurrentStep(buildSteps);
+       buildSteps->insertStep(0, makeStep);
+    }
 
     return t;
 }

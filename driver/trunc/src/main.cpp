@@ -492,6 +492,9 @@ namespace
             project_for_source = &e.load_project(opts.just_one_source_project_path_);
 
          build_node_ptr source_node = find_nodes_for_source_name(nodes, pstring(e.pstring_pool(), opts.just_one_source_), project_for_source);
+         if (!source_node)
+            throw std::runtime_error("Source file not founded");
+
          nodes_t source_project_nodes = find_top_source_project_nodes(nodes, project_for_source);
          
          // collect all nodes prior to main source project nodes

@@ -22,6 +22,10 @@ feature.feature library : : free dependency incidental ;
 feature.feature source : : free dependency incidental ;
 feature.feature use : : free dependency incidental ;
 feature.feature dependency : : free dependency incidental ;
+#this is used by core to handle pch and qt uic target types
+#makes target simple sources depends on feature value, so, in case of pch - 
+#pch sources builded before main sources. Same for qt.uic
+feature.feature src-dependency : : free dependency incidental ;
 feature.feature optimization : off speed space ;
 feature.feature profiling : off on ;
 feature.feature inlining : off on full ;

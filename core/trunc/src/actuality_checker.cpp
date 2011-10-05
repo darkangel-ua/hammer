@@ -106,6 +106,7 @@ bool actuality_checker::check(boost::posix_time::ptime& max_target_time, std::si
       }
    }
 
+/*
    // if we have some sources and they older then dependencies than
    // we should mark all nodes down from here to update, 
    // because we should build dependencies first and than sources
@@ -115,6 +116,7 @@ bool actuality_checker::check(boost::posix_time::ptime& max_target_time, std::si
    {
       mark_to_update(node, nodes_to_update, node.products_owner());
    }
+*/
 
    sources_max_time = (std::max)(sources_max_time, dependency_max_time);
    ptime products_max_time(boost::date_time::neg_infin);

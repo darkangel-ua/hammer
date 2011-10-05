@@ -36,17 +36,6 @@ namespace hammer
             bool need_tag_;
          };
 
-         struct construct_result_t
-         {
-            construct_result_t(const build_nodes_t& result) : result_(result) {}
-            construct_result_t(const build_nodes_t& result, const build_nodes_t& deps) 
-               : result_(result), dependencies_(deps) 
-            {}
-
-            build_nodes_t result_;
-            build_nodes_t dependencies_;
-         };
-
          typedef std::vector<consumable_type> consumable_types_t;
          typedef std::vector<produced_type> producable_types_t;
          
@@ -65,7 +54,7 @@ namespace hammer
          const producable_types_t& producable_types() const { return target_types_; }
          const feature_set* constraints() const { return constraints_; }
  
-         virtual construct_result_t
+         virtual build_nodes_t
          construct(const target_type& type_to_construct, 
                    const feature_set& props,
                    const build_nodes_t& sources,
@@ -83,8 +72,11 @@ namespace hammer
          const build_action* action() const { return action_.get(); } 
 
       protected:
-         virtual basic_target* create_target(const main_target* mt, const pstring& n, 
-                                             const target_type* t, const feature_set* f) const;
+         virtual basic_target* create_target(const main_target* mt, 
+                                             const build_node::sources_t& sources,
+                                             const pstring& n, 
+                                             const target_type* t, 
+                                             const feature_set* f) const;
 
       private:
          hammer::engine* engine_;

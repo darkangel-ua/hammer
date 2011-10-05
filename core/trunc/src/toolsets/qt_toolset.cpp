@@ -37,6 +37,7 @@ const type_tag qt_ui("QT_UI");
 const type_tag qt_uiced_h("QT_UICED_H");
 const type_tag qt_uic_main("QT_UIC_MAIN");
 const type_tag qt_rc("QT_RC");
+const type_tag qt_rced_cpp("QT_RCED_CPP");
 
 class qt_uic_main_target : public main_target
 {
@@ -104,8 +105,11 @@ void qt_uic_meta_target::compute_usage_requirements(feature_set& result,
 
    feature* uic_inc = result.owner().create_feature("include", relative_path(owner->intermediate_dir(), location()).string());
    uic_inc->get_path_data().target_ = owner->get_meta_target();
+   feature* src_dep = result.owner().create_feature("src-dependency", name().to_string());
+   src_dep->get_dependency_data().source_ = source_decl(pstring(), name(), NULL, NULL);
 
-   result.join(uic_inc);
+   result.join(uic_inc)
+         .join(src_dep);
 }
 
 static sources_decl qt_uic_rule(project* p,
@@ -246,6 +250,7 @@ static void add_lib(project& qt_project, const string& lib_name, const vector<st
 	requirements_decl debug_req;
 	feature* top_include_feature = e.feature_registry().create_feature("include", "./include");
 	feature* include_feature = e.feature_registry().create_feature("include", "./include/" + lib_name);
+   feature* qt_no_debug_feature = e.feature_registry().create_feature("define", "QT_NO_DEBUG");
 	{
 		auto_ptr<just_feature_requirement> include_req(new just_feature_requirement(include_feature));
 		include_req->set_public(true);
@@ -258,26 +263,49 @@ static void add_lib(project& qt_project, const string& lib_name, const vector<st
 	}
 	debug_req.add(auto_ptr<requirement_base>(new just_feature_requirement(e.feature_registry().create_feature("variant", "debug"))));
 
-	requirements_decl  release_or_profile_req;
+	requirements_decl release_req;
 	{
 		auto_ptr<just_feature_requirement> include_req(new just_feature_requirement(include_feature));
 		include_req->set_public(true);
-		release_or_profile_req.add(auto_ptr<requirement_base>(include_req));
+		release_req.add(auto_ptr<requirement_base>(include_req));
 	}
 	{
 		auto_ptr<just_feature_requirement> top_include_req(new just_feature_requirement(top_include_feature));
 		top_include_req->set_public(true);
-		release_or_profile_req.add(auto_ptr<requirement_base>(top_include_req));
+		release_req.add(auto_ptr<requirement_base>(top_include_req));
 	}
+   {
+      auto_ptr<just_feature_requirement> qt_no_debug(new just_feature_requirement(qt_no_debug_feature));
+      qt_no_debug->set_public(true);
+      release_req.add(auto_ptr<requirement_base>(qt_no_debug));
+   }
+   release_req.add(auto_ptr<requirement_base>(new just_feature_requirement(e.feature_registry().create_feature("variant", "release"))));
+
+   requirements_decl profile_req;
+   {
+      auto_ptr<just_feature_requirement> include_req(new just_feature_requirement(include_feature));
+      include_req->set_public(true);
+      profile_req.add(auto_ptr<requirement_base>(include_req));
+   }
+   {
+      auto_ptr<just_feature_requirement> top_include_req(new just_feature_requirement(top_include_feature));
+      top_include_req->set_public(true);
+      profile_req.add(auto_ptr<requirement_base>(top_include_req));
+   }
+   profile_req.add(auto_ptr<requirement_base>(new just_feature_requirement(e.feature_registry().create_feature("variant", "profile"))));
 
 	auto_ptr<prebuilt_lib_meta_target> lib_debug(
 			new prebuilt_lib_meta_target(&qt_project,
 										 pstring(e.pstring_pool(), lib_name),
 										 pstring(e.pstring_pool(), "./lib/" + lib_name + "d4.lib"), debug_req, requirements_decl()));
-	auto_ptr<prebuilt_lib_meta_target> lib_non_debug(
+	auto_ptr<prebuilt_lib_meta_target> lib_release(
 			new prebuilt_lib_meta_target(&qt_project,
 										 pstring(e.pstring_pool(), lib_name),
-										 pstring(e.pstring_pool(), "./lib/" + lib_name + "4.lib"), release_or_profile_req, requirements_decl()));
+										 pstring(e.pstring_pool(), "./lib/" + lib_name + "4.lib"), release_req, requirements_decl()));
+	auto_ptr<prebuilt_lib_meta_target> lib_profile(
+			new prebuilt_lib_meta_target(&qt_project,
+										 pstring(e.pstring_pool(), lib_name),
+										 pstring(e.pstring_pool(), "./lib/" + lib_name + "4.lib"), profile_req, requirements_decl()));
 
 	for(size_t i = 0; i < dependencies.size(); ++i)
 	{
@@ -294,11 +322,13 @@ static void add_lib(project& qt_project, const string& lib_name, const vector<st
 	   }
 
 	   lib_debug->usage_requirements().insert(usage_req);
-      lib_non_debug->usage_requirements().insert(usage_req);
+      lib_release->usage_requirements().insert(usage_req);
+      lib_profile->usage_requirements().insert(usage_req);
 	}
 
 	qt_project.add_target(auto_ptr<basic_meta_target>(lib_debug));
-	qt_project.add_target(auto_ptr<basic_meta_target>(lib_non_debug));
+	qt_project.add_target(auto_ptr<basic_meta_target>(lib_release));
+   qt_project.add_target(auto_ptr<basic_meta_target>(lib_profile));
 }
 
 void qt_toolset::init_impl(engine& e, const std::string& version_id,
@@ -311,6 +341,7 @@ void qt_toolset::init_impl(engine& e, const std::string& version_id,
 	   e.get_type_registry().insert(target_type(qt_mocable, ""));
 		e.get_type_registry().insert(target_type(qt_ui, ".ui"));
 		e.get_type_registry().insert(target_type(qt_rc, ".qrc"));
+      e.get_type_registry().insert(target_type(qt_rced_cpp, ".cpp", e.get_type_registry().get(types::CPP), "qrc_"));
       e.get_type_registry().insert(target_type(qt_uiced_h, ".h", e.get_type_registry().get(types::H), "ui_"));
       e.get_type_registry().insert(target_type(qt_uic_main, ""));
 
@@ -334,6 +365,27 @@ void qt_toolset::init_impl(engine& e, const std::string& version_id,
          g->action(uic_action);
          e.generators().insert(g);
 		}
+
+      // QT_RC -> QT_RCED_CPP
+      {
+         shared_ptr<source_argument_writer> rcc_source(new source_argument_writer("rcc_source", e.get_type_registry().get(qt_rc)));
+         shared_ptr<product_argument_writer> rcc_product(new product_argument_writer("rcc_product", e.get_type_registry().get(qt_rced_cpp)));
+         cmdline_builder rcc_cmd((*toolset_home / "bin/rcc").native_file_string() + " -o \"$(rcc_product)\" $(rcc_source)");
+
+         rcc_cmd += rcc_source;
+         rcc_cmd += rcc_product;
+
+         auto_ptr<cmdline_action> rcc_action(new cmdline_action("qt.rcc", rcc_product));
+         *rcc_action += rcc_cmd;
+
+         generator::consumable_types_t source;
+         generator::producable_types_t target;
+         source.push_back(generator::consumable_type(e.get_type_registry().get(qt_rc), 1, 0));
+         target.push_back(generator::produced_type(e.get_type_registry().get(qt_rced_cpp)));
+         auto_ptr<generator> g(new generator(e, "qt.rcc", source, target, false));
+         g->action(rcc_action);
+         e.generators().insert(g);
+      }
 
 		// QT_MOCABLE -> CPP
       {

@@ -96,7 +96,7 @@ generator_registry::transform(const generator& target_generator,
 {
    for(generator::consumable_types_t::const_iterator i = current_generator.consumable_types().begin(), last = current_generator.consumable_types().end(); i != last; ++i)
    {
-      viable_generators_t vg(find_viable_generators(*i->type_, current_generator.include_composite_generators(), props));
+      viable_generators_t vg(find_viable_generators(*i->type_, current_generator.include_composite_generators(), props, /*full_match=*/true));
       if (vg.empty())
          continue;
 
@@ -104,10 +104,36 @@ generator_registry::transform(const generator& target_generator,
       {
          if (g_i->first->is_consumable(source_target->type()))
          {
-            generator::construct_result_t r(g_i->first->construct(*g_i->second, props, build_nodes_t(1, source_node), source_target, 0, owner));
-            source_node->dependencies_.insert(source_node->dependencies_.end(), r.dependencies_.begin(), r.dependencies_.end());
+            build_nodes_t r(g_i->first->construct(*g_i->second, props, build_nodes_t(1, source_node), source_target, 0, owner));
             remove_dups(source_node->dependencies_);
-            result->insert(result->end(), r.result_.begin(), r.result_.end());
+            result->insert(result->end(), r.begin(), r.end());
+            return true;
+         }
+         else
+         {
+            build_nodes_t this_result;
+            if (transform(target_generator, *g_i->first, source_target, source_node, &this_result, props, owner))
+            {
+               for(build_nodes_t::const_iterator r_i = this_result.begin(), r_last = this_result.end(); r_i != r_last; ++r_i)
+                  transform_to_consumable(target_generator, current_generator, *r_i, result, props, owner);
+
+               return true;
+            }
+         }
+      }
+
+      // !!!!! This is copy paste from above!!!!
+      vg = find_viable_generators(*i->type_, current_generator.include_composite_generators(), props, /*full_match=*/false);
+      if (vg.empty())
+         continue;
+
+      for(viable_generators_t::const_iterator g_i = vg.begin(), g_last = vg.end(); g_i != g_last; ++g_i)
+      {
+         if (g_i->first->is_consumable(source_target->type()))
+         {
+            build_nodes_t r(g_i->first->construct(*g_i->second, props, build_nodes_t(1, source_node), source_target, 0, owner));
+            remove_dups(source_node->dependencies_);
+            result->insert(result->end(), r.begin(), r.end());
             return true;
          }
          else
@@ -218,13 +244,9 @@ generator_registry::construct(const main_target* mt) const
       throw runtime_error((boost::format("Can't find transformation 'sources' -> '%s'.")
                               % mt->type().tag().name()).str());
 
-   generator::construct_result_t r(choosed_generator->generator_->construct(mt->type(), mt->properties(), choosed_generator->transformed_sources_, 0, &mt->name(), *mt));
-   if (!r.result_.empty())
-   {
-      r.result_[0]->dependencies_.insert(r.result_[0]->dependencies_.end(), r.dependencies_.begin(), r.dependencies_.end());
-
-      return r.result_;
-   }
+   build_nodes_t r(choosed_generator->generator_->construct(mt->type(), mt->properties(), choosed_generator->transformed_sources_, 0, &mt->name(), *mt));
+   if (!r.empty())
+      return r;
 
    // FIXME: error messages
    throw std::runtime_error("No viable generator found.");

@@ -15,7 +15,7 @@ fake_generator::fake_generator(engine& e,
 {
 }
 
-generator::construct_result_t
+build_nodes_t
 fake_generator::construct(const target_type& type_to_construct, 
                           const feature_set& props,
                           const build_nodes_t& sources,
@@ -26,30 +26,28 @@ fake_generator::construct(const target_type& type_to_construct,
    // Because fake target always exists and up to date we need make it depends on sources
    // so actuality checker will go thought it
    
-   construct_result_t result = generator::construct(type_to_construct, props, sources, source_target, composite_target_name, owner);
+   build_nodes_t result = generator::construct(type_to_construct, props, sources, source_target, composite_target_name, owner);
 
    build_nodes_t dependencies;
-   BOOST_FOREACH(const build_nodes_t::value_type& n, result.result_)
+   BOOST_FOREACH(const build_nodes_t::value_type& n, result)
       BOOST_FOREACH(const build_node::source_t& s, n->sources_)
          dependencies.push_back(s.source_node_);
 
-   result.dependencies_.insert(result.dependencies_.end(), dependencies.begin(), dependencies.end());
-   remove_dups(result.dependencies_);
+   remove_dups(dependencies);
 
-   BOOST_FOREACH(const build_nodes_t::value_type& n, result.result_)
-      n->dependencies_.insert(n->dependencies_.end(), result.dependencies_.begin(), result.dependencies_.end());
-
-   result.dependencies_.clear();
+   BOOST_FOREACH(const build_nodes_t::value_type& n, result)
+      n->dependencies_.insert(n->dependencies_.end(), dependencies.begin(), dependencies.end());
 
    return result;
 }
 
 basic_target* fake_generator::create_target(const main_target* mt, 
+                                            const build_node::sources_t& sources,
                                             const pstring& n, 
                                             const target_type* t, 
                                             const feature_set* f) const
 {
-   return new fake_target(mt, n, t, f);
+   return new fake_target(mt, sources, n, t, f);
 }
 
 }

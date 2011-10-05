@@ -48,6 +48,7 @@ namespace hammer
          const timestamp_info_t& timestamp_info() const;
 
          virtual const location_t& location() const;
+         location_t full_path() const;
 
          const std::string& hash_string() const;
          static std::string hash_string(const feature_set& fs, const main_target& mt);

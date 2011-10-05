@@ -68,6 +68,7 @@ namespace hammer
    void extract_sources(sources_decl& result, const feature_set& fs);
    void extract_uses(sources_decl& result, const feature_set& fs);
    void extract_dependencies(sources_decl& result, const feature_set& fs);
+   void extract_src_dependencies(sources_decl& result, const feature_set& fs);
    feature_set* parse_simple_set(const std::string& s, feature_registry& r);
    void dump_for_hash(std::ostream& s, const feature_set& fs, bool dump_all = false);
    std::string dump_for_hash(const feature_set& fs, bool dump_all = false);

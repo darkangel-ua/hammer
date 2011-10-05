@@ -16,7 +16,7 @@ namespace hammer
       public:
          struct suffix_def
          {
-            suffix_def() {};
+            suffix_def() : condition_(NULL) {};
             suffix_def(const std::string& suffix) : suffix_(suffix), condition_(NULL) {}
             suffix_def(const char* suffix) : suffix_(suffix), condition_(NULL) {}
             suffix_def(const char* suffix,

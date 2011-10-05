@@ -67,4 +67,11 @@ engine* basic_target::get_engine() const
    return main_target_->get_meta_target()->get_engine();
 }
 
+location_t basic_target::full_path() const
+{
+   location_t l = location() / name().to_string();
+   l.normalize();
+   return l;
+}
+
 }

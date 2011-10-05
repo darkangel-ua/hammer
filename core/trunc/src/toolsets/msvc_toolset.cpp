@@ -144,7 +144,7 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
    shared_ptr<free_feature_arg_writer> defines(new free_feature_arg_writer("defines", e.feature_registry().get_def("define"), "-D \"", "\""));
    shared_ptr<free_feature_arg_writer> undefines(new free_feature_arg_writer("undefines", e.feature_registry().get_def("undef"), "-U \"", "\""));
 
-   shared_ptr<source_argument_writer> cpp_input(new source_argument_writer("cpp_input", e.get_type_registry().get(types::CPP)));
+   shared_ptr<source_argument_writer> cpp_input(new source_argument_writer("cpp_input", e.get_type_registry().get(types::CPP), /*exact_type=*/false));
    shared_ptr<source_argument_writer> res_sources(new source_argument_writer("res_sources", e.get_type_registry().get(types::RES)));
    shared_ptr<pch_argument_writer> create_pch_header(new pch_argument_writer("create_pch_header", pch_argument_writer::part::header,
                                                                              "/Yc\"", "\""));
@@ -304,22 +304,26 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
                                                                                       product_argument_writer::output_strategy::FULL_UNC_PATH));
       shared_ptr<product_argument_writer> exe_product(new product_argument_writer("exe_product", e.get_type_registry().get(types::EXE)));
       shared_ptr<product_argument_writer> exe_manifest_product(new product_argument_writer("exe_manifest_product", e.get_type_registry().get(types::EXE_MANIFEST)));
-      auto_ptr<cmdline_action> exe_action(new cmdline_action("link-exe", exe_product));
-      cmdline_builder exe_cmd(config_data.linker_.native_file_string() + " /nologo /MANIFEST $(link_flags) $(user_link_flags) $(searched_lib_searched_dirs) /out:\"$(exe_product_unc)\" $(obj_sources) $(res_sources) $(static_lib_sources) $(prebuilt_lib_sources) $(searched_lib_sources) $(import_lib_sources)\n"
+      cmdline_builder exe_cmd(config_data.linker_.native_file_string() + " \"@$(exe_product).rsp\"\n"
                               "if %ERRORLEVEL% NEQ 0 EXIT %ERRORLEVEL%\n"
                               "if exist \"$(exe_manifest_product)\" (" + config_data.manifest_tool_.native_file_string() + " -nologo -manifest \"$(exe_manifest_product)\" \"-outputresource:$(exe_product)\")");
-      exe_cmd += link_flags;
-      exe_cmd += user_link_flags;
-      exe_cmd += searched_lib_searched_dirs;
-      exe_cmd += obj_sources;
-      exe_cmd += res_sources;
-      exe_cmd += static_lib_sources;
-      exe_cmd += prebuilt_lib_sources;
-      exe_cmd += searched_lib_sources;
-      exe_cmd += import_lib_sources;
+
       exe_cmd += exe_product;
-      exe_cmd += exe_product_unc;
       exe_cmd += exe_manifest_product;
+      cmdline_builder exe_rsp("  /nologo /MANIFEST $(link_flags) $(user_link_flags) $(searched_lib_searched_dirs) /out:\"$(exe_product_unc)\" $(obj_sources) $(res_sources) $(static_lib_sources) $(prebuilt_lib_sources) $(searched_lib_sources) $(import_lib_sources)");
+
+      exe_rsp += link_flags;
+      exe_rsp += user_link_flags;
+      exe_rsp += searched_lib_searched_dirs;
+      exe_rsp += obj_sources;
+      exe_rsp += res_sources;
+      exe_rsp += static_lib_sources;
+      exe_rsp += prebuilt_lib_sources;
+      exe_rsp += searched_lib_sources;
+      exe_rsp += import_lib_sources;
+      exe_rsp += exe_product_unc;
+
+      auto_ptr<cmdline_action> exe_action(new cmdline_action("link-exe", exe_product, exe_rsp));
       *exe_action += setup_vars;
       *exe_action += exe_cmd;
 

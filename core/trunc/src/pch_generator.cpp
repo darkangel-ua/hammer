@@ -20,7 +20,7 @@ pch_generator::pch_generator(hammer::engine& e,
 {
 }
 
-generator::construct_result_t
+build_nodes_t
 pch_generator::construct(const target_type& type_to_construct, 
                          const feature_set& props,
                          const std::vector<boost::intrusive_ptr<build_node> >& sources,

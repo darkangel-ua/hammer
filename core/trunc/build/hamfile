@@ -38,6 +38,7 @@ lib hammer.core
     [ rglob ../src/*.h : stdafx.h ]
     [ rglob ../include/*.h ]
     /libantlr3c/<version>3.1.1
+    @/boost/optional/<version>1.36.0
     @/boost/date_time/<version>1.36.0
     @/boost/function_types/<version>1.36.0
     @/boost/smart_ptr/<version>1.36.0

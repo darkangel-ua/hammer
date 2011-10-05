@@ -15,6 +15,7 @@
 #include "mksig_action.h"
 #include "signature_target.h"
 #include <set>
+#include <boost/foreach.hpp>
 
 using namespace std;
 
@@ -42,6 +43,11 @@ void main_target::dependencies(const dependencies_t& deps)
    dependencies_ = deps;
 }
 
+void main_target::src_dependencies(const dependencies_t& deps)
+{
+   src_dependencies_ = deps;
+}
+
 void main_target::generate_and_add_dependencies(hammer::build_node& node)
 {
    build_nodes_t result;
@@ -52,6 +58,15 @@ void main_target::generate_and_add_dependencies(hammer::build_node& node)
    }
 
    node.dependencies_.insert(node.dependencies_.end(), result.begin(), result.end());
+
+   build_nodes_t src_deps;
+   BOOST_FOREACH(basic_target* t, src_dependencies_)
+   {
+      build_nodes_t tmp(static_cast<main_target*>(t)->generate());
+      src_deps.insert(src_deps.end(), tmp.begin(), tmp.end());
+   }
+   
+   add_this_target_dependency(node, src_deps);
 }
 
 std::vector<boost::intrusive_ptr<build_node> >
@@ -101,21 +116,21 @@ void main_target::add_hamfile_dependency(hammer::build_node& node,
    hamfile_node->action(mksig_action_.get());
    hamfile_node->dependencies_.push_back(intermediate_dir_node);
 
-   add_hamfile_dependency_impl(node, hamfile_node);
+   add_this_target_dependency(node, build_nodes_t(1, hamfile_node));
 }
 
 // search for all leaf nodes and add hamfile_node to it as dependency
-void main_target::add_hamfile_dependency_impl(hammer::build_node& node, 
-                                              const boost::intrusive_ptr<hammer::build_node>& hamfile_node) const
+void main_target::add_this_target_dependency(hammer::build_node& node, 
+                                             const build_nodes_t& nodes) const
 {
    for(hammer::build_node::sources_t::iterator i = node.sources_.begin(), last = node.sources_.end(); i != last; ++i)
    {
       if (&i->source_node_->products_owner() == this)
       {
          if (i->source_node_->sources_.empty())
-            node.dependencies_.push_back(hamfile_node);
+            node.dependencies_.insert(node.dependencies_.begin(), nodes.begin(), nodes.end());
          else
-            add_hamfile_dependency_impl(*i->source_node_, hamfile_node);
+            add_this_target_dependency(*i->source_node_, nodes);
       }
    }
 }

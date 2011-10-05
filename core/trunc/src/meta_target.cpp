@@ -163,6 +163,19 @@ namespace hammer{
                                  *ignored_dependencies_usage_requirements, dependency_meta_targets,
                                  *build_request_for_dependencies, *mt);
 
+
+      // calculate src_dependencies
+      sources_decl src_dependencies;
+      sources_decl src_dependencies_simple_targets;
+      vector<basic_target*> instantiated_src_dependency_meta_targets;
+      meta_targets_t src_dependency_meta_targets;
+      extract_src_dependencies(src_dependencies, *local_usage_requirements);
+      split_sources(&src_dependencies_simple_targets, &src_dependency_meta_targets, sources(), *build_request_for_dependencies); 
+      if (!src_dependencies.empty())
+         instantiate_meta_targets(src_dependencies_simple_targets, instantiated_src_dependency_meta_targets, 
+                                 *ignored_dependencies_usage_requirements, src_dependency_meta_targets,
+                                 *build_request_for_dependencies, *mt);
+      mt->src_dependencies(instantiated_src_dependency_meta_targets);
       
       sources_decl sources_from_uses;
       extract_uses(sources_from_uses, *mt_fs);

@@ -41,13 +41,16 @@ bool generator::is_consumable(const target_type& t) const
    return false;
 }
 
-basic_target* generator::create_target(const main_target* mt, const pstring& n, 
-                                       const target_type* t, const feature_set* f) const
+basic_target* generator::create_target(const main_target* mt, 
+                                       const build_node::sources_t& sources,
+                                       const pstring& n, 
+                                       const target_type* t, 
+                                       const feature_set* f) const
 {
    return new generated_target(mt, n, t, f);
 }
 
-generator::construct_result_t
+build_nodes_t
 generator::construct(const target_type& type_to_construct,
                      const feature_set& props,
                      const build_nodes_t& sources,
@@ -86,7 +89,7 @@ generator::construct(const target_type& type_to_construct,
                                               props,
                                               i->need_tag_ ? &owner : NULL);
 
-         result->products_.push_back(create_target(&owner, new_name, i->type_, &props));
+         result->products_.push_back(create_target(&owner, result->sources_, new_name, i->type_, &props));
       }
 
       result->targeting_type_ = &type_to_construct;
@@ -106,7 +109,7 @@ generator::construct(const target_type& type_to_construct,
 
       result->sources_.push_back(build_node::source_t(source_target, sources.front()));
       result->down_.push_back(sources.front());
-      result->products_.push_back(create_target(&owner, new_name, producable_types().front().type_, &props));
+      result->products_.push_back(create_target(&owner, result->sources_, new_name, producable_types().front().type_, &props));
       result->targeting_type_ = &type_to_construct;
       return build_nodes_t(1, result);
   }

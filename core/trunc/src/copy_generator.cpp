@@ -85,7 +85,7 @@ copy_generator::copy_generator(hammer::engine& e)
 typedef std::vector<boost::intrusive_ptr<build_node> > nodes_t;
 typedef std::set<const build_node*> visited_nodes_t;
 
-generator::construct_result_t 
+build_nodes_t
 copy_generator::construct(const target_type& type_to_construct, 
                           const feature_set& props,
                           const nodes_t& sources,

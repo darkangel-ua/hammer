@@ -8,14 +8,19 @@ namespace hammer
    class fake_target : public basic_target
    {
       public:
-         fake_target(const main_target* mt, const pstring& name,
-                     const target_type* t, const feature_set* f);
+         fake_target(const main_target* mt,
+                     const build_node::sources_t& sources,
+                     const pstring& name,
+                     const target_type* t, 
+                     const feature_set* f);
          virtual const location_t& location() const;
          virtual build_nodes_t generate();
       
       protected:
-         location_t empty_location_;
          virtual void timestamp_info_impl() const;
+      
+      private:
+         build_node::sources_t sources_;
    };
 }
 

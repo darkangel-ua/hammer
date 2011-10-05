@@ -1,15 +1,18 @@
 #include "stdafx.h"
 #include <hammer/core/fake_target.h>
+#include <boost/foreach.hpp>
 
 namespace hammer{
 
 static location_t empty_location;
 
-fake_target::fake_target(const main_target* mt, const pstring& name,
-                         const target_type* t, const feature_set* f)
-   : basic_target(mt, name, t, f)
+fake_target::fake_target(const main_target* mt, 
+                         const build_node::sources_t& sources,
+                         const pstring& name,
+                         const target_type* t, 
+                         const feature_set* f)
+   : basic_target(mt, name, t, f), sources_(sources)
 {
-
 }
 
 build_nodes_t fake_target::generate()
@@ -25,9 +28,9 @@ const location_t& fake_target::location() const
 void fake_target::timestamp_info_impl() const
 {
    timestamp_info_.is_unknown_ = false;
-   // because it is fake target it is always exists
-   // but we cannot return neg_infin, so we return very old times :)
-   timestamp_info_.timestamp_ = boost::posix_time::ptime(boost::gregorian::date(1900, 1, 1));
+   timestamp_info_.timestamp_ = boost::date_time::neg_infin;
+   BOOST_FOREACH(const build_node::source_t& s, sources_)
+      timestamp_info_.timestamp_ = (std::max)(timestamp_info_.timestamp_, s.source_target_->timestamp_info().timestamp_);
 }
 
 }

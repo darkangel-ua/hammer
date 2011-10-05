@@ -15,7 +15,7 @@ namespace hammer
                               const consumable_types_t& source_types,
                               const producable_types_t& target_types,
                               const feature_set* c = 0);
-         virtual construct_result_t
+         virtual build_nodes_t
          construct(const target_type& type_to_construct, 
                    const feature_set& props,
                    const std::vector<boost::intrusive_ptr<build_node> >& sources,

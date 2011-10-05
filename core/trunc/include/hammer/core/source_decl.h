@@ -15,7 +15,7 @@ namespace hammer
    class source_decl
 	{
 		public:
-         source_decl() : properties_(NULL), public_(false) {};
+         source_decl() : properties_(NULL), public_(false), type_(NULL) {};
          source_decl(const pstring& target_path,
 				         const pstring& target_name,
                      const target_type* t, 

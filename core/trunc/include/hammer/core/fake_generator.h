@@ -16,11 +16,12 @@ class fake_generator : public generator
                      const feature_set* c = 0);
    protected:
       virtual basic_target* create_target(const main_target* mt, 
+                                          const build_node::sources_t& sources,
                                           const pstring& n, 
                                           const target_type* t, 
                                           const feature_set* f) const;
       
-      virtual construct_result_t
+      virtual build_nodes_t
       construct(const target_type& type_to_construct, 
                 const feature_set& props,
                 const std::vector<boost::intrusive_ptr<build_node> >& sources,

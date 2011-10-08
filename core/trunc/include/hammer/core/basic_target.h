@@ -41,7 +41,7 @@ namespace hammer
          const project* get_project() const;
          engine* get_engine() const;
          
-         virtual build_nodes_t generate() = 0;
+         virtual build_nodes_t generate() const = 0;
          // maybe this is wrong? The reason to making it const was cleaner implementation
          virtual void clean(const build_environment& environment) const {};
 

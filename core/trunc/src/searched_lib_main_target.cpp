@@ -29,7 +29,7 @@ searched_lib_main_target::searched_lib_main_target(const hammer::meta_target* mt
 }
 
 std::vector<boost::intrusive_ptr<hammer::build_node> > 
-searched_lib_main_target::generate()
+searched_lib_main_target::generate() const
 {
    boost::intrusive_ptr<hammer::build_node> result(new hammer::build_node(*this, true));
    basic_target* t = type_->equal_or_derived_from(get_engine()->get_type_registry().get(types::SEARCHED_LIB)) 

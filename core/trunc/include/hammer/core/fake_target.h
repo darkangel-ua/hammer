@@ -14,7 +14,7 @@ namespace hammer
                      const target_type* t, 
                      const feature_set* f);
          virtual const location_t& location() const;
-         virtual build_nodes_t generate();
+         virtual build_nodes_t generate() const;
       
       protected:
          virtual void timestamp_info_impl() const;

@@ -10,7 +10,7 @@ source_target::source_target(const main_target* mt, const pstring& name,
 {
 }
 
-std::vector<boost::intrusive_ptr<build_node> > source_target::generate()
+std::vector<boost::intrusive_ptr<build_node> > source_target::generate() const
 {
    boost::intrusive_ptr<build_node> result(new build_node(*get_main_target(), false));
    result->products_.push_back(this);

@@ -48,12 +48,12 @@ void main_target::src_dependencies(const dependencies_t& deps)
    src_dependencies_ = deps;
 }
 
-void main_target::generate_and_add_dependencies(hammer::build_node& node)
+void main_target::generate_and_add_dependencies(hammer::build_node& node) const
 {
    build_nodes_t result;
-   for(dependencies_t::iterator i = dependencies_.begin(), last = dependencies_.end(); i != last; ++i)
+   for(dependencies_t::const_iterator i = dependencies_.begin(), last = dependencies_.end(); i != last; ++i)
    {
-      build_nodes_t tmp(static_cast<main_target*>(*i)->generate());
+      build_nodes_t tmp((*i)->generate());
       result.insert(result.end(), tmp.begin(), tmp.end());
    }
 
@@ -70,7 +70,7 @@ void main_target::generate_and_add_dependencies(hammer::build_node& node)
 }
 
 std::vector<boost::intrusive_ptr<build_node> >
-main_target::generate()
+main_target::generate() const
 {
    if (generate_cache_filled_)
       return generate_cache_;

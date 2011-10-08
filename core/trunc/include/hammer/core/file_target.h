@@ -13,7 +13,7 @@ namespace hammer
          {
          }
 
-         virtual std::vector<boost::intrusive_ptr<build_node> > generate();
+         virtual std::vector<boost::intrusive_ptr<build_node> > generate() const;
       
       protected:
          virtual void timestamp_info_impl() const;

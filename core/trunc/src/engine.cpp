@@ -112,7 +112,8 @@ engine::engine()
 project* engine::get_upper_project(const location_t& project_path)
 {
    location_t upper_path = project_path.parent_path();
-   if (upper_path.empty())
+   // BUG: boost parent_path() can produce "E:" path and than "E:" / "foo" give as "E:foo" which is wrong
+   if (upper_path.empty() || upper_path == project_path.root_name())
       return NULL;
 
    if (exists(upper_path / "hamfile"))

@@ -7,7 +7,7 @@
 namespace hammer
 {
 
-std::vector<boost::intrusive_ptr<build_node> > file_target::generate()
+std::vector<boost::intrusive_ptr<build_node> > file_target::generate() const
 {
    return std::vector<boost::intrusive_ptr<build_node> >();
 }

@@ -16,7 +16,7 @@ namespace hammer
       public:  
          source_target(const main_target* mt, const pstring& name, 
                        const target_type* t, const feature_set* f);
-         virtual std::vector<boost::intrusive_ptr<build_node> > generate();
+         virtual std::vector<boost::intrusive_ptr<build_node> > generate() const;
    };
 }
 

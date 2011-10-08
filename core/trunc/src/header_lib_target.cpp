@@ -10,7 +10,7 @@ header_lib_target::header_lib_target(const main_target* mt, const pstring& name,
 
 }
 
-std::vector<boost::intrusive_ptr<build_node> > header_lib_target::generate()
+std::vector<boost::intrusive_ptr<build_node> > header_lib_target::generate() const
 {
    throw std::runtime_error("[header_lib_target] Generate should not be invoked");
 }

@@ -15,7 +15,7 @@ fake_target::fake_target(const main_target* mt,
 {
 }
 
-build_nodes_t fake_target::generate()
+build_nodes_t fake_target::generate() const
 {
    throw std::runtime_error("[fake_target]: Generate should not be invoked");
 }

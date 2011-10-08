@@ -34,7 +34,7 @@ namespace hammer
          void src_dependencies(const dependencies_t& deps);
          const dependencies_t& src_dependencies() const { return src_dependencies_; }
          const hammer::meta_target* get_meta_target() const { return meta_target_; }
-         virtual build_nodes_t generate();
+         virtual build_nodes_t generate() const;
          const location_t& intermediate_dir() const;
          boost::intrusive_ptr<const hammer::build_node> build_node() const { return build_node_; }
          std::string version() const;
@@ -45,17 +45,18 @@ namespace hammer
          virtual void additional_hash_string_data(std::ostream& s) const;
          virtual location_t intermediate_dir_impl() const;
          // must be private, but bad design require me to place it here for file_main_target
-         void generate_and_add_dependencies(hammer::build_node& node);
+         void generate_and_add_dependencies(hammer::build_node& node) const;
 
       private:
          const hammer::meta_target* meta_target_;
          sources_t sources_;
          sources_t dependencies_;
          sources_t src_dependencies_;
-         boost::intrusive_ptr<hammer::build_node> build_node_;
+         // FIXME: should call generate if no build_node_ assigned
+         mutable boost::intrusive_ptr<hammer::build_node> build_node_;
          mutable location_t intermediate_dir_;
-         std::vector<boost::intrusive_ptr<hammer::build_node> > generate_cache_;
-         bool generate_cache_filled_;
+         mutable std::vector<boost::intrusive_ptr<hammer::build_node> > generate_cache_;
+         mutable bool generate_cache_filled_;
          static boost::shared_ptr<mksig_action> mksig_action_;
 
          virtual void timestamp_info_impl() const;

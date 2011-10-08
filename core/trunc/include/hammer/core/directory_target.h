@@ -16,7 +16,7 @@ namespace hammer
          location_t dir_to_create_;
          mkdir_action action_;
 
-         virtual std::vector<boost::intrusive_ptr<build_node> > generate();
+         virtual std::vector<boost::intrusive_ptr<build_node> > generate() const;
          virtual void timestamp_info_impl() const;
    };
 }

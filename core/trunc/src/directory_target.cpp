@@ -18,7 +18,7 @@ directory_target::directory_target(const main_target* mt, const location_t& dir)
 
 }
 
-std::vector<boost::intrusive_ptr<build_node> > directory_target::generate()
+std::vector<boost::intrusive_ptr<build_node> > directory_target::generate() const
 {
    throw std::runtime_error("[directory_target::generate] This method must not be invoked");
 }

@@ -15,7 +15,7 @@ const location_t& generated_target::location() const
    return get_main_target()->intermediate_dir();
 }
 
-std::vector<boost::intrusive_ptr<build_node> > generated_target::generate()
+std::vector<boost::intrusive_ptr<build_node> > generated_target::generate() const
 {
    throw std::logic_error("generated target cannot be generated again.");
 }

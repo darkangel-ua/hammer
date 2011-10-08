@@ -123,7 +123,7 @@ ProjectExplorer::Project *ProjectManager::openProject(const QString &fileName)
        return NULL;
     }
     
-    // find out what target to build
+    // find out which target to build
     const basic_meta_target* target = NULL;
     for(hammer::project::targets_t::const_iterator i = m_hammerMasterProject->targets().begin(), last = m_hammerMasterProject->targets().end(); i != last; ++i)
     {
@@ -188,16 +188,26 @@ ProjectExplorer::Project *ProjectManager::openProject(const QString &fileName)
 
     boost::unordered_set<const main_target*> mainTargets;
     gatherAllMainTargets(mainTargets, *topMainTarget);
+    vector<HammerProject*> new_projects(1, mainProject);
     BOOST_FOREACH(const main_target* mt, mainTargets)
        if (mt != topMainTarget &&
            !mt->type().equal_or_derived_from(types::SEARCHED_LIB) &&
            !mt->type().equal_or_derived_from(types::PREBUILT_SHARED_LIB) &&
-           !mt->type().equal_or_derived_from(types::PREBUILT_STATIC_LIB))
+           !mt->type().equal_or_derived_from(types::PREBUILT_STATIC_LIB) &&
+           !mt->type().equal_or_derived_from(types::HEADER_LIB) &&
+           !mt->type().equal_or_derived_from(types::PCH) &&
+           !mt->type().equal_or_derived_from(types::OBJ) &&
+           !mt->type().equal_or_derived_from(qt_uic_main))
        {
-         projectExplorer->session()->addProject(new HammerProject(this, mt));
+          HammerProject* p = new HammerProject(this, mt);
+          projectExplorer->session()->addProject(p);
+          new_projects.push_back(p);
        }
+   
+   BOOST_FOREACH(HammerProject* p, new_projects)
+      p->refresh();
 
-    return mainProject;
+   return mainProject;
 }
 
 void ProjectManager::registerProject(HammerProject* project)

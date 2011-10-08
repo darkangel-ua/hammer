@@ -55,7 +55,6 @@ HammerProject::HammerProject(ProjectManager *manager,
       }
 
    m_manager->registerProject(this);
-   refresh();
 }
 
 HammerProject::~HammerProject()
@@ -119,18 +118,21 @@ ProjectExplorer::ProjectNode* HammerProject::rootProjectNode() const
 
 QStringList HammerProject::files(FilesMode fileMode) const
 {
-   QStringList result;
+   if (!m_files.isEmpty())
+      return m_files;
+
+   m_files = QStringList();
 
    BOOST_FOREACH(const basic_target* bt, get_main_target().sources())
    {
       if (bt->type().equal_or_derived_from(types::CPP) || 
           bt->type().equal_or_derived_from(types::C))
       {
-         result.append(QString::fromStdString(bt->full_path().string()));
+         m_files.append(QString::fromStdString(bt->full_path().string()));
       }
    }
 
-   return result;
+   return m_files;
 }
 
 void HammerProject::refresh()

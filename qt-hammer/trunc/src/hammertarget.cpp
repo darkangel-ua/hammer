@@ -5,6 +5,12 @@
 
 #include <QtGui/QApplication>
 #include <QtGui/QStyle>
+#include <boost/foreach.hpp>
+
+#include <hammer/core/main_target.h>
+#include <hammer/core/target_type.h>
+#include <hammer/core/types.h>
+
 #include "hammertarget.h"
 #include "hammerproject.h"
 #include "hammerbuildconfiguration.h"
@@ -109,7 +115,7 @@ HammerTarget *HammerTargetFactory::create(ProjectExplorer::Project *parent, cons
        buildSteps->insertStep(0, makeStep);
        makeStep->setBuildTarget("debug", /*on=*/true);
        t->addBuildConfiguration(bc);
-       t->addRunConfiguration(new ProjectExplorer::CustomExecutableRunConfiguration(t));
+       t->addRunConfiguration(new HammerRunConfiguration(t));
     }
     {
        ProjectExplorer::BuildStepList *buildSteps = bc->stepList(HAMMER_BC_BUILD_CURRENT_LIST_ID);
@@ -138,6 +144,38 @@ HammerTarget *HammerTargetFactory::restore(ProjectExplorer::Project *parent, con
     delete target;
 
     return NULL;
+}
+
+HammerRunConfiguration::HammerRunConfiguration(HammerTarget *parent)
+   : CustomExecutableRunConfiguration(parent),
+     m_target(parent)
+{
+}
+
+QString HammerRunConfiguration::executable() const
+{
+   if (m_executable)
+      if (m_executable->isEmpty())
+         return CustomExecutableRunConfiguration::executable();
+      else
+         return *m_executable;
+
+   const main_target& mt = m_target->hammerProject()->get_main_target();
+   try
+   {
+      build_nodes_t nodes = mt.generate();
+      BOOST_FOREACH(const build_node_ptr& node, nodes)
+         BOOST_FOREACH(const basic_target* bt, node->products_)
+            if (bt->type().equal_or_derived_from(types::EXE))
+            {
+               location_t l = bt->location() / bt->name().to_string();
+               m_executable = QString::fromStdString(l.string());
+               return *m_executable;
+            }
+
+   }catch(...) { }
+
+   return CustomExecutableRunConfiguration::executable();
 }
 
 }}

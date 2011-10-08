@@ -6,6 +6,7 @@
 #include <coreplugin/editormanager/editormanager.h>
 #include <coreplugin/ifile.h>
 #include <coreplugin/editormanager/ieditor.h>
+#include <coreplugin/messagemanager.h>
 #include <projectexplorer/projectexplorerconstants.h>
 #include <projectexplorer/projectexplorer.h>
 #include <projectexplorer/session.h>
@@ -76,12 +77,23 @@ void HammerPlugin::buildCurrentFile()
    using namespace hammer::QtCreator;
 
    ProjectExplorer::ProjectExplorerPlugin* projectExplorer = ProjectExplorer::ProjectExplorerPlugin::instance();
-   Core::IFile* file = Core::ICore::instance()->editorManager()->currentEditor()->file();
+   Core::IEditor* editor = Core::ICore::instance()->editorManager()->currentEditor();
+   Core::IFile* file = editor->file();
    if (file)
    {
       ProjectExplorer::Project* p = projectExplorer->session()->projectForFile(file->fileName());
       if (p && p->activeTarget())
       {
+         QString err;
+         if (file->isModified())
+            if (!file->save(&err))
+            {
+               Core::MessageManager *messageManager = Core::ICore::instance()->messageManager();
+               messageManager->printToOutputPanePopup(tr("Failed to save file '%1'")
+                                                      .arg(QDir::toNativeSeparators(file->fileName())));
+               return;
+            }
+
          ProjectExplorer::Target* target = p->activeTarget();
          ProjectExplorer::BuildStepList* bsl = p->activeTarget()
                                                 ->activeBuildConfiguration()

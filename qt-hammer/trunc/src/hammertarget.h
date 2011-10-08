@@ -2,9 +2,11 @@
 #define h_2339c647_1fa9_4edd_ae93_892dd65c7300
 
 #include <projectexplorer/target.h>
+#include <projectexplorer/customexecutablerunconfiguration.h>
 
 #include <QtCore/QStringList>
 #include <QtCore/QVariantMap>
+#include <boost/optional.hpp>
 
 namespace ProjectExplorer {
 class IBuildConfigurationFactory;
@@ -58,6 +60,18 @@ class HammerTargetFactory : public ProjectExplorer::ITargetFactory
       HammerTarget *create(ProjectExplorer::Project *parent, const QString &id);
       bool canRestore(ProjectExplorer::Project *parent, const QVariantMap &map) const;
       HammerTarget *restore(ProjectExplorer::Project *parent, const QVariantMap &map);
+};
+
+class HammerRunConfiguration : public ProjectExplorer::CustomExecutableRunConfiguration
+{
+      Q_OBJECT
+   public:
+      explicit HammerRunConfiguration(HammerTarget *parent);
+      virtual QString executable() const;
+
+   private:
+      HammerTarget* m_target;
+      mutable boost::optional<QString> m_executable;
 };
 
 }}

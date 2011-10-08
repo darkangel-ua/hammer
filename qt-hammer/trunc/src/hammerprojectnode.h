@@ -52,6 +52,13 @@ class HammerProjectNode : public ProjectExplorer::ProjectNode
 
       HammerProject *m_project;
       Core::IFile *m_projectFile;
+
+      FolderNode* m_srcNode;
+      FolderNode* m_incNode;
+      FolderNode* m_resNode;
+      FolderNode* m_formNode;
+
+      void addNodes(const basic_target* bt);
 };
 
 }}

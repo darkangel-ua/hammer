@@ -56,6 +56,7 @@ class HammerProject : public ProjectExplorer::Project
       const main_target* m_mainTarget;
       ProjectExplorer::ToolChain *m_toolChain;
       QFuture<void> m_codeModelFuture;
+      mutable QStringList m_files;
 
       QStringList allIncludePaths() const;
       QStringList allDefines() const;

@@ -164,11 +164,6 @@ HammerMakeCurrentStep::createConfigWidget()
    return NULL;
 }
 
-void HammerMakeCurrentStep::run(QFutureInterface<bool> &fi)
-{
-   AbstractProcessStep::run(fi);
-}
-
 bool HammerMakeCurrentStep::init()
 {
    HammerBuildConfiguration *bc = hammerBuildConfiguration();
@@ -214,7 +209,8 @@ bool HammerMakeStepFactory::canCreate(ProjectExplorer::BuildStepList *parent,
    if (parent->target()->project()->id() != QLatin1String(HAMMERPROJECT_ID))
       return false;
 
-   return id == QLatin1String(HAMMER_MS_ID);
+   return id == QLatin1String(HAMMER_MS_ID) ||
+          id == QLatin1String(HAMMER_MAKE_CURRENT_ID);
 }
 
 ProjectExplorer::BuildStep *HammerMakeStepFactory::create(ProjectExplorer::BuildStepList *parent,
@@ -264,11 +260,14 @@ ProjectExplorer::BuildStep *HammerMakeStepFactory::restore(ProjectExplorer::Buil
    if (!canRestore(parent, map))
       return NULL;
    
-   HammerMakeStep *bs(new HammerMakeStep(parent));
+   ProjectExplorer::BuildStep* bs = create(parent, ProjectExplorer::idFromMap(map));
+   if (!bs)
+      return NULL;
+
    if (bs->fromMap(map))
       return bs;
-   delete bs;
 
+   delete bs;
    return NULL;
 }
 

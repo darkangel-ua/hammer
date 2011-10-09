@@ -40,20 +40,6 @@ HammerProject::HammerProject(ProjectManager *manager,
    m_projectFile = new HammerProjectFile(this, fileInfo.absoluteFilePath());
    m_rootNode = new HammerProjectNode(this, m_projectFile);
 
-   HammerTargetFactory *factory =
-      ExtensionSystem::PluginManager::instance()->getObject<HammerTargetFactory>();
-
-   addTarget(factory->create(this, QLatin1String(HAMMER_DESKTOP_TARGET_ID)));
-
-   // setup toolchain 
-   QList<ProjectExplorer::ToolChain*> tcs = ProjectExplorer::ToolChainManager::instance()->toolChains();
-   foreach (ProjectExplorer::ToolChain *tc, tcs)
-      if (tc->typeName() == "MSVC")
-      {
-         m_toolChain = tc;
-         break;
-      }
-
    m_manager->registerProject(this);
 }
 
@@ -216,11 +202,21 @@ bool HammerProject::fromMap(const QVariantMap &map)
    if (!Project::fromMap(map))
       return false;
 
-   if (targets().isEmpty()) {
+   if (targets().isEmpty())
+   {
       HammerTargetFactory *factory =
          ExtensionSystem::PluginManager::instance()->getObject<HammerTargetFactory>();
       addTarget(factory->create(this, QLatin1String(HAMMER_DESKTOP_TARGET_ID)));
    }
+
+   // setup toolchain
+   QList<ProjectExplorer::ToolChain*> tcs = ProjectExplorer::ToolChainManager::instance()->toolChains();
+   foreach (ProjectExplorer::ToolChain *tc, tcs)
+      if (tc->typeName() == "MSVC")
+      {
+         m_toolChain = tc;
+         break;
+      }
 
    return true;
 }

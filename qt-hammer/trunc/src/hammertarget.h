@@ -68,10 +68,12 @@ class HammerRunConfiguration : public ProjectExplorer::CustomExecutableRunConfig
    public:
       explicit HammerRunConfiguration(HammerTarget *parent);
       virtual QString executable() const;
+      virtual Utils::Environment environment() const;
 
    private:
       HammerTarget* m_target;
       mutable boost::optional<QString> m_executable;
+      mutable boost::optional<QStringList> m_additionalPaths;
 };
 
 }}

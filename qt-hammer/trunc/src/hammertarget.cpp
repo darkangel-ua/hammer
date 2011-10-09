@@ -10,6 +10,9 @@
 #include <hammer/core/main_target.h>
 #include <hammer/core/target_type.h>
 #include <hammer/core/types.h>
+#include <hammer/core/collect_nodes.h>
+#include <hammer/core/engine.h>
+#include <hammer/core/type_registry.h>
 
 #include "hammertarget.h"
 #include "hammerproject.h"
@@ -103,11 +106,10 @@ HammerTarget *HammerTargetFactory::create(ProjectExplorer::Project *parent, cons
 
     // Set up BuildConfiguration:
     HammerBuildConfiguration *bc = new HammerBuildConfiguration(t);
-    // we need to add current file build list, and this is only way for now
+    bc->setDisplayName("debug");
+    // we need to add current file build list, and toMap/fromMap is only the way for now
     QVariantMap saved_bc = bc->toMap();
     bc->fromMap(saved_bc);
-
-    bc->setDisplayName("debug");
 
     {
        ProjectExplorer::BuildStepList *buildSteps = bc->stepList(ProjectExplorer::Constants::BUILDSTEPS_BUILD);
@@ -135,7 +137,8 @@ bool HammerTargetFactory::canRestore(ProjectExplorer::Project *parent, const QVa
 HammerTarget *HammerTargetFactory::restore(ProjectExplorer::Project *parent, const QVariantMap &map)
 {
     if (!canRestore(parent, map))
-        return 0;
+        return NULL;
+
     HammerProject *project = static_cast<HammerProject *>(parent);
     HammerTarget *target = new HammerTarget(project);
     if (target->fromMap(map))
@@ -155,10 +158,7 @@ HammerRunConfiguration::HammerRunConfiguration(HammerTarget *parent)
 QString HammerRunConfiguration::executable() const
 {
    if (m_executable)
-      if (m_executable->isEmpty())
-         return CustomExecutableRunConfiguration::executable();
-      else
-         return *m_executable;
+      return *m_executable;
 
    const main_target& mt = m_target->hammerProject()->get_main_target();
    try
@@ -176,6 +176,42 @@ QString HammerRunConfiguration::executable() const
    }catch(...) { }
 
    return CustomExecutableRunConfiguration::executable();
+}
+
+Utils::Environment
+HammerRunConfiguration::environment() const
+{
+   if (!m_additionalPaths)
+   {
+      const main_target& mt = m_target->hammerProject()->get_main_target();
+
+      try
+      {
+         typedef std::set<const build_node*> visited_nodes_t;
+
+         build_nodes_t nodes = mt.generate();
+
+         build_node::sources_t collected_nodes;
+         visited_nodes_t visited_nodes;
+         std::vector<const target_type*> types(1, &mt.get_engine()->get_type_registry().get(types::SHARED_LIB));
+         collect_nodes(collected_nodes, visited_nodes, nodes, types, true);
+
+         QStringList paths;
+         BOOST_FOREACH(const build_node::source_t& s, collected_nodes)
+            paths << QString::fromStdString(s.source_target_->location().string());
+
+         paths.removeDuplicates();
+         m_additionalPaths = paths;
+
+      }catch(...) { m_additionalPaths = QStringList(); }
+   }
+
+   Utils::Environment env = CustomExecutableRunConfiguration::environment();
+
+   BOOST_FOREACH(const QString& s, *m_additionalPaths)
+      env.appendOrSetPath(s);
+
+   return env;
 }
 
 }}

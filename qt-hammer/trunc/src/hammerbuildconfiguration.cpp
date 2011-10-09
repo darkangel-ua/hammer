@@ -105,14 +105,12 @@ HammerBuildConfiguration* HammerBuildConfigurationFactory::create(ProjectExplore
                           QString(),
                           &ok);
     if (!ok || buildConfigurationName.isEmpty())
-        return 0;
+        return NULL;
 
     HammerBuildConfiguration *bc = new HammerBuildConfiguration(target);
-    // we need to add current file build list, and this is only way for now
+    // we need to add current file build list, and toMap/fromMap is only the way for now
     QVariantMap saved_bc = bc->toMap();
     bc->fromMap(saved_bc);
-
-    bc->setDisplayName(buildConfigurationName);
 
     {
        ProjectExplorer::BuildStepList *buildSteps = bc->stepList(ProjectExplorer::Constants::BUILDSTEPS_BUILD);
@@ -121,7 +119,7 @@ HammerBuildConfiguration* HammerBuildConfigurationFactory::create(ProjectExplore
        buildSteps->insertStep(0, makeStep);
        makeStep->setBuildTarget("all", /*on=*/true);
 
-       target->addBuildConfiguration(bc); // also makes the name unique...
+       target->addBuildConfiguration(bc);
     }
 
     {
@@ -129,7 +127,7 @@ HammerBuildConfiguration* HammerBuildConfigurationFactory::create(ProjectExplore
        Q_ASSERT(buildSteps);
        HammerMakeCurrentStep *makeStep = new HammerMakeCurrentStep(buildSteps);
        buildSteps->insertStep(0, makeStep);
-       target->addBuildConfiguration(bc); // also makes the name unique...
+       target->addBuildConfiguration(bc);
     }
 
     return bc;
@@ -148,7 +146,6 @@ QVariantMap HammerBuildConfiguration::toMap() const
    {
       result[BUILD_STEP_LIST_COUNT] = result[BUILD_STEP_LIST_COUNT].toInt() + 1;
       ProjectExplorer::BuildStepList* bsl = new ProjectExplorer::BuildStepList(const_cast<HammerBuildConfiguration*>(this), HAMMER_BC_BUILD_CURRENT_LIST_ID);
-      bsl->insertStep(0, new HammerMakeCurrentStep(bsl));
       result[QString(BUILD_STEP_LIST_PREFIX) + QString::number(result[BUILD_STEP_LIST_COUNT].toInt() - 1)] = bsl->toMap();
       delete bsl;
    }

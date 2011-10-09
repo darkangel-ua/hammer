@@ -200,6 +200,7 @@ ProjectExplorer::Project *ProjectManager::openProject(const QString &fileName)
            !mt->type().equal_or_derived_from(qt_uic_main))
        {
           HammerProject* p = new HammerProject(this, mt);
+          p->restoreSettings();
           projectExplorer->session()->addProject(p);
           new_projects.push_back(p);
        }

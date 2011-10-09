@@ -60,7 +60,6 @@ class HammerMakeCurrentStep : public ProjectExplorer::AbstractProcessStep
 
       HammerBuildConfiguration *hammerBuildConfiguration() const;
       virtual bool init();
-      virtual void run(QFutureInterface<bool> &fi);
       virtual ProjectExplorer::BuildStepConfigWidget *createConfigWidget();
       virtual bool immutable() const { return false; }
       void setTargetToBuid(const QString& target, const QString& projectPath);

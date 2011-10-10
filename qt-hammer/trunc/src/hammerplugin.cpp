@@ -29,6 +29,7 @@
 #include "hammerprojectconstants.h"
 #include "hammertarget.h"
 #include "hammermakestep.h"
+#include "hammerrunconfiguration.h"
 
 HammerPlugin::HammerPlugin()
 {
@@ -54,6 +55,7 @@ bool HammerPlugin::initialize(const QStringList &arguments, QString *errorMessag
     addAutoReleasedObject(manager);
     addAutoReleasedObject(new hammer::QtCreator::HammerTargetFactory);
     addAutoReleasedObject(new hammer::QtCreator::HammerMakeStepFactory);
+    addAutoReleasedObject(new hammer::QtCreator::HammerRunConfigurationFactory);
 
     Core::Context context(Core::Constants::C_GLOBAL);
 

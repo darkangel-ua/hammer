@@ -26,8 +26,8 @@ pch_main_target::pch_main_target(const hammer::meta_target* mt,
 {
 }
    
-std::vector<boost::intrusive_ptr<build_node> > 
-pch_main_target::generate()
+build_nodes_t 
+pch_main_target::generate() const
 {
    const hammer::target_type& cpp_type = get_engine()->get_type_registry().get(types::CPP);
    const hammer::target_type& c_type = get_engine()->get_type_registry().get(types::C);

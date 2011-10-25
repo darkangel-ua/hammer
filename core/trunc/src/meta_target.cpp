@@ -170,7 +170,7 @@ namespace hammer{
       vector<basic_target*> instantiated_src_dependency_meta_targets;
       meta_targets_t src_dependency_meta_targets;
       extract_src_dependencies(src_dependencies, *local_usage_requirements);
-      split_sources(&src_dependencies_simple_targets, &src_dependency_meta_targets, sources(), *build_request_for_dependencies); 
+      split_sources(&src_dependencies_simple_targets, &src_dependency_meta_targets, src_dependencies, *build_request_for_dependencies); 
       if (!src_dependencies.empty())
          instantiate_meta_targets(src_dependencies_simple_targets, instantiated_src_dependency_meta_targets, 
                                  *ignored_dependencies_usage_requirements, src_dependency_meta_targets,

@@ -438,7 +438,7 @@ namespace
       if (opts.just_one_source_.empty())
       {
          actuality_checker checker(e, build_environment);
-         cout << "...checking targets for update... ";
+         cout << "...checking targets for update... " << flush;
          size_t target_to_update_count = checker.check(nodes);
          cout << "Done.\n";
 
@@ -459,7 +459,7 @@ namespace
 
          if (!opts.disable_batcher_)
          {
-            cout << "...running batcher... ";
+            cout << "...running batcher... " << flush;
             generic_batcher::process(nodes, opts.worker_count_);
             cout << "Done.\n";
          }

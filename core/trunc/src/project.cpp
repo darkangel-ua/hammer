@@ -16,12 +16,25 @@ project::project(hammer::engine* e,
                  const requirements_decl& usage_req)
    : 
     basic_meta_target(this, name, req, usage_req), 
-    location_(location), 
     engine_(e),
     is_root_(false),
     add_targets_as_explicit_(false),
     local_feature_registry_(&pool_for_feature_registry_)
 {
+   this->location(location);      
+}
+
+void project::location(const location_t& l) 
+{ 
+   // all project paths must end on dot
+   std::string path = l.string();
+   if (!path.empty() && *path.rbegin() != '.')
+   {
+      location_ = l / ".";
+      location_.normalize();
+   }
+   else
+      location_ = l; 
 }
 
 

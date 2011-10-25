@@ -179,6 +179,14 @@ void builder::impl_t::task_handler(shared_ptr<worker_ctx_t> ctx)
    ctx->strand_.post(boost::bind(&impl_t::task_completition_handler, this, ctx));
 }
 
+void mark_deps_failed_to_build(build_queue_node_t& node)
+{
+   node.some_dependencies_failed_to_build_ = true;
+   for(build_queue_nodes_t::iterator i = node.uses_nodes_.begin(), last = node.uses_nodes_.end(); i != last; ++i)
+      if (!(**i).some_dependencies_failed_to_build_)
+         mark_deps_failed_to_build(**i);
+}
+
 void builder::impl_t::task_completition_handler(shared_ptr<worker_ctx_t> ctx)
 {
    if (interrupt_flag_)
@@ -192,13 +200,16 @@ void builder::impl_t::task_completition_handler(shared_ptr<worker_ctx_t> ctx)
       {
          ++result_.updated_targets_;
          for(build_queue_nodes_t::iterator i = ctx->queue_node().uses_nodes_.begin(), last = ctx->queue_node().uses_nodes_.end(); i != last; ++i)
-            ctx->queue_.get<1>().modify(ctx->queue_.get<1>().find(*i), dependency_decrementor());
+         {
+            build_queue_t::nth_index<1>::type::iterator to_modify = ctx->queue_.get<1>().find(*i);
+            if (to_modify != ctx->queue_.get<1>().end())
+               ctx->queue_.get<1>().modify(ctx->queue_.get<1>().find(*i), dependency_decrementor());
+         }
       }
       else
       {
          ++result_.failed_to_build_targets_;
-         for(build_queue_nodes_t::iterator i = ctx->queue_node().uses_nodes_.begin(), last = ctx->queue_node().uses_nodes_.end(); i != last; ++i)
-            (**i).some_dependencies_failed_to_build_ = true;
+         mark_deps_failed_to_build(ctx->queue_node());
       }
    }
 
@@ -211,8 +222,8 @@ void builder::impl_t::task_completition_handler(shared_ptr<worker_ctx_t> ctx)
          shared_ptr<worker_ctx_t> worker_ctx(new worker_ctx_t(*ctx));
          worker_ctx->current_node_ = *current_node_iterator;
          worker_ctx->action_result_ = false;
-         ctx->scheduler_.post(boost::bind(&impl_t::task_handler, this, worker_ctx));
          ctx->nodes_in_progess_.insert(&current_node);
+         ctx->scheduler_.post(boost::bind(&impl_t::task_handler, this, worker_ctx));
       }
       else
       {

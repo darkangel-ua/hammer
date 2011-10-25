@@ -58,7 +58,7 @@ namespace hammer
          {};
          
          virtual const location_t& location() const { return location_; }
-         void location(const location_t& l) { location_ = l; } 
+         void location(const location_t& l);
          void scm_info(const hammer::scm_info& info) { scm_info_ = info; }
          const hammer::scm_info& scm_info() const { return scm_info_; }
          hammer::scm_info& scm_info() { return scm_info_; }

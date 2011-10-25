@@ -474,7 +474,11 @@ void engine::load_hammer_script(location_t filepath)
 
 engine::loaded_projects_t engine::try_load_project(location_t project_path)
 {
-   projects_t::iterator i = projects_.find(project_path);
+   location_t path_with_dot(project_path);
+   path_with_dot /= ".";
+   path_with_dot.normalize();
+
+   projects_t::iterator i = projects_.find(path_with_dot);
    if (i != projects_.end())
       return loaded_projects_t(i->second.get());
 
@@ -485,7 +489,7 @@ engine::loaded_projects_t engine::try_load_project(location_t project_path)
       ctx.engine_ = this;
       ctx.location_ = project_path;
       ctx.project_ = new project(this);
-      ctx.project_->location(project_path);
+      ctx.project_->location(path_with_dot);
       ctx.call_resolver_ = &resolver_;
       project* upper_project = NULL;
 

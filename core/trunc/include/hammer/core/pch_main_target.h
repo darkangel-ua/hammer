@@ -18,16 +18,16 @@ namespace hammer
          const basic_target& pch_header() const { return *pch_header_; }
          const basic_target& pch_source() const { return *pch_source_; }
          const basic_target& pch_product() const { return *pch_product_; }
-         virtual std::vector<boost::intrusive_ptr<hammer::build_node> > generate();
+         virtual build_nodes_t generate() const;
       
       protected:
          virtual location_t intermediate_dir_impl() const;
 
       private:
          const main_target& owner_;
-         const basic_target* pch_header_;
-         const basic_target* pch_source_;
-         const basic_target* pch_product_;
+         mutable const basic_target* pch_header_;
+         mutable const basic_target* pch_source_;
+         mutable const basic_target* pch_product_;
    };
 }
 

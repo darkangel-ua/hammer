@@ -16,7 +16,7 @@ class ProjectManager : public ProjectExplorer::IProjectManager
       ProjectManager();
 
       virtual QString mimeType() const;
-      virtual ProjectExplorer::Project *openProject(const QString& fileName);
+      virtual ProjectExplorer::Project *openProject(const QString& fileName, QString *errorString);
 
       void registerProject(HammerProject* project);
       void unregisterProject(HammerProject* project);

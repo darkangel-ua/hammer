@@ -26,10 +26,12 @@
 namespace hammer{ namespace QtCreator{
 
 HammerProject::HammerProject(ProjectManager *manager, 
-                             const main_target* mt)
+                             const main_target* mt,
+                             bool main_project)
    : m_manager(manager),
      m_mainTarget(mt),
-     m_toolChain(NULL)
+     m_toolChain(NULL),
+     main_project_(main_project)
 {
    setProjectContext(Core::Context(PROJECTCONTEXT));
    setProjectLanguage(Core::Context(ProjectExplorer::Constants::LANG_CXX));

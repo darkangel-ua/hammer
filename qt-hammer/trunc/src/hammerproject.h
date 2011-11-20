@@ -26,7 +26,7 @@ class HammerProject : public ProjectExplorer::Project
       Q_OBJECT
 
    public:
-      HammerProject(ProjectManager *manager, const main_target* mt);
+      HammerProject(ProjectManager *manager, const main_target* mt, bool main_project = false);
       virtual ~HammerProject();
 
       virtual QList<ProjectExplorer::Project*> dependsOn();
@@ -38,6 +38,7 @@ class HammerProject : public ProjectExplorer::Project
       virtual QStringList files(FilesMode fileMode) const;
 
       const main_target& get_main_target() const { return *m_mainTarget; }
+      bool is_main_project() const { return main_project_; }
       ProjectExplorer::ToolChain *toolChain() const;
       void setToolChain(ProjectExplorer::ToolChain *tc);
       void refresh();
@@ -57,6 +58,7 @@ class HammerProject : public ProjectExplorer::Project
       ProjectExplorer::ToolChain *m_toolChain;
       QFuture<void> m_codeModelFuture;
       mutable QStringList m_files;
+      bool main_project_;
 
       QStringList allIncludePaths() const;
       QStringList allDefines() const;

@@ -24,7 +24,7 @@ public:
     ~HammerEditorFactory();
 
     virtual QStringList mimeTypes() const;
-    virtual QString id() const;
+    virtual Core::Id id() const;
     virtual QString displayName() const;
     Core::IFile *open(const QString &fileName);
     Core::IEditor *createEditor(QWidget *parent);

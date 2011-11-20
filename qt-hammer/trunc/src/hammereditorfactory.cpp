@@ -18,9 +18,9 @@ HammerEditorFactory::~HammerEditorFactory()
 {
 }
 
-QString HammerEditorFactory::id() const
+Core::Id HammerEditorFactory::id() const
 {
-    return QLatin1String(HAMMER_EDITOR_ID);
+    return Core::Id(HAMMER_EDITOR_ID);
 }
 
 QString HammerEditorFactory::displayName() const

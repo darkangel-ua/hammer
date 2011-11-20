@@ -86,7 +86,7 @@ void gatherAllMainTargets(boost::unordered_set<const main_target*>& targets,
       gatherAllMainTargets(targets, *bt->get_main_target());
 }
 
-ProjectExplorer::Project *ProjectManager::openProject(const QString &fileName)
+ProjectExplorer::Project *ProjectManager::openProject(const QString &fileName, QString *errorString)
 {
    if (!QFileInfo(fileName).isFile())
         return NULL;
@@ -184,7 +184,7 @@ ProjectExplorer::Project *ProjectManager::openProject(const QString &fileName)
     }
 
     const main_target* topMainTarget = dynamic_cast<main_target*>(instantiated_targets[0]);
-    HammerProject* mainProject = new HammerProject(this, topMainTarget);
+    HammerProject* mainProject = new HammerProject(this, topMainTarget, /*main_project=*/true);
 
     boost::unordered_set<const main_target*> mainTargets;
     gatherAllMainTargets(mainTargets, *topMainTarget);

@@ -5,7 +5,7 @@
 #include <boost/regex.hpp>
 #include <boost/bind.hpp>
 #include <boost/unordered_set.hpp>
-
+#include <boost/foreach.hpp>
 #include <iostream>
 #include <fstream>
 #include <stdlib.h>
@@ -392,7 +392,7 @@ namespace
          if (node->sources_.empty() && node->products_.size() == 1)
          { 
             // founded some source
-            if (node->products_.front()->name() == source_name)
+            if (source_name.is_suffix_of(node->products_.front()->name()))
                return true;
             else
                return false;
@@ -424,6 +424,40 @@ namespace
             break;
       
       return result;
+   }
+
+   void mark_nodes_to_update(nodes_t& nodes)
+   {
+      BOOST_FOREACH(build_node_ptr& n, nodes)
+         n->up_to_date(boost::tribool::false_value);
+   }
+
+   void collect_nodes_for_one_source(visited_nodes_t& visited_nodes,
+                                     nodes_t& nodes_to_build,
+                                     nodes_t& path,
+                                     build_node& node,
+                                     const build_node& source_node)
+   {
+      if (visited_nodes.find(&node) != visited_nodes.end())
+         return;
+
+      visited_nodes.insert(&node);
+      path.push_back(&node);
+
+      BOOST_FOREACH(build_node_ptr& n, node.down_)
+      {
+         if (n.get() == &source_node && !path.empty())
+         {
+            // add path nodes except head
+            nodes_t::iterator i = path.begin() + 1;
+            for(i; i != path.end(); ++i)
+               nodes_to_build.push_back(*i);
+         }
+         else
+            collect_nodes_for_one_source(visited_nodes, nodes_to_build, path, *n, source_node);
+      }
+
+      path.pop_back();
    }
 
    void run_build(nodes_t& nodes, 
@@ -484,7 +518,7 @@ namespace
       }
       else
       {
-         cout << "...updating source '" << opts.just_one_source_ << "'..." << endl;
+//         cout << "...updating source '" << opts.just_one_source_ << "'..." << endl;
          builder builder(build_environment, interrupt_flag, opts.worker_count_, false);
          
          const project* project_for_source = NULL;
@@ -498,16 +532,16 @@ namespace
          nodes_t source_project_nodes = find_top_source_project_nodes(nodes, project_for_source);
          
          // collect all nodes prior to main source project nodes
+         visited_nodes_t visited_nodes;
          nodes_t nodes_to_build;
-         for(nodes_t::const_iterator i = source_project_nodes.begin(), last = source_project_nodes.end(); i!= last; ++i)
-            nodes_to_build.insert(nodes_to_build.end(), (**i).down_.begin(), (**i).down_.end());
-         
-         // remove dups
-         std::sort(nodes_to_build.begin(), nodes_to_build.end());
-         nodes_to_build.erase(std::unique(nodes_to_build.begin(), nodes_to_build.end()), nodes_to_build.end());
+         nodes_t path;
+         for(nodes_t::iterator i = source_project_nodes.begin(), last = source_project_nodes.end(); i!= last; ++i)
+            collect_nodes_for_one_source(visited_nodes, nodes_to_build, path, **i, *source_node);
 
          // this source should be rebuilt
-         source_node->up_to_date(boost::tribool::false_value);
+         nodes_to_build.push_back(source_node);
+         mark_nodes_to_update(nodes_to_build);
+/*
          source_node->timestamp(boost::date_time::pos_infin);
          actuality_checker checker(e, build_environment);
          cout << "...checking targets for update... " << flush;
@@ -521,6 +555,14 @@ namespace
          }
 
          cout << "...building source '" << opts.just_one_source_ << "'..."<< endl;
+         builder::result build_result = builder.build(nodes_to_build, project_for_source);
+         cout << "...source '" << opts.just_one_source_ << "' builded."<< endl;
+*/
+         // remove dups
+         std::sort(nodes_to_build.begin(), nodes_to_build.end());
+         nodes_to_build.erase(std::unique(nodes_to_build.begin(), nodes_to_build.end()), nodes_to_build.end());
+
+         cout << "...building source '" << opts.just_one_source_ << "'..." << endl;
          builder::result build_result = builder.build(nodes_to_build, project_for_source);
          cout << "...source '" << opts.just_one_source_ << "' builded."<< endl;
       }

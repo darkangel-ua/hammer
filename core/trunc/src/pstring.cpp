@@ -98,4 +98,19 @@ namespace hammer{
 
       return std::string::npos;
    }
+
+   bool pstring::is_suffix_of(const pstring& source) const
+   {
+      if (empty() || source.empty())
+         return false;
+
+      if (size() > source.size())
+         return false;
+
+      for(size_type i = 0; i < size(); ++i)
+         if (s_[size_ - i - 1] != source.s_[source.size_ - i - 1])
+            return false;
+
+      return true;
+   }
 }

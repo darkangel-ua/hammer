@@ -26,6 +26,7 @@ namespace hammer
          bool operator < (const pstring& rhs) const;
          bool operator < (const std::string& rhs) const;
          std::string::size_type find_last_of(char c) const;
+         bool is_suffix_of(const pstring& source) const;
 
       private:
          char* s_;

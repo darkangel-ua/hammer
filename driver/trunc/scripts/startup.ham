@@ -7,6 +7,8 @@ feature.feature link : shared static ;
 feature.feature runtime-link : shared static ;
 feature.feature runtime-debugging : on off ;
 feature.feature threading : multi single ;
+# force target name to be equal to this feature value
+# works only on composite targets
 feature.feature name : : free ;
 feature.feature search : : free path ;
 feature.feature file : : free path ;

@@ -59,8 +59,13 @@ pstring make_product_name(pool& p,
                           const pstring& composite_target_name, 
                           const target_type& product_type,
                           const feature_set& product_properties,
-                          const main_target* owner)
+                          const main_target* owner,
+                          bool primary_target)
 {
+   feature_set::const_iterator n = product_properties.find("name");
+   if (n != product_properties.end() && primary_target)
+      return (**n).value();
+
    if (product_type.suffixes().empty())
       return composite_target_name;
    else

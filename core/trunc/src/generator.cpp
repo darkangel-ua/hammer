@@ -81,13 +81,15 @@ generator::construct(const target_type& type_to_construct,
          }
       }
 
-      for(producable_types_t::const_iterator i = target_types_.begin(), last = target_types_.end(); i != last; ++i)
+      unsigned p = 0;
+      for(producable_types_t::const_iterator i = target_types_.begin(), last = target_types_.end(); i != last; ++i, ++p)
       {
          pstring new_name = make_product_name(engine_->pstring_pool(),
                                               *composite_target_name,
                                               *i->type_,
                                               props,
-                                              i->need_tag_ ? &owner : NULL);
+                                              i->need_tag_ ? &owner : NULL,
+                                              /*primary_target=*/ p == 0);
 
          result->products_.push_back(create_target(&owner, result->sources_, new_name, i->type_, &props));
       }

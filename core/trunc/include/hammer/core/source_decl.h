@@ -13,9 +13,9 @@ namespace hammer
    // FIXME: source_decl should have method resolve_type for resolving type of source
    // FIXME: and caching it. Without caching it will be huge performance hit
    class source_decl
-	{
-		public:
-         source_decl() : properties_(NULL), public_(false), type_(NULL) {};
+   {
+      public:
+         source_decl() : type_(NULL), properties_(NULL), public_(false) {};
          source_decl(const pstring& target_path,
 				         const pstring& target_name,
                      const target_type* t, 
@@ -75,7 +75,7 @@ namespace hammer
          // нужно перевести feature_set и feature на reference counted основу и тогда все будет зашибись
          feature_set* properties_;
          bool public_;
-	 };
+   };
 }
 
 #endif //h_1fa42706_d348_48de_9e78_83103be8476d

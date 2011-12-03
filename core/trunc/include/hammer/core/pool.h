@@ -1,6 +1,7 @@
 #if !defined(h_eaef70c3_2d45_421b_afd6_b9927a12079b)
 #define h_eaef70c3_2d45_421b_afd6_b9927a12079b
 
+#include <stddef.h>
 #include <list>
 
 namespace hammer

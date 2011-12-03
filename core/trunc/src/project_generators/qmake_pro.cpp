@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <iostream>
 #include <hammer/core/project_generators/qmake_pro.h>
 #include <hammer/core/project.h>
 #include <hammer/core/basic_target.h>
@@ -10,6 +11,7 @@
 #include <hammer/core/types.h>
 #include <boost/foreach.hpp>
 #include <boost/filesystem/fstream.hpp>
+#include <boost/filesystem/convenience.hpp>
 
 using namespace std;
 

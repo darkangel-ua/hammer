@@ -7,4 +7,14 @@ copy install
    :
     <destination>./template/win32/
     <type-to-copy>EXE
+    <host-os>windows
+   ;
+
+copy install 
+   :
+    ../build/<all-static>on/<variant>release
+   :
+    <destination>./template/linux/
+    <type-to-copy>EXE
+    <host-os>linux
    ;

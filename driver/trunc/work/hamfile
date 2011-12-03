@@ -1,0 +1,10 @@
+feature.feature all-static : on : propagated composite ;
+feature.compose <all-static>on : <link>static <runtime-link>static ;
+
+copy install 
+   :
+    ../build/<all-static>on
+   :
+    <destination>./
+    <type-to-copy>EXE
+   ;

@@ -23,6 +23,7 @@
 #include <hammer/core/project_generators/eclipse_cdt_workspace.h>
 #include <hammer/core/copy_generator.h>
 #include <hammer/core/testing_generators.h>
+#include <hammer/core/obj_generator.h>
 #include <hammer/core/build_environment_impl.h>
 #include <hammer/core/builder.h>
 #include <hammer/core/cleaner.h>
@@ -721,6 +722,7 @@ int main(int argc, char** argv)
          cout << "...Installing generators... " << flush;
 
       engine.generators().insert(std::auto_ptr<generator>(new copy_generator(engine)));
+      engine.generators().insert(std::auto_ptr<generator>(new obj_generator(engine)));
       add_testing_generators(engine, engine.generators());
       add_header_lib_generator(engine, engine.generators());
 

@@ -226,6 +226,7 @@ namespace hammer{
       features_t features_;
       non_cached_features_t non_cached_features_;
       subfeatures_t subfeatures_;
+      feature_set* singleton_;
    };
 
    feature_def* feature_registry::impl_t::find_def(const std::string& name)
@@ -297,6 +298,7 @@ namespace hammer{
 
    feature_registry::feature_registry(pool* p) : impl_(new impl_t(p))
    {
+      impl_->singleton_ = make_set();
    }
 
    feature_registry::~feature_registry()
@@ -310,6 +312,11 @@ namespace hammer{
       impl_->feature_set_list_.push_back(r.get());
 
       return r.release();
+   }
+
+   const feature_set& feature_registry::singleton() const
+   {
+      return *impl_->singleton_;
    }
 
    void feature_registry::add_def(const feature_def& def)

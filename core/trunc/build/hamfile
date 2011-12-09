@@ -1,6 +1,6 @@
 project hammer.core : requirements <character-set>multi-byte 
                                    <toolset>msvc:<define>HAMMER_ENABLE_PRECOMPILED_HEADER
-                                   <library>/boost/ptr_container/<version>1.36.0 ;
+                                   <library>/boost/ptr_container/<version>1.40.0 ;
 
 pch stdafx : ../src/stdafx.cpp ../src/stdafx.h : <toolset>msvc ;
 alias stdafx ;
@@ -14,8 +14,8 @@ obj parser_and_lexer
     <toolset>msvc:<cflags>/TP 
     <toolset>gcc:<cflags>"-x c++"
     <use>/libantlr3c/<version>3.1.1
-    <use>/boost/function_types/<version>1.36.0
-    <use>/boost/exception/<version>1.36.0 
+    <use>/boost/function_types/<version>1.40.0
+    <use>/boost/exception/<version>1.40.0 
     <include>../include
    ;
 
@@ -24,8 +24,8 @@ obj without_pch
     ../src/dos_wildcard.cpp
     ../src/build/hammer_walker.c
    :
-    <use>/boost/regex/<version>1.36.0/<link>static
-    <use>/boost/filesystem/<version>1.36.0/<link>static
+    <use>/boost/regex/<version>1.40.0/<link>static
+    <use>/boost/filesystem/<version>1.40.0/<link>static
     <use>/libantlr3c/<version>3.1.1 
    ;
 
@@ -38,32 +38,32 @@ lib hammer.core
     [ rglob ../src/*.h : stdafx.h ]
     [ rglob ../include/*.h ]
     /libantlr3c/<version>3.1.1
-    @/boost/optional/<version>1.36.0
-    @/boost/date_time/<version>1.36.0
-    @/boost/function_types/<version>1.36.0
-    @/boost/smart_ptr/<version>1.36.0
-    @/boost/filesystem/<version>1.36.0/<link>static
-    @/boost/sandbox/guid
-    /boost/regex/<version>1.36.0/<link>static
-    /boost/assign/<version>1.36.0
-    /boost/sandbox/process
-    /boost/format/<version>1.36.0
-    /boost/foreach/<version>1.36.0
-    @/boost/unordered/<version>1.36.0
-    @/boost/tribool/<version>1.36.0
-    /boost/spirit/<version>1.36.0
-    /boost/sandbox/crypto
-    /boost/tokenizer/<version>1.36.0
-    /boost/multi_index/<version>1.36.0
-    /boost/iostreams/<version>1.36.0/<link>static
-    /boost/serialization/<version>1.36.0
-    /boost/asio/<version>1.36.0
-    /boost/pool/<version>1.36.0
+    @/boost/optional/<version>1.40.0
+    @/boost/date_time/<version>1.40.0
+    @/boost/function_types/<version>1.40.0
+    @/boost/smart_ptr/<version>1.40.0
+    @/boost/filesystem/<version>1.40.0/<link>static
+    @/boost/sandbox/guid/<version>1.40.0
+    /boost/regex/<version>1.40.0/<link>static
+    /boost/assign/<version>1.40.0
+    /boost/sandbox/process/<version>1.40.0
+    /boost/format/<version>1.40.0
+    /boost/foreach/<version>1.40.0
+    @/boost/unordered/<version>1.40.0
+    @/boost/tribool/<version>1.40.0
+    /boost/spirit/<version>1.40.0
+    /boost/sandbox/crypto/<version>1.40.0
+    /boost/tokenizer/<version>1.40.0
+    /boost/multi_index/<version>1.40.0
+    /boost/iostreams/<version>1.40.0/<link>static
+    /boost/serialization/<version>1.40.0
+    /boost/asio/<version>1.40.0
+    /boost/pool/<version>1.40.0
    :
     @<include>../include
     <include>../src
     <link>static
    :
    :
-    <use>/boost/ptr_container/<version>1.36.0
+    <use>/boost/ptr_container/<version>1.40.0
    ;

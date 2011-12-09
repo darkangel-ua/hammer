@@ -5,6 +5,7 @@
 #include <hammer/core/main_target.h>
 #include <sstream>
 #include <fstream>
+#include <iostream>
 
 using namespace std;
 using namespace boost::filesystem;
@@ -24,7 +25,9 @@ bool testing_run_action::run_shell_commands(const std::vector<std::string>& comm
    
    string output;
    bool result = environment.run_shell_commands(output, commands, node.products_.front()->get_main_target()->location());
-   environment.write_tag_file(output_name.str(), output);
+   environment.write_tag_file(output_name.str() + ".output", output);
+   std::cerr << output << std::flush;
+
    if (result)
       environment.write_tag_file(run_tag_name, "passed");
 

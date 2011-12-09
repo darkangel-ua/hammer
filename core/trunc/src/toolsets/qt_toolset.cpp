@@ -76,7 +76,7 @@ class qt_uic_meta_target : public typed_meta_target
    protected:      
       virtual void compute_usage_requirements(feature_set& result, 
                                               const main_target& constructed_target,
-                                              const feature_set& full_build_request,
+                                              const feature_set& build_request,
                                               const feature_set& computed_usage_requirements,
                                               const main_target* owner) const;
       virtual main_target* construct_main_target(const main_target* owner, const feature_set* properties) const;
@@ -97,11 +97,11 @@ qt_uic_meta_target::construct_main_target(const main_target* owner,
 
 void qt_uic_meta_target::compute_usage_requirements(feature_set& result, 
                                                     const main_target& constructed_target,
-                                                    const feature_set& full_build_request,
+                                                    const feature_set& build_request,
                                                     const feature_set& computed_usage_requirements,
                                                     const main_target* owner) const
 {
-   typed_meta_target::compute_usage_requirements(result, constructed_target, full_build_request, computed_usage_requirements, owner);
+   typed_meta_target::compute_usage_requirements(result, constructed_target, build_request, computed_usage_requirements, owner);
 
    feature* uic_inc = result.owner().create_feature("include", relative_path(owner->intermediate_dir(), location()).string());
    uic_inc->get_path_data().target_ = owner->get_meta_target();

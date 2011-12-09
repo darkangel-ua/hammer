@@ -1,0 +1,7 @@
+test [ type = SHARED_LIB; features = <define>LIB4_STATIC <define>LIB5_STATIC; ]
+{
+    lib2 [ type = STATIC_LIB; features = <define>LIB4_STATIC; ]
+    {
+       lib4 [ type = STATIC_LIB; ] {}
+    }
+}

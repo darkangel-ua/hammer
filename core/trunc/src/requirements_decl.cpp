@@ -132,7 +132,6 @@ void just_feature_requirement::eval(const feature_set& build_request,
    
    if (is_public() && public_result != NULL)
       public_result->join(f_);
-
 }
 
 void just_feature_requirement::setup_path_data(const basic_meta_target* t)

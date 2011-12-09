@@ -21,11 +21,11 @@ header_lib_meta_target::header_lib_meta_target(hammer::project* p, const pstring
 
 void header_lib_meta_target::compute_usage_requirements(feature_set& result, 
                                                         const main_target& constructed_target,
-                                                        const feature_set& full_build_request,
+                                                        const feature_set& build_request,
                                                         const feature_set& computed_usage_requirements,
                                                         const main_target* owner) const
 {
-   meta_target::compute_usage_requirements(result, constructed_target, full_build_request, computed_usage_requirements, owner);
+   meta_target::compute_usage_requirements(result, constructed_target, build_request, computed_usage_requirements, owner);
    result.join(computed_usage_requirements);
 }
 

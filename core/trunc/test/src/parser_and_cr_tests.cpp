@@ -37,7 +37,7 @@ init_unit_test_suite( int argc, char* argv[] )
    _CrtSetDbgFlag(_CrtSetDbgFlag( _CRTDBG_REPORT_FLAG ) & ~_CRTDBG_LEAK_CHECK_DF);
    
    init_instantiation_tests(test_data_path);
-   init_generators_tests(test_data_path);
+//   init_generators_tests(test_data_path);
    return 0;            
 }                             
 

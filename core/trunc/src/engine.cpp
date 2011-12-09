@@ -111,8 +111,9 @@ engine::engine()
 
 project* engine::get_upper_project(const location_t& project_path)
 {
-   location_t upper_path = project_path.parent_path();
-   // BUG: boost parent_path() can produce "E:" path and than "E:" / "foo" give as "E:foo" which is wrong
+   // FIXME: BUG: boost parent_path() on "foo/bar/.  produce "foo/bar" instead of "foo"
+   location_t upper_path = project_path.filename() == "." ? project_path.parent_path().parent_path() : project_path.parent_path();
+   // FIXME: BUG: boost parent_path() can produce "E:" path and than "E:" / "foo" give as "E:foo" which is wrong
    if (upper_path.empty() || upper_path == project_path.root_name())
       return NULL;
 

@@ -97,15 +97,22 @@ namespace hammer{
 
    static void transfer_public_sources(feature_set& dest,
                                        const sources_decl& sources, 
+                                       const feature_set& build_request,
                                        feature_registry& fr)
    {
+      // when transferring public sources we should make <use> with current build request applied
+      // because this is the only way to produce correct usage requirements in dependent targets
+      // same as in compute_usage_requirements
+      feature_set& uses = *fr.make_set();
       for(sources_decl::const_iterator i = sources.begin(), last = sources.end(); i != last; ++i)
          if (i->is_public())
          {
             feature* f = fr.create_feature("use", "");
             f->get_dependency_data().source_ = *i;
-            dest.join(f);
+            uses.join(f);
          }
+      apply_build_request(uses, build_request);
+      dest.join(uses);
    }
    
    void meta_target::instantiate_impl(const main_target* owner,
@@ -157,7 +164,7 @@ namespace hammer{
       extract_dependencies(dependencies_from_instantiations, *local_usage_requirements);
       split_sources(&simple_targets, &dependency_meta_targets, dependencies_from_instantiations, *build_request_for_dependencies);
 
-      feature_set* ignored_dependencies_usage_requirements = get_engine()->feature_registry().make_set();      
+      feature_set* ignored_dependencies_usage_requirements = get_engine()->feature_registry().make_set();
       if (!dependency_meta_targets.empty())
          instantiate_meta_targets(simple_targets, instantiated_dependency_meta_targets, 
                                  *ignored_dependencies_usage_requirements, dependency_meta_targets,
@@ -182,7 +189,7 @@ namespace hammer{
       extract_uses(sources_from_uses, *local_usage_requirements);
       if (!sources_from_uses.empty())
          compute_additional_usage_requirements(simple_targets, instantiated_meta_targets, 
-                                               *local_usage_requirements, sources_from_uses, 
+                                               *local_usage_requirements, sources_from_uses,
                                                *build_request_for_dependencies, *mt);
 
       mt_fs->join(*local_usage_requirements);
@@ -191,19 +198,26 @@ namespace hammer{
       mt->sources(instantiated_meta_targets);
       mt->dependencies(instantiated_dependency_meta_targets);
       
-      transfer_public_sources(*usage_requirements, sources(), get_engine()->feature_registry());
-      compute_usage_requirements(*usage_requirements, *mt, *mt_fs, *local_usage_requirements, owner);
+      transfer_public_sources(*usage_requirements, sources(), build_request, get_engine()->feature_registry());
+      compute_usage_requirements(*usage_requirements, *mt, build_request, *local_usage_requirements, owner);
       
       result->push_back(mt);
    }
 
    void meta_target::compute_usage_requirements(feature_set& result, 
                                                 const main_target& constructed_target,
-                                                const feature_set& full_build_request,
+                                                const feature_set& build_request,
                                                 const feature_set& computed_usage_requirements,
                                                 const main_target* owner) const
    {
-      this->usage_requirements().eval(full_build_request, &result);
+//      this->usage_requirements().eval(constructed_target.properties(), &result);
+      // when transferring public sources we should make <use> with current build request applied
+      // because this is the only way to produce correct usage requirements in dependent targets
+      // same as in transfer_public_sources
+      feature_set& tmp = *get_engine()->feature_registry().make_set();
+      this->usage_requirements().eval(constructed_target.properties(), &tmp);
+      apply_build_request(tmp, build_request);
+      result.join(tmp);
    }
 
    sources_decl meta_target::compute_additional_sources(const main_target& owner) const

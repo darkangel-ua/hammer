@@ -452,4 +452,16 @@ void feature_set::erase_all(const std::string& feature_name)
    }
 }
 
+void apply_build_request(feature_set& dest,
+                         const feature_set& build_request)
+{
+   for(feature_set::iterator i = dest.begin(), last = dest.end(); i != last; ++i)
+      if ((**i).name() == "use")
+      {
+         const source_decl old = (**i).get_dependency_data().source_;
+         feature_set& new_props = old.properties() == NULL ? *build_request.clone() : old.properties()->clone()->join(build_request);
+         (**i).get_dependency_data().source_ = source_decl(old.target_path(), old.target_name(), old.type(), &new_props);
+      }
+}
+
 }

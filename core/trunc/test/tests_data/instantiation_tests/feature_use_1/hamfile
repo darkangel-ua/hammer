@@ -1,0 +1,25 @@
+#testing correct behavious of usage requirements calculation when
+#passing target build requirements
+
+feature.feature all-static : on : propagated composite no-defaults ;
+feature.compose <all-static>on : <link>static ;
+
+lib lib5 
+    : lib5.cpp 
+    :
+    :
+    : <link>shared:<define>LIB5_SHARED
+      <link>static:<define>LIB5_STATIC
+    ;
+
+lib lib4 
+    : lib4.cpp 
+    :
+    :
+    : <link>shared:<define>LIB4_SHARED
+      <link>static:<define>LIB4_STATIC
+    ;
+
+lib lib3 : lib3.cpp : : : <use>lib5 ;
+lib lib2 : lib2.cpp @lib4 : <link>static ;
+lib test : lib1.cpp lib2/<all-static>on lib3/<all-static>on ;

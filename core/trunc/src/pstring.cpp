@@ -71,7 +71,10 @@ namespace hammer{
 
    std::string pstring::to_string() const
    {
-      return std::string(s_, s_ + size_);
+      if (s_)
+         return std::string(s_, s_ + size_);
+      else
+         return std::string();
    }
 
    bool operator == (const pstring& lhs, const char* rhs)

@@ -55,12 +55,12 @@ main_target* pch_meta_target::construct_main_target(const main_target* owner, co
 
 void pch_meta_target::compute_usage_requirements(feature_set& result, 
                                                  const main_target& constructed_target,
-                                                 const feature_set& full_build_request,
+                                                 const feature_set& build_request,
                                                  const feature_set& computed_usage_requirements,
                                                  const main_target* owner) const
 {
    // adding pch feature to usage requirements to mark dependent targets as built with pch
-   this->usage_requirements().eval(full_build_request, &result);
+   this->usage_requirements().eval(constructed_target.properties(), &result);
    feature* pch_feature = get_engine()->feature_registry().create_feature("pch", "use");
    pch_feature->get_generated_data().target_ = last_constructed_main_target_;
    result.join(pch_feature);

@@ -1,12 +1,18 @@
+feature.feature all-static : on : propagated composite no-defaults;
+feature.compose <all-static>on : <link>static;
+
 lib hammerplugin
   : [ glob ../src/*.cpp ]
     [ glob ../src/*.h ]
     ../src/hammerproject.qrc
     hammerplugin.moc
-    /hammer/core
-    /boost/foreach/<version>1.36.0
+    /hammer/core/<all-static>on
+    /boost/foreach/<version>1.40.0
     /Qt/QtCreator
     /Qt//QtGui
+  :
+    <variant>debug:<name>HammerPlugind.dll
+    <variant>release:<name>HammerPlugin.dll
   ;
 
 qt.moc hammerplugin.moc 

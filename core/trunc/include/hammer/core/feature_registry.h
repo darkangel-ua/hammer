@@ -17,6 +17,7 @@ namespace hammer
          void add_def(const feature_def& def);
          feature_def& get_def(const std::string& name);
          feature_set* make_set();
+         const feature_set& singleton() const;
          feature* create_feature(const std::string& name, const std::string& value);
          feature* create_feature(const feature& f, 
                                  const std::string& subfeature_name, 

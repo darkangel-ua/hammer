@@ -72,6 +72,9 @@ namespace hammer
    feature_set* parse_simple_set(const std::string& s, feature_registry& r);
    void dump_for_hash(std::ostream& s, const feature_set& fs, bool dump_all = false);
    std::string dump_for_hash(const feature_set& fs, bool dump_all = false);
+   // when construct usage requirements we need to add to all <use> build request
+   // been used in target constuction
+   void apply_build_request(feature_set& dest, const feature_set& build_request);
 }
 
 #endif //h_9689707e_e6c1_4154_9276_3693b32bc777

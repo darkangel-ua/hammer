@@ -21,7 +21,7 @@ namespace hammer
       public:
          struct consumable_type
          {
-            consumable_type(const target_type& t, unsigned int f, const feature_set* fs = 0) : type_(&t), flags_(f), features_(fs) {}   
+            consumable_type(const target_type& t, unsigned int f = 0, const feature_set* fs = 0) : type_(&t), flags_(f), features_(fs) {}
             
             const target_type* type_;
             unsigned int flags_;

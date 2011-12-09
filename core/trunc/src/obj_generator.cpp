@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <boost/assign/list_of.hpp>
 #include <hammer/core/obj_generator.h>
 #include <hammer/core/types.h>
 #include <hammer/core/engine.h>
@@ -6,19 +7,21 @@
 #include <hammer/core/basic_target.h>
 #include <hammer/core/target_type.h>
 
+using namespace boost::assign;
+
 namespace hammer
 {
 
-obj_generator::obj_generator(hammer::engine& e,
-                             const std::string& name,
-                             const consumable_types_t& source_types,
-                             const producable_types_t& target_types,
-                             bool composite,
-                             const feature_set* c)
-   : generator(e, name, source_types, target_types, composite, c),
+obj_generator::obj_generator(hammer::engine& e)
+   : generator(e,
+               "obj meta target generator",
+               list_of<consumable_type>(e.get_type_registry().get(types::OBJ))
+                                       (e.get_type_registry().get(types::LIB))
+                                       (e.get_type_registry().get(types::H)),
+               list_of<produced_type>(e.get_type_registry().get(types::OBJ)),
+               true),
      obj_type_(e.get_type_registry().get(types::OBJ))
 {
-
 }
 
 // Move to result only OBJ targets and skip any others

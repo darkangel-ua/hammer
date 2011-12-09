@@ -10,7 +10,6 @@
 #include <hammer/core/static_lib_generator.h>
 #include <hammer/core/exe_and_shared_lib_generator.h>
 #include <hammer/core/header_lib_generator.h>
-#include <hammer/core/obj_generator.h>
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature_registry.h>
 #include <hammer/core/pch_generator.h>
@@ -257,18 +256,6 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
       target.push_back(generator::produced_type(e.get_type_registry().get(types::OBJ)));
       auto_ptr<generator> g(new generator(e, "msvc.c.compiler", source, target, false, generator_condition));
       g->action(obj_action);
-      e.generators().insert(g);
-   }
-
-   // this is generator for obj meta target. Consume all input and transfer only obj types to result products
-   { 
-      generator::consumable_types_t source;
-      generator::producable_types_t target;
-      source.push_back(generator::consumable_type(e.get_type_registry().get(types::OBJ), 0, 0));
-      source.push_back(generator::consumable_type(e.get_type_registry().get(types::LIB), 0, 0));
-      source.push_back(generator::consumable_type(e.get_type_registry().get(types::H), 0, 0));
-      target.push_back(generator::produced_type(e.get_type_registry().get(types::OBJ)));
-      auto_ptr<generator> g(new obj_generator(e, "obj meta target generator", source, target, true));
       e.generators().insert(g);
    }
 

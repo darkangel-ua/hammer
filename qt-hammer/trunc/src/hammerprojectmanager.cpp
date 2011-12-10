@@ -47,7 +47,11 @@ static void use_toolset_rule(project*, engine& e, pstring& toolset_name, pstring
 ProjectManager::ProjectManager()
    : m_hammerMasterProject(NULL)
 {
+#if defined(_WIN32)
    m_engine.load_hammer_script("D:\\bin\\hammer\\scripts\\startup.ham");
+#else
+   m_engine.load_hammer_script("/usr/lib/hammer/scripts/startup.ham");
+#endif
    types::register_standart_types(m_engine.get_type_registry(), m_engine.feature_registry());
    m_engine.generators().insert(std::auto_ptr<generator>(new copy_generator(m_engine)));
    add_testing_generators(m_engine, m_engine.generators());

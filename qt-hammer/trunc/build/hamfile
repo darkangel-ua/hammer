@@ -11,8 +11,10 @@ lib hammerplugin
     /Qt/QtCreator
     /Qt//QtGui
   :
-    <variant>debug:<name>HammerPlugind.dll
-    <variant>release:<name>HammerPlugin.dll
+    <host-os>windows,<variant>debug:<name>HammerPlugind.dll
+    <host-os>windows,<variant>release:<name>HammerPlugin.dll
+    <host-os>linux,<variant>debug:<name>libHammerPlugind.so
+    <host-os>linux,<variant>release:<name>libHammerPlugin.so
   ;
 
 qt.moc hammerplugin.moc 

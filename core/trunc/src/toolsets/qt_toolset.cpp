@@ -244,7 +244,7 @@ void qt_toolset::autoconfigure(engine& e) const
 
     	init_impl(e, version, &toolset_home);
     }
-    else if (fs::exists("/usr/include/qt/Qt/QtCore"))
+    else if (fs::exists("/usr/include/qt4/Qt/QtCore"))
     {
        // FIXME: linux part
        location_t toolset_home("/usr");
@@ -264,7 +264,7 @@ static void add_lib(project& qt_project, const string& lib_name, const vector<st
 	feature* include_feature = e.feature_registry().create_feature("include", "./include/" + lib_name);
 #else
    feature* top_include_feature = e.feature_registry().create_feature("include", "./include/qt4");
-   feature* include_feature = e.feature_registry().create_feature("include", "./include/qt4" + lib_name);
+   feature* include_feature = e.feature_registry().create_feature("include", "./include/qt4/" + lib_name);
 #endif
 	{
 		auto_ptr<just_feature_requirement> include_req(new just_feature_requirement(include_feature));
@@ -327,19 +327,22 @@ static void add_lib(project& qt_project, const string& lib_name, const vector<st
                                       pstring(e.pstring_pool(), lib_name),
                                       pstring(e.pstring_pool(), lib_name),
                                       debug_req,
-                                      requirements_decl()));
+                                      requirements_decl(),
+                                      e.get_type_registry().get(types::SEARCHED_SHARED_LIB)));
    auto_ptr<searched_lib_meta_target> lib_release(
          new searched_lib_meta_target(&qt_project,
                                       pstring(e.pstring_pool(), lib_name),
                                       pstring(e.pstring_pool(), lib_name),
                                       release_req,
-                                      requirements_decl()));
+                                      requirements_decl(),
+                                      e.get_type_registry().get(types::SEARCHED_SHARED_LIB)));
    auto_ptr<searched_lib_meta_target> lib_profile(
          new searched_lib_meta_target(&qt_project,
                                       pstring(e.pstring_pool(), lib_name),
                                       pstring(e.pstring_pool(), lib_name),
                                       profile_req,
-                                      requirements_decl()));
+                                      requirements_decl(),
+                                      e.get_type_registry().get(types::SEARCHED_SHARED_LIB)));
 #endif
 
 	for(size_t i = 0; i < dependencies.size(); ++i)

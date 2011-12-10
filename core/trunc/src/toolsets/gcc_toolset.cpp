@@ -120,7 +120,7 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
 
    // CPP -> OBJ
    {
-      shared_ptr<source_argument_writer> cpp_input(new source_argument_writer("cpp_input", e.get_type_registry().get(types::CPP)));
+      shared_ptr<source_argument_writer> cpp_input(new source_argument_writer("cpp_input", e.get_type_registry().get(types::CPP), /*exact_type=*/false));
       cmdline_builder obj_cmd(install_data.compiler_.native_file_string() + 
                               " -c -ftemplate-depth-128 $(cflags) $(user_cxx_flags) $(includes) $(defines) $(cpp_input) -o \"$(obj_product)\"");
       obj_cmd += cflags;

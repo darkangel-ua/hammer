@@ -8,6 +8,7 @@
 #include <hammer/core/project.h>
 #include <hammer/core/requirements_decl.h>
 #include <hammer/core/prebuilt_lib_meta_target.h>
+#include <hammer/core/searched_lib_meta_target.h>
 #include <boost/filesystem/operations.hpp>
 #include <boost/regex.hpp>
 #include <boost/assign/list_of.hpp>
@@ -243,14 +244,28 @@ void qt_toolset::autoconfigure(engine& e) const
 
     	init_impl(e, version, &toolset_home);
     }
+    else if (fs::exists("/usr/include/qt/Qt/QtCore"))
+    {
+       // FIXME: linux part
+       location_t toolset_home("/usr");
+       string version = "unknown";
+
+       init_impl(e, version, &toolset_home);
+    }
 }
 
 static void add_lib(project& qt_project, const string& lib_name, const vector<string>& dependencies, engine& e)
 {
 	requirements_decl debug_req;
-	feature* top_include_feature = e.feature_registry().create_feature("include", "./include");
-	feature* include_feature = e.feature_registry().create_feature("include", "./include/" + lib_name);
+
    feature* qt_no_debug_feature = e.feature_registry().create_feature("define", "QT_NO_DEBUG");
+#if defined(_WIN32)
+   feature* top_include_feature = e.feature_registry().create_feature("include", "./include");
+	feature* include_feature = e.feature_registry().create_feature("include", "./include/" + lib_name);
+#else
+   feature* top_include_feature = e.feature_registry().create_feature("include", "./include/qt4");
+   feature* include_feature = e.feature_registry().create_feature("include", "./include/qt4" + lib_name);
+#endif
 	{
 		auto_ptr<just_feature_requirement> include_req(new just_feature_requirement(include_feature));
 		include_req->set_public(true);
@@ -293,19 +308,33 @@ static void add_lib(project& qt_project, const string& lib_name, const vector<st
       profile_req.add(auto_ptr<requirement_base>(top_include_req));
    }
    profile_req.add(auto_ptr<requirement_base>(new just_feature_requirement(e.feature_registry().create_feature("variant", "profile"))));
-
-	auto_ptr<prebuilt_lib_meta_target> lib_debug(
-			new prebuilt_lib_meta_target(&qt_project,
-										 pstring(e.pstring_pool(), lib_name),
-										 pstring(e.pstring_pool(), "./lib/" + lib_name + "d4.lib"), debug_req, requirements_decl()));
-	auto_ptr<prebuilt_lib_meta_target> lib_release(
-			new prebuilt_lib_meta_target(&qt_project,
-										 pstring(e.pstring_pool(), lib_name),
-										 pstring(e.pstring_pool(), "./lib/" + lib_name + "4.lib"), release_req, requirements_decl()));
-	auto_ptr<prebuilt_lib_meta_target> lib_profile(
-			new prebuilt_lib_meta_target(&qt_project,
-										 pstring(e.pstring_pool(), lib_name),
-										 pstring(e.pstring_pool(), "./lib/" + lib_name + "4.lib"), profile_req, requirements_decl()));
+#if defined(_WIN32)
+   auto_ptr<prebuilt_lib_meta_target> lib_debug(
+         new prebuilt_lib_meta_target(&qt_project,
+                               pstring(e.pstring_pool(), lib_name),
+                               pstring(e.pstring_pool(), "./lib/" + lib_name + "d4.lib"), debug_req, requirements_decl()));
+   auto_ptr<prebuilt_lib_meta_target> lib_release(
+         new prebuilt_lib_meta_target(&qt_project,
+                               pstring(e.pstring_pool(), lib_name),
+                               pstring(e.pstring_pool(), "./lib/" + lib_name + "4.lib"), release_req, requirements_decl()));
+   auto_ptr<prebuilt_lib_meta_target> lib_profile(
+         new prebuilt_lib_meta_target(&qt_project,
+                               pstring(e.pstring_pool(), lib_name),
+                               pstring(e.pstring_pool(), "./lib/" + lib_name + "4.lib"), profile_req, requirements_decl()));
+#else
+   auto_ptr<searched_lib_meta_target> lib_debug(
+         new searched_lib_meta_target(&qt_project,
+                               pstring(e.pstring_pool(), lib_name),
+                               debug_req, requirements_decl()));
+   auto_ptr<searched_lib_meta_target> lib_release(
+         new searched_lib_meta_target(&qt_project,
+                               pstring(e.pstring_pool(), lib_name),
+                               release_req, requirements_decl()));
+   auto_ptr<searched_lib_meta_target> lib_profile(
+         new searched_lib_meta_target(&qt_project,
+                               pstring(e.pstring_pool(), lib_name),
+                               profile_req, requirements_decl()));
+#endif
 
 	for(size_t i = 0; i < dependencies.size(); ++i)
 	{

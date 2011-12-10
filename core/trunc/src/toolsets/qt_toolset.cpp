@@ -324,16 +324,22 @@ static void add_lib(project& qt_project, const string& lib_name, const vector<st
 #else
    auto_ptr<searched_lib_meta_target> lib_debug(
          new searched_lib_meta_target(&qt_project,
-                               pstring(e.pstring_pool(), lib_name),
-                               debug_req, requirements_decl()));
+                                      pstring(e.pstring_pool(), lib_name),
+                                      pstring(e.pstring_pool(), lib_name),
+                                      debug_req,
+                                      requirements_decl()));
    auto_ptr<searched_lib_meta_target> lib_release(
          new searched_lib_meta_target(&qt_project,
-                               pstring(e.pstring_pool(), lib_name),
-                               release_req, requirements_decl()));
+                                      pstring(e.pstring_pool(), lib_name),
+                                      pstring(e.pstring_pool(), lib_name),
+                                      release_req,
+                                      requirements_decl()));
    auto_ptr<searched_lib_meta_target> lib_profile(
          new searched_lib_meta_target(&qt_project,
-                               pstring(e.pstring_pool(), lib_name),
-                               profile_req, requirements_decl()));
+                                      pstring(e.pstring_pool(), lib_name),
+                                      pstring(e.pstring_pool(), lib_name),
+                                      profile_req,
+                                      requirements_decl()));
 #endif
 
 	for(size_t i = 0; i < dependencies.size(); ++i)

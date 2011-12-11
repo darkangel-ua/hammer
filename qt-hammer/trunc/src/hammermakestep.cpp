@@ -40,7 +40,7 @@ AbstractProcessStep(parent, id)
    ctor();
 }
 
-HammerMakeStep::HammerMakeStep(ProjectExplorer::BuildStepList *parent, HammerMakeStep *bs) 
+HammerMakeStep::HammerMakeStep(ProjectExplorer::BuildStepList *parent, HammerMakeStep *bs)
    : AbstractProcessStep(parent, bs),
      m_buildTargets(bs->m_buildTargets),
      m_makeArguments(bs->m_makeArguments),
@@ -52,7 +52,7 @@ HammerMakeStep::HammerMakeStep(ProjectExplorer::BuildStepList *parent, HammerMak
 void HammerMakeStep::ctor()
 {
    setDefaultDisplayName(QCoreApplication::translate("HammerProjectManager::Internal::HammerMakeStep", HAMMER_MS_DISPLAY_NAME));
-   m_makeCommand = "dhammer";
+   m_makeCommand = "hammer";
 }
 
 HammerMakeStep::~HammerMakeStep()
@@ -158,7 +158,7 @@ HammerMakeCurrentStep::HammerMakeCurrentStep(ProjectExplorer::BuildStepList *par
 
 }
 
-ProjectExplorer::BuildStepConfigWidget* 
+ProjectExplorer::BuildStepConfigWidget*
 HammerMakeCurrentStep::createConfigWidget()
 {
    return NULL;
@@ -173,7 +173,7 @@ bool HammerMakeCurrentStep::init()
    pp->setMacroExpander(bc->macroExpander());
    pp->setWorkingDirectory(bc->buildDirectory());
    pp->setEnvironment(bc->environment());
-   pp->setCommand("dhammer");
+   pp->setCommand("hammer");
 
    setOutputParser(new ProjectExplorer::GnuMakeParser());
    if (bc->hammerTarget()->hammerProject()->toolChain())
@@ -194,7 +194,7 @@ HammerBuildConfiguration *HammerMakeCurrentStep::hammerBuildConfiguration() cons
    return static_cast<HammerBuildConfiguration *>(buildConfiguration());
 }
 
-HammerMakeStepFactory::HammerMakeStepFactory(QObject *parent) 
+HammerMakeStepFactory::HammerMakeStepFactory(QObject *parent)
    : ProjectExplorer::IBuildStepFactory(parent)
 {
 }
@@ -259,7 +259,7 @@ ProjectExplorer::BuildStep *HammerMakeStepFactory::restore(ProjectExplorer::Buil
 {
    if (!canRestore(parent, map))
       return NULL;
-   
+
    ProjectExplorer::BuildStep* bs = create(parent, ProjectExplorer::idFromMap(map));
    if (!bs)
       return NULL;

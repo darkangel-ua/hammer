@@ -66,7 +66,7 @@ bool HammerPlugin::initialize(const QStringList &arguments, QString *errorMessag
     Core::Command *command = actionManager->registerAction(m_buildCurrentFileAction, "Hammer.BuildCurrentFile", context);
     command->setDefaultKeySequence(QKeySequence(tr("Ctrl+F7")));
     mproject->addAction(command, ProjectExplorer::Constants::G_BUILD_PROJECT);
-    
+
     connect(m_buildCurrentFileAction, SIGNAL(triggered()), SLOT(buildCurrentFile()));
 
     connect(core->editorManager(), SIGNAL(currentEditorChanged(Core::IEditor*)), SLOT(currentEditorChanged(Core::IEditor*)));

@@ -16,6 +16,7 @@
 #include <hammer/core/types.h>
 #include <hammer/core/generator_registry.h>
 #include <hammer/core/copy_generator.h>
+#include <hammer/core/obj_generator.h>
 #include <hammer/core/testing_generators.h>
 #include <hammer/core/header_lib_generator.h>
 #include <hammer/core/c_scanner.h>
@@ -54,6 +55,7 @@ ProjectManager::ProjectManager()
 #endif
    types::register_standart_types(m_engine.get_type_registry(), m_engine.feature_registry());
    m_engine.generators().insert(std::auto_ptr<generator>(new copy_generator(m_engine)));
+   m_engine.generators().insert(std::auto_ptr<generator>(new obj_generator(m_engine)));
    add_testing_generators(m_engine, m_engine.generators());
    add_header_lib_generator(m_engine, m_engine.generators());
 

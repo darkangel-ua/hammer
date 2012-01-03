@@ -1,4 +1,4 @@
-feature.feature all-static : on : propagated composite ;
+feature.feature all-static : on : propagated composite no-defaults ;
 feature.compose <all-static>on : <link>static <runtime-link>static ;
 
 copy install 
@@ -7,4 +7,5 @@ copy install
    :
     <destination>./
     <type-to-copy>EXE
+    <host-os>linux
    ;

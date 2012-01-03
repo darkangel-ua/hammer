@@ -27,7 +27,7 @@ gcc_toolset::gcc_toolset() : toolset("gcc")
 
 }
 
-gcc_toolset::gcc_install_data 
+gcc_toolset::gcc_install_data
 gcc_toolset::resolve_install_data(const location_t* toolset_home_) const
 {
    location_t toolset_home(toolset_home_ == NULL ? location_t() : *toolset_home_);
@@ -64,9 +64,9 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
    shared_ptr<source_argument_writer> searched_lib_sources(new source_argument_writer("searched_lib_sources", e.get_type_registry().get(types::SEARCHED_STATIC_LIB), true, source_argument_writer::WITHOUT_PATH, "", "-l"));
 
    shared_ptr<free_feature_arg_writer> searched_lib_searched_dirs(
-      new free_feature_arg_writer("searched_lib_searched_dirs", 
-                                  e.feature_registry().get_def("search"), 
-                                  string("-L \""), 
+      new free_feature_arg_writer("searched_lib_searched_dirs",
+                                  e.feature_registry().get_def("search"),
+                                  string("-L \""),
                                   string("\"")));
 
    shared_ptr<fs_argument_writer> cflags(new fs_argument_writer("cflags", e.feature_registry()));
@@ -98,9 +98,9 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
 
    // C -> OBJ
    {
-      shared_ptr<source_argument_writer> c_input(new source_argument_writer("c_input", e.get_type_registry().get(types::C)));
-      cmdline_builder obj_cmd(install_data.compiler_.native_file_string() + 
-                              " -x c -c $(cflags) $(user_c_flags) $(includes) $(defines) $(c_input) -o \"$(obj_product)\"");
+      shared_ptr<source_argument_writer> c_input(new source_argument_writer("c_input", e.get_type_registry().get(types::C), /*exact_type=*/false, source_argument_writer::FULL_PATH));
+      cmdline_builder obj_cmd(install_data.compiler_.native_file_string() +
+                              " -x c -c $(cflags) $(user_c_flags) $(includes) $(defines) -o \"$(obj_product)\" $(c_input)");
       obj_cmd += cflags;
       obj_cmd += user_c_flags;
       obj_cmd += c_input;
@@ -120,9 +120,9 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
 
    // CPP -> OBJ
    {
-      shared_ptr<source_argument_writer> cpp_input(new source_argument_writer("cpp_input", e.get_type_registry().get(types::CPP), /*exact_type=*/false));
-      cmdline_builder obj_cmd(install_data.compiler_.native_file_string() + 
-                              " -c -ftemplate-depth-128 $(cflags) $(user_cxx_flags) $(includes) $(defines) $(cpp_input) -o \"$(obj_product)\"");
+      shared_ptr<source_argument_writer> cpp_input(new source_argument_writer("cpp_input", e.get_type_registry().get(types::CPP), /*exact_type=*/false, source_argument_writer::FULL_PATH));
+      cmdline_builder obj_cmd(install_data.compiler_.native_file_string() +
+                              " -c -ftemplate-depth-128 $(cflags) $(user_cxx_flags) $(includes) $(defines) -o \"$(obj_product)\" $(cpp_input)");
       obj_cmd += cflags;
       obj_cmd += user_cxx_flags;
       obj_cmd += cpp_input;
@@ -140,67 +140,8 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
       e.generators().insert(g);
    }
 
-   // ... -> EXE
-   { 
-      shared_ptr<source_argument_writer> obj_sources(new source_argument_writer("obj_sources", e.get_type_registry().get(types::OBJ)));
-      shared_ptr<product_argument_writer> exe_product(new product_argument_writer("exe_product", e.get_type_registry().get(types::EXE)));
-      auto_ptr<cmdline_action> exe_action(new cmdline_action("link-exe", exe_product));
-      cmdline_builder exe_cmd(install_data.linker_.native_file_string() + " $(link_flags) $(searched_lib_searched_dirs) -o \"$(exe_product)\" $(obj_sources) "
-                              "$(static_lib_sources) $(shared_lib_sources)\n");
-      
-      exe_cmd += link_flags;
-      exe_cmd += searched_lib_searched_dirs;
-      exe_cmd += obj_sources;
-      exe_cmd += static_lib_sources;
-      exe_cmd += searched_lib_sources;
-      exe_cmd += shared_lib_sources;
-      exe_cmd += exe_product;
-      *exe_action += exe_cmd;
-
-      generator::consumable_types_t source;
-      generator::producable_types_t target;
-      source.push_back(generator::consumable_type(e.get_type_registry().get(types::OBJ), 0, 0));
-      source.push_back(generator::consumable_type(e.get_type_registry().get(types::H), 0, 0));
-      source.push_back(generator::consumable_type(e.get_type_registry().get(types::STATIC_LIB), 0, 0));
-      source.push_back(generator::consumable_type(e.get_type_registry().get(types::SHARED_LIB), 0, 0));
-      source.push_back(generator::consumable_type(e.get_type_registry().get(types::SEARCHED_STATIC_LIB), 0, 0));
-      source.push_back(generator::consumable_type(e.get_type_registry().get(types::SEARCHED_SHARED_LIB), 0, 0));
-      source.push_back(generator::consumable_type(e.get_type_registry().get(types::HEADER_LIB), 0, 0));
-      target.push_back(generator::produced_type(e.get_type_registry().get(types::EXE)));
-      auto_ptr<generator> g(new exe_and_shared_lib_generator(e, "gcc.exe.linker", source, target, true, generator_condition));
-      g->action(exe_action);
-      e.generators().insert(g);
-   }
-
-   // ... -> STATIC_LIB
-   { 
-      shared_ptr<source_argument_writer> obj_sources(new source_argument_writer("obj_sources", e.get_type_registry().get(types::OBJ)));
-      shared_ptr<product_argument_writer> static_lib_product(new product_argument_writer("static_lib_product", e.get_type_registry().get(types::STATIC_LIB)));
-      cmdline_builder static_lib_cmd(install_data.librarian_.native_file_string() + " $(user_archive_flags) rc $(static_lib_product) $(obj_sources)");
-      
-      static_lib_cmd += static_lib_product;
-      static_lib_cmd += obj_sources;
-      static_lib_cmd += user_archive_flags;
-
-      auto_ptr<cmdline_action> static_lib_action(new cmdline_action("link-static-lib", static_lib_product));
-      *static_lib_action +=static_lib_cmd;
-      generator::consumable_types_t source;
-      generator::producable_types_t target;
-      source.push_back(generator::consumable_type(e.get_type_registry().get(types::OBJ), 0, 0));
-      source.push_back(generator::consumable_type(e.get_type_registry().get(types::H), 0, 0));
-      source.push_back(generator::consumable_type(e.get_type_registry().get(types::STATIC_LIB), 0, 0));
-      source.push_back(generator::consumable_type(e.get_type_registry().get(types::SHARED_LIB), 0, 0));
-      source.push_back(generator::consumable_type(e.get_type_registry().get(types::HEADER_LIB), 0, 0));
-      source.push_back(generator::consumable_type(e.get_type_registry().get(types::SEARCHED_STATIC_LIB), 0, 0));
-      source.push_back(generator::consumable_type(e.get_type_registry().get(types::SEARCHED_SHARED_LIB), 0, 0));
-      target.push_back(generator::produced_type(e.get_type_registry().get(types::STATIC_LIB), true));
-      auto_ptr<generator> g(new static_lib_generator(e, "gcc.static_lib.linker", source, target, true, generator_condition));
-      g->action(static_lib_action);
-      e.generators().insert(g);
-   }
-
    // ... -> SHARED_LIB
-   { 
+   {
       shared_ptr<source_argument_writer> obj_sources(new source_argument_writer("obj_sources", e.get_type_registry().get(types::OBJ)));
       shared_ptr<product_argument_writer> shared_lib_product(new product_argument_writer("shared_lib_product", e.get_type_registry().get(types::SHARED_LIB)));
       shared_ptr<unix_libraries_argument_writer> libraries_writer(new unix_libraries_argument_writer("libraries", linker_type::GNU, e));
@@ -227,6 +168,63 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
 
       auto_ptr<generator> g(new exe_and_shared_lib_generator(e, "gcc.shared_lib.linker", source, target, true, generator_condition));
       g->action(shared_lib_action);
+      e.generators().insert(g);
+   }
+
+   // ... -> EXE
+   {
+      shared_ptr<source_argument_writer> obj_sources(new source_argument_writer("obj_sources", e.get_type_registry().get(types::OBJ)));
+      shared_ptr<product_argument_writer> exe_product(new product_argument_writer("exe_product", e.get_type_registry().get(types::EXE)));
+      shared_ptr<unix_libraries_argument_writer> libraries_writer(new unix_libraries_argument_writer("libraries", linker_type::GNU, e));
+      auto_ptr<cmdline_action> exe_action(new cmdline_action("link-exe", exe_product));
+      cmdline_builder exe_cmd(install_data.linker_.native_file_string() + " $(link_flags) $(searched_lib_searched_dirs) -o \"$(exe_product)\" $(obj_sources) $(libraries)\n");
+
+      exe_cmd += link_flags;
+      exe_cmd += searched_lib_searched_dirs;
+      exe_cmd += obj_sources;
+      exe_cmd += libraries_writer;
+      exe_cmd += exe_product;
+      *exe_action += exe_cmd;
+
+      generator::consumable_types_t source;
+      generator::producable_types_t target;
+      source.push_back(generator::consumable_type(e.get_type_registry().get(types::OBJ), 0, 0));
+      source.push_back(generator::consumable_type(e.get_type_registry().get(types::H), 0, 0));
+      source.push_back(generator::consumable_type(e.get_type_registry().get(types::STATIC_LIB), 0, 0));
+      source.push_back(generator::consumable_type(e.get_type_registry().get(types::SHARED_LIB), 0, 0));
+      source.push_back(generator::consumable_type(e.get_type_registry().get(types::SEARCHED_STATIC_LIB), 0, 0));
+      source.push_back(generator::consumable_type(e.get_type_registry().get(types::SEARCHED_SHARED_LIB), 0, 0));
+      source.push_back(generator::consumable_type(e.get_type_registry().get(types::HEADER_LIB), 0, 0));
+      target.push_back(generator::produced_type(e.get_type_registry().get(types::EXE)));
+      auto_ptr<generator> g(new exe_and_shared_lib_generator(e, "gcc.exe.linker", source, target, true, generator_condition));
+      g->action(exe_action);
+      e.generators().insert(g);
+   }
+
+   // ... -> STATIC_LIB
+   {
+      shared_ptr<source_argument_writer> obj_sources(new source_argument_writer("obj_sources", e.get_type_registry().get(types::OBJ)));
+      shared_ptr<product_argument_writer> static_lib_product(new product_argument_writer("static_lib_product", e.get_type_registry().get(types::STATIC_LIB)));
+      cmdline_builder static_lib_cmd(install_data.librarian_.native_file_string() + " $(user_archive_flags) rc $(static_lib_product) $(obj_sources)");
+
+      static_lib_cmd += static_lib_product;
+      static_lib_cmd += obj_sources;
+      static_lib_cmd += user_archive_flags;
+
+      auto_ptr<cmdline_action> static_lib_action(new cmdline_action("link-static-lib", static_lib_product));
+      *static_lib_action +=static_lib_cmd;
+      generator::consumable_types_t source;
+      generator::producable_types_t target;
+      source.push_back(generator::consumable_type(e.get_type_registry().get(types::OBJ), 0, 0));
+      source.push_back(generator::consumable_type(e.get_type_registry().get(types::H), 0, 0));
+      source.push_back(generator::consumable_type(e.get_type_registry().get(types::STATIC_LIB), 0, 0));
+      source.push_back(generator::consumable_type(e.get_type_registry().get(types::SHARED_LIB), 0, 0));
+      source.push_back(generator::consumable_type(e.get_type_registry().get(types::HEADER_LIB), 0, 0));
+      source.push_back(generator::consumable_type(e.get_type_registry().get(types::SEARCHED_STATIC_LIB), 0, 0));
+      source.push_back(generator::consumable_type(e.get_type_registry().get(types::SEARCHED_SHARED_LIB), 0, 0));
+      target.push_back(generator::produced_type(e.get_type_registry().get(types::STATIC_LIB), true));
+      auto_ptr<generator> g(new static_lib_generator(e, "gcc.static_lib.linker", source, target, true, generator_condition));
+      g->action(static_lib_action);
       e.generators().insert(g);
    }
 }

@@ -57,16 +57,16 @@ namespace
 {
    // Ctrl-C flag
    volatile bool interrupt_flag = false;
-   
+
    // Reaction in Ctrl-C
    volatile bool terminate_immediately = true;
 
-   void already_interrupted_ctrl_handler(int sig) 
+   void already_interrupted_ctrl_handler(int sig)
    {
       signal(SIGINT, already_interrupted_ctrl_handler);
    }
 
-   void ctrl_handler(int sig) 
+   void ctrl_handler(int sig)
    {
       signal(SIGINT, already_interrupted_ctrl_handler);
       interrupt_flag = true;
@@ -87,7 +87,7 @@ namespace
 
    struct hammer_options
    {
-      hammer_options() : generate_projects_localy_(false), 
+      hammer_options() : generate_projects_localy_(false),
                          only_up_to_date_check_(false),
                          disable_batcher_(false),
                          clean_all_(false),
@@ -175,7 +175,7 @@ namespace
 
       return fr.create_feature(fd.name(), value);
    }
-   
+
    static feature* try_resolve_implicit_feature(feature_registry& fr, const std::string& value)
    {
       feature* result = try_resolve_implicit_feature(fr, fr.get_def("toolset"), value);
@@ -185,7 +185,7 @@ namespace
       return try_resolve_implicit_feature(fr, fr.get_def("variant"), value);
    }
 
-   void resolve_arguments(vector<string>& targets, feature_set* build_request, 
+   void resolve_arguments(vector<string>& targets, feature_set* build_request,
                           feature_registry& fr, const vector<string>& build_request_options)
    {
       typedef vector<string>::const_iterator iter;
@@ -215,6 +215,9 @@ namespace
          if (!i->second->is_explicit())
             targets.push_back(i->first.to_string());
       }
+
+      std::sort(targets.begin(), targets.end());
+      targets.erase(std::unique(targets.begin(), targets.end()), targets.end());
    }
 
    bool is_looks_like_project(const string& s)
@@ -222,8 +225,8 @@ namespace
       return s.find('/') != string::npos;
    }
 
-   void split_target_path(string& target_path, 
-                          string& target_name, 
+   void split_target_path(string& target_path,
+                          string& target_name,
                           const string& to_split)
    {
       boost::smatch match;
@@ -237,25 +240,27 @@ namespace
          target_path = to_split;
    }
 
-   vector<basic_target*> 
+   vector<basic_target*>
    instantiate_targets(const vector<string>& targets, const hammer::project& project,
                        const feature_set& build_request)
    {
+      typedef hammer::project::selected_targets_t selected_targets_t;
+
       vector<basic_target*> result;
       feature_set* usage_requirements = project.get_engine()->feature_registry().make_set();
+      const feature_set* build_request_with_defs = project.get_engine()->feature_registry().add_defaults(build_request.clone());
       for(vector<string>::const_iterator i = targets.begin(), last = targets.end(); i != last; ++i)
       {
          if (is_looks_like_project(*i))
          {
             string target_path, target_name;
-            
+
             split_target_path(target_path, target_name, *i);
             pstring p_target_name(project.get_engine()->pstring_pool(), target_name);
 
             const hammer::engine::loaded_projects_t& p = project.get_engine()->load_project(target_path, project);
-            typedef hammer::project::selected_targets_t selected_targets_t;
-            selected_targets_t st = target_name.empty() ? p.select_best_alternative(build_request) :
-                                                          selected_targets_t(1, p.select_best_alternative(p_target_name, build_request));
+            selected_targets_t st = target_name.empty() ? p.select_best_alternative(*build_request_with_defs) :
+                                                          selected_targets_t(1, p.select_best_alternative(p_target_name, *build_request_with_defs));
             feature_set* usage_requirements = project.get_engine()->feature_registry().make_set();
             for(selected_targets_t::const_iterator t = st.begin(), t_last = st.end(); t != t_last; ++t)
             {
@@ -266,14 +271,11 @@ namespace
          else
          {
             pstring name(project.get_engine()->pstring_pool(), *i);
-            const basic_meta_target* t = project.find_target(name);
-            if (t == NULL)
-               throw runtime_error((boost::format("Can't find target '%s'.") % *i).str());
-            
-            t->instantiate(0, build_request, &result, usage_requirements);
+            hammer::project::selected_target target = project.select_best_alternative(name, *build_request_with_defs);
+            target.target_->instantiate(0, build_request, &result, usage_requirements);
          }
       }
-      
+
       return result;
    }
 
@@ -292,9 +294,9 @@ namespace
 
    void generate_msvc80_solution(const nodes_t& nodes, const hammer::project& project_to_build)
    {
-      project_generators::msvc_solution solution(project_to_build, 
-                                                 project_to_build.location() / opts.hammer_output_dir_, 
-                                                 opts.generate_projects_localy_ ? msvc_solution::generation_mode::LOCAL 
+      project_generators::msvc_solution solution(project_to_build,
+                                                 project_to_build.location() / opts.hammer_output_dir_,
+                                                 opts.generate_projects_localy_ ? msvc_solution::generation_mode::LOCAL
                                                                                 : msvc_solution::generation_mode::NON_LOCAL);
 
       for(nodes_t::const_iterator i = nodes.begin(), last = nodes.end(); i != last; ++i)
@@ -314,12 +316,12 @@ namespace
       master_project.write();
    }
 
-   void generate_eclipse_workspace(const nodes_t& nodes, 
+   void generate_eclipse_workspace(const nodes_t& nodes,
                                    const project& master_project,
                                    const fs::path& workspace_output_path)
    {
-      project_generators::eclipse_cdt_workspace workspace(workspace_output_path, 
-                                                          nodes, 
+      project_generators::eclipse_cdt_workspace workspace(workspace_output_path,
+                                                          nodes,
                                                           get_data_path() / "eclipse-cdt-templates",
                                                           master_project);
       workspace.construct();
@@ -340,7 +342,7 @@ namespace
 
    typedef boost::unordered_set<const build_node*> visited_nodes_t;
    typedef boost::unordered_set<const meta_target*> top_targets_t;
-   
+
    void find_top_source_project_nodes(const build_node& node,
                                       nodes_t& result,
                                       visited_nodes_t& visited_nodes,
@@ -378,8 +380,8 @@ namespace
       return result;
    }
 
-   bool find_node_for_source_name(build_node_ptr& result, 
-                                  visited_nodes_t& visited_nodes, 
+   bool find_node_for_source_name(build_node_ptr& result,
+                                  visited_nodes_t& visited_nodes,
                                   const boost::intrusive_ptr<build_node>& node,
                                   const pstring& source_name,
                                   const project* source_project)
@@ -388,10 +390,10 @@ namespace
          return false;
 
       visited_nodes.insert(node.get());
-      
+
       if (node->products_owner().get_project() == source_project)
          if (node->sources_.empty() && node->products_.size() == 1)
-         { 
+         {
             // founded some source
             if (source_name.is_suffix_of(node->products_.front()->name()))
                return true;
@@ -414,8 +416,8 @@ namespace
       return false;
    }
 
-   build_node_ptr find_nodes_for_source_name(const nodes_t& nodes, 
-                                             const pstring& source_name, 
+   build_node_ptr find_nodes_for_source_name(const nodes_t& nodes,
+                                             const pstring& source_name,
                                              const project* source_project)
    {
       visited_nodes_t visited_nodes;
@@ -423,7 +425,7 @@ namespace
       for(nodes_t::const_iterator i = nodes.begin(), last = nodes.end(); i != last; ++i)
          if (find_node_for_source_name(result, visited_nodes, *i, source_name, source_project))
             break;
-      
+
       return result;
    }
 
@@ -461,15 +463,15 @@ namespace
       path.pop_back();
    }
 
-   void run_build(nodes_t& nodes, 
-                  engine& e, 
+   void run_build(nodes_t& nodes,
+                  engine& e,
                   hammer_options opts)
    {
       terminate_immediately = false;
       signal(SIGINT, ctrl_handler);
 
       build_environment_impl build_environment(fs::current_path());
-      
+
       if (opts.just_one_source_.empty())
       {
          actuality_checker checker(e, build_environment);
@@ -510,7 +512,7 @@ namespace
 
          builder::result build_result = builder.build(nodes);
          cout << "...updated " << build_result.updated_targets_ << " targets...\n";
-         
+
          if (build_result.failed_to_build_targets_)
             cout << "...failed updating " << build_result.failed_to_build_targets_ << " targets...\n";
 
@@ -521,7 +523,7 @@ namespace
       {
 //         cout << "...updating source '" << opts.just_one_source_ << "'..." << endl;
          builder builder(build_environment, interrupt_flag, opts.worker_count_, false);
-         
+
          const project* project_for_source = NULL;
          if (!opts.just_one_source_project_path_.empty())
             project_for_source = &e.load_project(opts.just_one_source_project_path_);
@@ -531,7 +533,7 @@ namespace
             throw std::runtime_error("Source file not founded");
 
          nodes_t source_project_nodes = find_top_source_project_nodes(nodes, project_for_source);
-         
+
          // collect all nodes prior to main source project nodes
          visited_nodes_t visited_nodes;
          nodes_t nodes_to_build;
@@ -548,7 +550,7 @@ namespace
          cout << "...checking targets for update... " << flush;
          size_t target_to_update_count = checker.check(nodes_to_build);
          cout << "Done." << endl;
-         
+
          if (opts.dump_targets_to_update_)
          {
             ofstream f("targets-to-update.txt", std::ios_base::trunc);
@@ -577,7 +579,7 @@ namespace
 
       e.toolset_manager().init_toolset(e, toolset_name.to_string(), toolset_version.to_string(), toolset_home_ == NULL ? NULL : &toolset_home);
    }
-   
+
    bool has_configured_toolsets(const hammer::engine& e)
    {
       const feature_registry& fs = e.feature_registry();
@@ -607,7 +609,7 @@ namespace
    class dep_copy_target : public file_target
    {
       public:
-         dep_copy_target(const location_t& destination, 
+         dep_copy_target(const location_t& destination,
                          const main_target* mt, const pstring& name,
                          const target_type* t, const feature_set* f)
             : file_target(mt, name, t, f), destination_(destination)
@@ -617,7 +619,7 @@ namespace
          {
             return destination_;
          }
-      
+
       private:
          location_t destination_;
    };
@@ -627,12 +629,12 @@ namespace
       // collect all executables
       build_node::sources_t executables;
       {
-         std::set<const build_node*> visited_nodes;      
+         std::set<const build_node*> visited_nodes;
          std::vector<const target_type*> types_to_collect;
          types_to_collect.push_back(&e.get_type_registry().get(types::EXE));
          collect_nodes(executables, visited_nodes, nodes, types_to_collect, /*recursive=*/false);
       }
-      
+
       if (executables.empty())
          return;
 
@@ -642,16 +644,16 @@ namespace
       // collect all shared lib that needed for executables
       build_node::sources_t shared_libs;
       {
-         std::set<const build_node*> visited_nodes;      
+         std::set<const build_node*> visited_nodes;
          std::vector<const target_type*> types_to_collect;
          types_to_collect.push_back(&e.get_type_registry().get(types::SHARED_LIB));
          collect_nodes(shared_libs, visited_nodes, nodes, types_to_collect, /*recursive=*/true);
       }
-      
+
       const generator& copy_generator = *e.generators()
-                                          .find_viable_generators(e.get_type_registry().get(types::COPIED), 
+                                          .find_viable_generators(e.get_type_registry().get(types::COPIED),
                                                                   true, *e.feature_registry().make_set()).at(0).first;
-      
+
       nodes_t copy_nodes;
       for(build_node::sources_t::const_iterator i = shared_libs.begin(), last = shared_libs.end(); i != last; ++i)
       {
@@ -662,9 +664,9 @@ namespace
          new_node->down_.push_back(i->source_node_);
 
          dep_copy_target* new_target = new dep_copy_target(executables[0].source_target_->location(),
-                                                           &new_node->products_owner(), 
-                                                           i->source_target_->name(), 
-                                                           new_node->targeting_type_, 
+                                                           &new_node->products_owner(),
+                                                           i->source_target_->name(),
+                                                           new_node->targeting_type_,
                                                            &executables[0].source_target_->properties());
          new_node->products_.push_back(new_target);
 
@@ -683,7 +685,7 @@ int main(int argc, char** argv)
       po::options_description desc(options_for_work());
       po::variables_map vm;
       po::parsed_options options = po::command_line_parser(argc, argv).options(desc).positional(build_request_options).run();
-      po::store(options, vm);                 
+      po::store(options, vm);
       po::notify(vm);
       hammer::engine engine;
       vector<string> targets;
@@ -694,16 +696,16 @@ int main(int argc, char** argv)
          cout << "Usage: hammer.exe <options> <targets> <features>\n" << options_for_help();
          return 0;
       }
-      
+
       // fix concurrency level if user is dumb
       if (opts.worker_count_ == 0)
          opts.worker_count_ = 1;
-      
+
       fs::path data_path(get_data_path());
 
       if (vm.count("install-dir"))
          data_path = opts.hammer_install_dir_;
-      
+
       fs::path startup_script = data_path / "scripts/startup.ham";
 
       if (opts.debug_level_ > 0)
@@ -728,7 +730,7 @@ int main(int argc, char** argv)
 
       if (opts.debug_level_ > 0)
          cout << "Done" << endl;
-      
+
       if (opts.debug_level_ > 0)
          cout << "...Installing scanners... " << flush;
 
@@ -781,7 +783,7 @@ int main(int argc, char** argv)
 
       if (vm.count("generate-projects-locally"))
          opts.generate_projects_localy_ = true;
-      
+
       if (vm.count("up-to-date-check"))
          opts.only_up_to_date_check_ = true;
 
@@ -813,13 +815,13 @@ int main(int argc, char** argv)
 
       if (build_request->find("variant") == build_request->end())
          build_request->join("variant", "debug");
-      
+
       if (build_request->find("host-os") == build_request->end())
          build_request->join("host-os", engine.feature_registry().get_def("host-os").get_default().c_str());
 
       if (opts.debug_level_ > 0)
          cout << "...Loading project at '" << fs::current_path() << "'... " << flush;
-      
+
       const project& project_to_build = engine.load_project(fs::current_path());
       if (opts.debug_level_ > 0)
          cout << "Done" << endl;
@@ -854,13 +856,13 @@ int main(int argc, char** argv)
          return 0;
 
       cout << "...generating build graph... " << flush;
-      
+
       nodes_t nodes(generate_targets(instantiated_targets));
       if (opts.copy_dependencies_)
          add_copy_dependencies_nodes(nodes, engine);
 
       cout << "Done." << endl;
-      
+
       if (vm.count("generate"))
          return 0;
 

@@ -1,5 +1,7 @@
-feature.feature all-static : on : propagated composite ;
+feature.feature all-static : on : propagated composite no-defaults ;
 feature.compose <all-static>on : <link>static <runtime-link>static ;
+feature.feature all-static-nix : on : propagated composite no-defaults ;
+feature.compose <all-static-nix>on : <link>static ;
 
 copy install 
    :
@@ -12,7 +14,7 @@ copy install
 
 copy install 
    :
-    ../build/<all-static>on/<variant>release
+    ../build/<all-static-nix>on/<variant>release
    :
     <destination>./template/linux/
     <type-to-copy>EXE

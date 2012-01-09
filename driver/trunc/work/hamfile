@@ -7,5 +7,4 @@ copy install
    :
     <destination>./
     <type-to-copy>EXE
-    <host-os>linux
    ;

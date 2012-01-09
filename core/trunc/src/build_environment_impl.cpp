@@ -7,6 +7,7 @@
 #include <boost/regex.hpp>
 #include <boost/process.hpp>
 #include <boost/guid.hpp>
+#include <boost/thread/thread.hpp>
 #include <hammer/core/build_environment_impl.h>
 #include <hammer/core/fs_helpers.h>
 #include <hammer/core/main_target.h>
@@ -23,7 +24,19 @@ build_environment_impl::build_environment_impl(const location_t& cur_dir)
 
 }
 
+build_environment_impl::~build_environment_impl()
+{
+}
+
+static void stream_copy_thread(std::istream& source, std::ostream& sink)
+{
+   std::copy(istreambuf_iterator<char>(source),
+             istreambuf_iterator<char>(),
+             ostreambuf_iterator<char>(sink));
+}
+
 bool build_environment_impl::run_shell_commands(std::ostream* captured_output_stream,
+                                                std::ostream* captured_error_stream,
                                                 const std::vector<std::string>& cmds,
                                                 const location_t& working_dir) const
 {
@@ -54,14 +67,17 @@ bool build_environment_impl::run_shell_commands(std::ostream* captured_output_st
       if (captured_output_stream != NULL)
       {
          ctx.stdout_behavior = bp::capture_stream();
-         ctx.stderr_behavior = bp::redirect_stream_to_stdout();
+         if (captured_error_stream != NULL)
+            ctx.stderr_behavior = bp::capture_stream();
+         else
+            ctx.stderr_behavior = bp::redirect_stream_to_stdout();
       }
       else
       {
          ctx.stdout_behavior = bp::inherit_stream();
          ctx.stderr_behavior = bp::inherit_stream();
       }
-      
+
      std::vector<std::string> cmdline;
 #if defined(_WIN32)
       cmdline.push_back("cmd.exe");
@@ -77,9 +93,15 @@ bool build_environment_impl::run_shell_commands(std::ostream* captured_output_st
 #endif
 
       if (captured_output_stream != NULL)
-         std::copy(istreambuf_iterator<char>(shell_action_child.get_stdout()),
-                   istreambuf_iterator<char>(),
-                   ostreambuf_iterator<char>(*captured_output_stream));
+      {
+         boost::thread_group tg;
+
+         tg.create_thread(boost::bind(&stream_copy_thread, boost::ref(shell_action_child.get_stdout()), boost::ref(*captured_output_stream)));
+         if (captured_error_stream != NULL)
+            tg.create_thread(boost::bind(&stream_copy_thread, boost::ref(shell_action_child.get_stderr()), boost::ref(*captured_error_stream)));
+
+         tg.join_all();
+      }
 
       bp::status st = shell_action_child.wait();
 
@@ -118,7 +140,7 @@ bool build_environment_impl::run_shell_commands(std::ostream* captured_output_st
 bool build_environment_impl::run_shell_commands(const std::vector<std::string>& cmds,
                                                 const location_t& working_dir) const
 {
-   return run_shell_commands(NULL, cmds, working_dir);
+   return run_shell_commands(NULL, NULL, cmds, working_dir);
 }
 
 bool build_environment_impl::run_shell_commands(std::string& captured_output,
@@ -126,16 +148,24 @@ bool build_environment_impl::run_shell_commands(std::string& captured_output,
                                                 const location_t& working_dir) const
 {
    std::stringstream s;
-   bool result = run_shell_commands(&s, cmds, working_dir);
+   bool result = run_shell_commands(&s, NULL, cmds, working_dir);
    captured_output = s.str();
    return result;
 }
 
-bool build_environment_impl::run_shell_commands(std::ostream& captured_output_stream, 
-                                                const std::vector<std::string>& cmds, 
+bool build_environment_impl::run_shell_commands(std::ostream& captured_output_stream,
+                                                const std::vector<std::string>& cmds,
                                                 const location_t& working_dir) const
 {
-   return run_shell_commands(&captured_output_stream, cmds, working_dir);
+   return run_shell_commands(&captured_output_stream, NULL, cmds, working_dir);
+}
+
+bool build_environment_impl::run_shell_commands(std::ostream& captured_output_stream,
+                                                std::ostream& captured_error_stream,
+                                                const std::vector<std::string>& cmds,
+                                                const location_t& working_dir) const
+{
+   return run_shell_commands(&captured_output_stream, &captured_error_stream, cmds, working_dir);
 }
 
 static std::auto_ptr<std::istream> open_input_stream(const location_t& full_content_file_name)
@@ -232,6 +262,11 @@ const location_t* build_environment_impl::cache_directory() const
 std::ostream& build_environment_impl::output_stream() const
 {
    return std::cout;
+}
+
+ostream &build_environment_impl::error_stream() const
+{
+   return std::cerr;
 }
 
 }

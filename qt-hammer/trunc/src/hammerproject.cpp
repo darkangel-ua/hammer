@@ -214,7 +214,11 @@ bool HammerProject::fromMap(const QVariantMap &map)
    // setup toolchain
    QList<ProjectExplorer::ToolChain*> tcs = ProjectExplorer::ToolChainManager::instance()->toolChains();
    foreach (ProjectExplorer::ToolChain *tc, tcs)
+#if defined(_WIN32)
       if (tc->typeName() == "MSVC")
+#else
+      if (tc->typeName() == "GCC")
+#endif
       {
          m_toolChain = tc;
          break;

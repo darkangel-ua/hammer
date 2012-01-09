@@ -23,7 +23,7 @@
 #include <hammer/core/pch_argument_writer.h>
 
 using namespace std;
-   
+
 namespace hammer{ namespace project_generators{
 
 namespace
@@ -31,7 +31,7 @@ namespace
    class fake_environment : public build_environment
    {
       public:
-         fake_environment(const location_t& project_output_dir) 
+         fake_environment(const location_t& project_output_dir)
             : project_output_dir_(project_output_dir)
          {}
 
@@ -40,14 +40,15 @@ namespace
          virtual bool run_shell_commands(const std::vector<std::string>& cmds, const location_t& working_dir) const { return true; }
          virtual bool run_shell_commands(std::string& captured_output, const std::vector<std::string>& cmds, const location_t& working_dir) const { return true; }
          virtual bool run_shell_commands(std::ostream& captured_output_stream, const std::vector<std::string>& cmds, const location_t& working_dir) const { return true; }
+         virtual bool run_shell_commands(std::ostream& captured_output_stream, std::ostream& captured_error_stream, const std::vector<std::string>& cmds, const location_t& working_dir) const { return true; }
          virtual const location_t& current_directory() const { return project_output_dir_; }
          virtual void create_directories(const location_t& dir_to_create) const {};
          virtual void remove(const location_t& p) const {};
          virtual void remove_file_by_pattern(const location_t& dir, const std::string& pattern) const {};
          virtual void copy(const location_t& source, const location_t& destination) const {};
          virtual bool write_tag_file(const std::string& filename, const std::string& content) const { return true; }
-         virtual std::auto_ptr<std::ostream> create_output_file(const char* filename, std::ios_base::openmode mode) const 
-         { 
+         virtual std::auto_ptr<std::ostream> create_output_file(const char* filename, std::ios_base::openmode mode) const
+         {
             return std::auto_ptr<std::ostream>(new ostringstream);
          }
 
@@ -56,10 +57,11 @@ namespace
             return project_output_dir_;
          }
          virtual std::ostream& output_stream() const { return std::cout; }
-         
+         virtual std::ostream& error_stream() const { return std::cerr; }
+
          const location_t* cache_directory() const { return NULL; }
 
-      
+
       private:
          location_t project_output_dir_;
    };
@@ -91,12 +93,12 @@ static const string linker_option_format_string(
 
 static const string post_build_step_format_string("$(non_path_args) $(path_args)\"\n");
 
-msvc_project::msvc_project(engine& e, 
-                           const location_t& output_dir, 
+msvc_project::msvc_project(engine& e,
+                           const location_t& output_dir,
                            const std::string& solution_configuration_name,
-                           const boost::guid& uid) 
-   : 
-    engine_(&e), 
+                           const boost::guid& uid)
+   :
+    engine_(&e),
     uid_(uid),
     output_dir_(output_dir),
     project_output_dir_(output_dir_),
@@ -125,7 +127,7 @@ msvc_project::msvc_project(engine& e,
    optimization->add("<optimization>off", "0").
                  add("<optimization>speed", "2").
                  add("<optimization>space", "1");
-   
+
    compiller_options_ += optimization;
 
    boost::shared_ptr<fs_argument_writer> inlining(new fs_argument_writer("inlining", e.feature_registry()));
@@ -187,21 +189,21 @@ msvc_project::msvc_project(engine& e,
 
    // linker options
    boost::shared_ptr<source_argument_writer> additional_libraries(
-       new source_argument_writer("additional_libraries", 
-                                  e.get_type_registry().get(types::PREBUILT_STATIC_LIB), 
+       new source_argument_writer("additional_libraries",
+                                  e.get_type_registry().get(types::PREBUILT_STATIC_LIB),
                                   true,
                                   source_argument_writer::RELATIVE_TO_WORKING_DIR));
    linker_options_ += additional_libraries;
 
    boost::shared_ptr<source_argument_writer> additional_searched_libraries(
-       new source_argument_writer("additional_searched_libraries", 
+       new source_argument_writer("additional_searched_libraries",
                                   e.get_type_registry().get(types::SEARCHED_STATIC_LIB),
-                                  true, 
+                                  true,
                                   source_argument_writer::WITHOUT_PATH));
    linker_options_ += additional_searched_libraries;
 
    boost::shared_ptr<free_feature_arg_writer> additional_libraries_dirs(
-       new free_feature_arg_writer("additional_libraries_dirs", 
+       new free_feature_arg_writer("additional_libraries_dirs",
                                    e.feature_registry().get_def("search"),
                                    string(), string(), ";"));
    linker_options_ += additional_libraries_dirs;
@@ -361,10 +363,10 @@ configuration_types::value msvc_project::resolve_configuration_type(const varian
             }
             else
                throw std::runtime_error("[msvc_project] Can't resolve configurations type '" + v.target_->type().tag().name() + "'.");
-} 
+}
 
-static void write_compiler_options(std::ostream& s, 
-                                   const cmdline_builder& formater, 
+static void write_compiler_options(std::ostream& s,
+                                   const cmdline_builder& formater,
                                    const build_node& node,
                                    const build_environment& environment)
 {
@@ -377,7 +379,7 @@ static void write_compiler_options(std::ostream& s,
 void msvc_project::write_configurations(std::ostream& s) const
 {
    s << "   <Configurations>\n";
-   
+
    for(variants_t::iterator i = variants_.begin(), last = variants_.end(); i != last; ++i)
    {
       configuration_types::value cfg_type = resolve_configuration_type(*i);
@@ -415,14 +417,14 @@ void msvc_project::write_configurations(std::ostream& s) const
            << "            CommandLine=\"$(TargetPath) ";
 
          post_build_step_.write(s, *i->real_node_, fe);
-         
+
          s << "         />\n";
       }
 
       s << "      </Configuration>\n";
    }
 
-   s << "   </Configurations>\n"; 
+   s << "   </Configurations>\n";
 }
 /* defined but not used
 static feature_set* compute_file_conf_properties(const basic_target& target, const msvc_project::variant& v)
@@ -466,7 +468,7 @@ void msvc_project::file_with_cfgs_t::write(write_context& ctx, const std::string
    ctx.output_ << "         </File>\n";
 }
 
-struct less_target 
+struct less_target
 {
    bool operator ()(const basic_target* lhs, const basic_target* rhs)
    {
@@ -548,8 +550,8 @@ bool msvc_project::filter_t::accept(const target_type* t) const
    return false;
 }
 
-void msvc_project::filter_t::insert(const boost::intrusive_ptr<build_node>& node, 
-                                    const basic_target* t, 
+void msvc_project::filter_t::insert(const boost::intrusive_ptr<build_node>& node,
+                                    const basic_target* t,
                                     const variant& v)
 {
    file_with_cfgs_t& fwc = files_[t];
@@ -560,8 +562,8 @@ void msvc_project::filter_t::insert(const boost::intrusive_ptr<build_node>& node
    fc.node_ = node;
 }
 
-void msvc_project::insert_into_files(const boost::intrusive_ptr<build_node>& node, 
-                                     const basic_target* t, 
+void msvc_project::insert_into_files(const boost::intrusive_ptr<build_node>& node,
+                                     const basic_target* t,
                                      const variant& v)
 {
    const target_type* tp = &t->type();
@@ -593,8 +595,8 @@ void msvc_project::gether_files_impl(const build_node& node, variant& v)
          if (mi->source_target_->get_main_target()->type().equal_or_derived_from(searched_lib_))
          { // this target is searched lib product
             const pstring& file_name = mi->source_target_->name();
-            location_t searched_file(mi->source_target_->location().empty() 
-                                       ? file_name.to_string() 
+            location_t searched_file(mi->source_target_->location().empty()
+                                       ? file_name.to_string()
                                        : relative_path(mi->source_target_->location(), project_output_dir_) / file_name.to_string());
             searched_file.normalize();
          }

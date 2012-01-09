@@ -298,24 +298,24 @@ engine::try_load_project(const location_t& tail_path,
 
    projects_t::iterator i = projects_.find(project_path);
    if (i == projects_.end())
-	   // try to materialize only if project was not loaded
-	   if (!exists(project_path))
-	   {
-		  // if alias data exists than use it
-		  const project* upper_materialized_project =
-			 symlink.properties_ == NULL ? find_upper_materialized_project(project_path)
-											: NULL;
-		  if (upper_materialized_project == NULL)
-			 initial_materialization(symlink);
-		  else
-		  {
-			 const scm_client* scm_client = try_resolve_scm_client(*upper_materialized_project);
-			 if (scm_client == NULL)
-				return loaded_projects_t();
+      // try to materialize only if project was not loaded
+      if (!exists(project_path))
+      {
+        // if alias data exists than use it
+        const project* upper_materialized_project =
+          symlink.properties_ == NULL ? find_upper_materialized_project(project_path)
+                                 : NULL;
+        if (upper_materialized_project == NULL)
+          initial_materialization(symlink);
+        else
+        {
+          const scm_client* scm_client = try_resolve_scm_client(*upper_materialized_project);
+          if (scm_client == NULL)
+            return loaded_projects_t();
 
-			 materialize_directory(*scm_client, project_path, false);
-		  }
-	   }
+          materialize_directory(*scm_client, project_path, false);
+        }
+      }
 
    project& p = load_project(project_path);
    update_project_scm_info(p, symlink);
@@ -614,15 +614,15 @@ void engine::lib_rule(project* p, std::vector<pstring>& name, sources_decl* sour
    p->add_target(mt);
 }
 
-void engine::searched_shared_lib_rule(project* p, 
-                                      std::vector<pstring>& name, 
+void engine::searched_shared_lib_rule(project* p,
+                                      std::vector<pstring>& name,
                                       sources_decl* sources,
-                                      pstring& lib_name, 
-                                      requirements_decl* requirements, 
+                                      pstring& lib_name,
+                                      requirements_decl* requirements,
                                       requirements_decl* usage_requirements)
 {
-   auto_ptr<basic_meta_target> mt(new searched_lib_meta_target(p, 
-                                                               name.at(0), 
+   auto_ptr<basic_meta_target> mt(new searched_lib_meta_target(p,
+                                                               name.at(0),
                                                                lib_name,
                                                                requirements ? *requirements : requirements_decl(),
                                                                usage_requirements ? *usage_requirements : requirements_decl(),
@@ -633,15 +633,15 @@ void engine::searched_shared_lib_rule(project* p,
    p->add_target(mt);
 }
 
-void engine::searched_static_lib_rule(project* p, 
-                                      pstring& name, 
+void engine::searched_static_lib_rule(project* p,
+                                      pstring& name,
                                       sources_decl* sources,
-                                      pstring& lib_name, 
-                                      requirements_decl* requirements, 
+                                      pstring& lib_name,
+                                      requirements_decl* requirements,
                                       requirements_decl* usage_requirements)
 {
-   auto_ptr<basic_meta_target> mt(new searched_lib_meta_target(p, 
-                                                               name, 
+   auto_ptr<basic_meta_target> mt(new searched_lib_meta_target(p,
+                                                               name,
                                                                lib_name,
                                                                requirements ? *requirements : requirements_decl(),
                                                                usage_requirements ? *usage_requirements : requirements_decl(),
@@ -652,15 +652,15 @@ void engine::searched_static_lib_rule(project* p,
    p->add_target(mt);
 }
 
-void engine::prebuilt_lib_rule(project* p, 
-                               pstring& name, 
+void engine::prebuilt_lib_rule(project* p,
+                               pstring& name,
                                sources_decl* sources,
-                               pstring& lib_filename, 
-                               requirements_decl* requirements, 
+                               pstring& lib_filename,
+                               requirements_decl* requirements,
                                requirements_decl* usage_requirements)
 {
-   auto_ptr<basic_meta_target> mt(new prebuilt_lib_meta_target(p, 
-                                                               name, 
+   auto_ptr<basic_meta_target> mt(new prebuilt_lib_meta_target(p,
+                                                               name,
                                                                lib_filename,
                                                                requirements ? *requirements : requirements_decl(),
                                                                usage_requirements ? *usage_requirements : requirements_decl()));
@@ -670,14 +670,14 @@ void engine::prebuilt_lib_rule(project* p,
    p->add_target(mt);
 }
 
-void engine::file_rule(project* p, 
-                       std::vector<pstring>& name, 
-                       pstring& filename, 
-                       requirements_decl* requirements, 
+void engine::file_rule(project* p,
+                       std::vector<pstring>& name,
+                       pstring& filename,
+                       requirements_decl* requirements,
                        requirements_decl* usage_requirements)
 {
-   auto_ptr<basic_meta_target> mt(new file_meta_target(p, 
-                                                       name.at(0), 
+   auto_ptr<basic_meta_target> mt(new file_meta_target(p,
+                                                       name.at(0),
                                                        filename,
                                                        requirements ? *requirements : requirements_decl(),
                                                        usage_requirements ? *usage_requirements : requirements_decl()));
@@ -1082,7 +1082,7 @@ void engine::explicit_rule(project* p, const pstring& target_name)
 
 void engine::use_project(const project& p, const pstring& project_id_alias, const location_t& project_location)
 {
-	use_project_rule(const_cast<project*>(&p), project_id_alias, pstring(pstring_pool(), project_location.file_string()), feature_registry().make_set());
+   use_project_rule(const_cast<project*>(&p), project_id_alias, pstring(pstring_pool(), project_location.file_string()), feature_registry().make_set());
 }
 
 void engine::use_project_rule(project* p, const pstring& project_id_alias,

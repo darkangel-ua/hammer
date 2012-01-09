@@ -40,6 +40,7 @@
 #include <hammer/core/c_scanner.h>
 #include <hammer/core/generic_batcher.h>
 #include <hammer/core/collect_nodes.h>
+#include <hammer/core/fs_helpers.h>
 
 #include "user_config_location.h"
 #include "get_data_path.h"
@@ -240,6 +241,16 @@ namespace
          target_path = to_split;
    }
 
+   bool project_has_multiple_targets(const hammer::project& p, const string& name)
+   {
+      unsigned count = 0;
+      for(hammer::project::targets_t::const_iterator i= p.targets().begin(), last = p.targets().end(); i != last; ++i)
+         if (i->first == name)
+            ++count;
+
+      return count > 1;
+   }
+
    vector<basic_target*>
    instantiate_targets(const vector<string>& targets, const hammer::project& project,
                        const feature_set& build_request)
@@ -253,6 +264,7 @@ namespace
       {
          if (is_looks_like_project(*i))
          {
+            printf("target to build %s\n", i->begin());
             string target_path, target_name;
 
             split_target_path(target_path, target_name, *i);
@@ -270,9 +282,15 @@ namespace
          }
          else
          {
+            printf("non project target to build %s\n", i->begin());
             pstring name(project.get_engine()->pstring_pool(), *i);
-            hammer::project::selected_target target = project.select_best_alternative(name, *build_request_with_defs);
-            target.target_->instantiate(0, build_request, &result, usage_requirements);
+            if (project_has_multiple_targets(project, *i))
+            {
+               hammer::project::selected_target target = project.select_best_alternative(name, *build_request_with_defs);
+               target.target_->instantiate(0, build_request, &result, usage_requirements);
+            }
+            else
+               project.find_target(name)->instantiate(0, build_request, &result, usage_requirements);
          }
       }
 
@@ -453,7 +471,7 @@ namespace
          {
             // add path nodes except head
             nodes_t::iterator i = path.begin() + 1;
-            for(i; i != path.end(); ++i)
+            for(; i != path.end(); ++i)
                nodes_to_build.push_back(*i);
          }
          else
@@ -525,8 +543,10 @@ namespace
          builder builder(build_environment, interrupt_flag, opts.worker_count_, false);
 
          const project* project_for_source = NULL;
+         // FIXME: we must resolve symlinks because under linux fs::current_path give as fully resolved path without any symlinks.
+         // That is really wierd I think, but can't find any other solution.
          if (!opts.just_one_source_project_path_.empty())
-            project_for_source = &e.load_project(opts.just_one_source_project_path_);
+            project_for_source = &e.load_project(resolve_symlinks(opts.just_one_source_project_path_));
 
          build_node_ptr source_node = find_nodes_for_source_name(nodes, pstring(e.pstring_pool(), opts.just_one_source_), project_for_source);
          if (!source_node)
@@ -566,7 +586,7 @@ namespace
          nodes_to_build.erase(std::unique(nodes_to_build.begin(), nodes_to_build.end()), nodes_to_build.end());
 
          cout << "...building source '" << opts.just_one_source_ << "'..." << endl;
-         builder::result build_result = builder.build(nodes_to_build, project_for_source);
+         builder.build(nodes_to_build, project_for_source);
          cout << "...source '" << opts.just_one_source_ << "' builded."<< endl;
       }
    }

@@ -9,23 +9,23 @@ using namespace std;
 
 namespace hammer{
 
-project::project(hammer::engine* e, 
-                 const pstring& name, 
-                 const location_t& location, 
+project::project(hammer::engine* e,
+                 const pstring& name,
+                 const location_t& location,
                  const requirements_decl& req,
                  const requirements_decl& usage_req)
-   : 
-    basic_meta_target(this, name, req, usage_req), 
+   :
+    basic_meta_target(this, name, req, usage_req),
     engine_(e),
     is_root_(false),
     add_targets_as_explicit_(false),
     local_feature_registry_(&pool_for_feature_registry_)
 {
-   this->location(location);      
+   this->location(location);
 }
 
-void project::location(const location_t& l) 
-{ 
+void project::location(const location_t& l)
+{
    // all project paths must end on dot
    std::string path = l.string();
    if (!path.empty() && *path.rbegin() != '.')
@@ -34,7 +34,7 @@ void project::location(const location_t& l)
       location_.normalize();
    }
    else
-      location_ = l; 
+      location_ = l;
 }
 
 
@@ -48,9 +48,9 @@ void project::add_target(std::auto_ptr<basic_meta_target> t)
    t.release();
 }
 
-void project::add_targets_as_explicit(bool v) 
-{ 
-   add_targets_as_explicit_ = v; 
+void project::add_targets_as_explicit(bool v)
+{
+   add_targets_as_explicit_ = v;
 }
 
 const basic_meta_target* project::find_target(const pstring& name) const
@@ -67,7 +67,7 @@ basic_meta_target* project::find_target(const pstring& name)
       return i->second;
 }
 
-int compute_alternative_rank(const feature_set& target_properties, 
+int compute_alternative_rank(const feature_set& target_properties,
                              const feature_set& build_request)
 {
    unsigned rank = 0;
@@ -93,10 +93,10 @@ int compute_alternative_rank(const feature_set& target_properties,
 }
 
 project::selected_target
-project::select_best_alternative(const pstring& target_name, 
+project::select_best_alternative(const pstring& target_name,
                                  const feature_set& build_request) const
 {
-   
+
    selected_target result = try_select_best_alternative(target_name, build_request);
    if (result.target_ == NULL)
       throw std::runtime_error("Can't select alternative for target '" + target_name.to_string() + "'.");
@@ -104,53 +104,13 @@ project::select_best_alternative(const pstring& target_name,
    return result;
 }
 
-// project::selected_target
-// project::try_select_best_alternative(const pstring& target_name, 
-//                                      const feature_set& build_request_param) const
-// {
-//    const feature_set& build_request = build_request_param.has_undefined_features()
-//                                          ? *try_resolve_local_features(build_request_param) 
-//                                          : build_request_param;         
-// 
-//    boost::iterator_range<targets_t::const_iterator> r = targets_.equal_range(target_name);
-// 
-//    if (r.empty())
-//       throw std::runtime_error("Can't find target '" + target_name.to_string() + "'");
-// 
-//    selected_target result;
-//    bool overriden = false;
-// 
-//    for(targets_t::const_iterator first = begin(r), last = end(r); first != last; ++first)
-//    {
-//       feature_set* fs = engine_->feature_registry().make_set();
-//       first->second->requirements().eval(build_request, fs);
-//       if (is_alternative_suitable(*fs, build_request))
-//       {
-//          if (result.target_ != NULL)
-//          {
-//             feature_set::const_iterator override_iter = fs->find("override");
-//             if (overriden && override_iter != fs->end() ||
-//                 !overriden && override_iter == fs->end())
-//             {
-//                throw std::runtime_error("Can't select alternative for target '" + target_name.to_string() + "' between others[fixme]");
-//             }
-//          }
-// 
-//          result.target_ = first->second;
-//          result.resolved_build_request_ = &build_request;
-//       }
-//    }
-// 
-//    return result;
-// }
-
-static bool s_great(const project::selected_target& lhs, 
+static bool s_great(const project::selected_target& lhs,
                     const project::selected_target& rhs)
 {
    return lhs.resolved_build_request_rank_ > rhs.resolved_build_request_rank_;
 }
 
-void error_cannot_choose_alternative(const project::selected_target& first, 
+void error_cannot_choose_alternative(const project::selected_target& first,
                                      const project::selected_target& second)
 {
    // FIXME
@@ -158,12 +118,12 @@ void error_cannot_choose_alternative(const project::selected_target& first,
 }
 
 project::selected_target
-project::try_select_best_alternative(const pstring& target_name, 
+project::try_select_best_alternative(const pstring& target_name,
                                      const feature_set& build_request_param) const
 {
    const feature_set& build_request = build_request_param.has_undefined_features()
-                                         ? *try_resolve_local_features(build_request_param) 
-                                         : build_request_param;         
+                                         ? *try_resolve_local_features(build_request_param)
+                                         : build_request_param;
 
    boost::iterator_range<targets_t::const_iterator> r = targets_.equal_range(target_name);
 
@@ -187,7 +147,7 @@ project::try_select_best_alternative(const pstring& target_name,
 
    if (selected_targets.size() == 1)
       return selected_targets.front();
-   
+
    // selected_targets.size() > 1
    if (selected_targets[0].resolved_build_request_rank_ != selected_targets[1].resolved_build_request_rank_)
       return selected_targets.front();
@@ -206,9 +166,9 @@ void project::instantiate(const std::string& target_name,
    best_target.target_->instantiate(0, *best_target.resolved_build_request_, result, usage_requirements);
 }
 
-void project::instantiate_impl(const main_target* owner, 
+void project::instantiate_impl(const main_target* owner,
                                const feature_set& build_request,
-                               std::vector<basic_target*>* result, 
+                               std::vector<basic_target*>* result,
                                feature_set* usage_requirements) const
 {
    assert(false && "not implemented.");
@@ -219,23 +179,23 @@ bool project::operator == (const project& rhs) const
    return this == &rhs;
 }
 
-project::selected_targets_t 
+project::selected_targets_t
 project::select_best_alternative(const feature_set& build_request) const
 {
    selected_targets_t result;
-   
+
    targets_t::const_iterator first = targets_.begin(), last = targets_.end();
    while(first != last)
    {
       selected_target t = try_select_best_alternative(first->second->name(), build_request);
       if (t.target_ != NULL)
          result.push_back(t);
-      
+
       // skip meta targets with equal names
       targets_t::const_iterator next = first; std::advance(next, 1);
       while(next != last && first->first == next->first)
          ++first, ++next;
-      
+
       first = next;
    }
 

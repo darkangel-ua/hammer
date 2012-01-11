@@ -6,6 +6,7 @@
 #include <boost/bind.hpp>
 #include <boost/unordered_set.hpp>
 #include <boost/foreach.hpp>
+#include <boost/thread/thread.hpp>
 #include <iostream>
 #include <fstream>
 #include <stdlib.h>
@@ -79,11 +80,12 @@ namespace
 
    unsigned get_number_of_processors()
    {
-      const char* proc_info = getenv("NUMBER_OF_PROCESSORS");
-      if (proc_info != NULL)
-         return boost::lexical_cast<unsigned>(proc_info);
-      else
-         return 1;
+      return boost::thread::hardware_concurrency();
+//      const char* proc_info = getenv("NUMBER_OF_PROCESSORS");
+//      if (proc_info != NULL)
+//         return boost::lexical_cast<unsigned>(proc_info);
+//      else
+//         return 1;
    }
 
    struct hammer_options
@@ -264,7 +266,6 @@ namespace
       {
          if (is_looks_like_project(*i))
          {
-            printf("target to build %s\n", i->begin());
             string target_path, target_name;
 
             split_target_path(target_path, target_name, *i);
@@ -282,7 +283,6 @@ namespace
          }
          else
          {
-            printf("non project target to build %s\n", i->begin());
             pstring name(project.get_engine()->pstring_pool(), *i);
             if (project_has_multiple_targets(project, *i))
             {

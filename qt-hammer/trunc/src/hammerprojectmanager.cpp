@@ -24,6 +24,7 @@
 #include <hammer/core/feature_set.h>
 #include <hammer/core/main_target.h>
 #include <hammer/core/target_type.h>
+#include <hammer/core/fs_helpers.h>
 
 #include <QFileInfo>
 #include <QAction>
@@ -77,12 +78,12 @@ QString ProjectManager::mimeType() const
    return QLatin1String(HAMMERMIMETYPE);
 }
 
-void gatherAllMainTargets(boost::unordered_set<const main_target*>& targets, 
+void gatherAllMainTargets(boost::unordered_set<const main_target*>& targets,
                           const main_target& targetToInspect)
 {
    if (targets.find(&targetToInspect) != targets.end())
       return;
-   
+
    targets.insert(&targetToInspect);
 
    BOOST_FOREACH(const basic_target* bt, targetToInspect.sources())
@@ -119,16 +120,16 @@ ProjectExplorer::Project *ProjectManager::openProject(const QString &fileName, Q
     // load hammer project
     try
     {
-       m_hammerMasterProject = &get_engine().load_project(location_t(fileName.toStdString()).branch_path());
+       m_hammerMasterProject = &get_engine().load_project(resolve_symlinks(location_t(fileName.toStdString())).branch_path());
     }catch(const std::exception& e)
     {
        Core::MessageManager *messageManager = Core::ICore::instance()->messageManager();
        messageManager->printToOutputPanePopup(tr("Failed opening project '%1': %2")
           .arg(QDir::toNativeSeparators(fileName)).arg(e.what()));
-       
+
        return NULL;
     }
-    
+
     // find out which target to build
     const basic_meta_target* target = NULL;
     for(hammer::project::targets_t::const_iterator i = m_hammerMasterProject->targets().begin(), last = m_hammerMasterProject->targets().end(); i != last; ++i)
@@ -162,7 +163,7 @@ ProjectExplorer::Project *ProjectManager::openProject(const QString &fileName, Q
 
     if (build_request->find("variant") == build_request->end())
        build_request->join("variant", "debug");
-    
+
     if (build_request->find("host-os") == build_request->end())
        build_request->join("host-os", m_engine.feature_registry().get_def("host-os").get_default().c_str());
 
@@ -210,7 +211,7 @@ ProjectExplorer::Project *ProjectManager::openProject(const QString &fileName, Q
           projectExplorer->session()->addProject(p);
           new_projects.push_back(p);
        }
-   
+
    BOOST_FOREACH(HammerProject* p, new_projects)
       p->refresh();
 

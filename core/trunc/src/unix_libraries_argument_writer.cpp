@@ -29,8 +29,8 @@ unix_libraries_argument_writer* unix_libraries_argument_writer::clone() const
    return new unix_libraries_argument_writer(*this);
 }
 
-void unix_libraries_argument_writer::write_impl(std::ostream& output, 
-                                                const build_node& node, 
+void unix_libraries_argument_writer::write_impl(std::ostream& output,
+                                                const build_node& node,
                                                 const build_environment& environment) const
 {
    //bool first = true; // unused variable first
@@ -43,7 +43,7 @@ void unix_libraries_argument_writer::write_impl(std::ostream& output,
          if (i->source_target_->type().equal_or_derived_from(*searched_shared_lib_type_))
             output << " -Wl,-Bdynamic -l" << i->source_target_->name();
          else
-            if (i->source_target_->type().equal_or_derived_from(*static_lib_type_) || 
+            if (i->source_target_->type().equal_or_derived_from(*static_lib_type_) ||
                 i->source_target_->type().equal_or_derived_from(*shared_lib_type_) ||
                 i->source_target_->type().equal_or_derived_from(*import_lib_type_))
             {

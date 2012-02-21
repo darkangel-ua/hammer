@@ -8,5 +8,5 @@ exe hammer :
              /boost/foreach/<version>1.40.0
              /hammer/core/<link>static
            : 
-             <variant>debug:<name>dhammer
+             <toolset>gcc,<variant>debug:<name>dhammer
            ;

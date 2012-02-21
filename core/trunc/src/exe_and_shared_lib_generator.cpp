@@ -16,14 +16,14 @@ exe_and_shared_lib_generator::exe_and_shared_lib_generator(hammer::engine& e,
                                                            const producable_types_t& target_types,
                                                            bool composite,
                                                            const feature_set* c)
-   : generator(e, name, source_types, 
+   : generator(e, name, source_types,
                target_types, composite, c),
      searched_lib_(e.get_type_registry().get(types::SEARCHED_LIB))
 {
 }
 
 build_nodes_t
-exe_and_shared_lib_generator::construct(const target_type& type_to_construct, 
+exe_and_shared_lib_generator::construct(const target_type& type_to_construct,
                                         const feature_set& props,
                                         const std::vector<boost::intrusive_ptr<build_node> >& sources,
                                         const basic_target* t,

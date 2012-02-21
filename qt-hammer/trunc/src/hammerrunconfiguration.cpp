@@ -75,13 +75,19 @@ HammerRunConfiguration::environment() const
          paths.removeDuplicates();
          m_additionalPaths = paths;
 
-      }catch(...) { m_additionalPaths = QStringList(); }
+      }catch(...) { exit(-1); m_additionalPaths = QStringList(); }
    }
 
    Utils::Environment env = CustomExecutableRunConfiguration::environment();
 
    BOOST_FOREACH(const QString& s, *m_additionalPaths)
       env.appendOrSetPath(s);
+
+#if !defined(_WIN32)
+   QString sep(":");
+   BOOST_FOREACH(const QString& s, *m_additionalPaths)
+      env.appendOrSet("LD_LIBRARY_PATH", s, sep);
+#endif
 
    return env;
 }

@@ -33,7 +33,8 @@ void add_testing_generators(engine& e, generator_registry& gr)
    cmdline_builder cmdline("@SET PATH=%PATH%;$(additional_dirs)\n"
                            "@$(test_executable) $(input_files)\n");
 #else
-   cmdline_builder cmdline("$(test_executable) $(input_files)");
+   cmdline_builder cmdline("export LD_LIBRARY_PATH=$(additional_dirs):$LD_LIBRARY_PATH\n"
+                           "$(test_executable) $(input_files)");
 #endif
    cmdline += run_product;
    cmdline += run_output_product;

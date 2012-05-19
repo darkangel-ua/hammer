@@ -1,0 +1,1 @@
+copy work : ../build : <destination>./ <type-to-copy>SHARED_LIB ;

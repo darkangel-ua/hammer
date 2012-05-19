@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/hammerproject" >
+        <file>HammerProject.mimetypes.xml</file>
+    </qresource>
+</RCC>

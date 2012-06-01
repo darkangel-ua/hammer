@@ -8,7 +8,7 @@ lib hammerplugin
     hammerplugin.moc
     /hammer/core/<all-static>on
     /boost/foreach/<version>1.40.0
-    /Qt/QtCreator
+    /Qt/QtCreator/<version>2.4
     /Qt//QtGui
   :
     <host-os>windows,<variant>debug:<name>HammerPlugind.dll

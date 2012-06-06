@@ -28,10 +28,10 @@ QString HammerEditorFactory::displayName() const
     return tr(HAMMER_EDITOR_DISPLAY_NAME);
 }
 
-Core::IFile *HammerEditorFactory::open(const QString &fileName)
+Core::IDocument *HammerEditorFactory::open(const QString &fileName)
 {
     Core::IEditor *iface = Core::EditorManager::instance()->openEditor(fileName, id());
-    return iface ? iface->file() : 0;
+    return iface ? iface->document() : 0;
 }
 
 Core::IEditor *HammerEditorFactory::createEditor(QWidget *parent)

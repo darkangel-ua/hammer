@@ -5,19 +5,34 @@
 
 namespace Core
 {
-   class IFile;
+   class IDocument;
 }
+
+namespace hammer{ class main_target; }
 
 namespace hammer{namespace QtCreator{
 
 class HammerProject;
+class HammerDepProjectNode;
 
-class HammerProjectNode : public ProjectExplorer::ProjectNode
+class HammerNodeBase : public ProjectExplorer::ProjectNode
+{
+   protected:
+      HammerNodeBase(const QString& projectFilePath);
+      void addNodes(const basic_target* bt);
+
+      FolderNode* m_srcNode;
+      FolderNode* m_incNode;
+      FolderNode* m_resNode;
+      FolderNode* m_formNode;
+};
+
+class HammerProjectNode : public HammerNodeBase
 {
    public:
-      HammerProjectNode(HammerProject *project, Core::IFile *projectFile);
+      HammerProjectNode(HammerProject *project, Core::IDocument *projectFile);
 
-      Core::IFile *projectFile() const;
+      Core::IDocument *projectFile() const;
       QString projectFilePath() const;
 
       virtual bool hasBuildTargets() const;
@@ -46,19 +61,91 @@ class HammerProjectNode : public ProjectExplorer::ProjectNode
       virtual QList<ProjectExplorer::RunConfiguration *> runConfigurationsFor(Node *node);
 
       void refresh();
+      HammerProject& project() const { return *m_project; }
 
    private:
       typedef QHash<QString, FolderNode *> FolderByName;
 
       HammerProject *m_project;
-      Core::IFile *m_projectFile;
+      Core::IDocument *m_projectFile;
+};
 
-      FolderNode* m_srcNode;
-      FolderNode* m_incNode;
-      FolderNode* m_resNode;
-      FolderNode* m_formNode;
+class HammerDepProjectNode : public HammerNodeBase
+{
+   public:
+      HammerDepProjectNode(const hammer::main_target& mt, const HammerProject& owner);
+      ~HammerDepProjectNode();
 
-      void addNodes(const basic_target* bt);
+      virtual bool hasBuildTargets() const { return false; }
+
+      virtual QList<ProjectExplorer::ProjectNode::ProjectAction> supportedActions(Node *node) const
+      { return QList<ProjectExplorer::ProjectNode::ProjectAction>(); }
+
+      virtual bool canAddSubProject(const QString &proFilePath) const { return false; }
+
+      virtual bool addSubProjects(const QStringList &proFilePaths)  { return false; }
+      virtual bool removeSubProjects(const QStringList &proFilePaths)  { return false; }
+
+      virtual bool addFiles(const ProjectExplorer::FileType fileType,
+                          const QStringList &filePaths,
+                          QStringList *notAdded = 0) { return false; }
+
+      virtual bool removeFiles(const ProjectExplorer::FileType fileType,
+                             const QStringList &filePaths,
+                             QStringList *notRemoved = 0) { return false; }
+      virtual bool deleteFiles(const ProjectExplorer::FileType fileType,
+                             const QStringList &filePaths) { return false; }
+
+      virtual bool renameFile(const ProjectExplorer::FileType fileType,
+                             const QString &filePath,
+                             const QString &newFilePath) { return false; }
+
+      virtual QList<ProjectExplorer::RunConfiguration *> runConfigurationsFor(Node *node) { return QList<ProjectExplorer::RunConfiguration *>(); }
+      void refresh();
+      const HammerProject& owner() const { return owner_; }
+      const hammer::main_target& mt() const { return mt_; }
+
+   private:
+      const hammer::main_target& mt_;
+      const HammerProject& owner_;
+};
+
+class HammerDepLinkProjectNode : public HammerNodeBase
+{
+   public:
+      HammerDepLinkProjectNode(HammerDepProjectNode& link);
+      ~HammerDepLinkProjectNode();
+
+      virtual bool hasBuildTargets() const { return false; }
+
+      virtual QList<ProjectExplorer::ProjectNode::ProjectAction> supportedActions(Node *node) const
+      { return QList<ProjectExplorer::ProjectNode::ProjectAction>(); }
+
+      virtual bool canAddSubProject(const QString &proFilePath) const { return false; }
+
+      virtual bool addSubProjects(const QStringList &proFilePaths)  { return false; }
+      virtual bool removeSubProjects(const QStringList &proFilePaths)  { return false; }
+
+      virtual bool addFiles(const ProjectExplorer::FileType fileType,
+                          const QStringList &filePaths,
+                          QStringList *notAdded = 0) { return false; }
+
+      virtual bool removeFiles(const ProjectExplorer::FileType fileType,
+                             const QStringList &filePaths,
+                             QStringList *notRemoved = 0) { return false; }
+      virtual bool deleteFiles(const ProjectExplorer::FileType fileType,
+                             const QStringList &filePaths) { return false; }
+
+      virtual bool renameFile(const ProjectExplorer::FileType fileType,
+                             const QString &filePath,
+                             const QString &newFilePath) { return false; }
+
+      virtual QList<ProjectExplorer::RunConfiguration *> runConfigurationsFor(Node *node) { return QList<ProjectExplorer::RunConfiguration *>(); }
+      void refresh();
+      HammerDepProjectNode& link() { return link_; }
+
+   private:
+      HammerDepProjectNode& link_;
 };
 
 }}

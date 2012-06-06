@@ -59,9 +59,14 @@ HammerTargetFactory::HammerTargetFactory(QObject *parent) :
 {
 }
 
+QStringList HammerTargetFactory::supportedTargetIds() const
+{
+   return QStringList(HAMMER_DESKTOP_TARGET_ID);
+}
+
 bool HammerTargetFactory::supportsTargetId(const QString &id) const
 {
-    return id == QLatin1String(HAMMER_DESKTOP_TARGET_ID);
+    return supportedTargetIds().indexOf(QLatin1String(HAMMER_DESKTOP_TARGET_ID)) != -1;
 }
 
 QStringList HammerTargetFactory::supportedTargetIds(ProjectExplorer::Project *parent) const

@@ -2,7 +2,7 @@
 #include <projectexplorer/project.h>
 #include <projectexplorer/session.h>
 #include <coreplugin/messagemanager.h>
-#include <coreplugin/ifile.h>
+#include <coreplugin/idocument.h>
 #include <coreplugin/icore.h>
 
 #include <boost/bind.hpp>
@@ -31,6 +31,7 @@
 
 #include "hammerprojectmanager.h"
 #include "hammerproject.h"
+#include "hammerprojectnode.h"
 #include "hammerprojectconstants.h"
 
 using namespace std;
@@ -47,7 +48,6 @@ static void use_toolset_rule(project*, engine& e, pstring& toolset_name, pstring
 }
 
 ProjectManager::ProjectManager()
-   : m_hammerMasterProject(NULL)
 {
 #if defined(_WIN32)
    m_engine.load_hammer_script("D:\\bin\\hammer\\scripts\\startup.ham");
@@ -87,145 +87,121 @@ void gatherAllMainTargets(boost::unordered_set<const main_target*>& targets,
    targets.insert(&targetToInspect);
 
    BOOST_FOREACH(const basic_target* bt, targetToInspect.sources())
-      gatherAllMainTargets(targets, *bt->get_main_target());
+         gatherAllMainTargets(targets, *bt->get_main_target());
 
    BOOST_FOREACH(const basic_target* bt, targetToInspect.dependencies())
-      gatherAllMainTargets(targets, *bt->get_main_target());
+         gatherAllMainTargets(targets, *bt->get_main_target());
 }
 
 ProjectExplorer::Project *ProjectManager::openProject(const QString &fileName, QString *errorString)
 {
    if (!QFileInfo(fileName).isFile())
-        return NULL;
+      return NULL;
 
-   if (m_hammerMasterProject)
-   {
+   ProjectExplorer::ProjectExplorerPlugin *projectExplorer = ProjectExplorer::ProjectExplorerPlugin::instance();
+   foreach (ProjectExplorer::Project *pi, projectExplorer->session()->projects()) {
+      if (fileName == pi->document()->fileName()) {
+         Core::MessageManager *messageManager = Core::ICore::instance()->messageManager();
+         messageManager->printToOutputPanePopup(tr("Failed opening project '%1': Project already open")
+                                                .arg(QDir::toNativeSeparators(fileName)));
+         return NULL;
+      }
+   }
+
+   hammer::project* opened_project = NULL;
+   // load hammer project
+   try {
+      opened_project = &get_engine().load_project(resolve_symlinks(location_t(fileName.toStdString())).branch_path());
+   } catch(const std::exception& e) {
       Core::MessageManager *messageManager = Core::ICore::instance()->messageManager();
-      messageManager->printToOutputPanePopup(tr("Failed opening project '%1': You can open only one master hamfile in session")
-         .arg(QDir::toNativeSeparators(fileName)));
+      messageManager->printToOutputPanePopup(tr("Failed opening project '%1': %2")
+                                             .arg(QDir::toNativeSeparators(fileName)).arg(e.what()));
 
       return NULL;
    }
 
-    ProjectExplorer::ProjectExplorerPlugin *projectExplorer = ProjectExplorer::ProjectExplorerPlugin::instance();
-    foreach (ProjectExplorer::Project *pi, projectExplorer->session()->projects()) {
-        if (fileName == pi->file()->fileName()) {
+   // find out which target to build
+   const basic_meta_target* target = NULL;
+   for(hammer::project::targets_t::const_iterator i = opened_project->targets().begin(), last = opened_project->targets().end(); i != last; ++i) {
+      if (!i->second->is_explicit()) {
+         if (target != NULL) {
             Core::MessageManager *messageManager = Core::ICore::instance()->messageManager();
-            messageManager->printToOutputPanePopup(tr("Failed opening project '%1': Project already open")
+            messageManager->printToOutputPanePopup(tr("Failed opening project '%1': Project contains more than one implicit target")
                                                    .arg(QDir::toNativeSeparators(fileName)));
+
             return NULL;
-        }
-    }
-
-    // load hammer project
-    try
-    {
-       m_hammerMasterProject = &get_engine().load_project(resolve_symlinks(location_t(fileName.toStdString())).branch_path());
-    }catch(const std::exception& e)
-    {
-       Core::MessageManager *messageManager = Core::ICore::instance()->messageManager();
-       messageManager->printToOutputPanePopup(tr("Failed opening project '%1': %2")
-          .arg(QDir::toNativeSeparators(fileName)).arg(e.what()));
-
-       return NULL;
-    }
-
-    // find out which target to build
-    const basic_meta_target* target = NULL;
-    for(hammer::project::targets_t::const_iterator i = m_hammerMasterProject->targets().begin(), last = m_hammerMasterProject->targets().end(); i != last; ++i)
-    {
-       if (!i->second->is_explicit())
-       {
-          if (target != NULL)
-          {
-             Core::MessageManager *messageManager = Core::ICore::instance()->messageManager();
-             messageManager->printToOutputPanePopup(tr("Failed opening project '%1': Project contains more than one implicit target")
-                .arg(QDir::toNativeSeparators(fileName)));
-
-             return NULL;
-          }
-          else
+         } else
             target = i->second;
-       }
-    }
+      }
+   }
 
-    // create environment for instantiation
-    feature_set* build_request = m_engine.feature_registry().make_set();
-    feature_set* usage_requirements = m_engine.feature_registry().make_set();
+   // create environment for instantiation
+   feature_set* build_request = m_engine.feature_registry().make_set();
+   feature_set* usage_requirements = m_engine.feature_registry().make_set();
 
 #if defined(_WIN32)
-    if (build_request->find("toolset") == build_request->end())
-       build_request->join("toolset", "msvc");
+   if (build_request->find("toolset") == build_request->end())
+      build_request->join("toolset", "msvc");
 #else
-    if (build_request->find("toolset") == build_request->end())
-       build_request->join("toolset", "gcc");
+   if (build_request->find("toolset") == build_request->end())
+      build_request->join("toolset", "gcc");
 #endif
 
-    if (build_request->find("variant") == build_request->end())
-       build_request->join("variant", "debug");
+   if (build_request->find("variant") == build_request->end())
+      build_request->join("variant", "debug");
 
-    if (build_request->find("host-os") == build_request->end())
-       build_request->join("host-os", m_engine.feature_registry().get_def("host-os").get_default().c_str());
+   if (build_request->find("host-os") == build_request->end())
+      build_request->join("host-os", m_engine.feature_registry().get_def("host-os").get_default().c_str());
 
-    // instantiate selected target
-    vector<basic_target*> instantiated_targets;
-    try
-    {
-       target->instantiate(NULL, *build_request, &instantiated_targets, usage_requirements);
-    }catch(const std::exception& e)
-    {
-       Core::MessageManager *messageManager = Core::ICore::instance()->messageManager();
-       messageManager->printToOutputPanePopup(tr("Failed opening project '%1': %2")
-          .arg(QDir::toNativeSeparators(fileName)).arg(e.what()));
+   // instantiate selected target
+   vector<basic_target*> instantiated_targets;
+   try {
+      target->instantiate(NULL, *build_request, &instantiated_targets, usage_requirements);
+   } catch(const std::exception& e) {
+      Core::MessageManager *messageManager = Core::ICore::instance()->messageManager();
+      messageManager->printToOutputPanePopup(tr("Failed opening project '%1': %2")
+                                             .arg(QDir::toNativeSeparators(fileName)).arg(e.what()));
 
-       return NULL;
-    }
+      return NULL;
+   }
 
-    if (instantiated_targets.size() != 1)
-    {
-       Core::MessageManager *messageManager = Core::ICore::instance()->messageManager();
-       messageManager->printToOutputPanePopup(tr("Failed opening project '%1': Target instantiation produce more than one result")
-          .arg(QDir::toNativeSeparators(fileName)));
+   if (instantiated_targets.size() != 1) {
+      Core::MessageManager *messageManager = Core::ICore::instance()->messageManager();
+      messageManager->printToOutputPanePopup(tr("Failed opening project '%1': Target instantiation produce more than one result")
+                                             .arg(QDir::toNativeSeparators(fileName)));
 
-       return NULL;
-    }
+      return NULL;
+   }
 
-    const main_target* topMainTarget = dynamic_cast<main_target*>(instantiated_targets[0]);
-    HammerProject* mainProject = new HammerProject(this, topMainTarget, /*main_project=*/true);
-
-    boost::unordered_set<const main_target*> mainTargets;
-    gatherAllMainTargets(mainTargets, *topMainTarget);
-    vector<HammerProject*> new_projects(1, mainProject);
-    BOOST_FOREACH(const main_target* mt, mainTargets)
-       if (mt != topMainTarget &&
-           !mt->type().equal_or_derived_from(types::SEARCHED_LIB) &&
-           !mt->type().equal_or_derived_from(types::PREBUILT_SHARED_LIB) &&
-           !mt->type().equal_or_derived_from(types::PREBUILT_STATIC_LIB) &&
-           !mt->type().equal_or_derived_from(types::HEADER_LIB) &&
-           !mt->type().equal_or_derived_from(types::PCH) &&
-           !mt->type().equal_or_derived_from(types::OBJ) &&
-           !mt->type().equal_or_derived_from(qt_uic_main))
-       {
-          HammerProject* p = new HammerProject(this, mt);
-          p->restoreSettings();
-          projectExplorer->session()->addProject(p);
-          new_projects.push_back(p);
-       }
-
-   BOOST_FOREACH(HammerProject* p, new_projects)
-      p->refresh();
+   const main_target* topMainTarget = dynamic_cast<main_target*>(instantiated_targets[0]);
+   HammerProject* mainProject = new HammerProject(this, topMainTarget, /*main_project=*/true);
 
    return mainProject;
 }
 
 void ProjectManager::registerProject(HammerProject* project)
 {
-    m_projects.append(project);
+   m_projects.append(project);
 }
 
 void ProjectManager::unregisterProject(HammerProject* project)
 {
-    m_projects.removeAll(project);
+   m_projects.removeAll(project);
+}
+
+ProjectExplorer::ProjectNode*
+ProjectManager::add_dep(const main_target& mt, const HammerProject& owner)
+{
+   deps_t::const_iterator i = deps_.find(&mt);
+   if (i != deps_.end()) {
+      HammerDepLinkProjectNode* result = new HammerDepLinkProjectNode(*i->second);
+      return result;
+   }
+
+   HammerDepProjectNode* result = new HammerDepProjectNode(mt, owner);
+   deps_.insert(make_pair(&mt, result));
+
+   return result;
 }
 
 }}

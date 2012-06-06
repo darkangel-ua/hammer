@@ -9,7 +9,7 @@
 
 namespace ProjectExplorer {
 class IBuildConfigurationFactory;
-} 
+}
 
 namespace hammer{ namespace QtCreator{
 
@@ -37,7 +37,7 @@ class HammerTarget : public ProjectExplorer::Target
 
    protected:
       bool fromMap(const QVariantMap &map);
-   
+
    private:
       HammerBuildConfigurationFactory *m_buildConfigurationFactory;
 
@@ -46,10 +46,11 @@ class HammerTarget : public ProjectExplorer::Target
 class HammerTargetFactory : public ProjectExplorer::ITargetFactory
 {
       Q_OBJECT
-   
+
    public:
       explicit HammerTargetFactory(QObject *parent = 0);
 
+      QStringList supportedTargetIds() const;
       bool supportsTargetId(const QString &id) const;
 
       QStringList supportedTargetIds(ProjectExplorer::Project *parent) const;

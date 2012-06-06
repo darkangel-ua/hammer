@@ -2,6 +2,7 @@
 #include <projectexplorer/projectexplorerconstants.h>
 #include <projectexplorer/toolchainmanager.h>
 #include <projectexplorer/headerpath.h>
+#include <projectexplorer/nodesvisitor.h>
 #include <extensionsystem/pluginmanager.h>
 #include <cplusplus/ModelManagerInterface.h>
 
@@ -25,7 +26,7 @@
 
 namespace hammer{ namespace QtCreator{
 
-HammerProject::HammerProject(ProjectManager *manager, 
+HammerProject::HammerProject(ProjectManager *manager,
                              const main_target* mt,
                              bool main_project)
    : m_manager(manager),
@@ -35,7 +36,7 @@ HammerProject::HammerProject(ProjectManager *manager,
 {
    setProjectContext(Core::Context(PROJECTCONTEXT));
    setProjectLanguage(Core::Context(ProjectExplorer::Constants::LANG_CXX));
-   
+
    QFileInfo fileInfo(QString::fromStdString((m_mainTarget->location() / "hamfile").native_file_string()));
 
    m_projectName = QString::fromStdString(mt->name().to_string());
@@ -64,7 +65,7 @@ void HammerProject::setToolChain(ProjectExplorer::ToolChain *tc)
         return;
 
     m_toolChain = tc;
-//    refresh(Configuration);
+    refresh();
 
     foreach (ProjectExplorer::Target *t, targets()) {
         foreach (ProjectExplorer::BuildConfiguration *bc, t->buildConfigurations())
@@ -89,7 +90,7 @@ QString HammerProject::id() const
    return QLatin1String(HAMMERPROJECT_ID);
 }
 
-Core::IFile* HammerProject::file() const
+Core::IDocument* HammerProject::document() const
 {
    return m_projectFile;
 }
@@ -104,24 +105,60 @@ ProjectExplorer::ProjectNode* HammerProject::rootProjectNode() const
    return m_rootNode;
 }
 
+class DepsVisitor : public ProjectExplorer::NodesVisitor
+{
+   public:
+      DepsVisitor(const HammerProject& p) : p_(p) {}
+
+      virtual void visitProjectNode(ProjectExplorer::ProjectNode* node)
+      {
+         if (HammerDepProjectNode* d = dynamic_cast<HammerDepProjectNode*>(node))
+            if (&d->owner() == &p_)
+               result_.push_back(d);
+      }
+
+      QList<HammerDepProjectNode*> result_;
+
+   private:
+      const HammerProject& p_;
+
+};
+
 QStringList HammerProject::files(FilesMode fileMode) const
 {
    if (!m_files.isEmpty())
       return m_files;
 
-   m_files = QStringList();
+   DepsVisitor v(*this);
+   rootProjectNode()->accept(&v);
 
-   BOOST_FOREACH(const basic_target* bt, get_main_target().sources())
-   {
-      if (bt->type().equal_or_derived_from(types::CPP) || 
-          bt->type().equal_or_derived_from(types::C))
-      {
-         m_files.append(QString::fromStdString(bt->full_path().string()));
-      }
-   }
+   QList<const hammer::main_target*> mts;
+   mts.push_back(m_mainTarget);
+   foreach(const HammerDepProjectNode* d, v.result_)
+      mts.push_back(&d->mt());
+
+   foreach(const hammer::main_target* mt, mts)
+      m_files += files_impl(*mt, fileMode);
 
    return m_files;
 }
+
+QStringList HammerProject::files_impl(const hammer::main_target& mt,
+                                      FilesMode) const
+{
+   QStringList result;
+
+   BOOST_FOREACH(const basic_target* bt, mt.sources()) {
+      if (bt->type().equal_or_derived_from(types::CPP) ||
+          bt->type().equal_or_derived_from(types::C))
+      {
+         result.append(QString::fromStdString(bt->full_path().string()));
+      }
+   }
+
+   return result;
+}
+
 
 void HammerProject::refresh()
 {
@@ -130,43 +167,54 @@ void HammerProject::refresh()
 
    if (modelManager) {
       CPlusPlus::CppModelManagerInterface::ProjectInfo pinfo = modelManager->projectInfo(this);
+      pinfo.clearProjectParts();
 
-      if (m_toolChain) {
-         pinfo.defines = m_toolChain->predefinedMacros();
-         pinfo.defines += '\n';
+      DepsVisitor v(*this);
+      rootProjectNode()->accept(&v);
 
-         foreach (const ProjectExplorer::HeaderPath &headerPath, m_toolChain->systemHeaderPaths()) {
-            if (headerPath.kind() == ProjectExplorer::HeaderPath::FrameworkHeaderPath)
-               pinfo.frameworkPaths.append(headerPath.path());
-            else
-               pinfo.includePaths.append(headerPath.path());
-         }
-      }
-
-      pinfo.includePaths += allIncludePaths();
-      pinfo.defines += allDefines().join("\n");
-
-      // ### add _defines.
-      pinfo.sourceFiles = files(AllFiles);
-//      pinfo.sourceFiles += generated();
+      QList<const hammer::main_target*> mts;
+      mts.push_back(m_mainTarget);
+      foreach(const HammerDepProjectNode* d, v.result_)
+         mts.push_back(&d->mt());
 
       QStringList filesToUpdate;
-      filesToUpdate = pinfo.sourceFiles;
-      m_codeModelFuture.cancel();
+      foreach(const hammer::main_target* mt, mts) {
+         CPlusPlus::CppModelManagerInterface::ProjectPart::Ptr part(new CPlusPlus::CppModelManagerInterface::ProjectPart);
 
+         if (m_toolChain) {
+            part->defines = m_toolChain->predefinedMacros(QStringList());
+            part->defines += '\n';
+
+            foreach (const ProjectExplorer::HeaderPath &headerPath, m_toolChain->systemHeaderPaths()) {
+               if (headerPath.kind() == ProjectExplorer::HeaderPath::FrameworkHeaderPath)
+                  part->frameworkPaths.append(headerPath.path());
+               else
+                  part->includePaths.append(headerPath.path());
+            }
+         }
+
+         part->language = CPlusPlus::CppModelManagerInterface::CXX;
+         part->includePaths.append(allIncludePaths(*mt));
+         part->defines += allDefines(*mt).join("\n").toLocal8Bit();
+         part->sourceFiles = files_impl(*mt, AllFiles);
+
+         filesToUpdate += pinfo.sourceFiles();
+
+         pinfo.appendProjectPart(part);
+      }
+
+      m_codeModelFuture.cancel();
       modelManager->updateProjectInfo(pinfo);
       m_codeModelFuture = modelManager->updateSourceFiles(filesToUpdate);
    }
 }
 
-QStringList HammerProject::allIncludePaths() const
+QStringList HammerProject::allIncludePaths(const hammer::main_target& mt) const
 {
    QStringList result;
-   
-   BOOST_FOREACH(const feature* f, m_mainTarget->properties())
-   {
-      if (f->name() == "include")
-      {
+
+   BOOST_FOREACH(const feature* f, mt.properties()) {
+      if (f->name() == "include") {
          location_t l = f->get_path_data().target_->location() / f->value().to_string();
          l.normalize();
          result.append(QString::fromStdString(l.native_file_string()));
@@ -176,13 +224,11 @@ QStringList HammerProject::allIncludePaths() const
    return result;
 }
 
-QStringList HammerProject::allDefines() const
+QStringList HammerProject::allDefines(const hammer::main_target& mt) const
 {
    QStringList result;
-   BOOST_FOREACH(const feature* f, m_mainTarget->properties())
-   {
-      if (f->name() == "define")
-      {
+   BOOST_FOREACH(const feature* f, mt.properties()) {
+      if (f->name() == "define") {
          QString v(f->value().to_string().c_str());
          v.replace(QString("="), QString(" "));
          result.append("#define " + v);
@@ -193,7 +239,7 @@ QStringList HammerProject::allDefines() const
 }
 
 HammerProjectFile::HammerProjectFile(HammerProject *parent, QString fileName)
-   : Core::IFile(parent),
+   : Core::IDocument(parent),
      m_project(parent),
      m_fileName(fileName)
 {
@@ -204,8 +250,7 @@ bool HammerProject::fromMap(const QVariantMap &map)
    if (!Project::fromMap(map))
       return false;
 
-   if (targets().isEmpty())
-   {
+   if (targets().isEmpty()) {
       HammerTargetFactory *factory =
          ExtensionSystem::PluginManager::instance()->getObject<HammerTargetFactory>();
       addTarget(factory->create(this, QLatin1String(HAMMER_DESKTOP_TARGET_ID)));
@@ -215,12 +260,11 @@ bool HammerProject::fromMap(const QVariantMap &map)
    QList<ProjectExplorer::ToolChain*> tcs = ProjectExplorer::ToolChainManager::instance()->toolChains();
    foreach (ProjectExplorer::ToolChain *tc, tcs)
 #if defined(_WIN32)
-      if (tc->typeName() == "MSVC")
+      if (tc->type() == "msvc") {
 #else
-      if (tc->typeName() == "GCC")
+      if (tc->type() == "gcc") {
 #endif
-      {
-         m_toolChain = tc;
+         setToolChain(tc);
          break;
       }
 
@@ -276,7 +320,7 @@ void HammerProjectFile::rename(const QString&)
 {
 }
 
-Core::IFile::ReloadBehavior HammerProjectFile::reloadBehavior(ChangeTrigger, ChangeType) const
+Core::IDocument::ReloadBehavior HammerProjectFile::reloadBehavior(ChangeTrigger, ChangeType) const
 {
     return BehaviorSilent;
 }
@@ -320,7 +364,7 @@ HammerBuildSettingsWidget::HammerBuildSettingsWidget(HammerTarget *target)
 }
 
 HammerBuildSettingsWidget::~HammerBuildSettingsWidget()
-{ }
+{}
 
 QString HammerBuildSettingsWidget::displayName() const
 { return tr("Hammer Manager"); }
@@ -364,8 +408,8 @@ void HammerBuildSettingsWidget::updateToolChainList()
 
     foreach (ProjectExplorer::ToolChain *tc, tcs) {
         m_toolChainChooser->addItem(tc->displayName(), qVariantFromValue(static_cast<void *>(tc)));
-        if (m_target->hammerProject()->toolChain() && 
-            m_target->hammerProject()->toolChain()->id() == tc->id()) 
+        if (m_target->hammerProject()->toolChain() &&
+            m_target->hammerProject()->toolChain()->id() == tc->id())
         {
             m_toolChainChooser->setCurrentIndex(m_toolChainChooser->count() - 1);
         }

@@ -4,10 +4,10 @@
 #include <projectexplorer/project.h>
 #include <projectexplorer/toolchain.h>
 #include <projectexplorer/buildstep.h>
-#include <coreplugin/ifile.h>
+#include <coreplugin/idocument.h>
 #include <QtCore/QFuture>
 
-class QComboBox; 
+class QComboBox;
 
 namespace ProjectExplorer{ class IProjectManager; }
 namespace hammer{ class main_target; }
@@ -32,7 +32,7 @@ class HammerProject : public ProjectExplorer::Project
       virtual QList<ProjectExplorer::Project*> dependsOn();
       virtual QString displayName() const;
       virtual QString id() const;
-      virtual Core::IFile *file() const;
+      virtual Core::IDocument *document() const;
       virtual ProjectExplorer::IProjectManager* projectManager() const;
       virtual ProjectExplorer::ProjectNode *rootProjectNode() const;
       virtual QStringList files(FilesMode fileMode) const;
@@ -42,13 +42,13 @@ class HammerProject : public ProjectExplorer::Project
       ProjectExplorer::ToolChain *toolChain() const;
       void setToolChain(ProjectExplorer::ToolChain *tc);
       void refresh();
-   
+
    signals:
       void toolChainChanged(ProjectExplorer::ToolChain *);
 
    protected:
       virtual bool fromMap(const QVariantMap &map);
-   
+
    private:
       ProjectManager *m_manager;
       HammerProjectFile *m_projectFile;
@@ -60,11 +60,12 @@ class HammerProject : public ProjectExplorer::Project
       mutable QStringList m_files;
       bool main_project_;
 
-      QStringList allIncludePaths() const;
-      QStringList allDefines() const;
+      QStringList allIncludePaths(const hammer::main_target& mt) const;
+      QStringList allDefines(const hammer::main_target& mt) const;
+      QStringList files_impl(const hammer::main_target& mt, FilesMode fileMode) const;
 };
 
-class HammerProjectFile : public Core::IFile
+class HammerProjectFile : public Core::IDocument
 {
     Q_OBJECT
 

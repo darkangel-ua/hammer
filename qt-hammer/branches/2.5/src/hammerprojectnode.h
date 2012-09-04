@@ -8,7 +8,7 @@ namespace Core
    class IDocument;
 }
 
-namespace hammer{ class main_target; }
+namespace hammer{ class main_target; class basic_target; }
 
 namespace hammer{namespace QtCreator{
 
@@ -17,9 +17,12 @@ class HammerDepProjectNode;
 
 class HammerNodeBase : public ProjectExplorer::ProjectNode
 {
+      Q_OBJECT
+
    protected:
       HammerNodeBase(const QString& projectFilePath);
       void addNodes(const basic_target* bt);
+      virtual void refresh();
 
       FolderNode* m_srcNode;
       FolderNode* m_incNode;
@@ -29,6 +32,7 @@ class HammerNodeBase : public ProjectExplorer::ProjectNode
 
 class HammerProjectNode : public HammerNodeBase
 {
+      Q_OBJECT
    public:
       HammerProjectNode(HammerProject *project, Core::IDocument *projectFile);
 
@@ -60,6 +64,7 @@ class HammerProjectNode : public HammerNodeBase
 
       virtual QList<ProjectExplorer::RunConfiguration *> runConfigurationsFor(Node *node);
 
+      void wipe_nodes();
       void refresh();
       HammerProject& project() const { return *m_project; }
 
@@ -72,6 +77,7 @@ class HammerProjectNode : public HammerNodeBase
 
 class HammerDepProjectNode : public HammerNodeBase
 {
+      Q_OBJECT
    public:
       HammerDepProjectNode(const hammer::main_target& mt, const HammerProject& owner);
       ~HammerDepProjectNode();
@@ -112,6 +118,7 @@ class HammerDepProjectNode : public HammerNodeBase
 
 class HammerDepLinkProjectNode : public HammerNodeBase
 {
+      Q_OBJECT
    public:
       HammerDepLinkProjectNode(HammerDepProjectNode& link);
       ~HammerDepLinkProjectNode();

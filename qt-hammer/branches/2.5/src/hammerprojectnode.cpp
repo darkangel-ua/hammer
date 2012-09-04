@@ -15,21 +15,8 @@
 
 namespace hammer{namespace QtCreator{
 
-static
 void gatherAllMainTargets(boost::unordered_set<const main_target*>& targets,
-                          const main_target& targetToInspect)
-{
-   if (targets.find(&targetToInspect) != targets.end())
-      return;
-
-   targets.insert(&targetToInspect);
-
-   BOOST_FOREACH(const basic_target* bt, targetToInspect.sources())
-         gatherAllMainTargets(targets, *bt->get_main_target());
-
-   BOOST_FOREACH(const basic_target* bt, targetToInspect.dependencies())
-         gatherAllMainTargets(targets, *bt->get_main_target());
-}
+                          const main_target& targetToInspect);
 
 HammerNodeBase::HammerNodeBase(const QString& projectFilePath)
    : ProjectExplorer::ProjectNode(projectFilePath),
@@ -58,6 +45,17 @@ Core::IDocument *HammerProjectNode::projectFile() const
 QString HammerProjectNode::projectFilePath() const
 {
    return m_projectFile->fileName();
+}
+
+void HammerNodeBase::refresh()
+{
+   removeFileNodes(fileNodes(), this);
+   removeProjectNodes(subProjectNodes());
+   removeFolderNodes(subFolderNodes(), this);
+   m_srcNode = NULL;
+   m_incNode = NULL;
+   m_resNode = NULL;
+   m_formNode = NULL;
 }
 
 void HammerNodeBase::addNodes(const basic_target* bt)
@@ -99,33 +97,38 @@ void HammerNodeBase::addNodes(const basic_target* bt)
               bt->type().equal_or_derived_from(hammer::types::OBJ))
    {
       BOOST_FOREACH(const basic_target* i, static_cast<const main_target*>(bt)->sources())
-            addNodes(i);
+         addNodes(i);
    }
+}
+
+void HammerProjectNode::wipe_nodes()
+{
+   HammerNodeBase::refresh();
 }
 
 void HammerProjectNode::refresh()
 {
-   removeFileNodes(fileNodes(), this);
-   removeFolderNodes(subFolderNodes(), this);
-
+   HammerNodeBase::refresh();
    BOOST_FOREACH(const basic_target* bt, m_project->get_main_target().sources())
-         addNodes(bt);
+      addNodes(bt);
 
    boost::unordered_set<const main_target*> mainTargets;
    gatherAllMainTargets(mainTargets, m_project->get_main_target());
    QList<ProjectExplorer::ProjectNode*> deps;
    BOOST_FOREACH(const main_target* mt, mainTargets)
-         if (mt != &m_project->get_main_target() &&
-                   !mt->type().equal_or_derived_from(types::SEARCHED_LIB) &&
-                   !mt->type().equal_or_derived_from(types::PREBUILT_SHARED_LIB) &&
-                   !mt->type().equal_or_derived_from(types::PREBUILT_STATIC_LIB) &&
-                   !mt->type().equal_or_derived_from(types::HEADER_LIB) &&
-                   !mt->type().equal_or_derived_from(types::PCH) &&
-                   !mt->type().equal_or_derived_from(types::OBJ) &&
-                   !mt->type().equal_or_derived_from(qt_uic_main))
-   {
-      deps.push_back(static_cast<ProjectManager*>(m_project->projectManager())->add_dep(*mt, *m_project));
-   }
+      if (mt != &m_project->get_main_target() &&
+                !mt->type().equal_or_derived_from(types::SEARCHED_LIB) &&
+                !mt->type().equal_or_derived_from(types::PREBUILT_SHARED_LIB) &&
+                !mt->type().equal_or_derived_from(types::PREBUILT_STATIC_LIB) &&
+                !mt->type().equal_or_derived_from(types::HEADER_LIB) &&
+                !mt->type().equal_or_derived_from(types::PCH) &&
+                !mt->type().equal_or_derived_from(types::OBJ) &&
+                !mt->type().equal_or_derived_from(qt_uic_main))
+      {
+         ProjectExplorer::ProjectNode* d = static_cast<ProjectManager*>(m_project->projectManager())->add_dep(*mt, *m_project);
+         if (d)
+            deps.push_back(d);
+      }
 
    addProjectNodes(deps);
 }
@@ -204,8 +207,7 @@ HammerDepProjectNode::~HammerDepProjectNode()
 
 void HammerDepProjectNode::refresh()
 {
-   removeFileNodes(fileNodes(), this);
-   removeFolderNodes(subFolderNodes(), this);
+   HammerNodeBase::refresh();
 
    BOOST_FOREACH(const basic_target* bt, mt_.sources())
       addNodes(bt);

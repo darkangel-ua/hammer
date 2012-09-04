@@ -5,8 +5,8 @@
     <description>Hammer build system integration.</description>
     <url></url>
     <dependencyList>
-        <dependency name="TextEditor" version="2.5.1"/>
-        <dependency name="ProjectExplorer" version="2.5.1"/>
-        <dependency name="CppTools" version="2.5.1"/>
+        <dependency name="TextEditor" version="2.5.2"/>
+        <dependency name="ProjectExplorer" version="2.5.2"/>
+        <dependency name="CppTools" version="2.5.2"/>
     </dependencyList>
 </plugin>

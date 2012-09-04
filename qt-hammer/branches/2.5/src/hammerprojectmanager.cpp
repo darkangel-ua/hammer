@@ -7,7 +7,6 @@
 
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
-#include <boost/unordered_set.hpp>
 
 #include <hammer/core/toolset_manager.h>
 #include <hammer/core/toolsets/gcc_toolset.h>
@@ -33,6 +32,7 @@
 #include "hammerproject.h"
 #include "hammerprojectnode.h"
 #include "hammerprojectconstants.h"
+#include "visibleprojectsdialog.h"
 
 using namespace std;
 
@@ -48,6 +48,7 @@ static void use_toolset_rule(project*, engine& e, pstring& toolset_name, pstring
 }
 
 ProjectManager::ProjectManager()
+   : show_visible_dialog_on_open_(true)
 {
 #if defined(_WIN32)
    m_engine.load_hammer_script("D:\\bin\\hammer\\scripts\\startup.ham");
@@ -71,6 +72,17 @@ ProjectManager::ProjectManager()
 
    m_engine.call_resolver().insert("use-toolset", boost::function<void (project*, pstring&, pstring&, pstring*)>(boost::bind(use_toolset_rule, _1, boost::ref(m_engine), _2, _3, _4)));
    m_engine.toolset_manager().autoconfigure(m_engine);
+
+   ProjectExplorer::ProjectExplorerPlugin* projectExplorer = ProjectExplorer::ProjectExplorerPlugin::instance();
+
+   connect(projectExplorer->session(),
+           SIGNAL(aboutToLoadSession(QString)),
+           SLOT(on_aboutToLoadSession(QString)));
+
+   connect(projectExplorer->session(),
+           SIGNAL(sessionLoaded(QString)),
+           SLOT(on_sessionLoaded(QString)));
+
 }
 
 QString ProjectManager::mimeType() const
@@ -174,8 +186,20 @@ ProjectExplorer::Project *ProjectManager::openProject(const QString &fileName, Q
    }
 
    const main_target* topMainTarget = dynamic_cast<main_target*>(instantiated_targets[0]);
-   HammerProject* mainProject = new HammerProject(this, topMainTarget, /*main_project=*/true);
 
+   if (show_visible_dialog_on_open_) {
+      visible_targets_t new_targets(gather_all_targets(*topMainTarget));
+      visible_targets_t fresh_targets;
+      std::set_difference(new_targets.begin(), new_targets.end(),
+                          visible_targets_.begin(), visible_targets_.end(),
+                          std::inserter(fresh_targets, fresh_targets.end()));
+
+      VisibleProjectsDialog dlg(fresh_targets);
+      if (dlg.exec() == QDialog::Accepted)
+         visible_targets_.insert(dlg.targets_.begin(), dlg.targets_.end());
+   }
+
+   HammerProject* mainProject = new HammerProject(this, topMainTarget, /*main_project=*/true);
    return mainProject;
 }
 
@@ -192,6 +216,18 @@ void ProjectManager::unregisterProject(HammerProject* project)
 ProjectExplorer::ProjectNode*
 ProjectManager::add_dep(const main_target& mt, const HammerProject& owner)
 {
+   visible_targets_t::const_iterator vi = visible_targets_.find(&mt);
+   if (vi != visible_targets_.end() && !vi->second)
+      return NULL;
+
+   stored_visible_targets_t::const_iterator svi = stored_visible_targets_.find(mt.location().string());
+   if (svi != stored_visible_targets_.end())
+      visible_targets_.insert(make_pair(&mt, svi->second));
+
+   if (svi != stored_visible_targets_.end() && !svi->second)
+      return NULL;
+
+
    deps_t::const_iterator i = deps_.find(&mt);
    if (i != deps_.end()) {
       HammerDepLinkProjectNode* result = new HammerDepLinkProjectNode(*i->second);
@@ -202,6 +238,63 @@ ProjectManager::add_dep(const main_target& mt, const HammerProject& owner)
    deps_.insert(make_pair(&mt, result));
 
    return result;
+}
+
+visible_targets_t
+ProjectManager::gather_all_targets(const main_target& mt)
+{
+   boost::unordered_set<const ::hammer::main_target*> targets;
+   gatherAllMainTargets(targets, mt);
+
+   visible_targets_t visible_targets;
+   std::for_each(targets.cbegin(), targets.cend(), [&](const main_target* mt){
+      if (!mt->type().equal_or_derived_from(types::PREBUILT_SHARED_LIB) &&
+          !mt->type().equal_or_derived_from(types::PREBUILT_STATIC_LIB) &&
+          !mt->type().equal_or_derived_from(types::SEARCHED_LIB) &&
+          !mt->type().equal_or_derived_from(types::HEADER_LIB) &&
+          !mt->type().equal_or_derived_from(types::PCH) &&
+          !mt->type().equal_or_derived_from(types::OBJ) &&
+          !mt->type().equal_or_derived_from(qt_uic_main))
+      {
+         visible_targets.insert(make_pair(mt, true));
+      }
+   });
+
+   return visible_targets;
+}
+
+visible_targets_t
+ProjectManager::gather_all_targets(ProjectExplorer::Project* project)
+{
+   return gather_all_targets(static_cast<HammerProject*>(project)->get_main_target());
+}
+
+void ProjectManager::set_visible_targets(const visible_targets_t& v)
+{
+   visible_targets_ = v;
+   deps_.clear();
+   for(HammerProject* p : m_projects)
+      static_cast<HammerProjectNode*>(p->rootProjectNode())->wipe_nodes();
+
+   for(HammerProject* p : m_projects) {
+      static_cast<HammerProjectNode*>(p->rootProjectNode())->refresh();
+      p->refresh();
+   }
+}
+
+void ProjectManager::set_stored_visible_targets(const stored_visible_targets_t& v)
+{
+   stored_visible_targets_ = v;
+}
+
+void ProjectManager::on_aboutToLoadSession(QString sessionName)
+{
+   show_visible_dialog_on_open_ = false;
+}
+
+void ProjectManager::on_sessionLoaded(QString sessionName)
+{
+   show_visible_dialog_on_open_ = true;
 }
 
 }}

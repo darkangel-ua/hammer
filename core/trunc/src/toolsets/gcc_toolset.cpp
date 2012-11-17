@@ -28,14 +28,19 @@ gcc_toolset::gcc_toolset() : toolset("gcc")
 }
 
 gcc_toolset::gcc_install_data
-gcc_toolset::resolve_install_data(const location_t* toolset_home_) const
+gcc_toolset::resolve_install_data(const location_t* toolset_home_, const std::string& version_id) const
 {
    location_t toolset_home(toolset_home_ == NULL ? location_t() : *toolset_home_);
 
    gcc_install_data install_data;
-   install_data.version_ = "unknown";
-   install_data.compiler_ = toolset_home / "g++";
-   install_data.linker_ = toolset_home / "g++";
+   install_data.version_ = version_id;
+   if (version_id.empty()) {
+      install_data.compiler_ = toolset_home / "g++" ;
+      install_data.linker_ = toolset_home / "g++";
+   } else {
+      install_data.compiler_ = toolset_home / ("g++-" + version_id);
+      install_data.linker_ = toolset_home / ("g++-" + version_id);
+   } 
 
    install_data.librarian_ = toolset_home / "ar";
    if (!exists(install_data.librarian_))
@@ -54,7 +59,7 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
    feature_set* generator_condition = e.feature_registry().make_set();
    generator_condition->join("toolset", "gcc");
 
-   gcc_install_data install_data(resolve_install_data(toolset_home));
+   gcc_install_data install_data(resolve_install_data(toolset_home, version_id));
 
    toolset_def.get_subfeature("version").extend_legal_values(install_data.version_);
 

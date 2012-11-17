@@ -22,7 +22,7 @@ namespace hammer
       protected:
          virtual void init_impl(engine& e, const std::string& version_id = std::string(),
                                 const location_t* toolset_home = NULL) const;
-         virtual gcc_install_data resolve_install_data(const location_t* toolset_home) const;
+         virtual gcc_install_data resolve_install_data(const location_t* toolset_home, const std::string& version_id) const;
    };
 }
 

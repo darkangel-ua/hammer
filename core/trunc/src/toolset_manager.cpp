@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include <hammer/core/toolset_manager.h>
 #include <hammer/core/toolset.h>
+#include <hammer/core/feature_def.h>
+#include <hammer/core/engine.h>
 
 namespace hammer
 {
@@ -12,9 +14,9 @@ void toolset_manager::add_toolset(std::auto_ptr<toolset> t)
    t.release();
 }
 
-void toolset_manager::init_toolset(engine& e, 
-                                   const std::string& toolset_name, 
-                                   const std::string& toolset_version, 
+void toolset_manager::init_toolset(engine& e,
+                                   const std::string& toolset_name,
+                                   const std::string& toolset_version,
                                    const location_t* toolset_home) const
 {
    toolsets_t::const_iterator i = toolsets_.find(toolset_name);
@@ -27,7 +29,10 @@ void toolset_manager::init_toolset(engine& e,
 void toolset_manager::autoconfigure(engine& e) const
 {
    for(toolsets_t::const_iterator i = toolsets_.begin(), last = toolsets_.end(); i != last; ++i)
-      i->second->autoconfigure(e);
+      if (const feature_def* fd = e.feature_registry().find_def("toolset")) {
+         if (!fd->is_legal_value(i->first))
+            i->second->autoconfigure(e);
+      }
 }
 
 }

@@ -790,8 +790,7 @@ int main(int argc, char** argv)
             cout << "Done" << endl;
       }
 
-      if (!has_configured_toolsets(engine))
-         autoconfigure_toolsets(engine);
+      autoconfigure_toolsets(engine);
 
       if (!has_configured_toolsets(engine))
       {

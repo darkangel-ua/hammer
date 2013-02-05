@@ -43,16 +43,16 @@ const type_tag qt_rced_cpp("QT_RCED_CPP");
 class qt_uic_main_target : public main_target
 {
    public:
-      qt_uic_main_target(const meta_target* mt, 
+      qt_uic_main_target(const meta_target* mt,
                          const main_target& owner,
-                         const pstring& name, 
-                         const target_type* t, 
+                         const pstring& name,
+                         const target_type* t,
                          const feature_set* props,
                          pool& p)
                          : main_target(mt, name, t, props, p), owner_(owner)
       {
       }
-   
+
    protected:
       virtual location_t intermediate_dir_impl() const { return owner_.intermediate_dir(); }
 
@@ -73,9 +73,9 @@ class qt_uic_meta_target : public typed_meta_target
          add_sources(sources);
          set_explicit(true);
       }
-   
-   protected:      
-      virtual void compute_usage_requirements(feature_set& result, 
+
+   protected:
+      virtual void compute_usage_requirements(feature_set& result,
                                               const main_target& constructed_target,
                                               const feature_set& build_request,
                                               const feature_set& computed_usage_requirements,
@@ -83,20 +83,20 @@ class qt_uic_meta_target : public typed_meta_target
       virtual main_target* construct_main_target(const main_target* owner, const feature_set* properties) const;
 };
 
-main_target* 
-qt_uic_meta_target::construct_main_target(const main_target* owner, 
+main_target*
+qt_uic_meta_target::construct_main_target(const main_target* owner,
                                           const feature_set* properties) const
 {
    return
-      new qt_uic_main_target(this, 
+      new qt_uic_main_target(this,
                              *owner,
-                             name(), 
-                             &type(), 
+                             name(),
+                             &type(),
                              properties,
                              get_engine()->targets_pool());
 }
 
-void qt_uic_meta_target::compute_usage_requirements(feature_set& result, 
+void qt_uic_meta_target::compute_usage_requirements(feature_set& result,
                                                     const main_target& constructed_target,
                                                     const feature_set& build_request,
                                                     const feature_set& computed_usage_requirements,
@@ -124,7 +124,7 @@ static sources_decl qt_uic_rule(project* p,
                                                          requirements_decl()));
 
    sources_decl result;
-   result.push_back(source_decl(pstring(p->get_engine()->pstring_pool(), "./"), 
+   result.push_back(source_decl(pstring(p->get_engine()->pstring_pool(), "./"),
                                 mt->name(), NULL, NULL));
 
    p->add_target(mt);
@@ -194,9 +194,9 @@ class qt_uic_generator : public generator
          : generator(e, name, source_types, target_types, composite, c)
       {
       }
-      
+
       virtual construct_result_t
-      construct(const target_type& type_to_construct, 
+      construct(const target_type& type_to_construct,
                 const feature_set& props,
                 const std::vector<boost::intrusive_ptr<build_node> >& sources,
                 const basic_target* source_target,
@@ -204,7 +204,7 @@ class qt_uic_generator : public generator
                 const main_target& owner) const
       {
          // getting from QT_UIC_MAIN all its source and pass they up
-         build_nodes_t result;         
+         build_nodes_t result;
          assert(source_target && sources.size() == 1 && "this is non composite generator so source target must be present");
          BOOST_FOREACH(const build_node::source_t& s, sources.at(0)->sources_)
             result.push_back(s.source_node_);
@@ -221,15 +221,15 @@ qt_toolset::qt_toolset()
 
 static string determinate_version(const location_t& toolset_home)
 {
-	for(fs::directory_iterator i = fs::directory_iterator(toolset_home), last = fs::directory_iterator(); i != last; ++i)
-	{
-		boost::smatch m;
-		string filename = i->path().filename();
+   for(fs::directory_iterator i = fs::directory_iterator(toolset_home), last = fs::directory_iterator(); i != last; ++i)
+   {
+      boost::smatch m;
+      string filename = i->path().filename();
       if (boost::regex_match(filename, m, boost::regex("changes-([0-9\\.]+)")))
-			return m[1];
-	}
+         return m[1];
+   }
 
-	return string();
+   return string();
 }
 
 void qt_toolset::autoconfigure(engine& e) const
@@ -237,12 +237,12 @@ void qt_toolset::autoconfigure(engine& e) const
     const char* qt_dir = getenv("QTDIR");
     if (qt_dir != NULL)
     {
-    	location_t toolset_home(qt_dir);
-    	string version = determinate_version(toolset_home);
-    	if (version.empty())
-    		throw std::runtime_error("Can't determinate version for Qt toolset at '" + toolset_home.native_file_string() + "'");
+      location_t toolset_home(qt_dir);
+      string version = determinate_version(toolset_home);
+      if (version.empty())
+         throw std::runtime_error("Can't determinate version for Qt toolset at '" + toolset_home.native_file_string() + "'");
 
-    	init_impl(e, version, &toolset_home);
+      init_impl(e, version, &toolset_home);
     }
     else if (fs::exists("/usr/include/qt4/Qt/QtCore"))
     {
@@ -256,39 +256,39 @@ void qt_toolset::autoconfigure(engine& e) const
 
 static void add_lib(project& qt_project, const string& lib_name, const vector<string>& dependencies, engine& e)
 {
-	requirements_decl debug_req;
+   requirements_decl debug_req;
 
    feature* qt_no_debug_feature = e.feature_registry().create_feature("define", "QT_NO_DEBUG");
 #if defined(_WIN32)
    feature* top_include_feature = e.feature_registry().create_feature("include", "./include");
-	feature* include_feature = e.feature_registry().create_feature("include", "./include/" + lib_name);
+   feature* include_feature = e.feature_registry().create_feature("include", "./include/" + lib_name);
 #else
    feature* top_include_feature = e.feature_registry().create_feature("include", "./include/qt4");
    feature* include_feature = e.feature_registry().create_feature("include", "./include/qt4/" + lib_name);
 #endif
-	{
-		auto_ptr<just_feature_requirement> include_req(new just_feature_requirement(include_feature));
-		include_req->set_public(true);
-		debug_req.add(auto_ptr<requirement_base>(include_req));
-	}
-	{
-		auto_ptr<just_feature_requirement> top_include_req(new just_feature_requirement(top_include_feature));
-		top_include_req->set_public(true);
-		debug_req.add(auto_ptr<requirement_base>(top_include_req));
-	}
-	debug_req.add(auto_ptr<requirement_base>(new just_feature_requirement(e.feature_registry().create_feature("variant", "debug"))));
+   {
+      auto_ptr<just_feature_requirement> include_req(new just_feature_requirement(include_feature));
+      include_req->set_public(true);
+      debug_req.add(auto_ptr<requirement_base>(include_req));
+   }
+   {
+      auto_ptr<just_feature_requirement> top_include_req(new just_feature_requirement(top_include_feature));
+      top_include_req->set_public(true);
+      debug_req.add(auto_ptr<requirement_base>(top_include_req));
+   }
+   debug_req.add(auto_ptr<requirement_base>(new just_feature_requirement(e.feature_registry().create_feature("variant", "debug"))));
 
-	requirements_decl release_req;
-	{
-		auto_ptr<just_feature_requirement> include_req(new just_feature_requirement(include_feature));
-		include_req->set_public(true);
-		release_req.add(auto_ptr<requirement_base>(include_req));
-	}
-	{
-		auto_ptr<just_feature_requirement> top_include_req(new just_feature_requirement(top_include_feature));
-		top_include_req->set_public(true);
-		release_req.add(auto_ptr<requirement_base>(top_include_req));
-	}
+   requirements_decl release_req;
+   {
+      auto_ptr<just_feature_requirement> include_req(new just_feature_requirement(include_feature));
+      include_req->set_public(true);
+      release_req.add(auto_ptr<requirement_base>(include_req));
+   }
+   {
+      auto_ptr<just_feature_requirement> top_include_req(new just_feature_requirement(top_include_feature));
+      top_include_req->set_public(true);
+      release_req.add(auto_ptr<requirement_base>(top_include_req));
+   }
    {
       auto_ptr<just_feature_requirement> qt_no_debug(new just_feature_requirement(qt_no_debug_feature));
       qt_no_debug->set_public(true);
@@ -345,46 +345,46 @@ static void add_lib(project& qt_project, const string& lib_name, const vector<st
                                       e.get_type_registry().get(types::SEARCHED_SHARED_LIB)));
 #endif
 
-	for(size_t i = 0; i < dependencies.size(); ++i)
-	{
-	   requirements_decl usage_req;
-	   feature* source_feature = e.feature_registry().create_feature("source", dependencies[i]);
-	   {
-	      source_decl sd(pstring(e.pstring_pool(), "/Qt"),
-	                     pstring(e.pstring_pool(), dependencies[i]),
-	                     NULL,
-	                     e.feature_registry().make_set());
-	      source_feature->get_dependency_data().source_ = sd;
-	      auto_ptr<just_feature_requirement> source_req(new just_feature_requirement(source_feature));
-	      usage_req.add(auto_ptr<requirement_base>(source_req));
-	   }
+   for(size_t i = 0; i < dependencies.size(); ++i)
+   {
+      requirements_decl usage_req;
+      feature* source_feature = e.feature_registry().create_feature("source", dependencies[i]);
+      {
+         source_decl sd(pstring(e.pstring_pool(), "/Qt"),
+                        pstring(e.pstring_pool(), dependencies[i]),
+                        NULL,
+                        e.feature_registry().make_set());
+         source_feature->get_dependency_data().source_ = sd;
+         auto_ptr<just_feature_requirement> source_req(new just_feature_requirement(source_feature));
+         usage_req.add(auto_ptr<requirement_base>(source_req));
+      }
 
-	   lib_debug->usage_requirements().insert(usage_req);
+      lib_debug->usage_requirements().insert(usage_req);
       lib_release->usage_requirements().insert(usage_req);
       lib_profile->usage_requirements().insert(usage_req);
-	}
+   }
 
-	qt_project.add_target(auto_ptr<basic_meta_target>(lib_debug));
-	qt_project.add_target(auto_ptr<basic_meta_target>(lib_release));
+   qt_project.add_target(auto_ptr<basic_meta_target>(lib_debug));
+   qt_project.add_target(auto_ptr<basic_meta_target>(lib_release));
    qt_project.add_target(auto_ptr<basic_meta_target>(lib_profile));
 }
 
 void qt_toolset::init_impl(engine& e, const std::string& version_id,
                            const location_t* toolset_home) const
 {
-	if (e.get_type_registry().find(qt_mocable) == NULL)
-	{
-		// register qt types
-		// FIXME: we don't derive qt mocable from H because current generator implementation can't properly choose qt.moc generator
-	   e.get_type_registry().insert(target_type(qt_mocable, ""));
-		e.get_type_registry().insert(target_type(qt_ui, ".ui"));
-		e.get_type_registry().insert(target_type(qt_rc, ".qrc"));
+   if (e.get_type_registry().find(qt_mocable) == NULL)
+   {
+      // register qt types
+      // FIXME: we don't derive qt mocable from H because current generator implementation can't properly choose qt.moc generator
+      e.get_type_registry().insert(target_type(qt_mocable, ""));
+      e.get_type_registry().insert(target_type(qt_ui, ".ui"));
+      e.get_type_registry().insert(target_type(qt_rc, ".qrc"));
       e.get_type_registry().insert(target_type(qt_rced_cpp, ".cpp", e.get_type_registry().get(types::CPP), "qrc_"));
       e.get_type_registry().insert(target_type(qt_uiced_h, ".h", e.get_type_registry().get(types::H), "ui_"));
       e.get_type_registry().insert(target_type(qt_uic_main, ""));
 
-		// QT_UI -> QT_UICED_H
-		{
+      // QT_UI -> QT_UICED_H
+      {
          shared_ptr<source_argument_writer> ui_source(new source_argument_writer("ui_source", e.get_type_registry().get(qt_ui)));
          shared_ptr<product_argument_writer> uic_product(new product_argument_writer("uic_product", e.get_type_registry().get(qt_uiced_h)));
          cmdline_builder uic_cmd((*toolset_home / "bin/uic").native_file_string() + " -o \"$(uic_product)\" $(ui_source)");
@@ -402,7 +402,7 @@ void qt_toolset::init_impl(engine& e, const std::string& version_id,
          auto_ptr<generator> g(new generator(e, "qt.uic", source, target, false));
          g->action(uic_action);
          e.generators().insert(g);
-		}
+      }
 
       // QT_RC -> QT_RCED_CPP
       {
@@ -425,7 +425,7 @@ void qt_toolset::init_impl(engine& e, const std::string& version_id,
          e.generators().insert(g);
       }
 
-		// QT_MOCABLE -> CPP
+      // QT_MOCABLE -> CPP
       {
          shared_ptr<source_argument_writer> mocable_source(new source_argument_writer("mocable_source", e.get_type_registry().get(qt_mocable)));
          shared_ptr<product_argument_writer> cpp_product(new product_argument_writer("cpp_product", e.get_type_registry().get(types::CPP)));
@@ -455,7 +455,7 @@ void qt_toolset::init_impl(engine& e, const std::string& version_id,
          auto_ptr<generator> g(new fake_generator(e, "qt.uic-main", source, target, true));
          e.generators().insert(g);
       }
-      
+
       // QT_UIC_MAIN -> many H(QT_UICED_H)
       {
          generator::consumable_types_t source;
@@ -466,21 +466,21 @@ void qt_toolset::init_impl(engine& e, const std::string& version_id,
          e.generators().insert(g);
       }
 
-		// register qt libs
-		auto_ptr<project> qt_project(new project(&e,
+      // register qt libs
+      auto_ptr<project> qt_project(new project(&e,
                                                pstring(e.pstring_pool(), "Qt"),
                                                *toolset_home,
                                                requirements_decl(),
                                                requirements_decl()));
-		add_lib(*qt_project, "QtCore", vector<string>(), e);
-		add_lib(*qt_project, "QtGui", list_of("QtCore"), e);
-		e.insert(qt_project.get());
-		e.use_project(*qt_project, pstring(e.pstring_pool(), "/Qt"), "");
-		qt_project.release();
+      add_lib(*qt_project, "QtCore", vector<string>(), e);
+      add_lib(*qt_project, "QtGui", list_of("QtCore"), e);
+      e.insert(qt_project.get());
+      e.use_project(*qt_project, pstring(e.pstring_pool(), "/Qt"), "");
+      qt_project.release();
 
-		e.call_resolver().insert("qt.moc", boost::function<void (project*, const pstring&, const sources_decl&, requirements_decl*, requirements_decl*)>(&qt_moc_rule));
+      e.call_resolver().insert("qt.moc", boost::function<void (project*, const pstring&, const sources_decl&, requirements_decl*, requirements_decl*)>(&qt_moc_rule));
       e.call_resolver().insert("qt.uic", boost::function<sources_decl (project*, const sources_decl&)>(&qt_uic_rule));
-	}
+   }
 }
 
 }

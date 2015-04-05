@@ -24,6 +24,7 @@ namespace hammer
    class toolset_manager;
    class scanner_manager;
    class output_location_strategy;
+   class warehouse;
 
    class engine : boost::noncopyable
    {
@@ -46,6 +47,8 @@ namespace hammer
          hammer::toolset_manager& toolset_manager() { return *toolset_manager_; }
          hammer::scanner_manager& scanner_manager() { return *scanner_manager_; }
          const hammer::scanner_manager& scanner_manager() const { return *scanner_manager_; }
+         hammer::warehouse& warehouse() { return *warehouse_; }
+
          hammer::output_location_strategy& output_location_strategy() { return *output_location_strategy_; }
          void output_location_strategy(boost::shared_ptr<hammer::output_location_strategy>& strategy);
          void use_project(const project& p, const pstring& project_id_alias, const location_t& project_location);
@@ -141,6 +144,7 @@ namespace hammer
 
          use_project_data_t use_project_data_;
          repositories_t repositories_;
+         boost::shared_ptr<hammer::warehouse> warehouse_;
 
          loaded_projects_t try_load_project(location_t project_path, const project& from_project);
          loaded_projects_t try_load_project(const location_t& tail_path, const project_alias_data& symlink);

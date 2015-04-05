@@ -59,6 +59,7 @@ lib hammer.core
     /boost/serialization/<version>1.40.0
     /boost/asio/<version>1.40.0
     /boost/pool/<version>1.40.0
+    /boost/thread/<version>1.40.0
    :
     @<include>../include
     <include>../src

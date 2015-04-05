@@ -42,6 +42,8 @@
 #include <hammer/core/generic_batcher.h>
 #include <hammer/core/collect_nodes.h>
 #include <hammer/core/fs_helpers.h>
+#include <hammer/core/warehouse_target.h>
+#include <hammer/core/warehouse.h>
 
 #include "user_config_location.h"
 #include "get_data_path.h"
@@ -717,6 +719,8 @@ int main(int argc, char** argv)
          return 0;
       }
 
+      install_warehouse_rules(engine.call_resolver(), engine);
+
       // fix concurrency level if user is dumb
       if (opts.worker_count_ == 0)
          opts.worker_count_ = 1;
@@ -876,7 +880,27 @@ int main(int argc, char** argv)
 
       cout << "...generating build graph... " << flush;
 
-      nodes_t nodes(generate_targets(instantiated_targets));
+      nodes_t nodes;
+      try {
+         nodes = generate_targets(instantiated_targets);
+      } catch(const warehouse_unresolved_target_exception& e) {
+         // ups - we have some libs to download
+         cout << "\n\nThere is unresolved packages to download and build:\n";
+         warehouse& wh = engine.warehouse();
+         vector<warehouse::package_info> packages = wh.get_unresoved_targets_info(find_all_warehouse_unresolved_targets(instantiated_targets));
+         for(vector<warehouse::package_info>::const_iterator i = packages.begin(), last = packages.end(); i != last; ++i)
+            cout << i->name_ << "(" << i->version_ << ") size: " << i->package_file_size_ << "\n";
+         cout << "\n\nDownload & Build? [Y/n]: ";
+         char c;
+         cin >> c;
+         if (c != 'Y' && c != 'y') {
+            cout << "Build failed\n";
+            return -1;
+         }
+
+         wh.download_and_install(packages, engine);
+      }
+
       if (opts.copy_dependencies_)
          add_copy_dependencies_nodes(nodes, engine);
 

@@ -35,6 +35,7 @@
 #include <hammer/core/default_output_location_strategy.h>
 #include <hammer/core/prebuilt_lib_meta_target.h>
 #include <hammer/core/file_meta_target.h>
+#include "warehouse_impl.h"
 
 using namespace std;
 namespace fs = boost::filesystem;
@@ -107,6 +108,9 @@ engine::engine()
    toolset_manager_.reset(new hammer::toolset_manager);
    scanner_manager_.reset(new hammer::scanner_manager);
    output_location_strategy_.reset(new default_output_location_strategy);
+
+   warehouse_.reset(new warehouse_impl());
+   warehouse_->load_root(*this);
 }
 
 project* engine::get_upper_project(const location_t& project_path)
@@ -271,6 +275,12 @@ engine::try_load_project(location_t project_path,
 
          if (!result.empty())
             return result;
+
+         if (warehouse_->has_project(project_path)) {
+            boost::shared_ptr<project> p = warehouse_->load_project(project_path, *this);
+            projects_.insert(make_pair(project_path, p));
+            return loaded_projects_t(p.get());
+         }
 
          if (!materialize_or_load_next_repository())
             return result;

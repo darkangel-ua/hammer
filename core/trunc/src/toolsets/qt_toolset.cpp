@@ -235,26 +235,29 @@ static string determinate_version(const location_t& toolset_home)
 void qt_toolset::autoconfigure(engine& e) const
 {
     const char* qt_dir = getenv("QTDIR");
-    if (qt_dir != NULL)
-    {
+    if (qt_dir != NULL) {
       location_t toolset_home(qt_dir);
       string version = determinate_version(toolset_home);
       if (version.empty())
          throw std::runtime_error("Can't determinate version for Qt toolset at '" + toolset_home.native_file_string() + "'");
 
       init_impl(e, version, &toolset_home);
-    }
-    else if (fs::exists("/usr/include/qt4/Qt/QtCore"))
-    {
+    } else if (fs::exists("/usr/include/qt4/Qt/QtCore")) {
        // FIXME: linux part
        location_t toolset_home("/usr");
-       string version = "unknown";
+       string version = "4";
 
        init_impl(e, version, &toolset_home);
     }
 }
 
-static void add_lib(project& qt_project, const string& lib_name, const vector<string>& dependencies, engine& e)
+static
+void add_lib(project& qt_project,
+             const string& lib_name,
+             const vector<string>& dependencies,
+             engine& e,
+             const string& include_tag,
+             const string& lib_tag)
 {
    requirements_decl debug_req;
 
@@ -263,8 +266,8 @@ static void add_lib(project& qt_project, const string& lib_name, const vector<st
    feature* top_include_feature = e.feature_registry().create_feature("include", "./include");
    feature* include_feature = e.feature_registry().create_feature("include", "./include/" + lib_name);
 #else
-   feature* top_include_feature = e.feature_registry().create_feature("include", "./include/qt4");
-   feature* include_feature = e.feature_registry().create_feature("include", "./include/qt4/" + lib_name);
+   feature* top_include_feature = e.feature_registry().create_feature("include", "./include/" + include_tag);
+   feature* include_feature = e.feature_registry().create_feature("include", "./include/" + include_tag + "/" + lib_name);
 #endif
    {
       auto_ptr<just_feature_requirement> include_req(new just_feature_requirement(include_feature));
@@ -312,15 +315,15 @@ static void add_lib(project& qt_project, const string& lib_name, const vector<st
    auto_ptr<prebuilt_lib_meta_target> lib_debug(
          new prebuilt_lib_meta_target(&qt_project,
                                pstring(e.pstring_pool(), lib_name),
-                               pstring(e.pstring_pool(), "./lib/" + lib_name + "d4.lib"), debug_req, requirements_decl()));
+                               pstring(e.pstring_pool(), "./lib/" + lib_name + "d" + lib_tag + ".lib"), debug_req, requirements_decl()));
    auto_ptr<prebuilt_lib_meta_target> lib_release(
          new prebuilt_lib_meta_target(&qt_project,
                                pstring(e.pstring_pool(), lib_name),
-                               pstring(e.pstring_pool(), "./lib/" + lib_name + "4.lib"), release_req, requirements_decl()));
+                               pstring(e.pstring_pool(), "./lib/" + lib_name + lib_tag + ".lib"), release_req, requirements_decl()));
    auto_ptr<prebuilt_lib_meta_target> lib_profile(
          new prebuilt_lib_meta_target(&qt_project,
                                pstring(e.pstring_pool(), lib_name),
-                               pstring(e.pstring_pool(), "./lib/" + lib_name + "4.lib"), profile_req, requirements_decl()));
+                               pstring(e.pstring_pool(), "./lib/" + lib_name + lib_tag + ".lib"), profile_req, requirements_decl()));
 #else
    auto_ptr<searched_lib_meta_target> lib_debug(
          new searched_lib_meta_target(&qt_project,
@@ -369,118 +372,132 @@ static void add_lib(project& qt_project, const string& lib_name, const vector<st
    qt_project.add_target(auto_ptr<basic_meta_target>(lib_profile));
 }
 
+static
+void add_types_and_generators(engine& e,
+                              const location_t* toolset_home,
+                              const std::string& bin_tag,
+                              const string& lib_tag,
+                              const string& include_tag)
+{
+   // register qt types
+   // FIXME: we don't derive qt mocable from H because current generator implementation can't properly choose qt.moc generator
+   e.get_type_registry().insert(target_type(qt_mocable, ""));
+   e.get_type_registry().insert(target_type(qt_ui, ".ui"));
+   e.get_type_registry().insert(target_type(qt_rc, ".qrc"));
+   e.get_type_registry().insert(target_type(qt_rced_cpp, ".cpp", e.get_type_registry().get(types::CPP), "qrc_"));
+   e.get_type_registry().insert(target_type(qt_uiced_h, ".h", e.get_type_registry().get(types::H), "ui_"));
+   e.get_type_registry().insert(target_type(qt_uic_main, ""));
+
+   // QT_UI -> QT_UICED_H
+   {
+      shared_ptr<source_argument_writer> ui_source(new source_argument_writer("ui_source", e.get_type_registry().get(qt_ui)));
+      shared_ptr<product_argument_writer> uic_product(new product_argument_writer("uic_product", e.get_type_registry().get(qt_uiced_h)));
+      cmdline_builder uic_cmd((*toolset_home / ("bin/uic" + bin_tag)).native_file_string() + " -o \"$(uic_product)\" $(ui_source)");
+
+      uic_cmd += ui_source;
+      uic_cmd += uic_product;
+
+      auto_ptr<cmdline_action> uic_action(new cmdline_action("qt.uic", uic_product));
+      *uic_action += uic_cmd;
+
+      generator::consumable_types_t source;
+      generator::producable_types_t target;
+      source.push_back(generator::consumable_type(e.get_type_registry().get(qt_ui), 1, 0));
+      target.push_back(generator::produced_type(e.get_type_registry().get(qt_uiced_h)));
+      auto_ptr<generator> g(new generator(e, "qt.uic", source, target, false));
+      g->action(uic_action);
+      e.generators().insert(g);
+   }
+
+   // QT_RC -> QT_RCED_CPP
+   {
+      shared_ptr<source_argument_writer> rcc_source(new source_argument_writer("rcc_source", e.get_type_registry().get(qt_rc)));
+      shared_ptr<product_argument_writer> rcc_product(new product_argument_writer("rcc_product", e.get_type_registry().get(qt_rced_cpp)));
+      cmdline_builder rcc_cmd((*toolset_home / ("bin/rcc" + bin_tag)).native_file_string() + " -o \"$(rcc_product)\" $(rcc_source)");
+
+      rcc_cmd += rcc_source;
+      rcc_cmd += rcc_product;
+
+      auto_ptr<cmdline_action> rcc_action(new cmdline_action("qt.rcc", rcc_product));
+      *rcc_action += rcc_cmd;
+
+      generator::consumable_types_t source;
+      generator::producable_types_t target;
+      source.push_back(generator::consumable_type(e.get_type_registry().get(qt_rc), 1, 0));
+      target.push_back(generator::produced_type(e.get_type_registry().get(qt_rced_cpp)));
+      auto_ptr<generator> g(new generator(e, "qt.rcc", source, target, false));
+      g->action(rcc_action);
+      e.generators().insert(g);
+   }
+
+   // QT_MOCABLE -> CPP
+   {
+      shared_ptr<source_argument_writer> mocable_source(new source_argument_writer("mocable_source", e.get_type_registry().get(qt_mocable)));
+      shared_ptr<product_argument_writer> cpp_product(new product_argument_writer("cpp_product", e.get_type_registry().get(types::CPP)));
+      cmdline_builder moc_cmd((*toolset_home / ("bin/moc" + bin_tag)).native_file_string() + " -o \"$(cpp_product)\" $(mocable_source)");
+
+      moc_cmd += mocable_source;
+      moc_cmd += cpp_product;
+
+      auto_ptr<cmdline_action> moc_action(new cmdline_action("qt.moc", cpp_product));
+      *moc_action += moc_cmd;
+
+      generator::consumable_types_t source;
+      generator::producable_types_t target;
+      source.push_back(generator::consumable_type(e.get_type_registry().get(qt_mocable), 1, 0));
+      target.push_back(generator::produced_type(e.get_type_registry().get(types::CPP)));
+      auto_ptr<generator> g(new generator(e, "qt.moc", source, target, false));
+      g->action(moc_action);
+      e.generators().insert(g);
+   }
+
+   // many QT_UICED_H -> HEADER_LIB
+   {
+      generator::consumable_types_t source;
+      generator::producable_types_t target;
+      source.push_back(generator::consumable_type(e.get_type_registry().get(qt_uiced_h), 0, 0));
+      target.push_back(generator::produced_type(e.get_type_registry().get(qt_uic_main)));
+      auto_ptr<generator> g(new fake_generator(e, "qt.uic-main", source, target, true));
+      e.generators().insert(g);
+   }
+
+   // QT_UIC_MAIN -> many H(QT_UICED_H)
+   {
+      generator::consumable_types_t source;
+      generator::producable_types_t target;
+      source.push_back(generator::consumable_type(e.get_type_registry().get(qt_uic_main), 0, 0));
+      target.push_back(generator::produced_type(e.get_type_registry().get(types::H)));
+      auto_ptr<generator> g(new fake_generator(e, "qt.uic-proxy", source, target, false));
+      e.generators().insert(g);
+   }
+
+   // register qt libs
+   auto_ptr<project> qt_project(new project(&e,
+                                            pstring(e.pstring_pool(), "Qt"),
+                                            *toolset_home,
+                                            requirements_decl(),
+                                            requirements_decl()));
+   add_lib(*qt_project, "QtCore", vector<string>(), e, include_tag, lib_tag);
+   add_lib(*qt_project, "QtGui", list_of("QtCore"), e, include_tag, lib_tag);
+   e.insert(qt_project.get());
+   e.use_project(*qt_project, pstring(e.pstring_pool(), "/Qt"), "");
+   qt_project.release();
+
+   e.call_resolver().insert("qt.moc", boost::function<void (project*, const pstring&, const sources_decl&, requirements_decl*, requirements_decl*)>(&qt_moc_rule));
+   e.call_resolver().insert("qt.uic", boost::function<sources_decl (project*, const sources_decl&)>(&qt_uic_rule));
+}
+
 void qt_toolset::init_impl(engine& e, const std::string& version_id,
                            const location_t* toolset_home) const
 {
-   if (e.get_type_registry().find(qt_mocable) == NULL)
-   {
-      // register qt types
-      // FIXME: we don't derive qt mocable from H because current generator implementation can't properly choose qt.moc generator
-      e.get_type_registry().insert(target_type(qt_mocable, ""));
-      e.get_type_registry().insert(target_type(qt_ui, ".ui"));
-      e.get_type_registry().insert(target_type(qt_rc, ".qrc"));
-      e.get_type_registry().insert(target_type(qt_rced_cpp, ".cpp", e.get_type_registry().get(types::CPP), "qrc_"));
-      e.get_type_registry().insert(target_type(qt_uiced_h, ".h", e.get_type_registry().get(types::H), "ui_"));
-      e.get_type_registry().insert(target_type(qt_uic_main, ""));
-
-      // QT_UI -> QT_UICED_H
-      {
-         shared_ptr<source_argument_writer> ui_source(new source_argument_writer("ui_source", e.get_type_registry().get(qt_ui)));
-         shared_ptr<product_argument_writer> uic_product(new product_argument_writer("uic_product", e.get_type_registry().get(qt_uiced_h)));
-         cmdline_builder uic_cmd((*toolset_home / "bin/uic").native_file_string() + " -o \"$(uic_product)\" $(ui_source)");
-
-         uic_cmd += ui_source;
-         uic_cmd += uic_product;
-
-         auto_ptr<cmdline_action> uic_action(new cmdline_action("qt.uic", uic_product));
-         *uic_action += uic_cmd;
-
-         generator::consumable_types_t source;
-         generator::producable_types_t target;
-         source.push_back(generator::consumable_type(e.get_type_registry().get(qt_ui), 1, 0));
-         target.push_back(generator::produced_type(e.get_type_registry().get(qt_uiced_h)));
-         auto_ptr<generator> g(new generator(e, "qt.uic", source, target, false));
-         g->action(uic_action);
-         e.generators().insert(g);
+   if (e.get_type_registry().find(qt_mocable) == NULL) {
+      if (!version_id.empty() && version_id[0] == '4') {
+         add_types_and_generators(e, toolset_home, "-qt4", "4", "qt4");
+         return;
       }
-
-      // QT_RC -> QT_RCED_CPP
-      {
-         shared_ptr<source_argument_writer> rcc_source(new source_argument_writer("rcc_source", e.get_type_registry().get(qt_rc)));
-         shared_ptr<product_argument_writer> rcc_product(new product_argument_writer("rcc_product", e.get_type_registry().get(qt_rced_cpp)));
-         cmdline_builder rcc_cmd((*toolset_home / "bin/rcc").native_file_string() + " -o \"$(rcc_product)\" $(rcc_source)");
-
-         rcc_cmd += rcc_source;
-         rcc_cmd += rcc_product;
-
-         auto_ptr<cmdline_action> rcc_action(new cmdline_action("qt.rcc", rcc_product));
-         *rcc_action += rcc_cmd;
-
-         generator::consumable_types_t source;
-         generator::producable_types_t target;
-         source.push_back(generator::consumable_type(e.get_type_registry().get(qt_rc), 1, 0));
-         target.push_back(generator::produced_type(e.get_type_registry().get(qt_rced_cpp)));
-         auto_ptr<generator> g(new generator(e, "qt.rcc", source, target, false));
-         g->action(rcc_action);
-         e.generators().insert(g);
-      }
-
-      // QT_MOCABLE -> CPP
-      {
-         shared_ptr<source_argument_writer> mocable_source(new source_argument_writer("mocable_source", e.get_type_registry().get(qt_mocable)));
-         shared_ptr<product_argument_writer> cpp_product(new product_argument_writer("cpp_product", e.get_type_registry().get(types::CPP)));
-         cmdline_builder moc_cmd((*toolset_home / "bin/moc").native_file_string() + " -o \"$(cpp_product)\" $(mocable_source)");
-
-         moc_cmd += mocable_source;
-         moc_cmd += cpp_product;
-
-         auto_ptr<cmdline_action> moc_action(new cmdline_action("qt.moc", cpp_product));
-         *moc_action += moc_cmd;
-
-         generator::consumable_types_t source;
-         generator::producable_types_t target;
-         source.push_back(generator::consumable_type(e.get_type_registry().get(qt_mocable), 1, 0));
-         target.push_back(generator::produced_type(e.get_type_registry().get(types::CPP)));
-         auto_ptr<generator> g(new generator(e, "qt.moc", source, target, false));
-         g->action(moc_action);
-         e.generators().insert(g);
-      }
-
-      // many QT_UICED_H -> HEADER_LIB
-      {
-         generator::consumable_types_t source;
-         generator::producable_types_t target;
-         source.push_back(generator::consumable_type(e.get_type_registry().get(qt_uiced_h), 0, 0));
-         target.push_back(generator::produced_type(e.get_type_registry().get(qt_uic_main)));
-         auto_ptr<generator> g(new fake_generator(e, "qt.uic-main", source, target, true));
-         e.generators().insert(g);
-      }
-
-      // QT_UIC_MAIN -> many H(QT_UICED_H)
-      {
-         generator::consumable_types_t source;
-         generator::producable_types_t target;
-         source.push_back(generator::consumable_type(e.get_type_registry().get(qt_uic_main), 0, 0));
-         target.push_back(generator::produced_type(e.get_type_registry().get(types::H)));
-         auto_ptr<generator> g(new fake_generator(e, "qt.uic-proxy", source, target, false));
-         e.generators().insert(g);
-      }
-
-      // register qt libs
-      auto_ptr<project> qt_project(new project(&e,
-                                               pstring(e.pstring_pool(), "Qt"),
-                                               *toolset_home,
-                                               requirements_decl(),
-                                               requirements_decl()));
-      add_lib(*qt_project, "QtCore", vector<string>(), e);
-      add_lib(*qt_project, "QtGui", list_of("QtCore"), e);
-      e.insert(qt_project.get());
-      e.use_project(*qt_project, pstring(e.pstring_pool(), "/Qt"), "");
-      qt_project.release();
-
-      e.call_resolver().insert("qt.moc", boost::function<void (project*, const pstring&, const sources_decl&, requirements_decl*, requirements_decl*)>(&qt_moc_rule));
-      e.call_resolver().insert("qt.uic", boost::function<sources_decl (project*, const sources_decl&)>(&qt_uic_rule));
    }
+
+   throw std::runtime_error("Don't know how to configure Qt toolset version '" + version_id + "'");
 }
 
 }

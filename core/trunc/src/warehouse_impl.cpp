@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "warehouse_impl.h"
 #include <hammer/core/engine.h>
 //#define BOOST_SPIRIT_DEBUG
@@ -74,11 +75,70 @@ struct warehouse_impl::gramma : public grammar<warehouse_impl::gramma>
    const warehouse_impl::package_t empty_package_;
 };
 
-warehouse_impl::warehouse_impl()
-   : repository_path_("/home/darkangel/.hammer"),
-     repository_url_("http://localhost/hammerhub")
-
+static
+fs::path get_home_path()
 {
+#if defined(_WIN32)
+
+   const char* home_path = getenv("USERPROFILE");
+   if (home_path != NULL)
+      return hammer::location_t(home_path);
+   else
+      throw std::runtime_error("Can't find user home directory.");
+
+#else
+#   if defined(__linux__)
+
+   const char* home_path = getenv("HOME");
+   if (home_path != NULL)
+      return hammer::location_t(home_path);
+   else
+      throw std::runtime_error("Can't find user home directory.");
+
+#   else
+#      error "Platform not supported"
+#   endif
+#endif
+
+}
+
+warehouse_impl::warehouse_impl(engine& e)
+   : engine_(e),
+     repository_path_(get_home_path() / ".hammer")
+{
+   const fs::path hamfile_path = repository_path_ / "hamfile";
+   if (!exists(hamfile_path)) {
+      fs::ofstream f(hamfile_path, ios_base::trunc);
+      if (!f)
+         throw std::runtime_error("Can't create '" + hamfile_path.native_file_string() + "'");
+   }
+
+   const fs::path hamroot_path = repository_path_ / "hamroot";
+   if (!exists(hamroot_path)) {
+      fs::ofstream f(hamroot_path, ios_base::trunc);
+      if (!f)
+         throw std::runtime_error("Can't create '" + hamroot_path.native_file_string() + "'");
+   }
+}
+
+static
+void download_file(const fs::path& working_dir,
+                   const string& url)
+{
+   bp::context ctx;
+   ctx.work_directory = working_dir.native_directory_string();
+   bp::child child = bp::launch_shell("wget -c '" + url + "'", ctx);
+   bp::status status = child.wait();
+   if (status.exit_status() != 0)
+      throw std::runtime_error("Failed to download '" + url + "'");
+}
+
+void warehouse_impl::init_impl(const std::string& url)
+{
+   const fs::path packages_filename = repository_path_ / "packages.json";
+   if (!exists(packages_filename))
+      download_file(repository_path_, url + "/packages.json");
+
    boost::filesystem::ifstream f(repository_path_ / "packages.json");
    string packages_database_file;
    copy(istreambuf_iterator<char>(f), istreambuf_iterator<char>(), back_inserter(packages_database_file));
@@ -87,13 +147,14 @@ warehouse_impl::warehouse_impl()
    if (!parse(packages_database_file.begin(), packages_database_file.end(), g, +space_p).hit)
       throw std::runtime_error("Can't parse warehouse database");
 
+   packages_t new_packages;
    for(vector<package_t>::const_iterator i = g.packages_.begin(), last = g.packages_.end(); i != last; ++i)
-      packages_.insert(make_pair(i->public_id_, *i));
-}
+      new_packages.insert(make_pair(i->public_id_, *i));
 
-void warehouse_impl::load_root_impl(engine& engine)
-{
-   engine.load_project(repository_path_);
+   engine_.load_project(repository_path_);
+
+   repository_url_ = url;
+   packages_.swap(new_packages);
 }
 
 warehouse_impl::packages_t::iterator
@@ -119,15 +180,14 @@ bool warehouse_impl::has_project(const location_t& project_path) const
 }
 
 boost::shared_ptr<project>
-warehouse_impl::load_project(const location_t& project_path,
-                             engine& engine)
+warehouse_impl::load_project(const location_t& project_path)
 {
    assert(has_project(project_path));
 
    const string name = *++project_path.begin();
 
-   boost::shared_ptr<project> result(new warehouse_project(engine, project_path));
-   auto_ptr<basic_meta_target> target(new warehouse_meta_target(*result, pstring(engine.pstring_pool(), name)));
+   boost::shared_ptr<project> result(new warehouse_project(engine_, project_path));
+   auto_ptr<basic_meta_target> target(new warehouse_meta_target(*result, pstring(engine_.pstring_pool(), name)));
    result->add_target(target);
 
    return result;
@@ -170,12 +230,7 @@ void warehouse_impl::download_package(const package_t& p,
                                       const fs::path& working_dir)
 {
    const string package_url = repository_url_ + "/" + p.filename_;
-   bp::context ctx;
-   ctx.work_directory = working_dir.native_directory_string();
-   bp::child child = bp::launch_shell("wget -c '" + package_url + "'", ctx);
-   bp::status status = child.wait();
-   if (status.exit_status() != 0)
-      throw std::runtime_error("Failed to download package '" + p.name_ + "'");
+   download_file(working_dir, package_url);
 }
 
 static
@@ -231,8 +286,7 @@ void warehouse_impl::install_package(const package_t& p,
    insert_line_in_front(package_hamfile, "version-alias " + p.public_id_ + " : " + p.version_ + ";");
 }
 
-void warehouse_impl::download_and_install(const std::vector<package_info>& packages,
-                                          engine& engine)
+void warehouse_impl::download_and_install(const std::vector<package_info>& packages)
 {
    fs::path working_dir = repository_path_ / "downloads";
    if (!exists(working_dir))

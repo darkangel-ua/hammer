@@ -14,17 +14,15 @@ class basic_target;
 class warehouse_impl : public warehouse
 {
    public:
-      warehouse_impl();
+      warehouse_impl(engine& e);
       ~warehouse_impl();
       bool has_project(const location_t& project_path) const;
-      boost::shared_ptr<project> load_project(const location_t& project_path,
-                                              engine& engine);
+      boost::shared_ptr<project> load_project(const location_t& project_path);
       std::vector<package_info> get_unresoved_targets_info(const std::vector<const warehouse_target*>& targets) const;
-      void download_and_install(const std::vector<package_info>& packages,
-                                engine& engine);
+      void download_and_install(const std::vector<package_info>& packages);
 
    protected:
-      void load_root_impl(engine& engine);
+      void init_impl(const std::string& url);
 
    private:
       struct gramma;
@@ -41,6 +39,7 @@ class warehouse_impl : public warehouse
 
       typedef std::multimap<std::string, package_t> packages_t;
 
+      engine& engine_;
       boost::filesystem::path repository_path_;
       std::string repository_url_;
       packages_t packages_;

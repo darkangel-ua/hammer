@@ -25,19 +25,17 @@ namespace hammer {
          };
 
          virtual ~warehouse() {}
-         void load_root(engine& engine) { load_root_impl(engine); }
+         void init(const std::string& url) { init_impl(url); }
          virtual bool has_project(const location_t& project_path) const = 0;
-         virtual boost::shared_ptr<project> load_project(const location_t& project_path,
-                                                         engine& engine) = 0;
+         virtual boost::shared_ptr<project> load_project(const location_t& project_path) = 0;
          // FIXME: we need to represent some form of unknown package
          // posibly by introducing something like pair<known packages/unknown packages> or separate class
          virtual
          std::vector<package_info> get_unresoved_targets_info(const std::vector<const warehouse_target*>& targets) const = 0;
-         virtual void download_and_install(const std::vector<package_info>& packages,
-                                           engine& engine) = 0;
+         virtual void download_and_install(const std::vector<package_info>& packages) = 0;
 
       private:
-         virtual void load_root_impl(engine& engine) = 0;
+         virtual void init_impl(const std::string& url) = 0;
    };
 
    std::vector<const warehouse_target*>

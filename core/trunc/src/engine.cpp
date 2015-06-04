@@ -74,6 +74,7 @@ engine::engine()
    resolver_.insert("explicit", boost::function<void (project*, const pstring&)>(boost::bind(&engine::explicit_rule, this, _1, _2)));
    resolver_.insert("use-project", boost::function<void (project*, const pstring&, const pstring&, feature_set*)>(boost::bind(&engine::use_project_rule, this, _1, _2, _3, _4)));
    resolver_.insert("repository", boost::function<void (project*, const pstring&, feature_set*)>(boost::bind(&engine::repository_rule, this, _1, _2, _3)));
+   resolver_.insert("setup-warehouse", boost::function<void (project*, const pstring&, const pstring&)>(boost::bind(&engine::setup_warehouse_rule, this, _1, _2, _3)));
 
    {
       feature_attributes ft = {0}; ft.free = 1;
@@ -109,8 +110,7 @@ engine::engine()
    scanner_manager_.reset(new hammer::scanner_manager);
    output_location_strategy_.reset(new default_output_location_strategy);
 
-   warehouse_.reset(new warehouse_impl());
-   warehouse_->load_root(*this);
+   warehouse_.reset(new warehouse_impl(*this));
 }
 
 project* engine::get_upper_project(const location_t& project_path)
@@ -277,7 +277,7 @@ engine::try_load_project(location_t project_path,
             return result;
 
          if (warehouse_->has_project(project_path)) {
-            boost::shared_ptr<project> p = warehouse_->load_project(project_path, *this);
+            boost::shared_ptr<project> p = warehouse_->load_project(project_path);
             projects_.insert(make_pair(project_path, p));
             return loaded_projects_t(p.get());
          }
@@ -1151,6 +1151,11 @@ void engine::repository_rule(project* p, const pstring& a_project_location, feat
       throw runtime_error((boost::format("Repository with placement at '%s' already defined.") % project_location.string()).str());
 
    repositories_.push_back(repository_data(p, project_location, props));
+}
+
+void engine::setup_warehouse_rule(project* p, const pstring& name, const pstring& url)
+{
+   warehouse_->init(url.to_string());
 }
 
 static bool targets_by_name(const project::selected_target& lhs,

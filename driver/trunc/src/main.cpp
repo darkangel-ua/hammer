@@ -898,7 +898,7 @@ int main(int argc, char** argv)
             return -1;
          }
 
-         wh.download_and_install(packages, engine);
+         wh.download_and_install(packages);
       }
 
       if (opts.copy_dependencies_)

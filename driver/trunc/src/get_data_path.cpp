@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "get_data_path.h"
+#include <boost/filesystem/operations.hpp>
 
 #if defined(_WIN32)
 #include <Windows.h>
@@ -25,7 +26,11 @@ fs::path get_data_path()
 
 fs::path get_data_path()
 {
-   return "/usr/lib/hammer";
+   fs::path local_path("/usr/local/lib/hammer");
+   if (fs::exists(local_path))
+      return local_path;
+   else
+      return "/usr/lib/hammer";
 }
 
 #  else

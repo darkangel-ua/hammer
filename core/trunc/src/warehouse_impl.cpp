@@ -106,19 +106,6 @@ warehouse_impl::warehouse_impl(engine& e)
    : engine_(e),
      repository_path_(get_home_path() / ".hammer")
 {
-   const fs::path hamfile_path = repository_path_ / "hamfile";
-   if (!exists(hamfile_path)) {
-      fs::ofstream f(hamfile_path, ios_base::trunc);
-      if (!f)
-         throw std::runtime_error("Can't create '" + hamfile_path.native_file_string() + "'");
-   }
-
-   const fs::path hamroot_path = repository_path_ / "hamroot";
-   if (!exists(hamroot_path)) {
-      fs::ofstream f(hamroot_path, ios_base::trunc);
-      if (!f)
-         throw std::runtime_error("Can't create '" + hamroot_path.native_file_string() + "'");
-   }
 }
 
 static
@@ -135,6 +122,25 @@ void download_file(const fs::path& working_dir,
 
 void warehouse_impl::init_impl(const std::string& url)
 {
+   if (!exists(repository_path_)) {
+      if (!create_directory(repository_path_))
+         throw std::runtime_error("Failed to create directory '" + repository_path_.native_directory_string() + "'");
+   }
+
+   const fs::path hamfile_path = repository_path_ / "hamfile";
+   if (!exists(hamfile_path)) {
+      fs::ofstream f(hamfile_path, ios_base::trunc);
+      if (!f)
+         throw std::runtime_error("Can't create '" + hamfile_path.native_file_string() + "'");
+   }
+
+   const fs::path hamroot_path = repository_path_ / "hamroot";
+   if (!exists(hamroot_path)) {
+      fs::ofstream f(hamroot_path, ios_base::trunc);
+      if (!f)
+         throw std::runtime_error("Can't create '" + hamroot_path.native_file_string() + "'");
+   }
+
    const fs::path packages_filename = repository_path_ / "packages.json";
    if (!exists(packages_filename))
       download_file(repository_path_, url + "/packages.json");

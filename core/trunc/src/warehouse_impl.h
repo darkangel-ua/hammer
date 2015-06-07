@@ -23,6 +23,7 @@ class warehouse_impl : public warehouse
 
    protected:
       void init_impl(const std::string& url);
+      void update_impl();
 
    private:
       struct gramma;
@@ -50,6 +51,9 @@ class warehouse_impl : public warehouse
                             const boost::filesystem::path& working_dir);
       void install_package(const package_t& p,
                            const boost::filesystem::path& working_dir);
+
+      static
+      packages_t load_packages(const boost::filesystem::path& filepath);
 };
 
 }

@@ -110,14 +110,38 @@ warehouse_impl::warehouse_impl(engine& e)
 
 static
 void download_file(const fs::path& working_dir,
-                   const string& url)
+                   const string& url,
+                   const string& to_file = string())
 {
    bp::context ctx;
    ctx.work_directory = working_dir.native_directory_string();
-   bp::child child = bp::launch_shell("wget -c '" + url + "'", ctx);
+
+   string cmd = "wget -c '" + url + "'";
+   if (!to_file.empty())
+      cmd += " -O " + to_file;
+
+   bp::child child = bp::launch_shell(cmd, ctx);
    bp::status status = child.wait();
    if (status.exit_status() != 0)
       throw std::runtime_error("Failed to download '" + url + "'");
+}
+
+warehouse_impl::packages_t
+warehouse_impl::load_packages(const fs::path& filepath)
+{
+   boost::filesystem::ifstream f(filepath);
+   string packages_database_file;
+   copy(istreambuf_iterator<char>(f), istreambuf_iterator<char>(), back_inserter(packages_database_file));
+
+   gramma g;
+   if (!parse(packages_database_file.begin(), packages_database_file.end(), g, +space_p).hit)
+      throw std::runtime_error("Can't parse warehouse database");
+
+   packages_t packages;
+   for(vector<package_t>::const_iterator i = g.packages_.begin(), last = g.packages_.end(); i != last; ++i)
+      packages.insert(make_pair(i->public_id_, *i));
+
+   return packages;
 }
 
 void warehouse_impl::init_impl(const std::string& url)
@@ -145,22 +169,33 @@ void warehouse_impl::init_impl(const std::string& url)
    if (!exists(packages_filename))
       download_file(repository_path_, url + "/packages.json");
 
-   boost::filesystem::ifstream f(repository_path_ / "packages.json");
-   string packages_database_file;
-   copy(istreambuf_iterator<char>(f), istreambuf_iterator<char>(), back_inserter(packages_database_file));
-
-   gramma g;
-   if (!parse(packages_database_file.begin(), packages_database_file.end(), g, +space_p).hit)
-      throw std::runtime_error("Can't parse warehouse database");
-
-   packages_t new_packages;
-   for(vector<package_t>::const_iterator i = g.packages_.begin(), last = g.packages_.end(); i != last; ++i)
-      new_packages.insert(make_pair(i->public_id_, *i));
+   packages_t new_packages = load_packages(packages_filename);
 
    engine_.load_project(repository_path_);
 
    repository_url_ = url;
    packages_.swap(new_packages);
+}
+
+static const string packages_update_filename = "packages.json.new";
+
+void warehouse_impl::update_impl()
+{
+   if (repository_url_.empty())
+      return;
+
+   const fs::path packages_update_filepath = repository_path_ / packages_update_filename;
+   const fs::path packages_filepath = repository_path_ / "packages.json";
+
+   if (fs::exists(packages_update_filepath))
+      fs::remove(packages_update_filepath);
+
+   download_file(repository_path_, repository_url_ + "/packages.json", packages_update_filename);
+   // check that file is OK
+   load_packages(packages_update_filepath);
+
+   fs::remove(packages_filepath);
+   fs::rename(packages_update_filepath, packages_filepath);
 }
 
 warehouse_impl::packages_t::iterator

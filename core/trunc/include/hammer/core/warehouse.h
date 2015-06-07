@@ -26,6 +26,8 @@ namespace hammer {
 
          virtual ~warehouse() {}
          void init(const std::string& url) { init_impl(url); }
+         // update package database
+         void update() { update_impl(); }
          virtual bool has_project(const location_t& project_path) const = 0;
          virtual boost::shared_ptr<project> load_project(const location_t& project_path) = 0;
          // FIXME: we need to represent some form of unknown package
@@ -36,6 +38,7 @@ namespace hammer {
 
       private:
          virtual void init_impl(const std::string& url) = 0;
+         virtual void update_impl() = 0;
    };
 
    std::vector<const warehouse_target*>

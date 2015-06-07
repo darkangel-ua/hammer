@@ -96,7 +96,8 @@ namespace
                          debug_level_(0),
                          worker_count_(get_number_of_processors()),
                          copy_dependencies_(false),
-                         write_build_graph_(false)
+                         write_build_graph_(false),
+                         update_warehouse_(false)
       {}
 
       vector<string> build_request_options_;
@@ -114,6 +115,7 @@ namespace
       bool copy_dependencies_;
       std::string eclipse_workspace_path_;
       bool write_build_graph_;
+      bool update_warehouse_;
    };
 
    po::positional_options_description build_request_options;
@@ -141,7 +143,8 @@ namespace
          ("just-one-source-project-path", po::value<string>(&opts.just_one_source_project_path_), "path to project where source reside")
          ("jobs,j", po::value<unsigned>(&opts.worker_count_), "concurrency level")
          ("copy-dependencies", "copy shared modules to output dir when building excecutable")
-         ("write-build-graph", "don't build, just write graphviz build-graph.dot for building process");
+         ("write-build-graph", "don't build, just write graphviz build-graph.dot for building process")
+         ("update-warehouse", "update warehouse package database")
          ;
 
       return desc;
@@ -733,6 +736,9 @@ int main(int argc, char** argv) {
       if (vm.count("write-build-graph"))
          opts.write_build_graph_ = true;
 
+      if (vm.count("update-warehouse"))
+         opts.update_warehouse_ = true;
+
       fs::path data_path(get_data_path());
 
       if (vm.count("install-dir"))
@@ -750,6 +756,7 @@ int main(int argc, char** argv) {
          hammer::engine engine;
          install_warehouse_rules(engine.call_resolver(), engine);
          engine.load_hammer_script(startup_script);
+
          types::register_standart_types(engine.get_type_registry(), engine.feature_registry());
 
          if (opts.debug_level_ > 0)
@@ -800,6 +807,11 @@ int main(int argc, char** argv) {
             engine.load_hammer_script(user_config_script);
             if (opts.debug_level_ > 0)
                cout << "Done" << endl;
+         }
+
+         if (opts.update_warehouse_) {
+            engine.warehouse().update();
+            break;
          }
 
          autoconfigure_toolsets(engine);

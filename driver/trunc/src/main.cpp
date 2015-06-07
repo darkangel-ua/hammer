@@ -83,11 +83,6 @@ namespace
    unsigned get_number_of_processors()
    {
       return boost::thread::hardware_concurrency();
-//      const char* proc_info = getenv("NUMBER_OF_PROCESSORS");
-//      if (proc_info != NULL)
-//         return boost::lexical_cast<unsigned>(proc_info);
-//      else
-//         return 1;
    }
 
    struct hammer_options
@@ -700,109 +695,22 @@ namespace
 }
 
 
-int main(int argc, char** argv)
-{
-   try
-   {
+int main(int argc, char** argv) {
+   try {
       po::options_description desc(options_for_work());
       po::variables_map vm;
       po::parsed_options options = po::command_line_parser(argc, argv).options(desc).positional(build_request_options).run();
       po::store(options, vm);
       po::notify(vm);
-      hammer::engine engine;
-      vector<string> targets;
-      feature_set* build_request = engine.feature_registry().make_set();
 
-      if (vm.count("help"))
-      {
+      if (vm.count("help")) {
          cout << "Usage: hammer.exe <options> <targets> <features>\n" << options_for_help();
          return 0;
       }
 
-      install_warehouse_rules(engine.call_resolver(), engine);
-
       // fix concurrency level if user is dumb
       if (opts.worker_count_ == 0)
          opts.worker_count_ = 1;
-
-      fs::path data_path(get_data_path());
-
-      if (vm.count("install-dir"))
-         data_path = opts.hammer_install_dir_;
-
-      fs::path startup_script = data_path / "scripts/startup.ham";
-
-      if (opts.debug_level_ > 0)
-         cout << "...Full path to script is '" << startup_script << "'\n" << flush;
-
-      if (opts.debug_level_ > 0)
-         cout << "...Loading startup script... " << flush;
-
-      engine.load_hammer_script(startup_script);
-      types::register_standart_types(engine.get_type_registry(), engine.feature_registry());
-
-      if (opts.debug_level_ > 0)
-         cout << "Done" << endl;
-
-      if (opts.debug_level_ > 0)
-         cout << "...Installing generators... " << flush;
-
-      engine.generators().insert(std::auto_ptr<generator>(new copy_generator(engine)));
-      engine.generators().insert(std::auto_ptr<generator>(new obj_generator(engine)));
-      add_testing_generators(engine, engine.generators());
-      add_header_lib_generator(engine, engine.generators());
-
-      if (opts.debug_level_ > 0)
-         cout << "Done" << endl;
-
-      if (opts.debug_level_ > 0)
-         cout << "...Installing scanners... " << flush;
-
-      boost::shared_ptr<scanner> c_scaner(new hammer::c_scanner);
-      engine.scanner_manager().register_scanner(engine.get_type_registry().get(types::CPP), c_scaner);
-      engine.scanner_manager().register_scanner(engine.get_type_registry().get(types::C), c_scaner);
-      engine.scanner_manager().register_scanner(engine.get_type_registry().get(types::RC), c_scaner);
-
-      if (opts.debug_level_ > 0)
-         cout << "Done" << endl;
-
-      if (opts.debug_level_ > 0)
-         cout << "...Registering known toolsets... " << flush;
-
-      engine.toolset_manager().add_toolset(auto_ptr<toolset>(new msvc_toolset));
-      engine.toolset_manager().add_toolset(auto_ptr<toolset>(new gcc_toolset));
-      engine.toolset_manager().add_toolset(auto_ptr<toolset>(new qt_toolset));
-
-      if (opts.debug_level_ > 0)
-         cout << "Done" << endl;
-
-      engine.call_resolver().insert("use-toolset", boost::function<void (project*, pstring&, pstring&, pstring*)>(boost::bind(use_toolset_rule, _1, boost::ref(engine), _2, _3, _4)));
-
-      location_t user_config_script = get_user_config_location();
-      if (user_config_script.empty() || !exists(user_config_script))
-      {
-         if (opts.debug_level_ > 0)
-            cout << "...user-config.ham not founded...\n";
-      }
-      else
-      {
-         if (opts.debug_level_ > 0)
-            cout << "...Loading user-config.ham at '" << user_config_script.native_file_string() << "'..." << flush;
-
-         engine.load_hammer_script(user_config_script);
-         if (opts.debug_level_ > 0)
-            cout << "Done" << endl;
-      }
-
-      autoconfigure_toolsets(engine);
-
-      if (!has_configured_toolsets(engine))
-      {
-         cerr << "WARNING!!!WARNING!!!WARNING!!!WARNING!!!\n"
-                 "No toolsets are configured and no one toolset founded by auto-configure!\n"
-                 "Please, specify some toolset in $(HOME)/user-config.ham to operate properly.\n"
-                 "WARNING!!!WARNING!!!WARNING!!!WARNING!!!\n\n" << flush;
-      }
 
       if (vm.count("generate-projects-locally"))
          opts.generate_projects_localy_ = true;
@@ -825,118 +733,193 @@ int main(int argc, char** argv)
       if (vm.count("write-build-graph"))
          opts.write_build_graph_ = true;
 
-      if (vm.count("build-request"))
-         resolve_arguments(targets, build_request, engine.feature_registry(), vm["build-request"].as<vector<string> >());
+      fs::path data_path(get_data_path());
+
+      if (vm.count("install-dir"))
+         data_path = opts.hammer_install_dir_;
+
+      fs::path startup_script = data_path / "scripts/startup.ham";
+
+      if (opts.debug_level_ > 0)
+         cout << "...Full path to script is '" << startup_script << "'\n" << flush;
+
+      if (opts.debug_level_ > 0)
+         cout << "...Loading startup script... " << flush;
+
+      while(true) {
+         hammer::engine engine;
+         install_warehouse_rules(engine.call_resolver(), engine);
+         engine.load_hammer_script(startup_script);
+         types::register_standart_types(engine.get_type_registry(), engine.feature_registry());
+
+         if (opts.debug_level_ > 0)
+            cout << "Done" << endl;
+
+         if (opts.debug_level_ > 0)
+            cout << "...Installing generators... " << flush;
+
+         engine.generators().insert(std::auto_ptr<generator>(new copy_generator(engine)));
+         engine.generators().insert(std::auto_ptr<generator>(new obj_generator(engine)));
+         add_testing_generators(engine, engine.generators());
+         add_header_lib_generator(engine, engine.generators());
+
+         if (opts.debug_level_ > 0)
+            cout << "Done" << endl;
+
+         if (opts.debug_level_ > 0)
+            cout << "...Installing scanners... " << flush;
+
+         boost::shared_ptr<scanner> c_scaner(new hammer::c_scanner);
+         engine.scanner_manager().register_scanner(engine.get_type_registry().get(types::CPP), c_scaner);
+         engine.scanner_manager().register_scanner(engine.get_type_registry().get(types::C), c_scaner);
+         engine.scanner_manager().register_scanner(engine.get_type_registry().get(types::RC), c_scaner);
+
+         if (opts.debug_level_ > 0)
+            cout << "Done" << endl;
+
+         if (opts.debug_level_ > 0)
+            cout << "...Registering known toolsets... " << flush;
+
+         engine.toolset_manager().add_toolset(auto_ptr<toolset>(new msvc_toolset));
+         engine.toolset_manager().add_toolset(auto_ptr<toolset>(new gcc_toolset));
+         engine.toolset_manager().add_toolset(auto_ptr<toolset>(new qt_toolset));
+
+         if (opts.debug_level_ > 0)
+            cout << "Done" << endl;
+
+         engine.call_resolver().insert("use-toolset", boost::function<void (project*, pstring&, pstring&, pstring*)>(boost::bind(use_toolset_rule, _1, boost::ref(engine), _2, _3, _4)));
+
+         location_t user_config_script = get_user_config_location();
+         if (user_config_script.empty() || !exists(user_config_script)) {
+            if (opts.debug_level_ > 0)
+               cout << "...user-config.ham not founded...\n";
+         } else {
+            if (opts.debug_level_ > 0)
+               cout << "...Loading user-config.ham at '" << user_config_script.native_file_string() << "'..." << flush;
+
+            engine.load_hammer_script(user_config_script);
+            if (opts.debug_level_ > 0)
+               cout << "Done" << endl;
+         }
+
+         autoconfigure_toolsets(engine);
+
+         if (!has_configured_toolsets(engine)) {
+            cerr << "WARNING!!!WARNING!!!WARNING!!!WARNING!!!\n"
+                    "No toolsets are configured and no one toolset founded by auto-configure!\n"
+                    "Please, specify some toolset in $(HOME)/user-config.ham to operate properly.\n"
+                    "WARNING!!!WARNING!!!WARNING!!!WARNING!!!\n\n" << flush;
+         }
+
+         vector<string> targets;
+         feature_set* build_request = engine.feature_registry().make_set();
+         if (vm.count("build-request"))
+            resolve_arguments(targets, build_request, engine.feature_registry(), vm["build-request"].as<vector<string> >());
 
 #if defined(_WIN32)
-      if (build_request->find("toolset") == build_request->end())
-         build_request->join("toolset", "msvc");
+         if (build_request->find("toolset") == build_request->end())
+            build_request->join("toolset", "msvc");
 #else
-      if (build_request->find("toolset") == build_request->end())
-         build_request->join("toolset", "gcc");
+         if (build_request->find("toolset") == build_request->end())
+            build_request->join("toolset", "gcc");
 #endif
 
-      if (build_request->find("variant") == build_request->end())
-         build_request->join("variant", "debug");
+         if (build_request->find("variant") == build_request->end())
+            build_request->join("variant", "debug");
 
-      if (build_request->find("host-os") == build_request->end())
-         build_request->join("host-os", engine.feature_registry().get_def("host-os").get_default().c_str());
+         if (build_request->find("host-os") == build_request->end())
+            build_request->join("host-os", engine.feature_registry().get_def("host-os").get_default().c_str());
 
-      if (opts.debug_level_ > 0)
-         cout << "...Loading project at '" << fs::current_path() << "'... " << flush;
+         if (opts.debug_level_ > 0)
+            cout << "...Loading project at '" << fs::current_path() << "'... " << flush;
 
-      const project& project_to_build = engine.load_project(fs::current_path());
-      if (opts.debug_level_ > 0)
-         cout << "Done" << endl;
+         const project& project_to_build = engine.load_project(fs::current_path());
+         if (opts.debug_level_ > 0)
+            cout << "Done" << endl;
 
-      if (targets.empty() || targets.size() == 1 && targets[0] == "all")
-      {
-         targets.clear();
-         add_all_targets(targets, project_to_build);
-      }
-
-      if (opts.debug_level_ > 0)
-      {
-         cout << "...Targets to " << (opts.clean_all_ ? "clean-all" : "build") << " is: ";
-         bool first_pass = true;
-         for(vector<string>::const_iterator i = targets.begin(), last = targets.end(); i != last; ++i)
-         {
-            if (first_pass)
-               first_pass = false;
-            else
-               cout << ',';
-
-            cout << *i;
-         }
-         cout << endl;
-      }
-
-      cout << "...instantiating... " << flush;
-      vector<basic_target*> instantiated_targets(instantiate_targets(targets, project_to_build, *build_request));
-      cout << "Done." << endl;
-
-      if (vm.count("instantiate"))
-         return 0;
-
-      cout << "...generating build graph... " << flush;
-
-      nodes_t nodes;
-      try {
-         nodes = generate_targets(instantiated_targets);
-      } catch(const warehouse_unresolved_target_exception& e) {
-         // ups - we have some libs to download
-         cout << "\n\nThere is unresolved packages to download and build:\n";
-         warehouse& wh = engine.warehouse();
-         vector<warehouse::package_info> packages = wh.get_unresoved_targets_info(find_all_warehouse_unresolved_targets(instantiated_targets));
-         for(vector<warehouse::package_info>::const_iterator i = packages.begin(), last = packages.end(); i != last; ++i)
-            cout << i->name_ << "(" << i->version_ << ") size: " << i->package_file_size_ << "\n";
-         cout << "\n\nDownload & Build? [Y/n]: ";
-         char c;
-         cin >> c;
-         if (c != 'Y' && c != 'y') {
-            cout << "Build failed\n";
-            return -1;
+         if (targets.empty() || (targets.size() == 1 && targets[0] == "all")) {
+            targets.clear();
+            add_all_targets(targets, project_to_build);
          }
 
-         wh.download_and_install(packages);
-      }
+         if (opts.debug_level_ > 0) {
+            cout << "...Targets to " << (opts.clean_all_ ? "clean-all" : "build") << " is: ";
+            bool first_pass = true;
+            for(vector<string>::const_iterator i = targets.begin(), last = targets.end(); i != last; ++i) {
+               if (first_pass)
+                  first_pass = false;
+               else
+                  cout << ',';
 
-      if (opts.copy_dependencies_)
-         add_copy_dependencies_nodes(nodes, engine);
+               cout << *i;
+            }
+            cout << endl;
+         }
 
-      cout << "Done." << endl;
+         cout << "...instantiating... " << flush;
+         vector<basic_target*> instantiated_targets(instantiate_targets(targets, project_to_build, *build_request));
+         cout << "Done." << endl;
 
-      if (vm.count("generate"))
-         return 0;
+         if (vm.count("instantiate"))
+            return 0;
 
-//      remove_propagated_targets(nodes, project_to_build);
+         cout << "...generating build graph... " << flush;
 
-      if (opts.clean_all_)
-      {
-         do_clean_all(nodes, engine);
-         return 0;
-      }
+         nodes_t nodes;
+         try {
+            nodes = generate_targets(instantiated_targets);
+         } catch(const warehouse_unresolved_target_exception& e) {
+            // ups - we have some libs to download
+            cout << "\n\nThere is unresolved packages to download and build:\n";
+            warehouse& wh = engine.warehouse();
+            vector<warehouse::package_info> packages = wh.get_unresoved_targets_info(find_all_warehouse_unresolved_targets(instantiated_targets));
+            for(vector<warehouse::package_info>::const_iterator i = packages.begin(), last = packages.end(); i != last; ++i)
+               cout << i->name_ << "(" << i->version_ << ") size: " << i->package_file_size_ << "\n";
+            cout << "\n\nDownload & Build? [Y/n]: ";
+            char c;
+            cin >> c;
+            if (c != 'Y' && c != 'y') {
+               cout << "Build failed\n";
+               return -1;
+            }
 
-      if (vm.count("generate-msvc-8.0-solution"))
-         generate_msvc80_solution(nodes, project_to_build);
-      else
-         if (vm.count("eclipse-cdt"))
-            generate_eclipse_workspace(nodes, project_to_build, opts.eclipse_workspace_path_);
+            wh.download_and_install(packages);
+            continue; // restart
+         }
+
+         if (opts.copy_dependencies_)
+            add_copy_dependencies_nodes(nodes, engine);
+
+         cout << "Done." << endl;
+
+         if (vm.count("generate"))
+            return 0;
+
+   //      remove_propagated_targets(nodes, project_to_build);
+
+         if (opts.clean_all_) {
+            do_clean_all(nodes, engine);
+            return 0;
+         }
+
+         if (vm.count("generate-msvc-8.0-solution"))
+            generate_msvc80_solution(nodes, project_to_build);
          else
-            if (vm.count("generate-qmake-pro"))
-               generate_qmake_projects(nodes, project_to_build, opts.hammer_output_dir_);
+            if (vm.count("eclipse-cdt"))
+               generate_eclipse_workspace(nodes, project_to_build, opts.eclipse_workspace_path_);
             else
-               run_build(nodes, engine, opts);
+               if (vm.count("generate-qmake-pro"))
+                  generate_qmake_projects(nodes, project_to_build, opts.hammer_output_dir_);
+               else
+                  run_build(nodes, engine, opts);
+         break;
+      }
 
       return 0;
-   }
-   catch (const std::exception& e)
-   {
+   } catch (const std::exception& e) {
       cout << "Error: " << e.what() << "\n";
       return -1;
-   }
-   catch (...)
-   {
+   } catch (...) {
       cout << "Error: Unknown error.\n";
       return -1;
    }

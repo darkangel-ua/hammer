@@ -34,6 +34,7 @@ namespace hammer
          engine();
          loaded_projects_t load_project(location_t project_path, const project& from_project);
          project& load_project(location_t project_path);
+         loaded_projects_t try_load_project(location_t project_path, const project& from_project);
          void load_hammer_script(location_t filepath);
 
          void insert(project* p);
@@ -146,7 +147,6 @@ namespace hammer
          repositories_t repositories_;
          boost::shared_ptr<hammer::warehouse> warehouse_;
 
-         loaded_projects_t try_load_project(location_t project_path, const project& from_project);
          loaded_projects_t try_load_project(const location_t& tail_path, const project_alias_data& symlink);
          loaded_projects_t try_load_project(location_t project_path);
          void update_project_scm_info(project& p, const project_alias_data& alias_data) const;
@@ -237,8 +237,11 @@ namespace hammer
 
    class engine::loaded_projects_t
    {
+         typedef std::vector<project*> projects_t;
       public:
          friend class engine;
+
+         typedef projects_t::const_iterator const_iterator;
 
          explicit loaded_projects_t(project* v) : projects_(1, v) {}
          void push_back(project* v) { projects_.push_back(v); }
@@ -252,14 +255,12 @@ namespace hammer
          project::selected_targets_t select_best_alternative(const feature_set& build_request) const;
          project::selected_target select_best_alternative(const pstring& target_name, const feature_set& build_request) const;
          feature_set* resolve_undefined_features(const feature_set& s);
-         
+         bool empty() const { return projects_.empty(); }
+
       private:      
-         typedef std::vector<project*> projects_t;
-         
          projects_t projects_;
 
          loaded_projects_t() {};
-         bool empty() const { return projects_.empty(); }
          void post_process(project::selected_targets_t& result) const;
    };
 }

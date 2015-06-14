@@ -277,9 +277,15 @@ engine::try_load_project(location_t project_path,
             return result;
 
          if (warehouse_->has_project(project_path)) {
-            boost::shared_ptr<project> p = warehouse_->load_project(project_path);
-            projects_.insert(make_pair(project_path, p));
-            return loaded_projects_t(p.get());
+            // FIXME: Maybe we shouldn't add warehouse projects into engine, and manages them by warehouse
+            const location_t project_path_without_root = project_path.relative_path();
+            projects_t::iterator i = projects_.find(project_path_without_root);
+            if (i == projects_.end()) {
+               boost::shared_ptr<project> p = warehouse_->load_project(project_path);
+               projects_.insert(make_pair(project_path_without_root, p));
+               return loaded_projects_t(p.get());
+            } else
+               return loaded_projects_t(i->second.get());
          }
 
          if (!materialize_or_load_next_repository())

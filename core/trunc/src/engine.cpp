@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <iostream>
 #include <hammer/core/engine.h>
 #include <hammer/core/hammer_walker_context.h>
 #include <hammer/core/type_registry.h>
@@ -249,13 +250,18 @@ engine::loaded_projects_t
 engine::load_project(location_t project_path,
                      const project& from_project)
 {
-   loaded_projects_t result(try_load_project(project_path, from_project));
-   if (result.empty())
-      throw std::runtime_error((boost::format("%s(0): error: can't load project '%s'")
-                                   % from_project.location().native_file_string()
-                                   % project_path).str());
-
-   return result;
+   try {
+      loaded_projects_t result(try_load_project(project_path, from_project));
+      if (result.empty())
+         throw std::runtime_error((boost::format("%s(0): error: can't load project '%s'")
+                                      % from_project.location().native_file_string()
+                                      % project_path).str());
+      return result;
+   } catch(const std::exception& e) {
+      // FIXME: this is wrong approach, but I need to know where was a problem
+      cerr << "While loading project '" << project_path << "'\n";
+      throw;
+   }
 }
 
 engine::loaded_projects_t

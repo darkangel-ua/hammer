@@ -80,7 +80,7 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
    feature_set* generator_condition = e.feature_registry().make_set();
    generator_condition->join("toolset", "msvc-8.0");
 
-   cmdline_builder setup_vars("call \"" + config_data.setup_script_.native_file_string() + "\" >nul");
+   cmdline_builder setup_vars("call \"" + config_data.setup_script_.string() + "\" >nul");
    shared_ptr<source_argument_writer> static_lib_sources(new source_argument_writer("static_lib_sources", e.get_type_registry().get(types::STATIC_LIB), true, source_argument_writer::FULL_PATH));
    shared_ptr<source_argument_writer> searched_lib_sources(new source_argument_writer("searched_lib_sources", e.get_type_registry().get(types::SEARCHED_LIB), false, source_argument_writer::WITHOUT_PATH));
    shared_ptr<source_argument_writer> prebuilt_lib_sources(new source_argument_writer("prebuilt_lib_sources", e.get_type_registry().get(types::PREBUILT_STATIC_LIB), true, source_argument_writer::FULL_PATH));
@@ -155,11 +155,11 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
 
    // CPP -> OBJ
    {
-      cmdline_builder obj_cmd(config_data.compiler_.native_file_string() + 
+      cmdline_builder obj_cmd(config_data.compiler_.string() +
                               " /c /nologo $(cflags) $(cppflags) $(user_cxx_flags) $(includes) $(undefines) $(defines) $(use_pch_header) $(use_pch_product) $(cpp_input)"
                               " /Fo\"$(obj_product)\" /Fd\"$(output_dir)\\vc.pdb\"");
 
-      cmdline_builder batched_obj_cmd(config_data.compiler_.native_file_string() + 
+      cmdline_builder batched_obj_cmd(config_data.compiler_.string() +
                                       " /c /nologo $(cflags) $(cppflags) $(user_cxx_flags) $(includes) $(undefines) $(defines) $(use_pch_header) $(use_pch_product) $(cpp_input)"
                                       " /Fo\"$(output_dir)\\\\\" /Fd\"$(output_dir)\\vc.pdb\"");
       obj_cmd += cflags;
@@ -198,7 +198,7 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
    
    // CPP + H -> PCH + OBJ
    {
-      cmdline_builder obj_cmd(config_data.compiler_.native_file_string() + 
+      cmdline_builder obj_cmd(config_data.compiler_.string() +
                               " /c /nologo $(create_pch_header) $(cflags) $(cppflags) $(user_cxx_flags) $(includes) $(undefines) $(defines) $(cpp_input)"
                               " /Fo\"$(obj_product)\" /Fp\"$(pch_product)\" /Fd\"$(output_dir)\\vc.pdb\"");
       obj_cmd += cflags;
@@ -236,7 +236,7 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
    // C -> OBJ
    {
       shared_ptr<source_argument_writer> c_source(new source_argument_writer("c_source", e.get_type_registry().get(types::C)));
-      cmdline_builder obj_cmd(config_data.compiler_.native_file_string() + 
+      cmdline_builder obj_cmd(config_data.compiler_.string() +
                               " /c /TC /nologo $(cflags) $(user_c_flags) $(includes) $(undefines) $(defines) $(c_source) /Fo\"$(obj_product)\" /Fd\"$(output_dir)\\vc.pdb\"");
       obj_cmd += cflags;
       obj_cmd += user_c_flags;
@@ -263,7 +263,7 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
    {
       shared_ptr<source_argument_writer> rc_source(new source_argument_writer("rc_source", e.get_type_registry().get(types::RC)));
       shared_ptr<product_argument_writer> res_product(new product_argument_writer("res_product", e.get_type_registry().get(types::RES)));
-      cmdline_builder res_cmd(config_data.resource_compiler_.native_file_string() + " $(includes) $(undefines) $(defines) /Fo\"$(res_product)\" $(rc_source)");
+      cmdline_builder res_cmd(config_data.resource_compiler_.string() + " $(includes) $(undefines) $(defines) /Fo\"$(res_product)\" $(rc_source)");
 
       res_cmd += rc_source;
       res_cmd += includes;
@@ -291,9 +291,9 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
                                                                                       product_argument_writer::output_strategy::FULL_UNC_PATH));
       shared_ptr<product_argument_writer> exe_product(new product_argument_writer("exe_product", e.get_type_registry().get(types::EXE)));
       shared_ptr<product_argument_writer> exe_manifest_product(new product_argument_writer("exe_manifest_product", e.get_type_registry().get(types::EXE_MANIFEST)));
-      cmdline_builder exe_cmd(config_data.linker_.native_file_string() + " \"@$(exe_product).rsp\"\n"
+      cmdline_builder exe_cmd(config_data.linker_.string() + " \"@$(exe_product).rsp\"\n"
                               "if %ERRORLEVEL% NEQ 0 EXIT %ERRORLEVEL%\n"
-                              "if exist \"$(exe_manifest_product)\" (" + config_data.manifest_tool_.native_file_string() + " -nologo -manifest \"$(exe_manifest_product)\" \"-outputresource:$(exe_product);1\")");
+                              "if exist \"$(exe_manifest_product)\" (" + config_data.manifest_tool_.string() + " -nologo -manifest \"$(exe_manifest_product)\" \"-outputresource:$(exe_product);1\")");
 
       exe_cmd += exe_product;
       exe_cmd += exe_manifest_product;
@@ -342,7 +342,7 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
       static_lib_rsp += obj_sources;
       static_lib_rsp += static_lib_product;
       cmdline_builder static_lib_cmd("if exist \"$(static_lib_product)\" DEL \"$(static_lib_product)\"\n" +
-                                     config_data.librarian_.native_file_string() + " /nologo \"@$(static_lib_product_unc).rsp\"");
+                                     config_data.librarian_.string() + " /nologo \"@$(static_lib_product_unc).rsp\"");
       
       static_lib_cmd += static_lib_product;
       static_lib_cmd += static_lib_product_unc;
@@ -371,9 +371,9 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
       shared_ptr<product_argument_writer> shared_lib_product(new product_argument_writer("shared_lib_product", e.get_type_registry().get(types::SHARED_LIB), 
                                                                                          product_argument_writer::output_strategy::FULL_UNC_PATH));
       shared_ptr<product_argument_writer> dll_manifest_product(new product_argument_writer("dll_manifest_product", e.get_type_registry().get(types::DLL_MANIFEST)));
-      cmdline_builder shared_lib_cmd(config_data.linker_.native_file_string() + " \"@$(shared_lib_rel_product).rsp\"\n"
+      cmdline_builder shared_lib_cmd(config_data.linker_.string() + " \"@$(shared_lib_rel_product).rsp\"\n"
                                      "if %ERRORLEVEL% NEQ 0 EXIT %ERRORLEVEL%\n"
-                                     "if exist \"$(dll_manifest_product)\" (" + config_data.manifest_tool_.native_file_string() + " -nologo -manifest \"$(dll_manifest_product)\" \"-outputresource:$(shared_lib_rel_product);2\")");
+                                     "if exist \"$(dll_manifest_product)\" (" + config_data.manifest_tool_.string() + " -nologo -manifest \"$(dll_manifest_product)\" \"-outputresource:$(shared_lib_rel_product);2\")");
       
       shared_lib_cmd += shared_lib_product;
       shared_lib_cmd += shared_lib_rel_product;

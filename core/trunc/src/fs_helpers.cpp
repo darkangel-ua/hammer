@@ -39,7 +39,7 @@ boost::filesystem::path relative_path(boost::filesystem::path p,
    p = p.relative_path();
 
 
-   path final(".", native);
+   path final(".");
 
 
    path::iterator pit = p.begin(),
@@ -61,7 +61,7 @@ boost::filesystem::path relative_path(boost::filesystem::path p,
    // Add the path from shared
    while(pit != p.end())
       // Gah! Why doesn't *path::iterator return paths?
-      final /= path(*pit++, native);
+      final /= path(*pit++);
 
 
    // .normalize()?
@@ -88,7 +88,7 @@ boost::filesystem::path relative_path(boost::filesystem::path p,
          if (is_symlink(result))
          {
             char buff[1024];
-            ssize_t s = readlink(result.external_file_string().c_str(), buff, sizeof(buff));
+            ssize_t s = readlink(result.native().c_str(), buff, sizeof(buff));
             if (s == -1)
                return p;
             else

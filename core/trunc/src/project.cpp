@@ -132,7 +132,7 @@ project::try_select_best_alternative(const pstring& target_name,
 
    vector<selected_target> selected_targets;
 
-   for(targets_t::const_iterator first = begin(r), last = end(r); first != last; ++first)
+   for(targets_t::const_iterator first = r.begin(), last = r.end(); first != last; ++first)
    {
       feature_set* fs = engine_->feature_registry().make_set();
       first->second->requirements().eval(build_request, fs);

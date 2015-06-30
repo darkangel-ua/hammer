@@ -34,7 +34,7 @@ void pch_argument_writer::write_impl(std::ostream& output, const build_node& nod
          location_t output_path = relative_path(pch_product_location, pch_target->location());
          output_path.normalize();
 
-         output << prefix_ << output_path.native_file_string() << suffix_;
+         output << prefix_ << output_path.string() << suffix_;
          break;
       }
    }

@@ -216,7 +216,7 @@ void engine::resolve_project_alias(resolved_project_symlinks_t& symlinks,
 void engine::initial_materialization(const project_alias_data& alias_data) const
 {
    if (alias_data.properties_ == NULL)
-      throw std::runtime_error("Fail to materialize project at '" + alias_data.location_.native_file_string() + "'");
+      throw std::runtime_error("Fail to materialize project at '" + alias_data.location_.string() + "'");
 
    feature_set::const_iterator scm_tag = alias_data.properties_->find("scm");
    if (scm_tag == alias_data.properties_->end())
@@ -239,7 +239,7 @@ static void materialize_directory(const scm_client& scm_client, location_t dir, 
    string what_up;
    while(!exists(dir))
    {
-      what_up = dir.leaf();
+      what_up = dir.filename().string();
       dir = dir.branch_path();
    }
 
@@ -254,7 +254,7 @@ engine::load_project(location_t project_path,
       loaded_projects_t result(try_load_project(project_path, from_project));
       if (result.empty())
          throw std::runtime_error((boost::format("%s(0): error: can't load project '%s'")
-                                      % from_project.location().native_file_string()
+                                      % from_project.location().string()
                                       % project_path).str());
       return result;
    } catch(const std::exception& e) {
@@ -464,11 +464,11 @@ void engine::load_hammer_script(location_t filepath)
 {
    filepath.normalize();
    if (!exists(filepath))
-      return throw std::runtime_error("Hammer script '" + filepath.native_file_string() + "' doesn't exists.");
+      return throw std::runtime_error("Hammer script '" + filepath.string() + "' doesn't exists.");
 
    projects_t::iterator i = projects_.find(filepath);
    if (i != projects_.end())
-      throw std::runtime_error("Hammer script '" + filepath.native_file_string() + "' already loaded.");
+      throw std::runtime_error("Hammer script '" + filepath.string() + "' already loaded.");
 
    hammer_walker_context ctx;
 
@@ -481,7 +481,7 @@ void engine::load_hammer_script(location_t filepath)
       ctx.call_resolver_ = &resolver_;
 
       parser p(this);
-      if (!p.parse(filepath.native_file_string().c_str()))
+      if (!p.parse(filepath.string().c_str()))
          throw  runtime_error("Can't load script at '"  + filepath.string() + ": parser errors");
 
       p.walk(&ctx);
@@ -541,7 +541,7 @@ engine::loaded_projects_t engine::try_load_project(location_t project_path)
       if (!exists(project_file))
          return loaded_projects_t();
 
-      if (!p.parse(project_file.native_file_string().c_str()))
+      if (!p.parse(project_file.string().c_str()))
          throw  runtime_error("Can't load project at '"  + project_path.string() + ": parser errors");
 
       // �� ���� ��� �� ������ ������� ��� ������ ����� ��� ����� ��� ��������� �����������
@@ -963,7 +963,7 @@ sources_decl engine::testing_run_rule(project* p,
       real_target_name = target_name->to_string();
    else
       if (sources != NULL && !sources->empty())
-         real_target_name = location_t(sources->begin()->target_path().to_string()).filename();
+         real_target_name = location_t(sources->begin()->target_path().to_string()).filename().string();
       else
          throw std::runtime_error("Target must have either sources or target name");
 
@@ -1024,10 +1024,10 @@ static void glob_impl(sources_decl& result,
 {
    for(fs::directory_iterator i(searching_path), last = fs::directory_iterator(); i != last; ++i)
    {
-      if (!is_directory(*i) && wildcard.match(i->filename()) &&
-          !(exceptions != 0 && find(exceptions->begin(), exceptions->end(), i->filename()) != exceptions->end()))
+      if (!is_directory(*i) && wildcard.match(i->path().filename()) &&
+          !(exceptions != 0 && find(exceptions->begin(), exceptions->end(), i->path().filename().string()) != exceptions->end()))
       {
-         pstring v(e.pstring_pool(), (relative_path / i->filename()).string());
+         pstring v(e.pstring_pool(), (relative_path / i->path().filename()).string());
          result.push_back(v, e.get_type_registry());
       }
    }
@@ -1051,15 +1051,15 @@ static void rglob_impl(sources_decl& result,
 
       if (is_directory(i.status()))
       {
-         relative_path /= i->filename();
+         relative_path /= i->path().filename();
          ++level;
       }
       else
-         if (wildcard.match(i->filename()) &&
+         if (wildcard.match(i->path().filename()) &&
              !(exceptions != 0 &&
-               find(exceptions->begin(), exceptions->end(), i->filename()) != exceptions->end()))
+               find(exceptions->begin(), exceptions->end(), i->path().filename().string()) != exceptions->end()))
          {
-            pstring v(e.pstring_pool(), (relative_path / i->filename()).string());
+            pstring v(e.pstring_pool(), (relative_path / i->path().filename()).string());
             result.push_back(v, e.get_type_registry());
          }
    }
@@ -1104,7 +1104,7 @@ void engine::explicit_rule(project* p, const pstring& target_name)
 
 void engine::use_project(const project& p, const pstring& project_id_alias, const location_t& project_location)
 {
-   use_project_rule(const_cast<project*>(&p), project_id_alias, pstring(pstring_pool(), project_location.file_string()), feature_registry().make_set());
+   use_project_rule(const_cast<project*>(&p), project_id_alias, pstring(pstring_pool(), project_location.string()), feature_registry().make_set());
 }
 
 void engine::use_project_rule(project* p, const pstring& project_id_alias,

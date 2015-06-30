@@ -138,7 +138,7 @@ void basic_meta_target::resolve_meta_target_source(const source_decl& source,
       catch(const std::exception& e)
       {
          throw std::runtime_error("While resolving meta target '" + source.target_path().to_string() +
-                                  "' at '" + location().native_file_string() + "\n" + e.what());
+                                  "' at '" + location().string() + "\n" + e.what());
       }
    }
    else
@@ -172,7 +172,7 @@ const feature_set& basic_meta_target::resolve_undefined_features(const feature_s
                                              : &fs;
    if (without_undefined->has_undefined_features())
       throw std::runtime_error("Target '" + name().to_string() + "' at location '" +
-                               location().native_file_string() + "' has been instantiated with unknown features");
+                               location().string() + "' has been instantiated with unknown features");
 
    return *without_undefined;
 }

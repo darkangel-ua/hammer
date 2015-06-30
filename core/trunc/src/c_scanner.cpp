@@ -900,7 +900,7 @@ c_scanner_context::extract_includes(const hashed_location& file_dir,
                                     const hashed_location& filename) const
 {
    location_t file = file_dir.location() / filename.location();
-   boost::iostreams::mapped_file_source in(file.native_file_string());
+   boost::iostreams::mapped_file_source in(file.string());
    // FIXME: May be we should complain about this?
    if (in)
    {

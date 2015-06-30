@@ -22,7 +22,7 @@ mksig_action::target_tag(const build_node& node,
    location_t t = relative_path(node.products_owner().intermediate_dir(), environment.current_directory());
    t /= node.products_.front()->name().to_string();
 
-   return t.native_file_string();
+   return t.string();
 }
 
 bool mksig_action::execute_impl(const build_node& node, const build_environment& environment) const
@@ -31,18 +31,18 @@ bool mksig_action::execute_impl(const build_node& node, const build_environment&
    target_file_name.normalize();
    
    std::auto_ptr<std::ostream> f = 
-      environment.create_output_file(target_file_name.native_file_string().c_str(), 
+      environment.create_output_file(target_file_name.string().c_str(),
                                      std::ios_base::trunc | std::ios_base::out);
    if (!*f)
    {
-      environment.output_stream() << "Can't create file '" << target_file_name.native_file_string() << "'";
+      environment.output_stream() << "Can't create file '" << target_file_name.string() << "'";
       return false;
    }
 
    dump_for_hash(*f, node.products_owner().properties(), true);
    if (!*f)
    {
-      environment.output_stream() << "Can't write to file '" << target_file_name.native_file_string() << "'";
+      environment.output_stream() << "Can't write to file '" << target_file_name.string() << "'";
       return false;
    }
 

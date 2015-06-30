@@ -19,7 +19,7 @@ namespace hammer
 
          cmdline_builder(const std::string& cmd);
          template<typename T>
-         cmdline_builder& operator +=(boost::shared_ptr<T>& v) { add(boost::shared_static_cast<argument_writer>(v)); return *this; }
+         cmdline_builder& operator +=(boost::shared_ptr<T>& v) { add(boost::static_pointer_cast<argument_writer>(v)); return *this; }
          void write(std::ostream& output, const build_node& node, const build_environment& environment) const;
          const writers_t& writers() const { return writers_; }
          void writers(const writers_t& w) { writers_ = w; }

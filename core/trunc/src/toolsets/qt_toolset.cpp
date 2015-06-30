@@ -224,7 +224,7 @@ static string determinate_version(const location_t& toolset_home)
    for(fs::directory_iterator i = fs::directory_iterator(toolset_home), last = fs::directory_iterator(); i != last; ++i)
    {
       boost::smatch m;
-      string filename = i->path().filename();
+      string filename = i->path().filename().string();
       if (boost::regex_match(filename, m, boost::regex("changes-([0-9\\.]+)")))
          return m[1];
    }
@@ -239,7 +239,7 @@ void qt_toolset::autoconfigure(engine& e) const
       location_t toolset_home(qt_dir);
       string version = determinate_version(toolset_home);
       if (version.empty())
-         throw std::runtime_error("Can't determinate version for Qt toolset at '" + toolset_home.native_file_string() + "'");
+         throw std::runtime_error("Can't determinate version for Qt toolset at '" + toolset_home.native() + "'");
 
       init_impl(e, version, &toolset_home);
     } else if (fs::exists("/usr/include/qt4/Qt/QtCore")) {
@@ -392,7 +392,7 @@ void add_types_and_generators(engine& e,
    {
       shared_ptr<source_argument_writer> ui_source(new source_argument_writer("ui_source", e.get_type_registry().get(qt_ui)));
       shared_ptr<product_argument_writer> uic_product(new product_argument_writer("uic_product", e.get_type_registry().get(qt_uiced_h)));
-      cmdline_builder uic_cmd((*toolset_home / ("bin/uic" + bin_tag)).native_file_string() + " -o \"$(uic_product)\" $(ui_source)");
+      cmdline_builder uic_cmd((*toolset_home / ("bin/uic" + bin_tag)).native() + " -o \"$(uic_product)\" $(ui_source)");
 
       uic_cmd += ui_source;
       uic_cmd += uic_product;
@@ -413,7 +413,7 @@ void add_types_and_generators(engine& e,
    {
       shared_ptr<source_argument_writer> rcc_source(new source_argument_writer("rcc_source", e.get_type_registry().get(qt_rc)));
       shared_ptr<product_argument_writer> rcc_product(new product_argument_writer("rcc_product", e.get_type_registry().get(qt_rced_cpp)));
-      cmdline_builder rcc_cmd((*toolset_home / ("bin/rcc" + bin_tag)).native_file_string() + " -o \"$(rcc_product)\" $(rcc_source)");
+      cmdline_builder rcc_cmd((*toolset_home / ("bin/rcc" + bin_tag)).native() + " -o \"$(rcc_product)\" $(rcc_source)");
 
       rcc_cmd += rcc_source;
       rcc_cmd += rcc_product;
@@ -434,7 +434,7 @@ void add_types_and_generators(engine& e,
    {
       shared_ptr<source_argument_writer> mocable_source(new source_argument_writer("mocable_source", e.get_type_registry().get(qt_mocable)));
       shared_ptr<product_argument_writer> cpp_product(new product_argument_writer("cpp_product", e.get_type_registry().get(types::CPP)));
-      cmdline_builder moc_cmd((*toolset_home / ("bin/moc" + bin_tag)).native_file_string() + " -o \"$(cpp_product)\" $(mocable_source)");
+      cmdline_builder moc_cmd((*toolset_home / ("bin/moc" + bin_tag)).native() + " -o \"$(cpp_product)\" $(mocable_source)");
 
       moc_cmd += mocable_source;
       moc_cmd += cpp_product;

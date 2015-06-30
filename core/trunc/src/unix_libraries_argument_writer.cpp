@@ -49,7 +49,7 @@ void unix_libraries_argument_writer::write_impl(std::ostream& output,
             {
                location_t source_path = i->source_target_->location() / i->source_target_->name().to_string();
                source_path.normalize();
-               output << " \"" << source_path.native_file_string() << '"';
+               output << " \"" << source_path.string() << '"';
             }
    }
 

@@ -1,12 +1,12 @@
 exe hammer : 
              [ glob ../src/*.cpp ]
              [ glob ../src/*.h ]
-             /boost/program_options/<version>1.40.0/<link>static
-             /boost/filesystem/<version>1.40.0/<link>static
-             /boost/format/<version>1.40.0
-             /boost/regex/<version>1.40.0/<link>static
-             /boost/foreach/<version>1.40.0
-             /hammer/core/<link>static
+             /boost/program_options/<version>1.58.0
+             /boost/filesystem/<version>1.58.0
+             /boost/format/<version>1.58.0
+             /boost/regex/<version>1.58.0
+             /boost/foreach/<version>1.58.0
+             /hammer/core
            : 
              <toolset>gcc,<variant>debug:<name>dhammer
            ;

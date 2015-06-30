@@ -15,7 +15,7 @@ namespace hammer
          cmdline_action(const std::string& name, 
                         const boost::shared_ptr<T>& target_writer)
             : build_action(name),
-              target_writer_(boost::shared_static_cast<argument_writer>(target_writer))
+              target_writer_(boost::static_pointer_cast<argument_writer>(target_writer))
          {
          }
 
@@ -24,7 +24,7 @@ namespace hammer
                         boost::shared_ptr<T>& target_writer,
                         const cmdline_builder& rsp_builder)
          : build_action(name),
-           target_writer_(boost::shared_static_cast<argument_writer>(target_writer)),
+           target_writer_(boost::static_pointer_cast<argument_writer>(target_writer)),
            rsp_builder_(new cmdline_builder(rsp_builder))
          {
          }

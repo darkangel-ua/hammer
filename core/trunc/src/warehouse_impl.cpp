@@ -127,7 +127,7 @@ void download_file(const fs::path& working_dir,
                    const string& to_file = string())
 {
    bp::context ctx;
-   ctx.work_directory = working_dir.native_directory_string();
+   ctx.work_directory = working_dir.string();
 
    string cmd = "wget -c '" + url + "'";
    if (!to_file.empty())
@@ -161,26 +161,26 @@ void warehouse_impl::init_impl(const std::string& url)
 {
    if (!exists(repository_path_)) {
       if (!create_directory(repository_path_))
-         throw std::runtime_error("Failed to create directory '" + repository_path_.native_directory_string() + "'");
+         throw std::runtime_error("Failed to create directory '" + repository_path_.native() + "'");
    }
 
    const fs::path hamfile_path = repository_path_ / "hamfile";
    if (!exists(hamfile_path)) {
       fs::ofstream f(hamfile_path, ios_base::trunc);
       if (!f)
-         throw std::runtime_error("Can't create '" + hamfile_path.native_file_string() + "'");
+         throw std::runtime_error("Can't create '" + hamfile_path.string() + "'");
    }
 
    const fs::path hamroot_path = repository_path_ / "hamroot";
    if (!exists(hamroot_path)) {
       fs::ofstream f(hamroot_path, ios_base::trunc);
       if (!f)
-         throw std::runtime_error("Can't create '" + hamroot_path.native_file_string() + "'");
+         throw std::runtime_error("Can't create '" + hamroot_path.string() + "'");
    }
 
    const fs::path packages_full_filename = repository_path_ / packages_filename;
    if (!exists(packages_full_filename))
-      download_file(repository_path_, url + "/" + packages_filename.native_file_string());
+      download_file(repository_path_, url + "/" + packages_filename.string());
 
    packages_t new_packages = load_packages(packages_full_filename);
 
@@ -203,7 +203,7 @@ void warehouse_impl::update_impl()
    if (fs::exists(packages_update_filepath))
       fs::remove(packages_update_filepath);
 
-   download_file(repository_path_, repository_url_ + "/" + packages_filename.native_file_string(), packages_update_filename);
+   download_file(repository_path_, repository_url_ + "/" + packages_filename.string(), packages_update_filename);
    // check that file is OK
    load_packages(packages_update_filepath);
 
@@ -235,7 +235,7 @@ bool warehouse_impl::has_project(const location_t& project_path) const
    if (!project_path.has_root_path())
       return false;
 
-   const string name = *++project_path.begin();
+   const string name = (++project_path.begin())->filename().string();
 
    return packages_.find(name) != packages_.end();
 }
@@ -245,7 +245,7 @@ warehouse_impl::load_project(const location_t& project_path)
 {
    assert(has_project(project_path));
 
-   const string name = *++project_path.begin();
+   const string name = (++project_path.begin())->filename().string();
 
    boost::shared_ptr<project> result(new warehouse_project(engine_, project_path));
    auto_ptr<basic_meta_target> target(new warehouse_meta_target(*result, pstring(engine_.pstring_pool(), name)));
@@ -353,7 +353,7 @@ static
 void insert_line_in_front(const fs::path& filename,
                           const string& line)
 {
-   fs::path tmp_name = filename.branch_path() / (filename.filename() + ".tmp");
+   fs::path tmp_name = filename.branch_path() / (filename.filename().string() + ".tmp");
    {
       fs::ifstream src(filename);
       fs::ofstream tmp_file(tmp_name);
@@ -385,9 +385,9 @@ void warehouse_impl::install_package(const package_t& p,
       create_directory(package_root);
 
    bp::context ctx;
-   ctx.work_directory = package_root.native_directory_string();
+   ctx.work_directory = package_root.native();
    fs::path package_archive = working_dir / "downloads" / p.filename_;
-   bp::child child = bp::launch_shell("tar -xf '" + package_archive.native_file_string() + "'", ctx);
+   bp::child child = bp::launch_shell("tar -xf '" + package_archive.string() + "'", ctx);
    bp::status status = child.wait();
    if (status.exit_status() != 0)
       throw std::runtime_error("Failed to unpack package '" + p.public_id_ + "'");

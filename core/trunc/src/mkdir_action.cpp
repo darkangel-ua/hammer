@@ -20,7 +20,7 @@ bool mkdir_action::execute_impl(const build_node& node, const build_environment&
 std::string mkdir_action::target_tag(const build_node& node, const build_environment& environment) const
 {
    location_t t = relative_path(dir_to_create_, environment.current_directory());
-   return t.native_file_string();
+   return t.string();
 }
 
 }

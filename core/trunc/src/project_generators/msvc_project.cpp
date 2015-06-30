@@ -456,7 +456,7 @@ void msvc_project::file_with_cfgs_t::write(write_context& ctx, const std::string
    location_t file_name(location_t(path_prefix) / file_name_.to_string());
    file_name.normalize();
    ctx.output_ << "         <File\n"
-                  "            RelativePath=\"" << file_name.native_file_string() << "\">\n";
+                  "            RelativePath=\"" << file_name.string() << "\">\n";
 
    for(file_config_t::const_iterator i = file_config.begin(), last = file_config.end(); i != last; ++i)
       if (*i->first->properties_ != i->second.target_->properties() &&
@@ -506,7 +506,7 @@ void msvc_project::filter_t::write(write_context& ctx, const std::string& path_p
 void msvc_project::write_files(write_context& ctx) const
 {
    ctx.output_ << "      <Files>\n";
-   string path_prefix = meta_target_relative_to_output_.native_file_string();
+   string path_prefix = meta_target_relative_to_output_.string();
    for(files_t::const_iterator i = files_.begin(), last = files_.end(); i != last; ++i)
       i->write(ctx, path_prefix);
 

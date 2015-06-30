@@ -82,7 +82,7 @@ void eclipse_cdt_project::construct(const project_main_targets_t& targets)
          if (meta_targets.size() == 1)
             project_name_ = meta_targets.begin()->second->name().to_string();
          else
-            throw std::runtime_error("Can't induce project name for hammer project at '" + project_.location().native_file_string() + "'");
+            throw std::runtime_error("Can't induce project name for hammer project at '" + project_.location().string() + "'");
       }
    }
    else
@@ -126,7 +126,7 @@ void eclipse_cdt_project::construct(const project_main_targets_t& targets)
 		   // directory has no files only directories
 		   for(fs::directory_iterator i = fs::directory_iterator(project_.location().branch_path()), last = fs::directory_iterator(); i != last; ++i)
 		      if (i->status().type() == fs::directory_file && i->path().filename() != ".svn")
-		    	  add_link(links_buffer, project_.location().branch_path(), i->path().filename());
+               add_link(links_buffer, project_.location().branch_path(), i->path().filename().string());
 	   }
    }
 

@@ -40,7 +40,7 @@ void product_argument_writer::write_impl(std::ostream& output, const build_node&
             case output_strategy::RELATIVE_TO_MAIN_TARGET:
             {
                location_t product_path = relative_path((**i).get_main_target()->intermediate_dir(), (**i).get_main_target()->location()) / (**i).name().to_string();
-               output << product_path.native_file_string();
+               output << product_path.native();
                break;
             }
 
@@ -48,7 +48,7 @@ void product_argument_writer::write_impl(std::ostream& output, const build_node&
             {
                location_t product_path = (**i).get_main_target()->intermediate_dir() / (**i).name().to_string();
                product_path.normalize();
-               output << "\\\\?\\" << product_path.native_file_string();
+               output << "\\\\?\\" << product_path.native();
                break;
             }
 

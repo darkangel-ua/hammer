@@ -10,7 +10,7 @@ void subversion_scm_client::checkout(const location_t& path, const std::string& 
 {
    bp::context ctx;
    ctx.environment = bp::self::get_environment();
-   ctx.work_directory = path.native_file_string();
+   ctx.work_directory = path.string();
    ctx.stdin_behavior = bp::inherit_stream();
    ctx.stdout_behavior = bp::inherit_stream();
    ctx.stderr_behavior = bp::inherit_stream();
@@ -32,7 +32,7 @@ void subversion_scm_client::up(const location_t& where_up, const std::string& wh
 {
    bp::context ctx;
    ctx.environment = bp::self::get_environment();
-   ctx.work_directory = where_up.native_file_string();
+   ctx.work_directory = where_up.string();
    ctx.stdout_behavior = bp::inherit_stream();
    ctx.stderr_behavior = bp::inherit_stream();
 

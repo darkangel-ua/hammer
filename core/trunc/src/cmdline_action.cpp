@@ -25,7 +25,7 @@ bool cmdline_action::execute_impl(const build_node& node, const build_environmen
    {
       location_t rsp_file_path(node.products_.front()->get_main_target()->location() / (target_tag(node, environment) + ".rsp"));
       rsp_file_path.normalize();
-      auto_ptr<ostream> rsp_stream(environment.create_output_file(rsp_file_path.native_file_string().c_str(), ios_base::trunc));
+      auto_ptr<ostream> rsp_stream(environment.create_output_file(rsp_file_path.string().c_str(), ios_base::trunc));
       rsp_builder_->write(*rsp_stream, node, environment);
    }
 

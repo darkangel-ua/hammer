@@ -14,7 +14,7 @@ void signature_target::timestamp_info_impl() const
    location_t l = location() / name().to_string();
    l.normalize();
    
-   std::ifstream f(l.native_file_string().c_str());
+   std::ifstream f(l.string().c_str());
    
    if (!f)
       timestamp_info_.timestamp_ = boost::date_time::neg_infin;

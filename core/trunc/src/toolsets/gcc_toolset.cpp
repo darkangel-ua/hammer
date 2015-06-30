@@ -104,7 +104,7 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
    // C -> OBJ
    {
       shared_ptr<source_argument_writer> c_input(new source_argument_writer("c_input", e.get_type_registry().get(types::C), /*exact_type=*/false, source_argument_writer::FULL_PATH));
-      cmdline_builder obj_cmd(install_data.compiler_.native_file_string() +
+      cmdline_builder obj_cmd(install_data.compiler_.string() +
                               " -x c -c $(cflags) $(user_c_flags) $(includes) $(defines) -o \"$(obj_product)\" $(c_input)");
       obj_cmd += cflags;
       obj_cmd += user_c_flags;
@@ -126,7 +126,7 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
    // CPP -> OBJ
    {
       shared_ptr<source_argument_writer> cpp_input(new source_argument_writer("cpp_input", e.get_type_registry().get(types::CPP), /*exact_type=*/false, source_argument_writer::FULL_PATH));
-      cmdline_builder obj_cmd(install_data.compiler_.native_file_string() +
+      cmdline_builder obj_cmd(install_data.compiler_.string() +
                               " -c -ftemplate-depth-128 $(cflags) $(user_cxx_flags) $(includes) $(defines) -o \"$(obj_product)\" $(cpp_input)");
       obj_cmd += cflags;
       obj_cmd += user_cxx_flags;
@@ -150,7 +150,7 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
       shared_ptr<source_argument_writer> obj_sources(new source_argument_writer("obj_sources", e.get_type_registry().get(types::OBJ)));
       shared_ptr<product_argument_writer> shared_lib_product(new product_argument_writer("shared_lib_product", e.get_type_registry().get(types::SHARED_LIB)));
       shared_ptr<unix_libraries_argument_writer> libraries_writer(new unix_libraries_argument_writer("libraries", linker_type::GNU, e));
-      cmdline_builder shared_lib_cmd(install_data.linker_.native_file_string() + " -shared $(link_flags) $(searched_lib_searched_dirs) -o \"$(shared_lib_product)\" $(obj_sources) $(libraries)\n");
+      cmdline_builder shared_lib_cmd(install_data.linker_.string() + " -shared $(link_flags) $(searched_lib_searched_dirs) -o \"$(shared_lib_product)\" $(obj_sources) $(libraries)\n");
       shared_lib_cmd += link_flags;
       shared_lib_cmd += searched_lib_searched_dirs;
       shared_lib_cmd += obj_sources;
@@ -182,7 +182,7 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
       shared_ptr<product_argument_writer> exe_product(new product_argument_writer("exe_product", e.get_type_registry().get(types::EXE)));
       shared_ptr<unix_libraries_argument_writer> libraries_writer(new unix_libraries_argument_writer("libraries", linker_type::GNU, e));
       auto_ptr<cmdline_action> exe_action(new cmdline_action("link-exe", exe_product));
-      cmdline_builder exe_cmd(install_data.linker_.native_file_string() + " $(link_flags) $(searched_lib_searched_dirs) -o \"$(exe_product)\" $(obj_sources) $(libraries)\n");
+      cmdline_builder exe_cmd(install_data.linker_.string() + " $(link_flags) $(searched_lib_searched_dirs) -o \"$(exe_product)\" $(obj_sources) $(libraries)\n");
 
       exe_cmd += link_flags;
       exe_cmd += searched_lib_searched_dirs;
@@ -210,7 +210,7 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
    {
       shared_ptr<source_argument_writer> obj_sources(new source_argument_writer("obj_sources", e.get_type_registry().get(types::OBJ)));
       shared_ptr<product_argument_writer> static_lib_product(new product_argument_writer("static_lib_product", e.get_type_registry().get(types::STATIC_LIB)));
-      cmdline_builder static_lib_cmd(install_data.librarian_.native_file_string() + " $(user_archive_flags) rc $(static_lib_product) $(obj_sources)");
+      cmdline_builder static_lib_cmd(install_data.librarian_.string() + " $(user_archive_flags) rc $(static_lib_product) $(obj_sources)");
 
       static_lib_cmd += static_lib_product;
       static_lib_cmd += obj_sources;

@@ -46,7 +46,7 @@ void free_feature_arg_writer::write_impl(std::ostream& output, const build_node&
          include_path.normalize();
          include_path = relative_path(include_path, environment.working_directory(*node.products_.front()));
          include_path.normalize();
-         output << prefix_ << include_path.native_file_string() << suffix_ << delimiter_;
+         output << prefix_ << include_path.string() << suffix_ << delimiter_;
       }
       else
          output << prefix_ << (**i).value() << suffix_ << delimiter_;

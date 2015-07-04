@@ -35,6 +35,9 @@ namespace hammer {
          virtual
          std::vector<package_info> get_unresoved_targets_info(const std::vector<const warehouse_target*>& targets) const = 0;
          virtual void download_and_install(const std::vector<package_info>& packages) = 0;
+         // FIXME: this is temporal hack. I will remove this when web part will be implemented
+         virtual void add_to_packages(const project& p,
+                                      const location_t& packages_db_path) = 0;
 
       private:
          virtual void init_impl(const std::string& url) = 0;

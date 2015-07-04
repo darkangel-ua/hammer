@@ -11,6 +11,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/bind.hpp>
 #include <boost/process.hpp>
+#include <boost/foreach.hpp>
 #include <hammer/core/warehouse_project.h>
 #include <hammer/core/warehouse_meta_target.h>
 #include <hammer/core/warehouse_target.h>
@@ -59,7 +60,7 @@ struct warehouse_impl::gramma : public grammar<warehouse_impl::gramma>
          package_p = confix_p(ch_p('{'), list_p(attribute_p, ch_p(',')), ch_p('}'));
          packages_p = list_p(package_p[push_back_a(self.packages_, self.package_)][assign_a(self.package_, self.empty_package_)], ch_p(','));
 
-         whole = confix_p(ch_p('['), packages_p, ch_p(']'));
+         whole = confix_p(ch_p('['), !packages_p, ch_p(']'));
 
          BOOST_SPIRIT_DEBUG_RULE(whole);
          BOOST_SPIRIT_DEBUG_RULE(value_p);
@@ -161,7 +162,7 @@ void warehouse_impl::init_impl(const std::string& url)
 {
    if (!exists(repository_path_)) {
       if (!create_directory(repository_path_))
-         throw std::runtime_error("Failed to create directory '" + repository_path_.native() + "'");
+         throw std::runtime_error("Failed to create directory '" + repository_path_.string() + "'");
    }
 
    const fs::path hamfile_path = repository_path_ / "hamfile";
@@ -212,15 +213,23 @@ void warehouse_impl::update_impl()
 }
 
 warehouse_impl::packages_t::iterator
-warehouse_impl::find_package(const std::string& public_id,
+warehouse_impl::find_package(packages_t& packages,
+                             const std::string& public_id,
                              const std::string& version)
 {
-   pair<packages_t::iterator, packages_t::iterator> versions = packages_.equal_range(public_id);
+   pair<packages_t::iterator, packages_t::iterator> versions = packages.equal_range(public_id);
    for(; versions.first != versions.second; ++versions.first)
       if (versions.first->second.version_ == version)
          return versions.first;
 
-   return packages_.end();
+   return packages.end();
+}
+
+warehouse_impl::packages_t::iterator
+warehouse_impl::find_package(const std::string& public_id,
+                             const std::string& version)
+{
+   return find_package(packages_, public_id, version);
 }
 
 warehouse_impl::packages_t::const_iterator
@@ -235,7 +244,7 @@ bool warehouse_impl::has_project(const location_t& project_path) const
    if (!project_path.has_root_path())
       return false;
 
-   const string name = (++project_path.begin())->filename().string();
+   const string name = (*++project_path.begin()).string();
 
    return packages_.find(name) != packages_.end();
 }
@@ -245,7 +254,7 @@ warehouse_impl::load_project(const location_t& project_path)
 {
    assert(has_project(project_path));
 
-   const string name = (++project_path.begin())->filename().string();
+   const string name = (*++project_path.begin()).string();
 
    boost::shared_ptr<project> result(new warehouse_project(engine_, project_path));
    auto_ptr<basic_meta_target> target(new warehouse_meta_target(*result, pstring(engine_.pstring_pool(), name)));
@@ -376,23 +385,27 @@ void append_line(const fs::path filename,
 void warehouse_impl::install_package(const package_t& p,
                                      const fs::path& working_dir)
 {
-   const fs::path libs = working_dir / "libs";
-   if (!exists(libs))
-      create_directory(libs);
+   const fs::path libs_path = working_dir / "libs";
+   if (!exists(libs_path))
+      create_directory(libs_path);
 
-   const fs::path package_root = libs / p.public_id_;
+   const fs::path lib_path = libs_path / p.public_id_;
+   if (!exists(lib_path))
+      create_directory(lib_path);
+
+   const fs::path package_root = lib_path / p.version_;
    if (!exists(package_root))
       create_directory(package_root);
 
    bp::context ctx;
-   ctx.work_directory = package_root.native();
-   fs::path package_archive = working_dir / "downloads" / p.filename_;
+   ctx.work_directory = package_root.string();
+   const fs::path package_archive = working_dir / "downloads" / p.filename_;
    bp::child child = bp::launch_shell("tar -xf '" + package_archive.string() + "'", ctx);
    bp::status status = child.wait();
    if (status.exit_status() != 0)
       throw std::runtime_error("Failed to unpack package '" + p.public_id_ + "'");
 
-   fs::path package_hamfile = package_root / "hamfile";
+   const fs::path package_hamfile = lib_path / "hamfile";
    if (!exists(package_hamfile)) {
       fs::ofstream f(package_hamfile);
       f << "warehouse-trap " << p.public_id_ << ";";
@@ -434,6 +447,145 @@ void warehouse_impl::download_and_install(const std::vector<package_info>& packa
          append_line(repository_hamfile, "use-project /" + pi->second.public_id_ + " : ./libs/" + pi->second.public_id_ + ";");
       }
    }
+}
+
+void warehouse_impl::write_packages(const location_t& packages_db_path,
+                                    const packages_t& packages)
+{
+   const fs::path tmp_packages_path = tmpnam(NULL);
+   fs::ofstream tmp_packages(tmp_packages_path);
+   tmp_packages << "[\n";
+   bool first = true;
+   for(packages_t::const_iterator i = packages.begin(), last = packages.end(); i != last; ++i) {
+      if (first) {
+         tmp_packages << "   {\n";
+         first = false;
+      } else
+         tmp_packages << "  ,{\n";
+      tmp_packages << "       public_id : \"" << i->second.public_id_ << "\",\n";
+      tmp_packages << "       version   : \"" << i->second.version_ << "\",\n";
+      tmp_packages << "       filename  : \"" << i->second.filename_ << "\",\n";
+      tmp_packages << "       filesize  : \"" << i->second.filesize_ << "\"";
+      if (i->second.dependencies_.empty())
+         tmp_packages << "\n";
+      else {
+         tmp_packages << ",\n       dependencies : [\n";
+         bool d_first = true;
+         for(vector<dependency_t>::const_iterator d = i->second.dependencies_.begin(), d_last = i->second.dependencies_.end(); d != d_last; ++d) {
+            if (d_first) {
+               tmp_packages << "          {\n";
+               d_first = false;
+            } else
+               tmp_packages << "         ,{\n";
+
+            tmp_packages << "            public_id : \"" << d->public_id_ << "\",\n";
+            tmp_packages << "            version   : \"" << d->version_ << "\"\n";
+            tmp_packages << "          }\n";
+         }
+
+         tmp_packages << "       ]\n";
+      }
+
+      tmp_packages << "   }\n";
+   }
+
+   tmp_packages << "]\n";
+   tmp_packages.close();
+
+   if (fs::remove(packages_db_path)) {
+      try {
+         fs::rename(tmp_packages_path, packages_db_path);
+      } catch(const std::exception&) {
+         fs::copy_file(tmp_packages_path, packages_db_path);
+         fs::remove(tmp_packages_path);
+      }
+   } else
+      throw std::runtime_error("Can't remove old packages db");
+}
+
+static
+void make_package_archive(const fs::path& package_root,
+                          const fs::path& package_filename)
+{
+   bp::context ctx;
+   ctx.work_directory = package_root.string();
+   bp::child child = bp::launch_shell("tar --exclude \"\\.hammer\" --exclude-vcs -cjf '" + package_filename.string() + "' .", ctx);
+   bp::status status = child.wait();
+   if (status.exit_status() != 0)
+      throw std::runtime_error("Failed to create package archive");
+}
+
+vector<warehouse_impl::dependency_t>
+warehouse_impl::gather_dependencies(const project& p)
+{
+   vector<source_decl> source_dependencies;
+   for(project::targets_t::const_iterator i = p.targets().begin(), last = p.targets().end(); i != last; ++i) {
+      const sources_decl& sources = i->second->sources();
+      for(sources_decl::const_iterator s_i = sources.begin(), s_last = sources.end(); s_i != s_last; ++s_i) {
+         if (s_i->target_path_is_global())
+            source_dependencies.push_back(*s_i);
+      }
+   }
+
+   sort(source_dependencies.begin(), source_dependencies.end());
+   source_dependencies.erase(unique(source_dependencies.begin(), source_dependencies.end()), source_dependencies.end());
+
+   vector<dependency_t> dependencies;
+   BOOST_FOREACH(const source_decl& s, source_dependencies) {
+      feature_set::const_iterator i = s.properties()->find("version");
+      if (i == s.properties()->end())
+         throw std::runtime_error("Dependency '" + s.target_path().to_string() + "' doesn't have version specified");
+
+      dependency_t d;
+      d.public_id_ = string(s.target_path().begin() + 1, s.target_path().end());
+      d.version_ = (**i).value().to_string();
+
+      dependencies.push_back(d);
+   }
+
+   return dependencies;
+}
+
+void warehouse_impl::add_to_packages(const project& p,
+                                     const location_t& packages_db_root)
+{
+   fs::path packages_db_full_path = packages_db_root / packages_filename;
+   if (!exists(packages_db_full_path)) {
+      fs::ofstream f(packages_db_full_path, ios_base::trunc);
+      if (!f)
+         throw std::runtime_error("Can't create '" + packages_db_full_path.string() + "'");
+      f << "[]";
+   }
+
+   packages_t packages = load_packages(packages_db_full_path);
+   const feature_set* build_request = p.get_engine()->feature_registry().make_set();
+   feature_set* project_requirements  = p.get_engine()->feature_registry().make_set();
+   p.requirements().eval(*build_request, project_requirements);
+   feature_set::const_iterator i_version = project_requirements->find("version");
+   if (i_version == project_requirements->end())
+      throw std::runtime_error("Project doesn't have 'version' feature");
+
+   const string version = (**i_version).value().to_string();
+   const string public_id = p.name().to_string();
+
+   package_t package;
+   package.public_id_ = public_id;
+   package.version_ = version;
+   package.filename_ = public_id + "-" + version + ".tar.bz2";
+
+   const fs::path package_full_path = packages_db_root / package.filename_;
+   make_package_archive(p.location().branch_path().branch_path(), package_full_path);
+
+   package.filesize_ = file_size(package_full_path);
+   package.dependencies_ = gather_dependencies(p);
+
+   packages_t::iterator i = find_package(packages, public_id, version);
+   if (i == packages.end())
+      packages.insert(make_pair(public_id, package));
+   else
+      i->second = package;
+
+   write_packages(packages_db_full_path, packages);
 }
 
 }

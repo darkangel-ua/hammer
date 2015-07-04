@@ -97,7 +97,8 @@ namespace
                          worker_count_(get_number_of_processors()),
                          copy_dependencies_(false),
                          write_build_graph_(false),
-                         update_warehouse_(false)
+                         update_warehouse_(false),
+                         add_to_packages_(false)
       {}
 
       vector<string> build_request_options_;
@@ -116,6 +117,8 @@ namespace
       std::string eclipse_workspace_path_;
       bool write_build_graph_;
       bool update_warehouse_;
+      bool add_to_packages_;
+      std::string path_to_packages_;
    };
 
    po::positional_options_description build_request_options;
@@ -145,6 +148,8 @@ namespace
          ("copy-dependencies", "copy shared modules to output dir when building excecutable")
          ("write-build-graph", "don't build, just write graphviz build-graph.dot for building process")
          ("update-warehouse", "update warehouse package database")
+         ("add-to-packages", "add current project into packages database")
+         ("path-to-packages", po::value<std::string>(&opts.path_to_packages_), "path to packages database")
          ;
 
       return desc;
@@ -739,6 +744,12 @@ int main(int argc, char** argv) {
       if (vm.count("update-warehouse"))
          opts.update_warehouse_ = true;
 
+      if (vm.count("add-to-packages")) {
+         opts.add_to_packages_ = true;
+         if (!vm.count("path-to-packages"))
+            throw std::runtime_error("You should specify path-to-packages parameter");
+      }
+
       fs::path data_path(get_data_path());
 
       if (vm.count("install-dir"))
@@ -848,6 +859,11 @@ int main(int argc, char** argv) {
          const project& project_to_build = engine.load_project(fs::current_path());
          if (opts.debug_level_ > 0)
             cout << "Done" << endl;
+
+         if (opts.add_to_packages_) {
+            engine.warehouse().add_to_packages(project_to_build, opts.path_to_packages_);
+            break;
+         }
 
          if (targets.empty() || (targets.size() == 1 && targets[0] == "all")) {
             targets.clear();

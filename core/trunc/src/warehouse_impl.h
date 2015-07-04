@@ -22,6 +22,9 @@ class warehouse_impl : public warehouse
       std::vector<package_info> get_unresoved_targets_info(const std::vector<const warehouse_target*>& targets) const;
       void download_and_install(const std::vector<package_info>& packages);
 
+      void add_to_packages(const project& p,
+                           const location_t& packages_db_root);
+
    protected:
       void init_impl(const std::string& url);
       void update_impl();
@@ -54,6 +57,10 @@ class warehouse_impl : public warehouse
       std::string repository_url_;
       packages_t packages_;
 
+      static
+      packages_t::iterator find_package(packages_t& packages,
+                                        const std::string& public_id,
+                                        const std::string& version);
       packages_t::iterator find_package(const std::string& public_id,
                                         const std::string& version);
       packages_t::const_iterator find_package(const std::string& public_id,
@@ -71,6 +78,12 @@ class warehouse_impl : public warehouse
       static warehouse::package_info to_package_info(const package_t& p);
       bool known_to_engine(const std::string& public_id,
                            const project& repository_project);
+      static
+      void write_packages(const location_t& packages_db_path,
+                          const packages_t& packages);
+
+      static
+      std::vector<dependency_t> gather_dependencies(const project& p);
 };
 
 }

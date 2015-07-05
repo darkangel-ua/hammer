@@ -12,6 +12,7 @@
 #include <boost/bind.hpp>
 #include <boost/process.hpp>
 #include <boost/foreach.hpp>
+#include <boost/algorithm/string/replace.hpp>
 #include <hammer/core/warehouse_project.h>
 #include <hammer/core/warehouse_meta_target.h>
 #include <hammer/core/warehouse_target.h>
@@ -42,7 +43,8 @@ struct warehouse_impl::gramma : public grammar<warehouse_impl::gramma>
          chset<> colon(':');
 
          value_p = lexeme_d[confix_p(ch_p('"'), (*anychar_p)[assign_a(self.value_)], ch_p('"'))];
-         int_value_p = confix_p(ch_p('"'), uint_p, ch_p('"'));
+         int_value_impl_p = uint_p[boost::bind(&gramma::assign_int_value, &self, _1)];
+         int_value_p = confix_p(ch_p('"'), int_value_impl_p, ch_p('"'));
          version_p = str_p("version") >> colon >> value_p;
          filename_p = str_p("filename") >> colon >> value_p;
          filesize_p = str_p("filesize") >> colon >> int_value_p;
@@ -50,13 +52,14 @@ struct warehouse_impl::gramma : public grammar<warehouse_impl::gramma>
          dependency_attrs_p = public_id_p[assign_a(self.dependency_.public_id_, self.value_)] |
                               version_p[assign_a(self.dependency_.version_, self.value_)];
          // [push_back_a(self.package_.dependencies_, self.dependency_)][assign_a(self.dependency_, self.empty_dependency_)]
-         dependency_p = confix_p(ch_p('{'), list_p(dependency_attrs_p, ch_p(',')), ch_p('}'));
-         dependencies_p = str_p("dependencies") >> colon >> confix_p(ch_p('['), dependency_p, ch_p(']'));
+         dependencies_list_p = list_p(dependency_attrs_p, ch_p(','));
+         dependency_p = confix_p(ch_p('{'), dependencies_list_p[push_back_a(self.package_.dependencies_, self.dependency_)][assign_a(self.dependency_, self.empty_dependency_)], ch_p('}'));
+         dependencies_p = str_p("dependencies") >> colon >> confix_p(ch_p('['), list_p(dependency_p, ch_p(',')), ch_p(']'));
          attribute_p = version_p[assign_a(self.package_.version_, self.value_)] |
                        filename_p[assign_a(self.package_.filename_, self.value_)] |
-                       filesize_p |
+                       filesize_p[assign_a(self.package_.filesize_, self.int_value_)] |
                        public_id_p[assign_a(self.package_.public_id_, self.value_)] |
-                       dependencies_p[push_back_a(self.package_.dependencies_, self.dependency_)][assign_a(self.dependency_, self.empty_dependency_)];
+                       dependencies_p;
          package_p = confix_p(ch_p('{'), list_p(attribute_p, ch_p(',')), ch_p('}'));
          packages_p = list_p(package_p[push_back_a(self.packages_, self.package_)][assign_a(self.package_, self.empty_package_)], ch_p(','));
 
@@ -73,11 +76,9 @@ struct warehouse_impl::gramma : public grammar<warehouse_impl::gramma>
          BOOST_SPIRIT_DEBUG_RULE(dependency_attrs_p);
       }
 
-      static void assign_int_value(const gramma& self, unsigned int v) { self.int_value_ = v; }
-
       rule_t const& start() const { return whole; }
-      rule_t whole, value_p, int_value_p, version_p, filename_p, filesize_p, public_id_p, attribute_p, package_p, packages_p, package_name_p,
-             dependencies_p, dependency_p, dependency_attrs_p;
+      rule_t whole, value_p, int_value_p, int_value_impl_p, version_p, filename_p, filesize_p, public_id_p, attribute_p, package_p, packages_p, package_name_p,
+             dependencies_p, dependency_p, dependency_attrs_p, dependencies_list_p;
    };
 
    mutable string value_;
@@ -87,6 +88,8 @@ struct warehouse_impl::gramma : public grammar<warehouse_impl::gramma>
    mutable dependency_t dependency_;
    const warehouse_impl::package_t empty_package_;
    const dependency_t empty_dependency_;
+
+   void assign_int_value(unsigned v) const { int_value_ = v; }
 };
 
 static
@@ -571,7 +574,7 @@ void warehouse_impl::add_to_packages(const project& p,
    package_t package;
    package.public_id_ = public_id;
    package.version_ = version;
-   package.filename_ = public_id + "-" + version + ".tar.bz2";
+   package.filename_ = boost::algorithm::replace_all_copy(public_id, "/", ".") + "-" + version + ".tar.bz2";
 
    const fs::path package_full_path = packages_db_root / package.filename_;
    make_package_archive(p.location().branch_path().branch_path(), package_full_path);

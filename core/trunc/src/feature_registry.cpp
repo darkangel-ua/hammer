@@ -15,7 +15,9 @@
 #include <hammer/core/feature.h>
 #include <hammer/core/subfeature.h>
 
-using namespace std;
+using std::string;
+using std::auto_ptr;
+using std::pair;
 using namespace boost;
 using namespace boost::multi_index;
 

@@ -18,7 +18,8 @@
 #include <hammer/core/unix_libraries_argument_writer.h>
 
 using namespace boost;
-using namespace std;
+using std::string;
+using std::auto_ptr;
 
 namespace hammer{
 

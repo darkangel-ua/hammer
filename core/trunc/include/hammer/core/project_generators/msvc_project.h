@@ -109,10 +109,10 @@ namespace hammer
             {
                public:   
                   typedef std::vector<const target_type*> types_t;
-
+                  typedef std::map<const basic_target*, file_with_cfgs_t> files_t;
                   std::string name;
                   std::string uid;
-                  std::map<const basic_target*, file_with_cfgs_t> files_;
+                  files_t files_;
 
                   filter_t(const types_t& t, 
                            const std::string& name,

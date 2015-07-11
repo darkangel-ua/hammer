@@ -26,7 +26,9 @@
 #include <hammer/core/feature_set.h>
 #include <hammer/core/output_location_strategy.h>
 
-using namespace std;
+using std::string;
+using std::auto_ptr;
+using std::vector;
 using namespace boost;
 using namespace boost::assign;
 namespace fs = boost::filesystem;

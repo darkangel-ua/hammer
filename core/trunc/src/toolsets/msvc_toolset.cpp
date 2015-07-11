@@ -23,7 +23,8 @@
 #include <hammer/core/batched_cmdline_action.h>
 
 using namespace boost::assign;
-using namespace std;
+using std::string;
+using std::auto_ptr;
 using namespace boost;
 
 namespace hammer{

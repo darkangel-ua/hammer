@@ -21,7 +21,8 @@
 
 using namespace boost;
 using namespace boost::multi_index;
-using namespace std;
+using std::string;
+using std::stringstream;
 
 namespace hammer{
 namespace{

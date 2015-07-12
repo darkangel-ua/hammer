@@ -908,10 +908,13 @@ c_scanner_context::extract_includes(const hashed_location& file_dir,
       result.clear();
       for(boost::cregex_iterator i(in.data(), in.data() + in.size(), pattern_), last = boost::cregex_iterator(); i != last; ++i)
       {
-         if ((*i)[1].matched)
-            result.push_back(make_included_file(location_t((*i)[1]), true));
-         else
-            result.push_back(make_included_file(location_t((*i)[2]), false));
+		  if ((*i)[1].matched) {
+			  string l = (*i)[1];
+			  result.push_back(make_included_file(l, true));
+		  } else {
+			  string l = (*i)[2];
+			  result.push_back(make_included_file(l, false));
+		  }
       }
       
       cache_is_valid_ = false;

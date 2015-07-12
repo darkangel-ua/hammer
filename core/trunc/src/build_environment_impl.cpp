@@ -171,7 +171,9 @@ bool build_environment_impl::run_shell_commands(std::ostream& captured_output_st
 static std::auto_ptr<std::istream> open_input_stream(const location_t& full_content_file_name)
 {
 #if defined(_WIN32) && !defined(__MINGW32__)
-   std::auto_ptr<istream> f(new ifstream((L"\\\\?\\" + to_wide(location_t(full_content_file_name)).string()).c_str()));
+	wstring unc_path(L"\\\\?\\" + to_wide(location_t(full_content_file_name)).string<wstring>());
+	std::auto_ptr<ifstream> f(new ifstream);
+	f->open(unc_path.c_str());
    return f;
 #else
    std::auto_ptr<istream> f(new ifstream((full_content_file_name).string().c_str()));
@@ -241,12 +243,12 @@ std::auto_ptr<ostream> build_environment_impl::create_output_file(const char* fi
    std::auto_ptr<ofstream> f(new ofstream);
    f->exceptions(ios_base::badbit | ios_base::eofbit | ios_base::failbit);
 #if defined(_WIN32) && !defined(__MINGW32__)
-   wstring unc_path(L"\\\\?\\" + to_wide(location_t(full_filename_path)).string());
+   wstring unc_path(L"\\\\?\\" + to_wide(location_t(full_filename_path)).string<wstring>());
    f->open(unc_path.c_str(), mode);
 #else
    f->open(full_filename_path.string().c_str(), mode);
 #endif
-   return auto_ptr<ostream>(f.release());
+   return auto_ptr<ostream>(f);
 }
 
 location_t build_environment_impl::working_directory(const basic_target& t) const

@@ -31,6 +31,8 @@ namespace hammer {
 
 struct warehouse_impl::gramma : public grammar<warehouse_impl::gramma>
 {
+   gramma() {}
+
    template <typename ScannerT>
    struct definition
    {

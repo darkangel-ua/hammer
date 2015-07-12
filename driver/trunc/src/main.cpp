@@ -813,7 +813,7 @@ int main(int argc, char** argv) {
                cout << "...user-config.ham not founded...\n";
          } else {
             if (opts.debug_level_ > 0)
-               cout << "...Loading user-config.ham at '" << user_config_script.native() << "'..." << flush;
+               cout << "...Loading user-config.ham at '" << user_config_script.string<string>() << "'..." << flush;
 
             engine.load_hammer_script(user_config_script);
             if (opts.debug_level_ > 0)

@@ -249,7 +249,7 @@ bool warehouse_impl::has_project(const location_t& project_path) const
    if (!project_path.has_root_path())
       return false;
 
-   const string name = (*++project_path.begin()).string();
+   const string name = project_path.relative_path().string();
 
    return packages_.find(name) != packages_.end();
 }
@@ -259,7 +259,7 @@ warehouse_impl::load_project(const location_t& project_path)
 {
    assert(has_project(project_path));
 
-   const string name = (*++project_path.begin()).string();
+   const string name = project_path.relative_path().string();
 
    boost::shared_ptr<project> result(new warehouse_project(engine_, project_path));
    auto_ptr<basic_meta_target> target(new warehouse_meta_target(*result, pstring(engine_.pstring_pool(), name)));
@@ -396,7 +396,7 @@ void warehouse_impl::install_package(const package_t& p,
 
    const fs::path lib_path = libs_path / p.public_id_;
    if (!exists(lib_path))
-      create_directory(lib_path);
+      create_directories(lib_path);
 
    const fs::path package_root = lib_path / p.version_;
    if (!exists(package_root))

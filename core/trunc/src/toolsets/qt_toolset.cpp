@@ -217,7 +217,7 @@ class qt_uic_generator : public generator
 */
 
 qt_toolset::qt_toolset()
-: toolset("qt")
+   : toolset("qt")
 {
 }
 
@@ -259,6 +259,7 @@ void add_lib(project& qt_project,
              const vector<string>& dependencies,
              engine& e,
              const string& include_tag,
+             const string& additional_include_path,
              const string& lib_tag)
 {
    requirements_decl debug_req;
@@ -266,10 +267,10 @@ void add_lib(project& qt_project,
    feature* qt_no_debug_feature = e.feature_registry().create_feature("define", "QT_NO_DEBUG");
 #if defined(_WIN32)
    feature* top_include_feature = e.feature_registry().create_feature("include", "./include");
-   feature* include_feature = e.feature_registry().create_feature("include", "./include/" + lib_name);
+   feature* include_feature = e.feature_registry().create_feature("include", "./include/" + additional_include_path);
 #else
    feature* top_include_feature = e.feature_registry().create_feature("include", "./include/" + include_tag);
-   feature* include_feature = e.feature_registry().create_feature("include", "./include/" + include_tag + "/" + lib_name);
+   feature* include_feature = e.feature_registry().create_feature("include", "./include/" + include_tag + "/" + additional_include_path);
 #endif
    {
       auto_ptr<just_feature_requirement> include_req(new just_feature_requirement(include_feature));
@@ -379,7 +380,8 @@ void add_types_and_generators(engine& e,
                               const location_t* toolset_home,
                               const std::string& bin_tag,
                               const string& lib_tag,
-                              const string& include_tag)
+                              const string& include_tag,
+                              const bool qt5)
 {
    // register qt types
    // FIXME: we don't derive qt mocable from H because current generator implementation can't properly choose qt.moc generator
@@ -479,8 +481,15 @@ void add_types_and_generators(engine& e,
                                             *toolset_home,
                                             requirements_decl(),
                                             requirements_decl()));
-   add_lib(*qt_project, "QtCore", vector<string>(), e, include_tag, lib_tag);
-   add_lib(*qt_project, "QtGui", list_of("QtCore"), e, include_tag, lib_tag);
+   if (qt5) {
+      add_lib(*qt_project, "Qt5Core", vector<string>(), e, include_tag, "QtCore", lib_tag);
+      add_lib(*qt_project, "Qt5Gui", list_of("Qt5Core"), e, include_tag, "QtGui", lib_tag);
+      add_lib(*qt_project, "Qt5Widgets", list_of("Qt5Core")("Qt5Gui"), e, include_tag, "QtWidgets", lib_tag);
+   } else {
+      add_lib(*qt_project, "QtCore", vector<string>(), e, include_tag, "QtCore", lib_tag);
+      add_lib(*qt_project, "QtGui", list_of("QtCore"), e, include_tag, "QtGui", lib_tag);
+   }
+
    e.insert(qt_project.get());
    e.use_project(*qt_project, pstring(e.pstring_pool(), "/Qt"), "");
    qt_project.release();
@@ -494,7 +503,22 @@ void qt_toolset::init_impl(engine& e, const std::string& version_id,
 {
    if (e.get_type_registry().find(qt_mocable) == NULL) {
       if (!version_id.empty() && version_id[0] == '4') {
-         add_types_and_generators(e, toolset_home, "-qt4", "4", "qt4");
+         add_types_and_generators(e, toolset_home, "-qt4", "4", "qt4", false);
+
+         feature_def& toolset_def = e.feature_registry().get_def("toolset");
+         if (!toolset_def.is_legal_value("qt"))
+            toolset_def.extend_legal_values("qt");
+
+         return;
+      }
+
+      if (toolset_home) {
+         add_types_and_generators(e, toolset_home, "", "", "", true);
+
+         feature_def& toolset_def = e.feature_registry().get_def("toolset");
+         if (!toolset_def.is_legal_value("qt"))
+            toolset_def.extend_legal_values("qt");
+
          return;
       }
    }

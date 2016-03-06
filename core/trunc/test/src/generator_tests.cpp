@@ -17,6 +17,8 @@
 #include "jcf_parser.h"
 #include "options.h"
 
+// FIXME: this is outdated and I even don't know how it works
+// I leave it here just in case
 using namespace hammer;
 using namespace hammer::project_generators;
 using namespace std;
@@ -29,7 +31,7 @@ static void compare_files(const fs::path& lhs, const fs::path& rhs, const fs::pa
    fs::ifstream rhs_f(rhs, std::ios::binary);
    if (file_size(lhs) != file_size(rhs))
    {
-      BOOST_CHECK_MESSAGE(file_size(lhs) == file_size(rhs), lhs.native_file_string() + " != " + rhs.native_file_string());
+      BOOST_CHECK_MESSAGE(file_size(lhs) == file_size(rhs), lhs.string() + " != " + rhs.string());
       return;
    }
    
@@ -122,6 +124,7 @@ static int compare_products(const build_node::targets_t& lhs,
    return 0;
 }
 
+static
 bool less_node(const boost::intrusive_ptr<build_node>& lhs, 
                const boost::intrusive_ptr<build_node>& rhs);
 
@@ -183,13 +186,6 @@ struct generator_tests : setuped_engine
       // gather files
       for(fs::recursive_directory_iterator last_etalon_files; i_etalon_files != last_etalon_files; ++i_etalon_files)
       {
-         if (is_directory(*i_generated_files) &&
-            i_etalon_files->filename() == ".svn")
-         {
-            i_etalon_files.no_push();
-            continue;
-         }
-
          if (!is_directory(*i_etalon_files))
             etalon_files.insert(relative_path(*i_etalon_files, etalon_files_path));
       }
@@ -197,7 +193,7 @@ struct generator_tests : setuped_engine
       for(fs::recursive_directory_iterator last_generated_files; i_generated_files != last_generated_files; ++i_generated_files)
       {
          if (is_directory(*i_generated_files) &&
-             i_generated_files->filename() == "hammer_etalon")
+             i_generated_files->path() == "hammer_etalon")
          {
             i_generated_files.no_push();
             continue;
@@ -347,7 +343,7 @@ void init_generators_tests(const fs::path& test_data_path)
    test_suite* ts = BOOST_TEST_SUITE("generators");
    for(fs::directory_iterator i(test_data_path / "generator_tests"); i != fs::directory_iterator(); ++i)
       if (i->path().filename() != ".svn")
-         ts->add(make_test_case(boost::bind(&test_function, i->path()), i->path().filename()));
+         ts->add(make_test_case(boost::bind(&test_function, i->path()), i->path().filename().string()));
 
    framework::master_test_suite().add(ts);
 }

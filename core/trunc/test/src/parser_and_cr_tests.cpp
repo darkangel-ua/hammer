@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include <boost/test/auto_unit_test.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/bind.hpp>
 #include <stdexcept>
@@ -26,24 +25,20 @@ init_unit_test_suite( int argc, char* argv[] )
        
    
    test_data_path = fs::path(argv[1]); 
-   if (!test_data_path.has_root_path())
-   {
+   if (!test_data_path.has_root_path()) {
       test_data_path = fs::current_path() / test_data_path;
       test_data_path.normalize();
    }
 
-
-   // Because we have massive memleaks we disable leak reporting until we resolve memleaks
-   _CrtSetDbgFlag(_CrtSetDbgFlag( _CRTDBG_REPORT_FLAG ) & ~_CRTDBG_LEAK_CHECK_DF);
-   
    init_instantiation_tests(test_data_path);
 //   init_generators_tests(test_data_path);
+
    return 0;            
 }                             
 
 struct test_evn                   
 {
-   test_evn::test_evn()
+   test_evn()
    {
    }
 };

@@ -1,37 +1,19 @@
-pch pch 
-   : 
-    ../src/stdafx.cpp 
-    ../src/stdafx.h 
-   : 
-    <use>/boost/test//utf/<version>1.40.0/<link>static
-   ;
-explicit pch ;
-
-obj without_pch 
-   : 
-    [ glob ../src/build/*.c ]
-   :
-    <use>/libantlr3c/<version>3.1.1
-   ;
-explicit without_pch ;
-
 testing.run
-    pch
-    [ glob ../src/*.cpp : stdafx.cpp ]
-    [ glob ../src/*.h : stdafx.h ]
+    [ glob ../src/build/*.c ]
+    [ glob ../src/*.cpp ]
+    [ glob ../src/*.h ]
     [ glob ../src/build/*.h ]
-    without_pch
-    /hammer/core/<link>static
-    /boost/assign/<version>1.40.0
-    /boost/regex/<version>1.40.0
+    /hammer/core
+    /boost/test//utf/<version>1.58.0
+    /boost/assign/<version>1.58.0
+    /boost/regex/<version>1.58.0
     /libantlr3c/<version>3.1.1
-    /boost/sandbox/process/<version>1.40.0
-    /boost/spirit/<version>1.40.0
+    /boost/sandbox/process/<version>1.58.0
+    /boost/spirit/<version>1.58.0
    :
    :
     ../tests_data/.
    :
-    <use>/boost/test//utf/<version>1.40.0/<link>static
    :
     hammer.core.test
    ;

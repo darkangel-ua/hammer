@@ -1,4 +1,4 @@
-# options: should-fail
+# options: should-fail=1
 
 alias src : multi.cpp  ;
 alias src : single.cpp : <threading>single ;

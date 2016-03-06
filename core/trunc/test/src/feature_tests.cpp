@@ -38,22 +38,3 @@ BOOST_AUTO_TEST_CASE(feature_def_subfeatures)
    BOOST_REQUIRE_THROW(d.add_subfeature(sd), std::exception);
    BOOST_CHECK(d.find_subfeature(sd.name()) != NULL);
 }
-
-/*
-struct feature_test
-{
-   feature_test() : registry_(&p_) 
-   {
-      feature_def toolset_def("toolset");
-      toolset_def.extend_legal_values("msvc");
-      subfeature_def version_def("version");
-      version_def.extend_legal_values("8.0");
-      toolset_def.add_subfeature(version_def);
-      registry_.add_def(toolset_def);
-   }
-
-   pool p_;
-   feature_registry registry_;
-};
-*/
-

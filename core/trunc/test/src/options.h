@@ -5,17 +5,23 @@
 #include <string>
 #include <boost/filesystem/path.hpp>
 
-class options : public std::map<std::string, std::string>
+// FIXME: bad parser, it can't parse single option like should-fail
+// only options like key=value
+class options
 {
    public:
       options(const boost::filesystem::path& from_file);
 
       bool exists(const std::string& key) const
       {
-         return find(key) != end();
+         return options_.find(key) != options_.end();
       }
 
-      void parse_and_add(const std::string& line, const boost::filesystem::path& from_file);
+   private:
+      std::map<std::string, std::string> options_;
+
+      void parse_and_add(const std::string& line,
+                         const boost::filesystem::path& from_file);
 };
 
 

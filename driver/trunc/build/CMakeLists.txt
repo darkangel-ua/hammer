@@ -8,8 +8,6 @@ install(TARGETS hammer
         RUNTIME DESTINATION bin
 )
 
-install(DIRECTORY ../scripts DESTINATION lib/hammer)
-
 INCLUDE(InstallRequiredSystemLibraries)
 
 SET(MAJOR_VERSION "0")

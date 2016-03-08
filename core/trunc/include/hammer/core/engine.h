@@ -36,6 +36,8 @@ namespace hammer
          project& load_project(location_t project_path);
          loaded_projects_t try_load_project(location_t project_path, const project& from_project);
          void load_hammer_script(location_t filepath);
+         void load_hammer_script(const std::string& script_body,
+                                 const std::string& script_name);
 
          void insert(project* p);
          type_registry& get_type_registry() { return *type_registry_; }

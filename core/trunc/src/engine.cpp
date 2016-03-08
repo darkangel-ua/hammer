@@ -495,6 +495,31 @@ void engine::load_hammer_script(location_t filepath)
    }
 }
 
+void engine::load_hammer_script(const string& script_body,
+                                const string& script_name)
+{
+   hammer_walker_context ctx;
+
+   try {
+      ctx.engine_ = this;
+      ctx.location_ = script_name;
+      ctx.project_ = new project(this);
+      ctx.project_->location(script_name);
+      ctx.call_resolver_ = &resolver_;
+
+      parser p(this);
+      if (!p.parse_raw_script(script_body, script_name))
+         throw  runtime_error("Can't parse raw script '" + script_name + "': parser errors");
+
+      p.walk(&ctx);
+      assert(ctx.project_);
+      insert(ctx.project_);
+   } catch(const std::exception& e) {
+      delete ctx.project_;
+      throw std::runtime_error("Failed to load '" + script_name + "' raw script: " + e.what());
+   }
+}
+
 engine::loaded_projects_t engine::try_load_project(location_t project_path)
 {
    location_t path_with_dot(project_path);

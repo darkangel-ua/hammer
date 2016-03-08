@@ -24,6 +24,7 @@ namespace hammer{
          memset(&langAST_, 0, sizeof(langAST_));
       }
 
+      bool parse();
       engine* engine_;
       pANTLR3_INPUT_STREAM input_;
       phammerLexer lexer_;
@@ -58,6 +59,17 @@ namespace hammer{
       return parse(file_name.string().c_str());
    }
 
+   bool parser::parse_raw_script(const std::string& script_body,
+                                 const std::string& script_name)
+   {
+      reset();
+
+      impl_->input_ = antlr3NewAsciiStringInPlaceStream((pANTLR3_UINT8)script_body.c_str(),
+                                                        script_body.size(),
+                                                        (pANTLR3_UINT8)script_name.c_str());
+      return impl_->parse();
+   }
+
    bool parser::parse(const char* file_name)
    {
       if (!exists(boost::filesystem::path(file_name)))
@@ -66,22 +78,24 @@ namespace hammer{
       reset();
 
       impl_->input_ = antlr3AsciiFileStreamNew((pANTLR3_UINT8)file_name);
-      impl_->lexer_ = hammerLexerNew(impl_->input_);
-//      tstream_ = antlr3CommonTokenStreamSourceNew(ANTLR3_SIZE_HINT, TOKENSOURCE(lexer_));
-      impl_->tstream_ = non_buffered_token_stream::create(ANTLR3_SIZE_HINT, TOKENSOURCE(impl_->lexer_));
-      impl_->parser_ = hammerParserNew(impl_->tstream_);
-      details::hammer_parser_context ctx;
-      ctx.base_displayRecognitionError = impl_->parser_->pParser->rec->displayRecognitionError;
-      ctx.token_stream_ = static_cast<non_buffered_token_stream*>(impl_->tstream_->super);
-      ctx.token_stream_->ctx_.input_ = impl_->input_;
-      ctx.token_stream_->ctx_.lexer_ = impl_->lexer_->pLexer;
-      impl_->parser_->pParser->rec->displayRecognitionError = &displayRecognitionError;
-      impl_->lexer_->pLexer->super = &static_cast<non_buffered_token_stream*>(impl_->tstream_->super)->ctx_;
-      ctx.engine_ = impl_->engine_;
-      impl_->parser_->pParser->super = &ctx;
-      impl_->langAST_ = impl_->parser_->rules(impl_->parser_);
-//      pANTLR3_STRING s = langAST_.tree->toStringTree(langAST_.tree);
-      return ctx.error_count_ == 0;
+      return impl_->parse();
+
+//      impl_->lexer_ = hammerLexerNew(impl_->input_);
+////      tstream_ = antlr3CommonTokenStreamSourceNew(ANTLR3_SIZE_HINT, TOKENSOURCE(lexer_));
+//      impl_->tstream_ = non_buffered_token_stream::create(ANTLR3_SIZE_HINT, TOKENSOURCE(impl_->lexer_));
+//      impl_->parser_ = hammerParserNew(impl_->tstream_);
+//      details::hammer_parser_context ctx;
+//      ctx.base_displayRecognitionError = impl_->parser_->pParser->rec->displayRecognitionError;
+//      ctx.token_stream_ = static_cast<non_buffered_token_stream*>(impl_->tstream_->super);
+//      ctx.token_stream_->ctx_.input_ = impl_->input_;
+//      ctx.token_stream_->ctx_.lexer_ = impl_->lexer_->pLexer;
+//      impl_->parser_->pParser->rec->displayRecognitionError = &displayRecognitionError;
+//      impl_->lexer_->pLexer->super = &static_cast<non_buffered_token_stream*>(impl_->tstream_->super)->ctx_;
+//      ctx.engine_ = impl_->engine_;
+//      impl_->parser_->pParser->super = &ctx;
+//      impl_->langAST_ = impl_->parser_->rules(impl_->parser_);
+////      pANTLR3_STRING s = langAST_.tree->toStringTree(langAST_.tree);
+//      return ctx.error_count_ == 0;
    }
    
    void parser::reset()
@@ -117,4 +131,25 @@ namespace hammer{
       hammer_walker->free(hammer_walker);
       nodes->free(nodes);
    }
+
+   bool parser::impl_t::parse()
+   {
+      lexer_ = hammerLexerNew(input_);
+//      tstream_ = antlr3CommonTokenStreamSourceNew(ANTLR3_SIZE_HINT, TOKENSOURCE(lexer_));
+      tstream_ = non_buffered_token_stream::create(ANTLR3_SIZE_HINT, TOKENSOURCE(lexer_));
+      parser_ = hammerParserNew(tstream_);
+      details::hammer_parser_context ctx;
+      ctx.base_displayRecognitionError = parser_->pParser->rec->displayRecognitionError;
+      ctx.token_stream_ = static_cast<non_buffered_token_stream*>(tstream_->super);
+      ctx.token_stream_->ctx_.input_ = input_;
+      ctx.token_stream_->ctx_.lexer_ = lexer_->pLexer;
+      parser_->pParser->rec->displayRecognitionError = &displayRecognitionError;
+      lexer_->pLexer->super = &static_cast<non_buffered_token_stream*>(tstream_->super)->ctx_;
+      ctx.engine_ = engine_;
+      parser_->pParser->super = &ctx;
+      langAST_ = parser_->rules(parser_);
+//      pANTLR3_STRING s = langAST_.tree->toStringTree(langAST_.tree);
+      return ctx.error_count_ == 0;
+   }
+
 }

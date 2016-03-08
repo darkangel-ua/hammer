@@ -14,6 +14,8 @@ namespace hammer
          parser(engine* e);
          bool parse(const char* file_name);
          bool parse(const boost::filesystem::path& file_name);
+         bool parse_raw_script(const std::string& script_body,
+                               const std::string& script_name);
          void walk(hammer_walker_context* ctx);
          ~parser();
 

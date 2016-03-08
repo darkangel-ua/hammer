@@ -12,10 +12,8 @@ class options
    public:
       options(const boost::filesystem::path& from_file);
 
-      bool exists(const std::string& key) const
-      {
-         return options_.find(key) != options_.end();
-      }
+      bool exists(const std::string& key) const;
+      const std::string& operator [](const std::string& key);
 
    private:
       std::map<std::string, std::string> options_;

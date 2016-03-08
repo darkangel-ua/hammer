@@ -21,6 +21,21 @@ void options::parse_and_add(const std::string& line,
          +space_p));
 }
 
+bool options::exists(const std::string& key) const
+{
+   return options_.find(key) != options_.end();
+}
+
+const std::string&
+options::operator [](const std::string& key)
+{
+   auto i = options_.find(key);
+   if (i == options_.end())
+      throw std::runtime_error("There is no options with key '" + key + "'");
+
+   return i->second;
+}
+
 options::options(const boost::filesystem::path& from_file)
 {
    fs::ifstream f(from_file);

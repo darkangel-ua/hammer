@@ -44,6 +44,7 @@
 #include <hammer/core/fs_helpers.h>
 #include <hammer/core/warehouse_target.h>
 #include <hammer/core/warehouse.h>
+#include <hammer/core/startup_script.h>
 
 #include "user_config_location.h"
 #include "get_data_path.h"
@@ -755,18 +756,13 @@ int main(int argc, char** argv) {
       if (vm.count("install-dir"))
          data_path = opts.hammer_install_dir_;
 
-      fs::path startup_script = data_path / "scripts/startup.ham";
-
-      if (opts.debug_level_ > 0)
-         cout << "...Full path to script is '" << startup_script << "'\n" << flush;
-
       if (opts.debug_level_ > 0)
          cout << "...Loading startup script... " << flush;
 
       while(true) {
          hammer::engine engine;
          install_warehouse_rules(engine.call_resolver(), engine);
-         engine.load_hammer_script(startup_script);
+         engine.load_hammer_script(g_startup_script, "startup_script");
 
          types::register_standart_types(engine.get_type_registry(), engine.feature_registry());
 

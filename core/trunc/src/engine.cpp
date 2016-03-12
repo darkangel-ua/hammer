@@ -75,7 +75,7 @@ engine::engine()
    resolver_.insert("explicit", boost::function<void (project*, const pstring&)>(boost::bind(&engine::explicit_rule, this, _1, _2)));
    resolver_.insert("use-project", boost::function<void (project*, const pstring&, const pstring&, feature_set*)>(boost::bind(&engine::use_project_rule, this, _1, _2, _3, _4)));
    resolver_.insert("repository", boost::function<void (project*, const pstring&, feature_set*)>(boost::bind(&engine::repository_rule, this, _1, _2, _3)));
-   resolver_.insert("setup-warehouse", boost::function<void (project*, const pstring&, const pstring&)>(boost::bind(&engine::setup_warehouse_rule, this, _1, _2, _3)));
+   resolver_.insert("setup-warehouse", boost::function<void (project*, const pstring&, const pstring&, const pstring*)>(boost::bind(&engine::setup_warehouse_rule, this, _1, _2, _3, _4)));
 
    {
       feature_attributes ft = {0}; ft.free = 1;
@@ -1190,9 +1190,13 @@ void engine::repository_rule(project* p, const pstring& a_project_location, feat
    repositories_.push_back(repository_data(p, project_location, props));
 }
 
-void engine::setup_warehouse_rule(project* p, const pstring& name, const pstring& url)
+void engine::setup_warehouse_rule(project* p,
+                                  const pstring& name,
+                                  const pstring& url,
+                                  const pstring* storage_dir_)
 {
-   warehouse_->init(url.to_string());
+   const string storage_dir = storage_dir_ ? storage_dir_->to_string() : string();
+   warehouse_->init(url.to_string(), storage_dir);
 }
 
 static bool targets_by_name(const project::selected_target& lhs,

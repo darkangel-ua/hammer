@@ -232,7 +232,10 @@ namespace hammer
          void use_project_rule(project* p, const pstring& project_id_alias, 
                                const pstring& project_location, feature_set* props);
          void repository_rule(project* p, const pstring& project_location, feature_set* props);
-         void setup_warehouse_rule(project* p, const pstring& name, const pstring& url);
+         void setup_warehouse_rule(project* p,
+                                   const pstring& name,
+                                   const pstring& url,
+                                   const pstring* storage_dir);
    };
 
    boost::filesystem::path find_root(const boost::filesystem::path& initial_path);

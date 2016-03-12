@@ -132,6 +132,13 @@ void download_file(const fs::path& working_dir,
                    const string& url,
                    const string& to_file = string())
 {
+   if (url.find_first_of("file://") == 0) {
+      fs::path source_file = url.substr(7);
+      fs::path destination_file = to_file.empty() ? (working_dir / source_file.filename()) : (working_dir / to_file);
+      fs::copy_file(source_file, destination_file);
+      return;
+   }
+
    bp::context ctx;
    ctx.work_directory = working_dir.string();
 
@@ -163,18 +170,15 @@ warehouse_impl::load_packages(const fs::path& filepath)
    return packages;
 }
 
-void warehouse_impl::init_impl(const std::string& url)
+void warehouse_impl::init_impl(const std::string& url,
+                               const string& storage_dir)
 {
+   if (!storage_dir.empty())
+      repository_path_ = storage_dir;
+
    if (!exists(repository_path_)) {
       if (!create_directory(repository_path_))
          throw std::runtime_error("Failed to create directory '" + repository_path_.string() + "'");
-   }
-
-   const fs::path hamfile_path = repository_path_ / "hamfile";
-   if (!exists(hamfile_path)) {
-      fs::ofstream f(hamfile_path, ios_base::trunc);
-      if (!f)
-         throw std::runtime_error("Can't create '" + hamfile_path.string() + "'");
    }
 
    const fs::path hamroot_path = repository_path_ / "hamroot";
@@ -448,8 +452,8 @@ void warehouse_impl::download_and_install(const std::vector<package_info>& packa
       install_package(pi->second, repository_path_);
 
       if (!known_to_engine(pi->second.public_id_, repository_project)) {
-         const fs::path repository_hamfile = repository_path_ / "hamfile";
-         append_line(repository_hamfile, "use-project /" + pi->second.public_id_ + " : ./libs/" + pi->second.public_id_ + ";");
+         const fs::path repository_hamroot = repository_path_ / "hamroot";
+         append_line(repository_hamroot, "use-project /" + pi->second.public_id_ + " : ./libs/" + pi->second.public_id_ + ";");
       }
    }
 }

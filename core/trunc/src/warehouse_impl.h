@@ -26,7 +26,8 @@ class warehouse_impl : public warehouse
                            const location_t& packages_db_root);
 
    protected:
-      void init_impl(const std::string& url);
+      void init_impl(const std::string& url,
+                     const std::string& storage_dir);
       void update_impl();
 
    private:

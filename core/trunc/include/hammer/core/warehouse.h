@@ -25,7 +25,12 @@ namespace hammer {
          };
 
          virtual ~warehouse() {}
-         void init(const std::string& url) { init_impl(url); }
+         void init(const std::string& url,
+                   const std::string& storage_dir)
+         {
+            init_impl(url, storage_dir);
+         }
+
          // update package database
          void update() { update_impl(); }
          virtual bool has_project(const location_t& project_path) const = 0;
@@ -40,7 +45,8 @@ namespace hammer {
                                       const location_t& packages_db_path) = 0;
 
       private:
-         virtual void init_impl(const std::string& url) = 0;
+         virtual void init_impl(const std::string& url,
+                                const std::string& storage_dir) = 0;
          virtual void update_impl() = 0;
    };
 

@@ -1,10 +1,10 @@
 project hammer ;
 
-use-project core : core ;
-use-project core_objects : core_objects ;
+use-project core : core/build ;
+use-project core_objects : core_objects/build ;
 
-use-project driver : driver ;
-use-project sema : sema ;
-use-project ast : ast ;
-use-project parser : parser ;
-use-project parscore : parscore ;
+use-project driver : driver/build ;
+use-project sema : sema/build ;
+use-project ast : ast/build ;
+use-project parser : parser/build ;
+use-project parscore : parscore/build ;

@@ -1,9 +1,0 @@
-<?xml version="1.0"?>
-
-<mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>
-  <mime-type type="text/x-hammer">
-    <sub-class-of type="text/plain"/>
-    <comment>Hammer Project file</comment>
-    <glob pattern="hamfile"/>
-  </mime-type>
-</mime-info>

@@ -109,7 +109,6 @@ namespace
       bool clean_all_;
       bool dump_targets_to_update_;
       std::string hammer_output_dir_;
-      std::string hammer_install_dir_;
       int debug_level_;
       std::string just_one_source_;
       std::string just_one_source_project_path_;
@@ -140,7 +139,6 @@ namespace
          ("generate-projects-locally,l", "when generating build script makes them in one place")
          ("eclipse-cdt", po::value<std::string>(&opts.eclipse_workspace_path_), "generate Eclipse CDT workspace and projects")
          ("hammer-out", po::value<std::string>(&opts.hammer_output_dir_), "specify where hammer will place all its generated output")
-         ("install-dir", po::value<std::string>(&opts.hammer_install_dir_), "specify where hammer was installed")
          ("debug,d", po::value<int>(&opts.debug_level_), "specify verbosity level")
          ("disable-batcher", "do not build many sources at once")
          ("just-one-source,s", po::value<string>(&opts.just_one_source_), "build unconditionally specified source")
@@ -750,11 +748,6 @@ int main(int argc, char** argv) {
          if (!vm.count("path-to-packages"))
             throw std::runtime_error("You should specify path-to-packages parameter");
       }
-
-      fs::path data_path(get_data_path());
-
-      if (vm.count("install-dir"))
-         data_path = opts.hammer_install_dir_;
 
       if (opts.debug_level_ > 0)
          cout << "...Loading startup script... " << flush;

@@ -46,7 +46,6 @@
 #include <hammer/core/startup_script.h>
 
 #include "user_config_location.h"
-#include "get_data_path.h"
 #include "dump_targets_to_update.h"
 
 using namespace std;

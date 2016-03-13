@@ -461,7 +461,7 @@ void warehouse_impl::download_and_install(const std::vector<package_info>& packa
 void warehouse_impl::write_packages(const location_t& packages_db_path,
                                     const packages_t& packages)
 {
-   const fs::path tmp_packages_path = tmpnam(NULL);
+   const fs::path tmp_packages_path = fs::unique_path();
    fs::ofstream tmp_packages(tmp_packages_path);
    tmp_packages << "[\n";
    bool first = true;

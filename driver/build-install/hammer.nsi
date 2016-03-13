@@ -58,8 +58,6 @@ Section "Dummy Section" SecDummy
 
   SetOutPath "$INSTDIR\bin"
   File template\win32\*.exe
-  SetOutPath "$INSTDIR\eclipse-cdt-templates"
-  File ..\eclipse-cdt-templates\.*
   SetOutPath "$INSTDIR\doc"
   File ..\doc\user_manual.pdf
   SetOutPath "$INSTDIR"

@@ -21,7 +21,6 @@
 #include <hammer/core/meta_target.h>
 #include <hammer/core/project_generators/qmake_pro.h>
 #include <hammer/core/project_generators/msvc_solution.h>
-#include <hammer/core/project_generators/eclipse_cdt_workspace.h>
 #include <hammer/core/copy_generator.h>
 #include <hammer/core/testing_generators.h>
 #include <hammer/core/obj_generator.h>
@@ -114,7 +113,6 @@ namespace
       std::string just_one_source_project_path_;
       unsigned worker_count_;
       bool copy_dependencies_;
-      std::string eclipse_workspace_path_;
       bool write_build_graph_;
       bool update_warehouse_;
       bool add_to_packages_;
@@ -137,7 +135,6 @@ namespace
          ("generate-msvc-8.0-solution,p", "generate msvc-8.0 solution+projects")
          ("generate-qmake-pro", "generate qmake projects")
          ("generate-projects-locally,l", "when generating build script makes them in one place")
-         ("eclipse-cdt", po::value<std::string>(&opts.eclipse_workspace_path_), "generate Eclipse CDT workspace and projects")
          ("hammer-out", po::value<std::string>(&opts.hammer_output_dir_), "specify where hammer will place all its generated output")
          ("debug,d", po::value<int>(&opts.debug_level_), "specify verbosity level")
          ("disable-batcher", "do not build many sources at once")
@@ -336,18 +333,6 @@ namespace
          master_project.add_target(*i);
 
       master_project.write();
-   }
-
-   void generate_eclipse_workspace(const nodes_t& nodes,
-                                   const project& master_project,
-                                   const fs::path& workspace_output_path)
-   {
-      project_generators::eclipse_cdt_workspace workspace(workspace_output_path,
-                                                          nodes,
-                                                          get_data_path() / "eclipse-cdt-templates",
-                                                          master_project);
-      workspace.construct();
-      workspace.write();
    }
 
    void remove_propagated_targets(nodes_t& nodes, const project& project)
@@ -922,13 +907,10 @@ int main(int argc, char** argv) {
          if (vm.count("generate-msvc-8.0-solution"))
             generate_msvc80_solution(nodes, project_to_build);
          else
-            if (vm.count("eclipse-cdt"))
-               generate_eclipse_workspace(nodes, project_to_build, opts.eclipse_workspace_path_);
+            if (vm.count("generate-qmake-pro"))
+               generate_qmake_projects(nodes, project_to_build, opts.hammer_output_dir_);
             else
-               if (vm.count("generate-qmake-pro"))
-                  generate_qmake_projects(nodes, project_to_build, opts.hammer_output_dir_);
-               else
-                  run_build(nodes, engine, opts);
+               run_build(nodes, engine, opts);
          break;
       }
 

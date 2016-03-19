@@ -11,8 +11,12 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/bind.hpp>
 #include <boost/process.hpp>
-#include <boost/foreach.hpp>
 #include <boost/algorithm/string/replace.hpp>
+#include <boost/iostreams/filtering_stream.hpp>
+#include <boost/iostreams/device/file.hpp>
+#include <boost/iostreams/device/null.hpp>
+#include <boost/iostreams/copy.hpp>
+#include <boost/crypto/md5.hpp>
 #include <hammer/core/warehouse_project.h>
 #include <hammer/core/warehouse_meta_target.h>
 #include <hammer/core/warehouse_target.h>
@@ -24,6 +28,7 @@ using namespace std;
 using namespace boost::spirit::classic;
 namespace bp = boost::process;
 namespace fs = boost::filesystem;
+namespace io = boost::iostreams;
 
 static const fs::path packages_filename("packages.json");
 
@@ -45,22 +50,26 @@ struct warehouse_impl::gramma : public grammar<warehouse_impl::gramma>
          chset<> colon(':');
 
          value_p = lexeme_d[confix_p(ch_p('"'), (*anychar_p)[assign_a(self.value_)], ch_p('"'))];
-         int_value_impl_p = uint_p[boost::bind(&gramma::assign_int_value, &self, _1)];
-         int_value_p = confix_p(ch_p('"'), int_value_impl_p, ch_p('"'));
+         int_value_p = uint_p[boost::bind(&gramma::assign_int_value, &self, _1)];
+         bool_value_p = str_p("true")[boost::bind(&gramma::assign_bool_value, &self, true)] |
+                        str_p("false")[boost::bind(&gramma::assign_bool_value, &self, false)];
          version_p = str_p("version") >> colon >> value_p;
          filename_p = str_p("filename") >> colon >> value_p;
          filesize_p = str_p("filesize") >> colon >> int_value_p;
+         md5_p = str_p("md5") >> colon >> value_p;
          public_id_p = str_p("public_id") >> colon >> value_p;
+         need_update_p = str_p("need_update") >> colon >> bool_value_p;
          dependency_attrs_p = public_id_p[assign_a(self.dependency_.public_id_, self.value_)] |
                               version_p[assign_a(self.dependency_.version_, self.value_)];
-         // [push_back_a(self.package_.dependencies_, self.dependency_)][assign_a(self.dependency_, self.empty_dependency_)]
          dependencies_list_p = list_p(dependency_attrs_p, ch_p(','));
          dependency_p = confix_p(ch_p('{'), dependencies_list_p[push_back_a(self.package_.dependencies_, self.dependency_)][assign_a(self.dependency_, self.empty_dependency_)], ch_p('}'));
          dependencies_p = str_p("dependencies") >> colon >> confix_p(ch_p('['), list_p(dependency_p, ch_p(',')), ch_p(']'));
          attribute_p = version_p[assign_a(self.package_.version_, self.value_)] |
                        filename_p[assign_a(self.package_.filename_, self.value_)] |
+                       md5_p[assign_a(self.package_.md5_, self.value_)] |
                        filesize_p[assign_a(self.package_.filesize_, self.int_value_)] |
                        public_id_p[assign_a(self.package_.public_id_, self.value_)] |
+                       need_update_p[assign_a(self.package_.need_update_, self.bool_value_)] |
                        dependencies_p;
          package_p = confix_p(ch_p('{'), list_p(attribute_p, ch_p(',')), ch_p('}'));
          packages_p = list_p(package_p[push_back_a(self.packages_, self.package_)][assign_a(self.package_, self.empty_package_)], ch_p(','));
@@ -69,22 +78,25 @@ struct warehouse_impl::gramma : public grammar<warehouse_impl::gramma>
 
          BOOST_SPIRIT_DEBUG_RULE(whole);
          BOOST_SPIRIT_DEBUG_RULE(value_p);
+         BOOST_SPIRIT_DEBUG_RULE(bool_value_p);
          BOOST_SPIRIT_DEBUG_RULE(packages_p);
          BOOST_SPIRIT_DEBUG_RULE(package_p);
          BOOST_SPIRIT_DEBUG_RULE(attribute_p);
          BOOST_SPIRIT_DEBUG_RULE(package_name_p);
+         BOOST_SPIRIT_DEBUG_RULE(need_update_p);
          BOOST_SPIRIT_DEBUG_RULE(dependencies_p);
          BOOST_SPIRIT_DEBUG_RULE(dependency_p);
          BOOST_SPIRIT_DEBUG_RULE(dependency_attrs_p);
       }
 
       rule_t const& start() const { return whole; }
-      rule_t whole, value_p, int_value_p, int_value_impl_p, version_p, filename_p, filesize_p, public_id_p, attribute_p, package_p, packages_p, package_name_p,
+      rule_t whole, value_p, int_value_p, bool_value_p, version_p, filename_p, filesize_p, public_id_p, md5_p, need_update_p, attribute_p, package_p, packages_p, package_name_p,
              dependencies_p, dependency_p, dependency_attrs_p, dependencies_list_p;
    };
 
    mutable string value_;
    mutable unsigned int int_value_;
+   mutable bool bool_value_;
    mutable vector<warehouse_impl::package_t> packages_;
    mutable warehouse_impl::package_t package_;
    mutable dependency_t dependency_;
@@ -92,6 +104,7 @@ struct warehouse_impl::gramma : public grammar<warehouse_impl::gramma>
    const dependency_t empty_dependency_;
 
    void assign_int_value(unsigned v) const { int_value_ = v; }
+   void assign_bool_value(bool v) const { bool_value_ = v; }
 };
 
 static
@@ -202,10 +215,11 @@ void warehouse_impl::init_impl(const std::string& url,
 
 static const string packages_update_filename = "packages.json.new";
 
-void warehouse_impl::update_impl()
+warehouse::package_infos_t
+warehouse_impl::update_impl()
 {
    if (repository_url_.empty())
-      return;
+      return package_infos_t();
 
    const fs::path packages_update_filepath = repository_path_ / packages_update_filename;
    const fs::path packages_filepath = repository_path_ / packages_filename;
@@ -214,11 +228,41 @@ void warehouse_impl::update_impl()
       fs::remove(packages_update_filepath);
 
    download_file(repository_path_, repository_url_ + "/" + packages_filename.string(), packages_update_filename);
-   // check that file is OK
-   load_packages(packages_update_filepath);
+
+   packages_t new_packages = load_packages(packages_update_filepath);
+   package_infos_t packages_needs_to_be_updated;
+
+   for(auto& pv : new_packages) {
+      package_t& p = pv.second;
+      auto i = find_package(p.public_id_, p.version_);
+      if (i != packages_.end() && p.md5_ != i->second.md5_) {
+         p.need_update_ = true;
+
+         package_info package_to_update;
+         package_to_update.name_ = p.public_id_;
+         package_to_update.version_ = p.version_;
+         package_to_update.package_file_size_ = p.filesize_;
+
+         packages_needs_to_be_updated.push_back(package_to_update);
+      }
+   }
+
+   write_packages(packages_update_filepath, new_packages);
 
    fs::remove(packages_filepath);
    fs::rename(packages_update_filepath, packages_filepath);
+
+   return packages_needs_to_be_updated;
+}
+
+void warehouse_impl::update_all_packages_impl()
+{
+   for(auto& p : packages_) {
+      if (p.second.need_update_)
+         update_package(p.second);
+   }
+
+   write_packages(repository_path_ / packages_filename, packages_);
 }
 
 warehouse_impl::packages_t::iterator
@@ -391,6 +435,13 @@ void append_line(const fs::path filename,
    f << line << endl;
 }
 
+static
+string make_package_alias_line(const string& package_public_id,
+                               const string& package_version)
+{
+   return "version-alias " + package_public_id + " : " + package_version + ";";
+}
+
 void warehouse_impl::install_package(const package_t& p,
                                      const fs::path& working_dir)
 {
@@ -421,7 +472,7 @@ void warehouse_impl::install_package(const package_t& p,
       f.close();
    }
 
-   insert_line_in_front(package_hamfile, "version-alias " + p.public_id_ + " : " + p.version_ + ";");
+   insert_line_in_front(package_hamfile, make_package_alias_line(p.public_id_, p.version_));
 }
 
 bool warehouse_impl::known_to_engine(const std::string& public_id,
@@ -471,10 +522,12 @@ void warehouse_impl::write_packages(const location_t& packages_db_path,
          first = false;
       } else
          tmp_packages << "  ,{\n";
-      tmp_packages << "       public_id : \"" << i->second.public_id_ << "\",\n";
-      tmp_packages << "       version   : \"" << i->second.version_ << "\",\n";
-      tmp_packages << "       filename  : \"" << i->second.filename_ << "\",\n";
-      tmp_packages << "       filesize  : \"" << i->second.filesize_ << "\"";
+      tmp_packages << "       public_id  : \"" << i->second.public_id_ << "\",\n";
+      tmp_packages << "       version    : \"" << i->second.version_ << "\",\n";
+      tmp_packages << "       filename   : \"" << i->second.filename_ << "\",\n";
+      tmp_packages << "       md5        : \"" << i->second.md5_ << "\",\n";
+      tmp_packages << "       need_update: " << boolalpha << i->second.need_update_ << ",\n";
+      tmp_packages << "       filesize   : " << i->second.filesize_;
       if (i->second.dependencies_.empty())
          tmp_packages << "\n";
       else {
@@ -540,7 +593,7 @@ warehouse_impl::gather_dependencies(const project& p)
    source_dependencies.erase(unique(source_dependencies.begin(), source_dependencies.end()), source_dependencies.end());
 
    vector<dependency_t> dependencies;
-   BOOST_FOREACH(const source_decl& s, source_dependencies) {
+   for(const source_decl& s : source_dependencies) {
       feature_set::const_iterator i = s.properties()->find("version");
       if (i == s.properties()->end())
          throw std::runtime_error("Dependency '" + s.target_path().to_string() + "' doesn't have version specified");
@@ -553,6 +606,42 @@ warehouse_impl::gather_dependencies(const project& p)
    }
 
    return dependencies;
+}
+
+template<typename Digest>
+class digest_filter {
+   public:
+      typedef char char_type;
+      struct category : io::output_filter_tag, io::multichar_tag, io::optimally_buffered_tag {};
+
+      std::streamsize optimal_buffer_size() const { return 0; }
+
+      template<typename Sink>
+      std::streamsize write(Sink& snk, const char_type* s, std::streamsize n)
+      {
+         digest_.input(s, n);
+         return io::write(snk, s, n);
+      }
+
+      string to_string() { return digest_.to_string(); }
+
+   private:
+      Digest digest_;
+};
+
+BOOST_IOSTREAMS_PIPABLE(digest_filter, 1)
+
+static
+string calculate_md5(const fs::path& filename)
+{
+   typedef digest_filter<boost::crypto::md5> md5_filter;
+
+   fs::ifstream digest_data(filename);
+   io::filtering_ostream output(md5_filter() | io::null_sink());
+
+   io::copy(digest_data, output);
+
+   return output.component<md5_filter>(0)->to_string();
 }
 
 void warehouse_impl::add_to_packages(const project& p,
@@ -584,7 +673,7 @@ void warehouse_impl::add_to_packages(const project& p,
 
    const fs::path package_full_path = packages_db_root / package.filename_;
    make_package_archive(p.location().branch_path().branch_path(), package_full_path);
-
+   package.md5_ = calculate_md5(package_full_path);
    package.filesize_ = file_size(package_full_path);
    package.dependencies_ = gather_dependencies(p);
 
@@ -595,6 +684,53 @@ void warehouse_impl::add_to_packages(const project& p,
       i->second = package;
 
    write_packages(packages_db_full_path, packages);
+}
+
+static
+void remove_alias_from_package_hamfile(const string& package_public_id,
+                                       const string& package_version,
+                                       const fs::path& path_to_hamfile)
+{
+   const fs::path tmp_hamfile = path_to_hamfile.branch_path() / (path_to_hamfile.filename().string() + ".tmp");
+   fs::ofstream tmp_f(tmp_hamfile);
+   fs::ifstream current_f(path_to_hamfile);
+
+   string line;
+   const string alias_line = make_package_alias_line(package_public_id, package_version);
+   while(getline(current_f, line)) {
+      if (line != alias_line)
+         tmp_f << line << endl;
+   }
+
+   tmp_f.close();
+   current_f.close();
+
+   fs::remove(path_to_hamfile);
+   fs::rename(tmp_hamfile, path_to_hamfile);
+}
+
+void warehouse_impl::remove_package(const package_t& package_to_remove)
+{
+   const fs::path libs_path = repository_path_ / "libs";
+   const fs::path lib_path = libs_path / package_to_remove.public_id_;
+   const fs::path package_root = lib_path / package_to_remove.version_;
+
+   remove_alias_from_package_hamfile(package_to_remove.public_id_, package_to_remove.version_, lib_path / "hamfile");
+   fs::remove_all(package_root);
+   fs::remove(repository_path_ / "downloads" / package_to_remove.filename_);
+}
+
+void warehouse_impl::update_package(package_t& package_to_update)
+{
+   remove_package(package_to_update);
+
+   package_info pi;
+   pi.name_ = package_to_update.public_id_;
+   pi.version_ = package_to_update.version_;
+
+   download_and_install({pi});
+
+   package_to_update.need_update_ = false;
 }
 
 }

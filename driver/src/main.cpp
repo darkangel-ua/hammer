@@ -116,6 +116,7 @@ namespace
       bool update_warehouse_;
       bool add_to_packages_;
       std::string path_to_packages_;
+      bool update_all_warehouse_packages_ = false;
    };
 
    po::positional_options_description build_request_options;
@@ -143,6 +144,7 @@ namespace
          ("copy-dependencies", "copy shared modules to output dir when building excecutable")
          ("write-build-graph", "don't build, just write graphviz build-graph.dot for building process")
          ("update-warehouse", "update warehouse package database")
+         ("update-all-warehouse-packages", "update all warehouse packages that has been changed on the server")
          ("add-to-packages", "add current project into packages database")
          ("path-to-packages", po::value<std::string>(&opts.path_to_packages_), "path to packages database")
          ;
@@ -727,6 +729,9 @@ int main(int argc, char** argv) {
       if (vm.count("update-warehouse"))
          opts.update_warehouse_ = true;
 
+      if (vm.count("update-all-warehouse-packages"))
+         opts.update_all_warehouse_packages_ = true;
+
       if (vm.count("add-to-packages")) {
          opts.add_to_packages_ = true;
          if (!vm.count("path-to-packages"))
@@ -794,7 +799,19 @@ int main(int argc, char** argv) {
          }
 
          if (opts.update_warehouse_) {
-            engine.warehouse().update();
+            warehouse::package_infos_t packages_needs_to_be_updated = engine.warehouse().update();
+            if (packages_needs_to_be_updated.empty())
+               break;
+
+            cout << "These packages needs to be updates:\n";
+            for(const auto& package : packages_needs_to_be_updated)
+               cout << package.name_ << "(" << package.version_ << ") size: " << package.package_file_size_ << "\n";
+
+            break;
+         }
+
+         if (opts.update_all_warehouse_packages_) {
+            engine.warehouse().update_all_packages();
             break;
          }
 

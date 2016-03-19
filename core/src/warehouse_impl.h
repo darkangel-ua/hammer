@@ -17,18 +17,19 @@ class warehouse_impl : public warehouse
    public:
       warehouse_impl(engine& e);
       ~warehouse_impl();
-      bool has_project(const location_t& project_path) const;
-      boost::shared_ptr<project> load_project(const location_t& project_path);
-      std::vector<package_info> get_unresoved_targets_info(const std::vector<const warehouse_target*>& targets) const;
-      void download_and_install(const std::vector<package_info>& packages);
+      bool has_project(const location_t& project_path) const override;
+      boost::shared_ptr<project> load_project(const location_t& project_path) override;
+      std::vector<package_info> get_unresoved_targets_info(const std::vector<const warehouse_target*>& targets) const override;
+      void download_and_install(const std::vector<package_info>& packages) override;
 
       void add_to_packages(const project& p,
-                           const location_t& packages_db_root);
+                           const location_t& packages_db_root) override;
 
    protected:
       void init_impl(const std::string& url,
-                     const std::string& storage_dir);
-      void update_impl();
+                     const std::string& storage_dir) override;
+      package_infos_t update_impl() override;
+      void update_all_packages_impl() override;
 
    private:
       struct gramma;
@@ -40,12 +41,12 @@ class warehouse_impl : public warehouse
 
       struct package_t
       {
-         package_t() : filesize_(0) {}
-
          std::string filename_;
-         unsigned long filesize_;
+         unsigned long filesize_ = 0;
+         std::string md5_;
          std::string version_;
          std::string public_id_;
+         bool need_update_ = false;
          std::vector<dependency_t> dependencies_;
       };
 
@@ -70,6 +71,8 @@ class warehouse_impl : public warehouse
                             const boost::filesystem::path& working_dir);
       void install_package(const package_t& p,
                            const boost::filesystem::path& working_dir);
+      void update_package(package_t& package_to_update);
+      void remove_package(const package_t& package_to_remove);
 
       static
       packages_t load_packages(const boost::filesystem::path& filepath);

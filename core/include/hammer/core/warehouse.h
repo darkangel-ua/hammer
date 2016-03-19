@@ -23,6 +23,7 @@ namespace hammer {
             std::string version_;
             size_t package_file_size_;
          };
+         typedef std::vector<package_info> package_infos_t;
 
          virtual ~warehouse() {}
          void init(const std::string& url,
@@ -32,13 +33,15 @@ namespace hammer {
          }
 
          // update package database
-         void update() { update_impl(); }
+         package_infos_t update() { return update_impl(); }
+         // update all packages that has been changed on the server, but stil not updated localy
+         void update_all_packages() { return update_all_packages_impl(); }
          virtual bool has_project(const location_t& project_path) const = 0;
          virtual boost::shared_ptr<project> load_project(const location_t& project_path) = 0;
          // FIXME: we need to represent some form of unknown package
-         // posibly by introducing something like pair<known packages/unknown packages> or separate class
+         // possibly by introducing something like pair<known packages/unknown packages> or separate class
          virtual
-         std::vector<package_info> get_unresoved_targets_info(const std::vector<const warehouse_target*>& targets) const = 0;
+         package_infos_t get_unresoved_targets_info(const std::vector<const warehouse_target*>& targets) const = 0;
          virtual void download_and_install(const std::vector<package_info>& packages) = 0;
          // FIXME: this is temporal hack. I will remove this when web part will be implemented
          virtual void add_to_packages(const project& p,
@@ -47,7 +50,8 @@ namespace hammer {
       private:
          virtual void init_impl(const std::string& url,
                                 const std::string& storage_dir) = 0;
-         virtual void update_impl() = 0;
+         virtual package_infos_t update_impl() = 0;
+         virtual void update_all_packages_impl() = 0;
    };
 
    std::vector<const warehouse_target*>

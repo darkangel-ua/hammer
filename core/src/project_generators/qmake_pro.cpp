@@ -9,7 +9,6 @@
 #include <hammer/core/feature.h>
 #include <hammer/core/target_type.h>
 #include <hammer/core/types.h>
-#include <boost/foreach.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/filesystem/convenience.hpp>
 
@@ -71,7 +70,7 @@ void qmake_pro::add_target(boost::intrusive_ptr<const build_node> node)
 
 void qmake_pro::gather_dependencies(const main_target* mt)
 {
-   BOOST_FOREACH(const basic_target* bt, mt->sources())
+   for(const basic_target* bt : mt->sources())
    {
       const main_target* mt = dynamic_cast<const main_target*>(bt);
       if (mt)
@@ -109,7 +108,7 @@ void qmake_pro::gather_dependencies(const main_target* mt)
 void qmake_pro::write() const
 {
    cout << "found " << m2m_.size() << " targets\n";
-   BOOST_FOREACH(const m2m_t::value_type& mm, m2m_)
+   for(const m2m_t::value_type& mm : m2m_)
    {
       location_t p = mm.first->get_project()->location() / output_prefix_ / "qmake";
       boost::filesystem::create_directories(p);
@@ -151,7 +150,7 @@ void qmake_pro::write() const
       f << "\n";
 
       bool has_prev = false;
-      BOOST_FOREACH(const basic_target* bt, mm.second->sources())
+      for(const basic_target* bt : mm.second->sources())
       {
          if (bt->type().equal_or_derived_from(types::CPP) || 
              bt->type().equal_or_derived_from(types::C))
@@ -170,7 +169,7 @@ void qmake_pro::write() const
       f << "\n";
 
       has_prev = false;
-      BOOST_FOREACH(const basic_target* bt, mm.second->sources())
+      for(const basic_target* bt : mm.second->sources())
       {
          if (bt->type().equal_or_derived_from(types::H))
          {

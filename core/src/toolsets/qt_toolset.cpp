@@ -12,7 +12,6 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/regex.hpp>
 #include <boost/assign/list_of.hpp>
-#include <boost/foreach.hpp>
 #include <hammer/core/cmdline_action.h>
 #include <hammer/core/source_argument_writer.h>
 #include <hammer/core/product_argument_writer.h>

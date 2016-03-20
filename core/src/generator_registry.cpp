@@ -4,7 +4,6 @@
 #include <hammer/core/main_target.h>
 #include <hammer/core/target_type.h>
 #include <boost/format.hpp>
-#include <boost/foreach.hpp>
 #include <hammer/core/feature_set.h>
 
 using namespace std;
@@ -204,7 +203,7 @@ generator_registry::construct(const main_target* mt) const
    typedef std::vector<generator_data> main_viable_generators_t;
    viable_generators_t viable_generators(find_viable_generators(mt->type(), true, mt->properties()));
    main_viable_generators_t main_viable_generators;
-   BOOST_FOREACH(const viable_generators_t::value_type& g, viable_generators)
+   for(const viable_generators_t::value_type& g : viable_generators)
       main_viable_generators.push_back(g.first);
 
    if (main_viable_generators.empty())

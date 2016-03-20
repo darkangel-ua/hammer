@@ -10,7 +10,6 @@
 #include <boost/multi_index/identity.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/pool/object_pool.hpp>
-#include <boost/foreach.hpp>
 #include <boost/format.hpp>
 #include <hammer/core/builder.h>
 #include <hammer/core/build_action.h>
@@ -280,14 +279,14 @@ void builder::generate_graphviz(std::ostream& os, nodes_t& nodes, const project*
    // write nodes
    boost::format node_format("\"%s\" [label = \"%s\" "
                                "shape = \"record\"];\n");
-   BOOST_FOREACH(const build_queue_node_t* n, all_build_nodes)
+   for(const build_queue_node_t* n : all_build_nodes)
    {
       string labels = (boost::format("%s|dependencies_count = %s") % n % n->dependencies_count_).str();
       // write build node sources 
       {
          labels += "|{src|{";
          bool first = true;
-         BOOST_FOREACH(const build_node::source_t& s, n->node_->sources_)
+         for(const build_node::source_t& s : n->node_->sources_)
          {
             if (!first)
                labels += "|";
@@ -304,7 +303,7 @@ void builder::generate_graphviz(std::ostream& os, nodes_t& nodes, const project*
       {
          labels += "|{prod|{";
          bool first = true;
-         BOOST_FOREACH(const basic_target* p, n->node_->products_)
+         for(const basic_target* p : n->node_->products_)
          {
             if (!first)
                labels += "|";
@@ -321,7 +320,7 @@ void builder::generate_graphviz(std::ostream& os, nodes_t& nodes, const project*
       {
          stringstream s;
          bool first = true;
-         BOOST_FOREACH(const build_queue_node_t* un, n->uses_nodes_)
+         for(const build_queue_node_t* un : n->uses_nodes_)
          {
             if (!first)
                s << "|";
@@ -339,8 +338,8 @@ void builder::generate_graphviz(std::ostream& os, nodes_t& nodes, const project*
 
    // write uses edges
    boost::format edge_format("\"%s\" -> \"%s\":\"%s\"\n");
-   BOOST_FOREACH(const build_queue_node_t* n, all_build_nodes)
-      BOOST_FOREACH(const build_queue_node_t* un, n->uses_nodes_)
+   for(const build_queue_node_t* n : all_build_nodes)
+      for(const build_queue_node_t* un : n->uses_nodes_)
          os << (edge_format % un % n % un);
 
    os << "}";
@@ -354,7 +353,7 @@ void builder::impl_t::flatter_queue(unordered_set<const build_queue_node_t*>& re
 
    result.insert(&node);
 
-   BOOST_FOREACH(const build_queue_node_t* n, node.uses_nodes_)
+   for(const build_queue_node_t* n : node.uses_nodes_)
       flatter_queue(result, *n);
 }
 

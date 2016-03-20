@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include <hammer/core/fake_generator.h>
 #include <hammer/core/fake_target.h>
-#include <boost/foreach.hpp>
 
 namespace hammer{
 
@@ -29,13 +28,13 @@ fake_generator::construct(const target_type& type_to_construct,
    build_nodes_t result = generator::construct(type_to_construct, props, sources, source_target, composite_target_name, owner);
 
    build_nodes_t dependencies;
-   BOOST_FOREACH(const build_nodes_t::value_type& n, result)
-      BOOST_FOREACH(const build_node::source_t& s, n->sources_)
+   for(const build_nodes_t::value_type& n : result)
+      for(const build_node::source_t& s : n->sources_)
          dependencies.push_back(s.source_node_);
 
    remove_dups(dependencies);
 
-   BOOST_FOREACH(const build_nodes_t::value_type& n, result)
+   for(const build_nodes_t::value_type& n : result)
       n->dependencies_.insert(n->dependencies_.end(), dependencies.begin(), dependencies.end());
 
    return result;

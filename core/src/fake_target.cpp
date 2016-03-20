@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include <hammer/core/fake_target.h>
-#include <boost/foreach.hpp>
 
 namespace hammer{
 
@@ -29,7 +28,7 @@ void fake_target::timestamp_info_impl() const
 {
    timestamp_info_.is_unknown_ = false;
    timestamp_info_.timestamp_ = boost::date_time::neg_infin;
-   BOOST_FOREACH(const build_node::source_t& s, sources_)
+   for(const build_node::source_t& s : sources_)
       timestamp_info_.timestamp_ = (std::max)(timestamp_info_.timestamp_, s.source_target_->timestamp_info().timestamp_);
 }
 

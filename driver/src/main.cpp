@@ -5,7 +5,6 @@
 #include <boost/regex.hpp>
 #include <boost/bind.hpp>
 #include <boost/unordered_set.hpp>
-#include <boost/foreach.hpp>
 #include <boost/thread/thread.hpp>
 #include <iostream>
 #include <fstream>
@@ -439,7 +438,7 @@ namespace
 
    void mark_nodes_to_update(nodes_t& nodes)
    {
-      BOOST_FOREACH(build_node_ptr& n, nodes)
+      for(build_node_ptr& n : nodes)
          n->up_to_date(boost::tribool::false_value);
    }
 
@@ -455,7 +454,7 @@ namespace
       visited_nodes.insert(&node);
       path.push_back(&node);
 
-      BOOST_FOREACH(build_node_ptr& n, node.down_)
+      for(build_node_ptr& n : node.down_)
       {
          if (n.get() == &source_node && !path.empty())
          {

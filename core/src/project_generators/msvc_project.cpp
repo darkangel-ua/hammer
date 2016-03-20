@@ -3,7 +3,6 @@
 #include <boost/filesystem/convenience.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/regex.hpp>
-#include <boost/foreach.hpp>
 #include <hammer/core/project_generators/msvc_project.h>
 #include <hammer/core/main_target.h>
 #include <hammer/core/meta_target.h>
@@ -498,7 +497,7 @@ void msvc_project::filter_t::write(write_context& ctx, const std::string& path_p
    typedef std::map<const basic_target*, boost::reference_wrapper<const file_with_cfgs_t>, less_target> stabilized_t;
    stabilized_t stabilized;
 
-   BOOST_FOREACH(const files_t::value_type& f, files_)
+   for(const files_t::value_type& f : files_)
       stabilized.insert(make_pair(f.first, boost::reference_wrapper<const file_with_cfgs_t>(f.second)));
 
    for(stabilized_t::const_iterator i = stabilized.begin(), last = stabilized.end(); i != last; ++i)

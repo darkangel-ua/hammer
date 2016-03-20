@@ -15,7 +15,6 @@
 #include "mksig_action.h"
 #include "signature_target.h"
 #include <set>
-#include <boost/foreach.hpp>
 
 using namespace std;
 
@@ -60,7 +59,7 @@ void main_target::generate_and_add_dependencies(hammer::build_node& node) const
    node.dependencies_.insert(node.dependencies_.end(), result.begin(), result.end());
 
    build_nodes_t src_deps;
-   BOOST_FOREACH(basic_target* t, src_dependencies_)
+   for(basic_target* t : src_dependencies_)
    {
       build_nodes_t tmp(static_cast<main_target*>(t)->generate());
       src_deps.insert(src_deps.end(), tmp.begin(), tmp.end());

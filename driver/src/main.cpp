@@ -18,7 +18,6 @@
 #include <hammer/core/basic_target.h>
 #include <hammer/core/main_target.h>
 #include <hammer/core/meta_target.h>
-#include <hammer/core/project_generators/qmake_pro.h>
 #include <hammer/core/project_generators/msvc_solution.h>
 #include <hammer/core/copy_generator.h>
 #include <hammer/core/testing_generators.h>
@@ -133,7 +132,6 @@ namespace
          ("dump-targets-to-update", "dump tree of target to update for debuginf purposes")
          ("clean-all", "clean all targets recursively")
          ("generate-msvc-8.0-solution,p", "generate msvc-8.0 solution+projects")
-         ("generate-qmake-pro", "generate qmake projects")
          ("generate-projects-locally,l", "when generating build script makes them in one place")
          ("hammer-out", po::value<std::string>(&opts.hammer_output_dir_), "specify where hammer will place all its generated output")
          ("debug,d", po::value<int>(&opts.debug_level_), "specify verbosity level")
@@ -324,17 +322,6 @@ namespace
          solution.add_target(*i);
 
       solution.write();
-   }
-
-   void generate_qmake_projects(const nodes_t& nodes, const hammer::project& project_to_build,
-                                const location_t& output_prefix)
-   {
-      project_generators::qmake_pro master_project(project_to_build, output_prefix);
-
-      for(nodes_t::const_iterator i = nodes.begin(), last = nodes.end(); i != last; ++i)
-         master_project.add_target(*i);
-
-      master_project.write();
    }
 
    void remove_propagated_targets(nodes_t& nodes, const project& project)
@@ -929,10 +916,7 @@ int main(int argc, char** argv) {
          if (vm.count("generate-msvc-8.0-solution"))
             generate_msvc80_solution(nodes, project_to_build);
          else
-            if (vm.count("generate-qmake-pro"))
-               generate_qmake_projects(nodes, project_to_build, opts.hammer_output_dir_);
-            else
-               run_build(nodes, engine, opts);
+            run_build(nodes, engine, opts);
          break;
       }
 

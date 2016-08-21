@@ -84,35 +84,21 @@ namespace
 
    struct hammer_options
    {
-      hammer_options() : generate_projects_localy_(false),
-                         only_up_to_date_check_(false),
-                         disable_batcher_(false),
-                         clean_all_(false),
-                         dump_targets_to_update_(false),
-                         hammer_output_dir_(".hammer"),
-                         debug_level_(0),
-                         worker_count_(get_number_of_processors()),
-                         copy_dependencies_(false),
-                         write_build_graph_(false),
-                         update_warehouse_(false),
-                         add_to_packages_(false)
-      {}
-
       vector<string> build_request_options_;
-      bool generate_projects_localy_;
-      bool only_up_to_date_check_;
-      bool disable_batcher_;
-      bool clean_all_;
-      bool dump_targets_to_update_;
-      std::string hammer_output_dir_;
-      int debug_level_;
+      bool generate_projects_localy_ = false;
+      bool only_up_to_date_check_ = false;
+      bool disable_batcher_ = false;
+      bool clean_all_ = false;
+      bool dump_targets_to_update_ = false;
+      std::string hammer_output_dir_ = ".hammer";
+      int debug_level_ = 0;
       std::string just_one_source_;
       std::string just_one_source_project_path_;
-      unsigned worker_count_;
-      bool copy_dependencies_;
-      bool write_build_graph_;
-      bool update_warehouse_;
-      bool add_to_packages_;
+      unsigned worker_count_ = get_number_of_processors();
+      bool copy_dependencies_ = false;
+      bool write_build_graph_ = false;
+      bool update_warehouse_ = false;
+      bool add_to_packages_ = false;
       std::string path_to_packages_;
       bool update_all_warehouse_packages_ = false;
       bool release_package_ = false;
@@ -128,21 +114,21 @@ namespace
          ("help", "produce this help message")
          ("instantiate,i", "instantiate/materialize targets only")
          ("generate,g", "instantiate/materialize + generate targets")
-         ("up-to-date-check,c", "instantiate/materialize + generate targets + up to date check")
-         ("dump-targets-to-update", "dump tree of target to update for debuginf purposes")
-         ("clean-all", "clean all targets recursively")
+         ("up-to-date-check,c", po::bool_switch(&opts.only_up_to_date_check_), "instantiate/materialize + generate targets + up to date check")
+         ("dump-targets-to-update", po::bool_switch(&opts.dump_targets_to_update_), "dump tree of target to update for debuginf purposes")
+         ("clean-all", po::bool_switch(&opts.clean_all_), "clean all targets recursively")
          ("generate-msvc-8.0-solution,p", "generate msvc-8.0 solution+projects")
-         ("generate-projects-locally,l", "when generating build script makes them in one place")
+         ("generate-projects-locally,l", po::bool_switch(&opts.generate_projects_localy_), "when generating build script makes them in one place")
          ("hammer-out", po::value<std::string>(&opts.hammer_output_dir_), "specify where hammer will place all its generated output")
          ("debug,d", po::value<int>(&opts.debug_level_), "specify verbosity level")
-         ("disable-batcher", "do not build many sources at once")
+         ("disable-batcher", po::bool_switch(&opts.disable_batcher_), "do not build many sources at once")
          ("just-one-source,s", po::value<string>(&opts.just_one_source_), "build unconditionally specified source")
          ("just-one-source-project-path", po::value<string>(&opts.just_one_source_project_path_), "path to project where source reside")
          ("jobs,j", po::value<unsigned>(&opts.worker_count_), "concurrency level")
-         ("copy-dependencies", "copy shared modules to output dir when building excecutable")
-         ("write-build-graph", "don't build, just write graphviz build-graph.dot for building process")
-         ("update-warehouse", "update warehouse package database")
-         ("update-all-warehouse-packages", "update all warehouse packages that has been changed on the server")
+         ("copy-dependencies", po::bool_switch(&opts.copy_dependencies_), "copy shared modules to output dir when building excecutable")
+         ("write-build-graph", po::bool_switch(&opts.write_build_graph_), "don't build, just write graphviz build-graph.dot for building process")
+         ("update-warehouse", po::bool_switch(&opts.update_warehouse_), "update warehouse package database")
+         ("update-all-warehouse-packages", po::bool_switch(&opts.update_all_warehouse_packages_), "update all warehouse packages that has been changed on the server")
          ("add-to-packages", "add current project into packages database")
          ("path-to-packages", po::value<std::string>(&opts.path_to_packages_), "path to packages database")
          ("release-package", po::bool_switch(&opts.release_package_), "add (release) package current to configured warehouse")
@@ -692,33 +678,6 @@ int main(int argc, char** argv) {
       // fix concurrency level if user is dumb
       if (opts.worker_count_ == 0)
          opts.worker_count_ = 1;
-
-      if (vm.count("generate-projects-locally"))
-         opts.generate_projects_localy_ = true;
-
-      if (vm.count("up-to-date-check"))
-         opts.only_up_to_date_check_ = true;
-
-      if (vm.count("disable-batcher"))
-         opts.disable_batcher_ = true;
-
-      if (vm.count("clean-all"))
-         opts.clean_all_ = true;
-
-      if (vm.count("dump-targets-to-update"))
-         opts.dump_targets_to_update_ = true;
-
-      if (vm.count("copy-dependencies"))
-         opts.copy_dependencies_ = true;
-
-      if (vm.count("write-build-graph"))
-         opts.write_build_graph_ = true;
-
-      if (vm.count("update-warehouse"))
-         opts.update_warehouse_ = true;
-
-      if (vm.count("update-all-warehouse-packages"))
-         opts.update_all_warehouse_packages_ = true;
 
       if (vm.count("add-to-packages")) {
          opts.add_to_packages_ = true;

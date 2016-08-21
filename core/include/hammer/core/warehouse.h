@@ -45,7 +45,7 @@ namespace hammer {
          virtual void download_and_install(const std::vector<package_info>& packages) = 0;
          // FIXME: this is temporal hack. I will remove this when web part will be implemented
          virtual void add_to_packages(const project& p,
-                                      const location_t& packages_db_path) = 0;
+                                      const location_t& packages_db_path = location_t()) = 0;
 
       private:
          virtual void init_impl(const std::string& url,

@@ -116,6 +116,7 @@ namespace
       bool add_to_packages_;
       std::string path_to_packages_;
       bool update_all_warehouse_packages_ = false;
+      bool release_package_ = false;
    };
 
    po::positional_options_description build_request_options;
@@ -146,6 +147,7 @@ namespace
          ("update-all-warehouse-packages", "update all warehouse packages that has been changed on the server")
          ("add-to-packages", "add current project into packages database")
          ("path-to-packages", po::value<std::string>(&opts.path_to_packages_), "path to packages database")
+         ("release-package", po::bool_switch(&opts.release_package_), "add (release) package current to configured warehouse")
          ;
 
       return desc;
@@ -851,6 +853,11 @@ int main(int argc, char** argv) {
 
          if (opts.add_to_packages_) {
             engine.warehouse().add_to_packages(project_to_build, opts.path_to_packages_);
+            break;
+         }
+
+         if (opts.release_package_) {
+            engine.warehouse().add_to_packages(project_to_build);
             break;
          }
 

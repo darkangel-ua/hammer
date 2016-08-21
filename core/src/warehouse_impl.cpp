@@ -644,9 +644,20 @@ string calculate_md5(const fs::path& filename)
    return output.component<md5_filter>(0)->to_string();
 }
 
-void warehouse_impl::add_to_packages(const project& p,
-                                     const location_t& packages_db_root)
+static const string file_schema("file://");
+static
+string extract_filepath_from_url(const string& url)
 {
+   if (url.find(file_schema) != 0)
+      throw std::runtime_error("Warehouse url'" + url + "' should be 'file://...' type to be able to add packages");
+
+   return url.substr(file_schema.size());
+}
+
+void warehouse_impl::add_to_packages(const project& p,
+                                     const location_t& packages_db_root_)
+{
+   const location_t packages_db_root = packages_db_root_.empty() ? extract_filepath_from_url(repository_url_) : packages_db_root_;
    fs::path packages_db_full_path = packages_db_root / packages_filename;
    if (!exists(packages_db_full_path)) {
       fs::ofstream f(packages_db_full_path, ios_base::trunc);

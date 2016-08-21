@@ -23,7 +23,7 @@ class warehouse_impl : public warehouse
       void download_and_install(const std::vector<package_info>& packages) override;
 
       void add_to_packages(const project& p,
-                           const location_t& packages_db_root) override;
+                           const location_t& packages_db_root_ = location_t()) override;
 
    protected:
       void init_impl(const std::string& url,

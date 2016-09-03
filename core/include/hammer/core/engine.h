@@ -250,6 +250,8 @@ namespace hammer
 
          explicit loaded_projects_t(project* v) : projects_(1, v) {}
          void push_back(project* v) { projects_.push_back(v); }
+         const_iterator begin() const { return projects_.begin(); }
+         const_iterator end() const { return projects_.end(); }
          project& front() const { return *projects_.front(); }
          bool is_single() const { return projects_.size() == 1; }
          loaded_projects_t& operator +=(const loaded_projects_t& rhs) 

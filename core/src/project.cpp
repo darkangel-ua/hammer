@@ -191,7 +191,8 @@ project::select_best_alternative(const feature_set& build_request) const
       if (t.target_ != NULL)
          result.push_back(t);
 
-      // skip meta targets with equal names
+      // we just processed targets with name equal to 'first->second->name()', lets move to
+      // group of targets with different name
       targets_t::const_iterator next = first; std::advance(next, 1);
       while(next != last && first->first == next->first)
          ++first, ++next;

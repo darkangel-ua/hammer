@@ -116,7 +116,6 @@ feature.feature instruction-set :
 feature.feature user-interface : console gui wince native auto ;
 
 feature.feature variant : : propagated composite ;
-feature.feature override : on : no-defaults optional ;
 feature.feature character-set : multi-byte unicode unknown : optional ; # toolset.msvc
 
 variant debug   : : <optimization>off   <debug-symbols>on  <inlining>off  <runtime-debugging>on ;

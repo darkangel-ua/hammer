@@ -24,6 +24,9 @@ namespace hammer {
             size_t package_file_size_;
          };
          typedef std::vector<package_info> package_infos_t;
+         typedef std::vector<std::string> versions_t;
+
+         static const std::string any_version;
 
          virtual ~warehouse() {}
          void init(const std::string& url,
@@ -36,7 +39,14 @@ namespace hammer {
          package_infos_t update() { return update_impl(); }
          // update all packages that has been changed on the server, but stil not updated localy
          void update_all_packages() { return update_all_packages_impl(); }
-         virtual bool has_project(const location_t& project_path) const = 0;
+         // FIXME: Probably bad naming
+         virtual bool project_from_warehouse(const project& p) const = 0;
+         // version can be empty
+         // FIXME: why do we use '/project_path' instead of just 'project_path'?
+         virtual bool has_project(const location_t& project_path,
+                                  const std::string& version) const = 0;
+         // FIXME: this is not a real load - we just create fake project with trap rule
+         // maybe this should be renamed
          virtual boost::shared_ptr<project> load_project(const location_t& project_path) = 0;
          // FIXME: we need to represent some form of unknown package
          // possibly by introducing something like pair<known packages/unknown packages> or separate class
@@ -46,6 +56,7 @@ namespace hammer {
          // FIXME: this is temporal hack. I will remove this when web part will be implemented
          virtual void add_to_packages(const project& p,
                                       const location_t& packages_db_path = location_t()) = 0;
+         virtual versions_t get_package_versions(const std::string& public_id) const = 0;
 
       private:
          virtual void init_impl(const std::string& url,
@@ -59,6 +70,8 @@ namespace hammer {
 
    void install_warehouse_rules(call_resolver& resolver,
                                 engine& engine);
+   void add_traps(project& p,
+                  const std::string& public_id);
 }
 
 #endif

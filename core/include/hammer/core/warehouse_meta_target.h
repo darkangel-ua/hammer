@@ -9,7 +9,8 @@ class warehouse_meta_target : public basic_meta_target
 {
    public:
       warehouse_meta_target(project& p,
-                            const pstring& name);
+                            const pstring& name,
+                            const std::string& version);
       ~warehouse_meta_target();
 
    protected:

@@ -23,7 +23,6 @@
 #include "wildcard.hpp"
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
-#include <boost/logic/tribool.hpp>
 #include <hammer/core/scm_manager.h>
 #include <hammer/core/fs_helpers.h>
 #include <hammer/core/header_lib_meta_target.h>
@@ -268,10 +267,8 @@ engine::loaded_projects_t
 engine::try_load_project(location_t project_path,
                          const project& from_project)
 {
-   if (project_path.has_root_path())
-   {
-      while(true)
-      {
+   if (project_path.has_root_path()) {
+      while(true) {
          loaded_projects_t result;
          resolved_project_symlinks_t symlinks;
          resolve_project_alias(symlinks, project_path);
@@ -279,27 +276,37 @@ engine::try_load_project(location_t project_path,
             for(project_alias_node::aliases_data_t::const_iterator j = i->symlinks_data_->begin(), j_last = i->symlinks_data_->end(); j != j_last; ++j)
                result += try_load_project(i->tail_, *j);
 
+         if (warehouse_->has_project(project_path, string())) {
+            // If we can find project in warehouse than we need to add alternatives to resulting set of projects
+            const project* materialized_warehouse_project = nullptr;
+            for (const project* p : result) {
+               if (warehouse_->project_from_warehouse(*p)) {
+                  materialized_warehouse_project = p;
+                  break;
+               }
+            }
+
+            if (!materialized_warehouse_project) {
+               boost::shared_ptr<project> not_yet_materialized_versions = warehouse_->load_project(project_path);
+               // we need to check if we already inserted this project before. When we doing warehouse::download_and_install we check
+               // if project knows to engine and that trigger loading project again, but engine may already manadge this project loaded before
+               auto i = projects_.find(not_yet_materialized_versions->location());
+               if (i == projects_.end()) {
+                  // FIXME: Maybe we shouldn't add warehouse projects into engine, and manages them by warehouse
+                  projects_.insert({not_yet_materialized_versions->location(), not_yet_materialized_versions});
+                  result.push_back(not_yet_materialized_versions.get());
+               } else
+                  result.push_back(i->second.get());
+            }
+         }
+
          if (!result.empty())
             return result;
-
-         if (warehouse_->has_project(project_path)) {
-            // FIXME: Maybe we shouldn't add warehouse projects into engine, and manages them by warehouse
-            const location_t project_path_without_root = project_path.relative_path();
-            projects_t::iterator i = projects_.find(project_path_without_root);
-            if (i == projects_.end()) {
-               boost::shared_ptr<project> p = warehouse_->load_project(project_path);
-               projects_.insert(make_pair(project_path_without_root, p));
-               return loaded_projects_t(p.get());
-            } else
-               return loaded_projects_t(i->second.get());
-         }
 
          if (!materialize_or_load_next_repository())
             return result;
       }
-   }
-   else
-   {
+   } else {
       location_t resolved_use_path, tail_path;
       resolve_use_project(resolved_use_path, tail_path,
                           from_project, project_path);
@@ -1199,79 +1206,21 @@ void engine::setup_warehouse_rule(project* p,
    warehouse_->init(url.to_string(), storage_dir);
 }
 
-static bool targets_by_name(const project::selected_target& lhs,
-                            const project::selected_target& rhs)
-{
-   return lhs.target_->name() < rhs.target_->name();
-}
-
-static bool has_override(engine& e,
-                         const basic_meta_target& target,
-                         const feature_set& build_request)
-{
-   feature_set* fs = e.feature_registry().make_set();
-   target.requirements().eval(build_request, fs);
-   return fs->find("override") != fs->end();
-}
-
 void engine::loaded_projects_t::post_process(project::selected_targets_t& result) const
 {
    if (result.empty())
       throw std::runtime_error("[FIXME] Can't select best alternative - no one founded");
 
+   sort(result.begin(), result.end(), [](const project::selected_target& lhs, const project::selected_target& rhs) {
+      return lhs.resolved_build_request_rank_ > rhs.resolved_build_request_rank_;
+   });
+
    if (result.size() == 1)
       return;
-
-   // Check for targets with same name. They already have same symbolic names so we should check names.
-   using namespace boost::logic;
-   engine& e = *result.front().target_->get_engine();
-   std::sort(result.begin(), result.end(), targets_by_name);
-   project::selected_targets_t::iterator
-      first = result.begin(),
-      second = ++result.begin();
-   tribool overriden = false;
-   for(; second != result.end();)
-   {
-      if (first->target_->name() == second->target_->name())
-      {
-         switch(overriden.value)
-         {
-            case tribool::true_value:
-            {
-               if (has_override(e, *second->target_, *second->resolved_build_request_))
-                  throw std::runtime_error("[FIXME] Can't select best alternative from two others");
-               else
-                  second = result.erase(second);
-
-               break;
-            }
-
-            case tribool::false_value:
-            {
-               if (has_override(e, *second->target_, *second->resolved_build_request_))
-               {
-                  std::swap(*first, *second);
-                  second = result.erase(second);
-               }
-               else
-                  throw std::runtime_error("[FIXME] Can't select best alternative from two others");
-
-               break;
-            }
-
-            case tribool::indeterminate_value:
-            {
-               overriden = has_override(e, *first->target_, *first->resolved_build_request_);
-               break;
-            }
-         }
-      }
-      else
-      {
-         ++first;
-         ++second;
-      }
-   }
+   else if (result[0].resolved_build_request_rank_ != result[1].resolved_build_request_rank_)
+      result = project::selected_targets_t(1, result.front());
+   else
+      throw std::runtime_error("[FIXME] Can't select best alternative from multiple others");
 }
 
 project::selected_targets_t
@@ -1303,7 +1252,6 @@ engine::loaded_projects_t::select_best_alternative(const pstring& target_name,
          result.push_back(st);
    }
 
-   // after this call we will have only one meta target in result list
    post_process(result);
 
    return result.front();

@@ -23,6 +23,7 @@
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature.h>
 #include <cassert>
+#include <unordered_set>
 
 using namespace std;
 using namespace boost::spirit::classic;
@@ -165,6 +166,15 @@ void download_file(const fs::path& working_dir,
       throw std::runtime_error("Failed to download '" + url + "'");
 }
 
+static
+string package_id_from_location(const location_t& project_path)
+{
+   if (!project_path.has_root_path())
+      throw std::runtime_error("[package_id_from_location]: Bad project path '" + project_path.string() + "'");
+
+   return project_path.relative_path().string();
+}
+
 warehouse_impl::packages_t
 warehouse_impl::load_packages(const fs::path& filepath)
 {
@@ -292,33 +302,44 @@ warehouse_impl::find_package(const std::string& public_id,
    return const_cast<warehouse_impl*>(this)->find_package(public_id, version);
 }
 
-bool warehouse_impl::has_project(const location_t& project_path) const
+bool warehouse_impl::has_project(const location_t& project_path,
+                                 const string& version) const
 {
    if (!project_path.has_root_path())
       return false;
 
    const string name = project_path.relative_path().string();
 
-   return packages_.find(name) != packages_.end();
+   auto packages = packages_.equal_range(name);
+   if (version.empty())
+      return packages.first != packages.second;
+
+   for(; packages.first != packages.second; ++packages.first)
+      if (packages.first->second.version_ == version)
+         return true;
+
+   return false;
 }
 
 boost::shared_ptr<project>
 warehouse_impl::load_project(const location_t& project_path)
 {
-   assert(has_project(project_path));
+   const string public_id = package_id_from_location(project_path);
 
-   const string name = project_path.relative_path().string();
+   boost::shared_ptr<project> wproject(new warehouse_project(engine_, repository_path_ / "libs" / public_id));
+   add_traps(*wproject, public_id);
 
-   boost::shared_ptr<project> result(new warehouse_project(engine_, project_path));
-   auto_ptr<basic_meta_target> target(new warehouse_meta_target(*result, pstring(engine_.pstring_pool(), name)));
-   result->add_target(target);
-
-   return result;
+   return wproject;
 }
 
 warehouse_impl::~warehouse_impl()
 {
 
+}
+
+bool warehouse_impl::project_from_warehouse(const project& p) const
+{
+   return p.location().string().find(repository_path_.string()) == 0;
 }
 
 warehouse::package_info
@@ -475,15 +496,19 @@ void warehouse_impl::install_package(const package_t& p,
    insert_line_in_front(package_hamfile, make_package_alias_line(p.public_id_, p.version_));
 }
 
-bool warehouse_impl::known_to_engine(const std::string& public_id,
-                                     const project& repository_project)
+bool warehouse_impl::resolves_to_real_project(const string& public_id,
+                                              const project& repository_project)
 {
    engine::loaded_projects_t loaded_projects = engine_.try_load_project("/" + public_id, repository_project);
    if (loaded_projects.empty())
-      return false;
+      return true;
 
-   const project& p = loaded_projects.front();
-   return dynamic_cast<const warehouse_project*>(&p) == NULL;
+   for (const project* p : loaded_projects) {
+      if (project_from_warehouse(*p))
+         return dynamic_cast<const warehouse_project*>(p) == nullptr;
+   }
+
+   return true;
 }
 
 void warehouse_impl::download_and_install(const std::vector<package_info>& packages)
@@ -502,7 +527,7 @@ void warehouse_impl::download_and_install(const std::vector<package_info>& packa
       download_package(pi->second, working_dir);
       install_package(pi->second, repository_path_);
 
-      if (!known_to_engine(pi->second.public_id_, repository_project)) {
+      if (!resolves_to_real_project(pi->second.public_id_, repository_project)) {
          const fs::path repository_hamroot = repository_path_ / "hamroot";
          append_line(repository_hamroot, "use-project /" + pi->second.public_id_ + " : ./libs/" + pi->second.public_id_ + ";");
       }
@@ -695,6 +720,17 @@ void warehouse_impl::add_to_packages(const project& p,
       i->second = package;
 
    write_packages(packages_db_full_path, packages);
+}
+
+warehouse::versions_t
+warehouse_impl::get_package_versions(const string& public_id) const
+{
+   auto versions = packages_.equal_range(public_id);
+   versions_t result;
+   for(; versions.first != versions.second; ++versions.first)
+      result.push_back(versions.first->second.version_);
+
+   return result;
 }
 
 static

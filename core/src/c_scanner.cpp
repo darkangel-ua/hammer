@@ -709,7 +709,8 @@ c_scanner_context::extract_includes(const hashed_location& file_dir,
    location_t file = file_dir.location() / filename.location();
    boost::iostreams::mapped_file_source in(file.string());
    // FIXME: May be we should complain about this?
-   if (in)
+   // FIXME: We use double negation because boost::iostreams::mapped_file_source has some bug in operator unspecified_bool()
+   if (!!in)
    {
       included_files_t& result = included_files_cache_[make_pair(&file_dir, &filename)];
       result.clear();

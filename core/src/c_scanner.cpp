@@ -44,42 +44,6 @@ namespace boost
 
 namespace hammer{
 
-// struct c_scanner_cache
-// {
-//    struct item
-//    {
-//       template<class Archive>
-//       void serialize(Archive & ar, const unsigned int version)
-//       {
-//          ar & timestamp_ & included_files_;
-//       }
-// 
-//       boost::posix_time::ptime timestamp_;
-//       c_scanner::included_files_t included_files_;
-//    };
-// 
-//    BOOST_SERIALIZATION_SPLIT_MEMBER()
-//    template<class Archive>
-//    void save(Archive & ar, const unsigned int version) const
-//    {
-//       boost::serialization::stl::save_collection<Archive, items_t>(ar, items_);
-//    }
-// 
-//    template<class Archive>
-//    void load(Archive & ar, const unsigned int version)
-//    {
-//       boost::serialization::stl::load_collection<
-//          Archive,
-//          items_t,
-//          boost::serialization::stl::archive_input_map<Archive, items_t>,
-//          boost::serialization::stl::no_reserve_imp<items_t> 
-//       >(ar, items_);
-//    }
-// 
-//    typedef boost::unordered_map<hashed_location, item> items_t;
-//    items_t items_;
-// };
-
 struct c_scanner_context : public scanner_context
 {
    struct dir_node;
@@ -207,18 +171,6 @@ struct c_scanner_context : public scanner_context
    pair<const hashed_location*, bool> get_cached_location(const hashed_location& v) const;
    const hashed_location& add_and_normalize(const hashed_location& p1, const hashed_location& p2) const;
 
-/*
-   pair<ptime, const node*> calculate_timestamp(dir_node& dir, 
-                                                const hashed_location& file_path,
-                                                const include_files_dirs_t& include_files_dirs,
-                                                const feature_set& properties);
-   ptime calculate_timestamp(dir_node& origin_dir,
-                             const hashed_location& origin_file_path,
-                             const c_scanner::included_files_t& included_files,
-                             const include_files_dirs_t& include_files_dirs,
-                             const feature_set& properties);
-   dir_node& get_dir_node(const location_t& path);
-*/
    void try_load_cache();
    void try_save_cache();
 
@@ -246,11 +198,6 @@ struct c_scanner_context : public scanner_context
                                             const directories_t& include_dirs,
                                             visited_nodes_t& visited_nodes);
 
-/*
-   include_files_dirs_cache_t include_files_dirs_cache_;
-   inc_dirs_2_node_cache_t inc_dirs_2_node_cache_;
-   dir_nodes_t nodes_;
-*/
    const c_scanner& owner_;
    boost::regex pattern_;
    const build_environment& env_;
@@ -315,24 +262,6 @@ void c_scanner_context::try_save_cache()
    }
    catch(...) {}
 }
-
-/*
-c_scanner_context::dir_node& c_scanner_context::get_dir_node(const location_t& path)
-{
-   dir_nodes_t::iterator di = nodes_.find(path);
-
-   if (di != nodes_.end())
-      return di->second;
-   else
-   {
-      dir_node node;
-      node.dir_ = path;
-      node.exists_ = exists(path);
-      return nodes_.insert(make_pair(path, node)).first->second;
-   }
-}
-*/
-
 
 void c_scanner_context::load_directory(const hashed_location& dir) const
 {
@@ -709,128 +638,6 @@ c_scanner_context::get_include_dirs(const feature_set& properties)
       return features_2_dirs_.insert(make_pair(&properties, result)).first->second;
    }
 }
-
-/*
-pair<ptime, const c_scanner_context::node*>
-c_scanner_context::calculate_timestamp(dir_node& dir, 
-                                       const hashed_location& file_path,
-                                       const include_files_dirs_t& include_files_dirs,
-                                       const feature_set& properties)
-{
-   if (!dir.exists_)
-      return make_pair(ptime(neg_infin), static_cast<const c_scanner_context::node*>(NULL));
-
-   nodes_t::iterator i = dir.nodes_.find(file_path);
-   if (i != dir.nodes_.end())
-   {
-      if (i->second->timestamp_ == neg_infin)
-         return make_pair(i->second->timestamp_, i->second.get()); //file doesn't exists
-
-      node::variants_t::iterator v_i = i->second->variants_.find(&properties);
-      if (v_i != i->second->variants_.end())
-         return make_pair(v_i->second.timestamp_, i->second.get());
-      else
-      {
-         node::variant v;
-         v.build_properties_ = &properties;
-         i->second->variants_.insert(make_pair(&properties, v));
-         ptime included_files_timestamp = calculate_timestamp(dir,
-                                                              file_path,
-                                                              *i->second->included_files_, 
-                                                              include_files_dirs, 
-                                                              properties);
-         node::variant& v_ref = i->second->variants_.find(&properties)->second;
-         v_ref.timestamp_ = (std::max)(v_ref.timestamp_, included_files_timestamp);
-         return make_pair(v_ref.timestamp_, i->second.get());
-      }
-   }
-   else
-   {
-      boost::shared_ptr<node> new_node(new node);
-      new_node->file_path_ = file_path;
-      location_t full_file_path = dir.dir_ / file_path.location();
-      bool is_file_exists = exists(full_file_path);
-      if (is_file_exists)
-      {
-         node::variant v;
-         v.timestamp_ = boost::posix_time::from_time_t(last_write_time(full_file_path));
-         new_node->included_files_ = &owner_.extract_includes(full_file_path, v.timestamp_, *this);
-         new_node->timestamp_ = v.timestamp_;
-         new_node->variants_.insert(make_pair(&properties, v));
-         v.build_properties_ = &properties;
-      }
-      else
-         new_node->included_files_ = &empty_included_files_;
-
-      dir.nodes_.insert(make_pair(file_path, new_node));
-      if (is_file_exists)
-      {
-         ptime included_files_timestamp = calculate_timestamp(dir,
-                                                              file_path,
-                                                              *new_node->included_files_, 
-                                                              include_files_dirs, 
-                                                              properties);
-         node::variant& v_ref = new_node->variants_.find(&properties)->second;
-         v_ref.timestamp_ = (std::max)(v_ref.timestamp_, included_files_timestamp);
-         return make_pair(v_ref.timestamp_, new_node.get());
-      }
-
-      return make_pair(new_node->timestamp_, new_node.get());
-   }
-}
-
-ptime c_scanner_context::calculate_timestamp(dir_node& origin_dir,
-                                             const hashed_location& origin_file_path,
-                                             const c_scanner::included_files_t& included_files,
-                                             const include_files_dirs_t& include_files_dirs,
-                                             const feature_set& properties)
-{
-   ptime result = neg_infin;
-   dir_node* origin_file_dir = NULL;
-
-   for(c_scanner::included_files_t::const_iterator i = included_files.begin(), last = included_files.end(); i != last; ++i)
-   {
-      if (!i->second)
-      {
-         if (origin_file_dir == NULL)
-         {
-            location_t l = origin_dir.dir_ / origin_file_path.location();
-            l.normalize();
-            origin_file_dir = &get_dir_node(l.parent_path());
-         }
-         
-         ptime timestamp = calculate_timestamp(*origin_file_dir, i->first, include_files_dirs, properties).first;
-         result = (std::max)(result, timestamp);
-         if (timestamp != neg_infin)
-            continue;
-      }
-      
-      inc_dirs_2_node_cache_t::iterator inc_dir_cache_i = inc_dirs_2_node_cache_.find(&include_files_dirs);
-      if (inc_dir_cache_i == inc_dirs_2_node_cache_.end())
-         inc_dir_cache_i = inc_dirs_2_node_cache_.insert(make_pair(&include_files_dirs, included_files_to_nodes_t())).first;
-
-      included_files_to_nodes_t::const_iterator if_2_nodes_i = inc_dir_cache_i->second.find(boost::cref(i->first));
-      if (if_2_nodes_i != inc_dir_cache_i->second.end())
-      {
-         result = (std::max)(result, if_2_nodes_i->second);         
-         continue;
-      }
-
-      for(include_files_dirs_t::const_iterator j = include_files_dirs.begin(), j_last = include_files_dirs.end(); j != j_last; ++j)
-      {
-         std::pair<ptime, const node*> timestamp_and_node = calculate_timestamp(**j, i->first, include_files_dirs, properties);
-         result = (std::max)(result, timestamp_and_node.first);
-         if (timestamp_and_node.first != neg_infin)
-         {
-            inc_dir_cache_i->second.insert(make_pair(boost::cref(i->first), timestamp_and_node.first));
-            break;
-         }
-      }
-   }
-   
-   return result;
-}
-*/
 
 boost::posix_time::ptime c_scanner::process(const basic_target& t, 
                                             scanner_context& context_outer) const

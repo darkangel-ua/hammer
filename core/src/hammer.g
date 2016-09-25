@@ -92,7 +92,7 @@ path_slash : { is_path_slash(PARSER) }?=> SLASH ;
 trail_slash : { is_trailing_slash(PARSER) }?=> SLASH;
 head_slash : { is_head_slash(PARSER) }?=> SLASH; 
 SLASH : { is_lexing_sources_decl(LEXER) }?=> '/';
-ID            : ('a'..'z' | 'A'..'Z' | '0'..'9' | '.' | '-' | { !is_lexing_sources_decl(LEXER) }?=> '/' | '_'| '=' | '*')+  
+ID            : ('a'..'z' | 'A'..'Z' | '0'..'9' | '.' | '-' | '+' | { !is_lexing_sources_decl(LEXER) }?=> '/' | '_'| '=' | '*')+  
 	      | STRING { LEXSTATE->type = _type; {pANTLR3_COMMON_TOKEN t = LEXER->emit(LEXER); ++t->start, --t->stop; t->type = _type;} };
 COLON   : ':';
 fragment 

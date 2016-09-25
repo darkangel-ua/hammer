@@ -268,7 +268,6 @@ namespace hammer
          projects_t projects_;
 
          loaded_projects_t() {};
-         void post_process(project::selected_targets_t& result) const;
    };
 }
 

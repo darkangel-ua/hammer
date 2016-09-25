@@ -1206,23 +1206,6 @@ void engine::setup_warehouse_rule(project* p,
    warehouse_->init(url.to_string(), storage_dir);
 }
 
-void engine::loaded_projects_t::post_process(project::selected_targets_t& result) const
-{
-   if (result.empty())
-      throw std::runtime_error("[FIXME] Can't select best alternative - no one founded");
-
-   sort(result.begin(), result.end(), [](const project::selected_target& lhs, const project::selected_target& rhs) {
-      return lhs.resolved_build_request_rank_ > rhs.resolved_build_request_rank_;
-   });
-
-   if (result.size() == 1)
-      return;
-   else if (result[0].resolved_build_request_rank_ != result[1].resolved_build_request_rank_)
-      result = project::selected_targets_t(1, result.front());
-   else
-      throw std::runtime_error("[FIXME] Can't select best alternative from multiple others");
-}
-
 project::selected_targets_t
 engine::loaded_projects_t::select_best_alternative(const feature_set& build_request) const
 {
@@ -1235,7 +1218,24 @@ engine::loaded_projects_t::select_best_alternative(const feature_set& build_requ
             result.push_back(*t);
    }
 
-   post_process(result);
+   if (result.empty())
+      throw std::runtime_error("[FIXME] Can't select best alternative - no one founded");
+
+   // Check for targets with same name. They already have same symbolic names so we should check names.
+   sort(result.begin(), result.end(), [](const project::selected_target& lhs, const project::selected_target& rhs) {
+      return lhs.target_->name() < rhs.target_->name();
+   });
+
+   auto first = result.begin();
+   auto second = ++result.begin();
+   for(; second != result.end();) {
+      if (first->target_->name() == second->target_->name())
+         throw std::runtime_error("[FIXME] Can't select best alternative from two others");
+      else {
+         ++first;
+         ++second;
+      }
+   }
 
    return result;
 }
@@ -1252,9 +1252,20 @@ engine::loaded_projects_t::select_best_alternative(const pstring& target_name,
          result.push_back(st);
    }
 
-   post_process(result);
+   if (result.empty())
+      throw std::runtime_error("[FIXME] Can't select best alternative - no one founded");
 
-   return result.front();
+   if (result.size() == 1)
+      return result.front();
+
+   sort(result.begin(), result.end(), [](const project::selected_target& lhs, const project::selected_target& rhs) {
+      return lhs.resolved_build_request_rank_ > rhs.resolved_build_request_rank_;
+   });
+
+   if (result[0].resolved_build_request_rank_ != result[1].resolved_build_request_rank_)
+      return result.front();
+   else
+      throw std::runtime_error("[FIXME] Can't select best alternative from multiple others");
 }
 
 void engine::output_location_strategy(boost::shared_ptr<hammer::output_location_strategy>& strategy)

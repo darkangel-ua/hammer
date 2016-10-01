@@ -4,6 +4,7 @@
 #include <hammer/core/feature_registry.h>
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature.h>
+#include <boost/format.hpp>
 
 using namespace std;
 
@@ -110,11 +111,17 @@ static bool s_great(const project::selected_target& lhs,
    return lhs.resolved_build_request_rank_ > rhs.resolved_build_request_rank_;
 }
 
-void error_cannot_choose_alternative(const project::selected_target& first,
-                                     const project::selected_target& second)
+void error_cannot_choose_alternative(const project& p,
+                                     const pstring& target_name,
+                                     const feature_set& build_request_param)
 {
-   // FIXME
-   throw std::runtime_error("Can't select best alternative[FIXME]");
+   auto fmt = boost::format("Failed to selecting best alternatives for target '%s' in project '%s'\n"
+                            "Build request: %s\n");
+
+   stringstream s;
+   dump_for_hash(s, build_request_param);
+   throw std::runtime_error((fmt % target_name % p.location()
+                                 % s.str()).str());
 }
 
 project::selected_target
@@ -152,8 +159,7 @@ project::try_select_best_alternative(const pstring& target_name,
    if (selected_targets[0].resolved_build_request_rank_ != selected_targets[1].resolved_build_request_rank_)
       return selected_targets.front();
    else
-      //error_cannot_choose_alternative(selected_targets[0], selected_targets[1]);
-      throw std::runtime_error("Can't select best alternative[FIXME]");
+      error_cannot_choose_alternative(*this, target_name, build_request_param);
 }
 
 

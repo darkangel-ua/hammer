@@ -1218,8 +1218,12 @@ engine::loaded_projects_t::select_best_alternative(const feature_set& build_requ
             result.push_back(*t);
    }
 
-   if (result.empty())
-      throw std::runtime_error("[FIXME] Can't select best alternative - no one founded");
+   if (result.empty()) {
+      stringstream s;
+      dump_for_hash(s, build_request);
+      throw std::runtime_error("Can't select best alternative - no one founded\n"
+                               "Build request: " + s.str());
+   }
 
    // Check for targets with same name. They already have same symbolic names so we should check names.
    sort(result.begin(), result.end(), [](const project::selected_target& lhs, const project::selected_target& rhs) {
@@ -1229,9 +1233,14 @@ engine::loaded_projects_t::select_best_alternative(const feature_set& build_requ
    auto first = result.begin();
    auto second = ++result.begin();
    for(; second != result.end();) {
-      if (first->target_->name() == second->target_->name())
-         throw std::runtime_error("[FIXME] Can't select best alternative from two others");
-      else {
+      if (first->target_->name() == second->target_->name()) {
+         stringstream s;
+         dump_for_hash(s, build_request);
+         throw std::runtime_error("Can't select best alternative for target '"+ first->target_->name().to_string() + "' from projects:\n"
+                                  "1) '" + first->target_->location().string() + "' \n"
+                                  "2) '" + second->target_->location().string() + "' \n"
+                                  "Build request: " + s.str());
+      } else {
          ++first;
          ++second;
       }
@@ -1252,9 +1261,6 @@ engine::loaded_projects_t::select_best_alternative(const pstring& target_name,
          result.push_back(st);
    }
 
-   if (result.empty())
-      throw std::runtime_error("[FIXME] Can't select best alternative - no one founded");
-
    if (result.size() == 1)
       return result.front();
 
@@ -1264,8 +1270,14 @@ engine::loaded_projects_t::select_best_alternative(const pstring& target_name,
 
    if (result[0].resolved_build_request_rank_ != result[1].resolved_build_request_rank_)
       return result.front();
-   else
-      throw std::runtime_error("[FIXME] Can't select best alternative from multiple others");
+   else {
+      stringstream s;
+      dump_for_hash(s, build_request);
+      throw std::runtime_error("Can't select best alternative for target '"+ result[0].target_->name().to_string() + "' from projects:\n"
+                               "1) '" + result[0].target_->location().string() + "' \n"
+                               "2) '" + result[1].target_->location().string() + "' \n"
+                               "Build request: " + s.str());
+   }
 }
 
 void engine::output_location_strategy(boost::shared_ptr<hammer::output_location_strategy>& strategy)

@@ -35,7 +35,7 @@ gcc_toolset::resolve_install_data(const location_t* toolset_home_, const std::st
 
    gcc_install_data install_data;
    install_data.version_ = version_id;
-   if (version_id.empty()) {
+   if (version_id.empty() || version_id == "system") {
       install_data.compiler_ = toolset_home / "g++" ;
       install_data.linker_ = toolset_home / "g++";
    } else {
@@ -238,7 +238,7 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
 void gcc_toolset::autoconfigure(engine& e) const
 {
    //FIXME: Pure hack
-   init_impl(e, "unknown", NULL);
+   init_impl(e, "system", NULL);
 }
 
 }

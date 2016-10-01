@@ -4,7 +4,7 @@ lib hammer.ast
    [ rglob ../include/*.h ]
    @/hammer/parscore
    @/hammer/core_objects
-   @/boost/ptr_container/<version>1.36.0
+   @/boost/ptr_container/<version>1.58.0+1
   :
    @<include>../include
    <link>static

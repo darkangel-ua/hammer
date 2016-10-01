@@ -12,8 +12,8 @@ lib hammer.parser
     [ rglob ../include/*.h ]
     c_as_cpp_files
     /hammer/sema
-    /boost/filesystem/<version>1.36.0/<link>static
-    /libantlr3c/<version>3.1.1
+    /boost/filesystem/<version>1.58.0+1/<link>static
+    /libantlr3c/<version>3.1.1+2
    :
     @<include>../include
     <link>static

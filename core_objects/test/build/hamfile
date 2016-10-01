@@ -3,8 +3,8 @@ testing.run
     [ glob ../src/*.h : stdafx.h ]
     /hammer/parscore
     /hammer/core_objects
-    /boost/test//utf/<version>1.36.0/<link>static 
-    /boost/assign/<version>1.36.0 
+    /boost/test//utf/<version>1.58.0+1/<link>static 
+    /boost/assign/<version>1.58.0+1 
    :
    :
    :

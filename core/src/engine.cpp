@@ -1202,7 +1202,18 @@ void engine::setup_warehouse_rule(project* p,
                                   const pstring& url,
                                   const pstring* storage_dir_)
 {
-   const string storage_dir = storage_dir_ ? storage_dir_->to_string() : string();
+   string storage_dir;
+   if (storage_dir_ && !storage_dir_->empty()) {
+      fs::path sd(storage_dir_->to_string());
+      if (sd.is_absolute())
+         storage_dir = sd.string();
+      else {
+         sd = p->location() / sd;
+         sd.normalize();
+         storage_dir = sd.string();
+      }
+   }
+
    warehouse_->init(url.to_string(), storage_dir);
 }
 

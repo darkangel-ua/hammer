@@ -7,7 +7,9 @@
 #include <boost/unordered_set.hpp>
 #include <boost/thread/thread.hpp>
 #include <iostream>
+#include <iomanip>
 #include <fstream>
+#include <cmath>
 #include <stdlib.h>
 #include <signal.h>
 
@@ -659,6 +661,52 @@ namespace
 
       nodes.insert(nodes.end(), copy_nodes.begin(), copy_nodes.end());
    }
+
+   // http://stackoverflow.com/questions/3758606/how-to-convert-byte-size-into-human-readable-format-in-java
+   string human_readable_byte_count(const long long bytes,
+                                    const bool si = true)
+   {
+      const unsigned unit = si ? 1000 : 1024;
+      if (bytes < unit)
+         return (boost::format("%1 B") % bytes).str();
+
+      const long exp = lrint(log(bytes) / log(unit));
+      return (boost::format("%.1f %c%sB")
+               % (bytes / pow(unit, exp))
+               % ((si ? "kMGTPE" : "KMGTPE")[exp - 1])
+               % (si ? "" : "i")).str();
+   }
+
+   class warehouse_dl_notifier : public iwarehouse_download_and_install
+   {
+      public:
+         warehouse_dl_notifier(const unsigned max_package_name_lenght) : max_package_name_lenght_(max_package_name_lenght) {}
+
+         void on_download_begin(const warehouse::package_info& package) override
+         {
+            cout << "Downloading " << setw(max_package_name_lenght_) << left << (package.name_ + " (" + package.version_ +")")
+                 << setw(10) << right << human_readable_byte_count(package.package_file_size_) << flush;
+         }
+
+         void on_download_end(const warehouse::package_info& package) override
+         {
+            cout << " Done" << endl;
+         }
+
+         void on_install_begin(const warehouse::package_info& package) override
+         {
+            cout << "Installing  " << setw(max_package_name_lenght_) << left << (package.name_ + " (" + package.version_ +")")
+                 << setw(10) << ' ' << flush;
+         }
+
+         void on_install_end(const warehouse::package_info& package) override
+         {
+            cout << " Done" << endl;
+         }
+
+      private:
+         const unsigned max_package_name_lenght_;
+   };
 }
 
 
@@ -840,12 +888,28 @@ int main(int argc, char** argv) {
             nodes = generate_targets(instantiated_targets);
          } catch(const warehouse_unresolved_target_exception& e) {
             // ups - we have some libs to download
-            cout << "\n\nThere is unresolved packages to download and build:\n";
             warehouse& wh = engine.warehouse();
             vector<warehouse::package_info> packages = wh.get_unresoved_targets_info(find_all_warehouse_unresolved_targets(instantiated_targets));
-            for(vector<warehouse::package_info>::const_iterator i = packages.begin(), last = packages.end(); i != last; ++i)
-               cout << i->name_ << "(" << i->version_ << ") size: " << i->package_file_size_ << "\n";
-            cout << "\n\nDownload & Build? [Y/n]: ";
+
+            cout << boost::format("\n\nThere are %d unresolved package(s) to download and install:\n\n") % packages.size();
+
+            auto package_with_longest_name =
+               max_element(packages.begin(), packages.end(),
+                           [](const warehouse::package_info& lhs, const warehouse::package_info& rhs)
+               {
+                  return lhs.name_.size() + lhs.version_.size() < rhs.name_.size() + rhs.version_.size();
+               });
+            const unsigned max_package_name_lenght = package_with_longest_name->name_.size() + package_with_longest_name->version_.size() +
+                                                     3 /*formating extras*/;
+
+            long long total_bytes_to_download = 0;
+            for(vector<warehouse::package_info>::const_iterator i = packages.begin(), last = packages.end(); i != last; ++i) {
+               cout << setw(max_package_name_lenght) << left << (i->name_ + " ("+ i->version_ + ")") << " : " << setw(10) << right << human_readable_byte_count(i->package_file_size_) << endl;
+               total_bytes_to_download += i->package_file_size_;
+            }
+            cout << setw(max_package_name_lenght) << left  << "\nTotal size to download    " << "  : " << setw(10) << right << human_readable_byte_count(total_bytes_to_download) << endl;
+
+            cout << "\n\nDownload & Build? [Y/n]: " << flush;
             char c;
             cin >> c;
             if (c != 'Y' && c != 'y') {
@@ -853,7 +917,8 @@ int main(int argc, char** argv) {
                return -1;
             }
 
-            wh.download_and_install(packages);
+            warehouse_dl_notifier notifier(max_package_name_lenght);
+            wh.download_and_install(packages, notifier);
             continue; // restart
          }
 

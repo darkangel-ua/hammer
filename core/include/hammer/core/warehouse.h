@@ -12,6 +12,7 @@ namespace hammer {
    class basic_target;
    class warehouse_target;
    class call_resolver;
+   class iwarehouse_download_and_install;
 
    class warehouse : public boost::noncopyable
    {
@@ -52,7 +53,8 @@ namespace hammer {
          // possibly by introducing something like pair<known packages/unknown packages> or separate class
          virtual
          package_infos_t get_unresoved_targets_info(const std::vector<const warehouse_target*>& targets) const = 0;
-         virtual void download_and_install(const std::vector<package_info>& packages) = 0;
+         virtual void download_and_install(const std::vector<package_info>& packages,
+                                           iwarehouse_download_and_install& notifier) = 0;
          // FIXME: this is temporal hack. I will remove this when web part will be implemented
          virtual void add_to_packages(const project& p,
                                       const location_t& packages_db_path = location_t()) = 0;
@@ -63,6 +65,25 @@ namespace hammer {
                                 const std::string& storage_dir) = 0;
          virtual package_infos_t update_impl() = 0;
          virtual void update_all_packages_impl() = 0;
+   };
+
+   class iwarehouse_download_and_install
+   {
+      public:
+         virtual void on_download_begin(const warehouse::package_info& package) = 0;
+         virtual void on_download_end(const warehouse::package_info& package) = 0;
+         virtual void on_install_begin(const warehouse::package_info& package) = 0;
+         virtual void on_install_end(const warehouse::package_info& package) = 0;
+         virtual ~iwarehouse_download_and_install() {}
+   };
+
+   class null_warehouse_download_and_install : public iwarehouse_download_and_install
+   {
+      public:
+         void on_download_begin(const warehouse::package_info& package) override {}
+         void on_download_end(const warehouse::package_info& package) override {}
+         void on_install_begin(const warehouse::package_info& package) override {}
+         void on_install_end(const warehouse::package_info& package) override {}
    };
 
    std::vector<const warehouse_target*>

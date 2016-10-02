@@ -511,7 +511,8 @@ bool warehouse_impl::resolves_to_real_project(const string& public_id,
    return true;
 }
 
-void warehouse_impl::download_and_install(const std::vector<package_info>& packages)
+void warehouse_impl::download_and_install(const std::vector<package_info>& packages,
+                                          iwarehouse_download_and_install& notifier)
 {
    fs::path working_dir = repository_path_ / "downloads";
    if (!exists(working_dir))
@@ -524,13 +525,18 @@ void warehouse_impl::download_and_install(const std::vector<package_info>& packa
       if (pi == packages_.end())
          throw std::runtime_error("Can't find package '" + i->name_ + " v" + i->version_ + "'");
 
+      const package_info bpi = to_package_info(pi->second);
+      notifier.on_download_begin(bpi);
       download_package(pi->second, working_dir);
-      install_package(pi->second, repository_path_);
+      notifier.on_download_end(bpi);
 
+      notifier.on_install_begin(bpi);
+      install_package(pi->second, repository_path_);
       if (!resolves_to_real_project(pi->second.public_id_, repository_project)) {
          const fs::path repository_hamroot = repository_path_ / "hamroot";
          append_line(repository_hamroot, "use-project /" + pi->second.public_id_ + " : ./libs/" + pi->second.public_id_ + ";");
       }
+      notifier.on_install_end(bpi);
    }
 }
 
@@ -775,7 +781,8 @@ void warehouse_impl::update_package(package_t& package_to_update)
    pi.name_ = package_to_update.public_id_;
    pi.version_ = package_to_update.version_;
 
-   download_and_install({pi});
+   null_warehouse_download_and_install dl_notifier;
+   download_and_install({pi}, dl_notifier);
 
    package_to_update.need_update_ = false;
 }

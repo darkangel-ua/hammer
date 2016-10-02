@@ -22,7 +22,8 @@ class warehouse_impl : public warehouse
                        const std::string& version) const override;
       boost::shared_ptr<project> load_project(const location_t& project_path) override;
       std::vector<package_info> get_unresoved_targets_info(const std::vector<const warehouse_target*>& targets) const override;
-      void download_and_install(const std::vector<package_info>& packages) override;
+      void download_and_install(const std::vector<package_info>& packages,
+                                iwarehouse_download_and_install& notifier) override;
 
       void add_to_packages(const project& p,
                            const location_t& packages_db_root_ = location_t()) override;

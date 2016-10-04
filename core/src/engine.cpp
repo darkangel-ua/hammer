@@ -36,6 +36,7 @@
 #include <hammer/core/prebuilt_lib_meta_target.h>
 #include <hammer/core/file_meta_target.h>
 #include "warehouse_impl.h"
+#include "builtin_features.h"
 
 using namespace std;
 namespace fs = boost::filesystem;
@@ -100,6 +101,8 @@ engine::engine()
 #endif
 
    feature_registry_ = fr.release();
+
+   load_hammer_script(g_builtin_features, "builtin_features");
 
    type_registry_.reset(new type_registry);
 

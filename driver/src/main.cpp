@@ -43,7 +43,6 @@
 #include <hammer/core/fs_helpers.h>
 #include <hammer/core/warehouse_target.h>
 #include <hammer/core/warehouse.h>
-#include <hammer/core/startup_script.h>
 
 #include "user_config_location.h"
 #include "dump_targets_to_update.h"
@@ -733,13 +732,9 @@ int main(int argc, char** argv) {
             throw std::runtime_error("You should specify path-to-packages parameter");
       }
 
-      if (opts.debug_level_ > 0)
-         cout << "...Loading startup script... " << flush;
-
       while(true) {
          hammer::engine engine;
          install_warehouse_rules(engine.call_resolver(), engine);
-         engine.load_hammer_script(g_startup_script, "startup_script");
 
          types::register_standart_types(engine.get_type_registry(), engine.feature_registry());
 

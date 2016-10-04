@@ -1,8 +1,8 @@
-#include <hammer/core/startup_script.h>
+#include "builtin_features.h"
 
 namespace hammer {
 
-const char* g_startup_script = R"(
+const char* g_builtin_features = R"(
 
 feature.feature undef : : free ;
 feature.feature define : : free ;

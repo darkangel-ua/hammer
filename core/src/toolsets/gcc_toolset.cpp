@@ -88,7 +88,9 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
            add("<warnings-as-errors>on", "-Werror").
            add("<debug-symbols>on", "-g").
            add("<profiling>on", "-pg").
-           add("<link>shared/<host-os>linux", "-fPIC");
+           add("<link>shared/<host-os>linux", "-fPIC").
+           add("<address-model>32", "-m32").
+           add("<address-model>64", "-m64");
 
    shared_ptr<fs_argument_writer> link_flags(new fs_argument_writer("link_flags", e.feature_registry()));
    link_flags->add("<debug-symbols>on", "-g").

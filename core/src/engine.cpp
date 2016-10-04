@@ -104,6 +104,15 @@ engine::engine()
 
    load_hammer_script(g_builtin_features, "builtin_features");
 
+   switch(sizeof(nullptr)) {
+      case 4:
+         feature_registry_->get_def("address-model").set_default("32");
+         break;
+      case 8:
+         feature_registry_->get_def("address-model").set_default("64");
+         break;
+   }
+
    type_registry_.reset(new type_registry);
 
    generators_.reset(new generator_registry);

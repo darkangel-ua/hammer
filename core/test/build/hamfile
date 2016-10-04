@@ -4,12 +4,12 @@ testing.run
     [ glob ../src/*.h ]
     [ glob ../src/build/*.h ]
     /hammer/core
-    /boost/test//utf/<version>1.58.0
-    /boost/assign/<version>1.58.0
-    /boost/regex/<version>1.58.0
+    /boost/test//utf/<version>1.58.0+1
+    /boost/assign/<version>1.58.0+1
+    /boost/regex/<version>1.58.0+1
     /libantlr3c/<version>3.1.1+2
     /ext/boost/process/<version>0.1+1
-    /boost/spirit/<version>1.58.0
+    /boost/spirit/<version>1.58.0+1
    :
    :
     ../tests_data/.

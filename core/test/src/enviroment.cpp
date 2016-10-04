@@ -6,11 +6,9 @@
 #include <hammer/core/testing_generators.h>
 #include <hammer/core/toolset_manager.h>
 #include <hammer/core/types.h>
-#include <hammer/core/startup_script.h>
 
 setuped_engine::setuped_engine(bool install_toolsets)
 {
-   engine_.load_hammer_script(hammer::g_startup_script, "startup_script");
    hammer::types::register_standart_types(engine_.get_type_registry(), engine_.feature_registry());
    if (install_toolsets)
    {

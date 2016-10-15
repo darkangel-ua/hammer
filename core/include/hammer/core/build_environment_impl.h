@@ -9,7 +9,8 @@ namespace hammer{
 class build_environment_impl : public build_environment
 {
    public:
-      build_environment_impl(const location_t& cur_dir);
+      build_environment_impl(const location_t& cur_dir,
+                             const bool print_shell_commands = false);
       virtual ~build_environment_impl();
 
       virtual bool run_shell_commands(const std::vector<std::string>& cmds, const location_t& working_dir) const;
@@ -35,10 +36,12 @@ class build_environment_impl : public build_environment
 
    private:
       location_t current_directory_;
+      const bool print_shell_commands_;
       location_t cache_directory_;
       std::auto_ptr<std::ostream*> output_stream_;
       std::auto_ptr<std::ostream*> error_stream_;
 
+      // FIXME: need to find better name
       void dump_shell_command(std::ostream& s, const location_t& full_content_file_name) const;
       bool run_shell_commands(std::ostream* captured_output_stream,
                               std::ostream* captured_error_stream,

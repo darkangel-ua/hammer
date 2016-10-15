@@ -18,8 +18,11 @@ using namespace std;
 
 namespace hammer{
 
-build_environment_impl::build_environment_impl(const location_t& cur_dir)
-   : current_directory_(cur_dir), cache_directory_(cur_dir / ".hammer/bin")
+build_environment_impl::build_environment_impl(const location_t& cur_dir,
+                                               const bool print_shell_commands)
+   : current_directory_(cur_dir),
+     print_shell_commands_(print_shell_commands),
+     cache_directory_(cur_dir / ".hammer/bin")
 {
 
 }
@@ -87,8 +90,14 @@ bool build_environment_impl::run_shell_commands(std::ostream* captured_output_st
 #endif
 
 #if defined(_WIN32)
+      if (print_shell_commands_ && captured_output_stream)
+         dump_shell_command(*captured_output_stream, full_tmp_file_name);
+
       bp::child shell_action_child = bp::launch(std::string(), cmdline, ctx);
 #else
+      if (print_shell_commands_ && captured_output_stream)
+         *captured_output_stream << cmd_stream.str();
+
       bp::child shell_action_child = bp::launch_shell(cmd_stream.str(), ctx);
 #endif
 

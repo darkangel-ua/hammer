@@ -453,7 +453,7 @@ namespace
       terminate_immediately = false;
       signal(SIGINT, ctrl_handler);
 
-      build_environment_impl build_environment(fs::current_path());
+      build_environment_impl build_environment(fs::current_path(), opts.debug_level_ >= 3);
 
       if (opts.just_one_source_.empty())
       {

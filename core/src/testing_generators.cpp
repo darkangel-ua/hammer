@@ -19,6 +19,13 @@ void add_testing_generators(engine& e, generator_registry& gr)
    generator::consumable_types_t source;
    generator::producable_types_t target;
    source.push_back(generator::consumable_type(e.get_type_registry().get(types::EXE), 1, 0));
+   // FIXME: I add those here because in case when we specify <library>/foo for testing project to be added to all tests
+   //        but this will also add static/shared lib to testing run generator, and because there is generator from static/shared
+   //        lib to EXE it will try to build EXE from lib and than feed it to testing_run target
+   //        I need to find a better way to deal with unimportant sources or with project features propagation
+   source.push_back(generator::consumable_type(e.get_type_registry().get(types::STATIC_LIB)));
+   source.push_back(generator::consumable_type(e.get_type_registry().get(types::SHARED_LIB)));
+
    target.push_back(generator::produced_type(e.get_type_registry().get(types::TESTING_OUTPUT)));
    target.push_back(generator::produced_type(e.get_type_registry().get(types::TESTING_RUN_PASSED)));
    std::auto_ptr<generator> g(new generator(e, "testing.run", source, target, true));

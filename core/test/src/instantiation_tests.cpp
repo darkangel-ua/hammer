@@ -23,12 +23,15 @@ struct instantiation_tests : public setuped_engine
    
    void run_test(const fs::path& test_data_path)
    {
+      options opts(test_data_path / "hamfile");
+      if (opts.exists("skip"))
+         return;
+
       project& p = engine_.load_project(test_data_path);
 
       // if instantiation.jcf presents that run checker 
       // FIXME: else we just parse project for now
       if (exists(test_data_path / "instantiation.jcf")) {
-         options opts(test_data_path / "hamfile");
          feature_set* build_request = engine_.feature_registry().make_set();
          build_request->join("host-os", engine_.feature_registry().get_def("host-os").get_default().c_str());
 

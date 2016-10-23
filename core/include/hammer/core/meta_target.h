@@ -43,6 +43,7 @@ namespace hammer
       private:
          void instantiate_meta_targets(sources_decl& simple_targets,
                                        std::vector<basic_target*>& instantiated_meta_targets,
+                                       sources_decl& additional_sources,
                                        feature_set& usage_requirements,
                                        const meta_targets_t& meta_targets,
                                        const feature_set& build_request,

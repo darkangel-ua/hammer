@@ -26,6 +26,7 @@ namespace hammer{
 
    void meta_target::instantiate_meta_targets(sources_decl& simple_targets,
                                               std::vector<basic_target*>& instantiated_meta_targets,
+                                              sources_decl& additional_sources,
                                               feature_set& usage_requirements,
                                               const meta_targets_t& meta_targets,
                                               const feature_set& build_request,
@@ -40,9 +41,11 @@ namespace hammer{
       usage_requirements.join(local_usage_requirements);
       if (!sources_from_features.empty())
       {
+         additional_sources.insert(sources_from_features);
+
          meta_targets_t new_meta_targets;
          split_sources(&simple_targets, &new_meta_targets, sources_from_features, build_request);
-         instantiate_meta_targets(simple_targets, instantiated_meta_targets, 
+         instantiate_meta_targets(simple_targets, instantiated_meta_targets, additional_sources,
                                   usage_requirements, new_meta_targets, 
                                   build_request, owner_for_new_targets);
       }
@@ -56,6 +59,7 @@ namespace hammer{
                                                            const main_target& owner_for_new_targets) const
    {
       sources_decl ignored_simple_targets;
+      sources_decl ignored_additional_sources;
       meta_targets_t ignored_meta_targets;
       split_sources(&ignored_simple_targets, &ignored_meta_targets, sources_from_usage, build_request);
       std::vector<basic_target*> ignored_instantiated_meta_targets;
@@ -79,7 +83,7 @@ namespace hammer{
          if (!meta_targets.empty())
          {
             feature_set* local_usage_requirements = get_engine()->feature_registry().make_set();
-            instantiate_meta_targets(simple_targets, instantiated_meta_targets, 
+            instantiate_meta_targets(simple_targets, instantiated_meta_targets, ignored_additional_sources,
                                      *local_usage_requirements, meta_targets,
                                      build_request, owner_for_new_targets);
             sources_decl sources_from_usage_requirements;
@@ -140,6 +144,7 @@ namespace hammer{
 
       sources_decl additional_sources(owner == NULL ? sources_decl() : compute_additional_sources(*owner));
       sources_decl sources_from_requirements;
+      sources_decl sources_from_features;
       sources_decl dependencies_from_requierements;
       extract_sources(sources_from_requirements, *mt_fs);
       extract_dependencies(dependencies_from_requierements, *mt_fs);
@@ -156,7 +161,7 @@ namespace hammer{
       mt_fs = mt->properties().clone(); // FIXME ref semantic required
 
       if (!meta_targets.empty())
-         instantiate_meta_targets(simple_targets, instantiated_meta_targets, 
+         instantiate_meta_targets(simple_targets, instantiated_meta_targets, sources_from_features,
                                   *local_usage_requirements, meta_targets, 
                                   *build_request_for_dependencies, *mt);
       
@@ -166,7 +171,7 @@ namespace hammer{
 
       feature_set* ignored_dependencies_usage_requirements = get_engine()->feature_registry().make_set();
       if (!dependency_meta_targets.empty())
-         instantiate_meta_targets(simple_targets, instantiated_dependency_meta_targets, 
+         instantiate_meta_targets(simple_targets, instantiated_dependency_meta_targets, sources_from_features,
                                  *ignored_dependencies_usage_requirements, dependency_meta_targets,
                                  *build_request_for_dependencies, *mt);
 
@@ -174,12 +179,13 @@ namespace hammer{
       // calculate src_dependencies
       sources_decl src_dependencies;
       sources_decl src_dependencies_simple_targets;
+      sources_decl ignored_sources_from_features;
       vector<basic_target*> instantiated_src_dependency_meta_targets;
       meta_targets_t src_dependency_meta_targets;
       extract_src_dependencies(src_dependencies, *local_usage_requirements);
       split_sources(&src_dependencies_simple_targets, &src_dependency_meta_targets, src_dependencies, *build_request_for_dependencies); 
       if (!src_dependencies.empty())
-         instantiate_meta_targets(src_dependencies_simple_targets, instantiated_src_dependency_meta_targets, 
+         instantiate_meta_targets(src_dependencies_simple_targets, instantiated_src_dependency_meta_targets, ignored_sources_from_features,
                                  *ignored_dependencies_usage_requirements, src_dependency_meta_targets,
                                  *build_request_for_dependencies, *mt);
       mt->src_dependencies(instantiated_src_dependency_meta_targets);
@@ -198,7 +204,10 @@ namespace hammer{
       mt->sources(instantiated_meta_targets);
       mt->dependencies(instantiated_dependency_meta_targets);
       
-      transfer_public_sources(*usage_requirements, sources(), build_request, get_engine()->feature_registry());
+      sources_decl all_sources = sources();
+      all_sources.insert(sources_from_requirements);
+      all_sources.insert(sources_from_features);
+      transfer_public_sources(*usage_requirements, all_sources, build_request, get_engine()->feature_registry());
       compute_usage_requirements(*usage_requirements, *mt, build_request, *local_usage_requirements, owner);
       
       result->push_back(mt);

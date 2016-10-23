@@ -82,13 +82,6 @@ namespace hammer
                                          const feature_set& build_request, 
                                          sources_decl* simple_targets,
                                          meta_targets_t* meta_targets) const;
-         // this is introduced to support alias meta target, but lately was added more logic
-         // possible FIXME: rename to reflect real functionality
-         virtual void transfer_sources(sources_decl* simple_targets, 
-                                       meta_targets_t* meta_targets,
-                                       const feature_set& build_request,
-                                       const feature_set* additional_build_properties,
-                                       const basic_meta_target* transfer_target) const;
 
          const feature_set& resolve_undefined_features(const feature_set& fs) const;
 

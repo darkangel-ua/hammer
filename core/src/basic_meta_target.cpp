@@ -106,14 +106,11 @@ void basic_meta_target::resolve_meta_target_source(const source_decl& source,
    if (source.target_name().empty() &&
        !source.target_path().empty())
 	{
-		if (const basic_meta_target* m = project_->find_target(source.target_path()))
+      if (project_->find_target(source.target_path()))
 		{
          project::selected_target selected_target = project_->select_best_alternative(source.target_path(), *build_request_with_source_properties);
-         selected_target.target_->transfer_sources(simple_targets,
-                                                   meta_targets,
-                                                   *selected_target.resolved_build_request_,
-                                                   source.properties(), this);
-			return;
+         meta_targets->push_back({selected_target.target_, source.properties()});
+         return;
 		}
    }
 
@@ -125,12 +122,7 @@ void basic_meta_target::resolve_meta_target_source(const source_decl& source,
       {
          hammer::project::selected_targets_t selected_targets(suitable_projects.select_best_alternative(*build_request_with_source_properties));
          for(hammer::project::selected_targets_t::const_iterator i = selected_targets.begin(), last = selected_targets.end(); i != last; ++i)
-	      {
-		      i->target_->transfer_sources(simple_targets,
-                                         meta_targets,
-                                         *i->resolved_build_request_,
-                                         source.properties(), this);
-	      }
+            meta_targets->push_back({i->target_, source.properties()});
       }
       catch(const std::exception& e)
       {
@@ -142,20 +134,8 @@ void basic_meta_target::resolve_meta_target_source(const source_decl& source,
    {
       project::selected_target selected_target = suitable_projects.select_best_alternative(source.target_name(),
                                                                                            *build_request_with_source_properties);
-      selected_target.target_->transfer_sources(simple_targets, meta_targets,
-                                                *selected_target.resolved_build_request_,
-                                                source.properties(),
-                                                this);
+      meta_targets->push_back({selected_target.target_, source.properties()});
    }
-}
-
-void basic_meta_target::transfer_sources(sources_decl* simple_targets,
-                                         meta_targets_t* meta_targets,
-                                         const feature_set& build_request,
-                                         const feature_set* additional_build_properties,
-                                         const basic_meta_target* transfer_target) const
-{
-   meta_targets->push_back(make_pair(this, additional_build_properties));
 }
 
 basic_meta_target::~basic_meta_target()

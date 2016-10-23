@@ -1,0 +1,15 @@
+# 'lib2' has alias with 'lib1' as public source
+# We are expect that lib2 will be presented in 'test' executable, plus <define>lib1 feature,
+# because it should pop-up from lib2
+test [ type = EXE; features = <define>lib1; ]
+{
+   main.cpp [] {}
+   lib2 [ features = <define>lib1; ]
+   {
+      lib2.cpp [] {}
+      lib1 [] 
+      {
+         lib1.cpp [ features = <define>lib1; ] {}
+      }
+   }
+}

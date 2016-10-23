@@ -1,0 +1,4 @@
+lib lib1 : lib1.cpp : @<define>lib1 ;
+alias deps : @lib1 ; 
+lib lib2 : lib2.cpp deps ;
+exe test : main.cpp lib2 ;

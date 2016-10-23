@@ -1,0 +1,3 @@
+lib lib1 : lib1.cpp : : : <define>lib1 ;
+lib lib2 : lib2.cpp : <source>@lib1 ; 
+exe test : main.cpp lib2 ;

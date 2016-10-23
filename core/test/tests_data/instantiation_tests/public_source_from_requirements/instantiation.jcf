@@ -1,0 +1,7 @@
+test [ features = <define>lib1; ]
+{
+   lib2 [ features = <define>lib1; ] {
+       lib2.cpp [] {}
+       lib1 [] {}
+   }   
+}

@@ -26,7 +26,6 @@ basic_meta_target::basic_meta_target(hammer::project* p,
                                      usage_requirements_(usage_req),
                                      is_explicit_(false)
 {
-   // FIXME: ����� ������� ���� ��� ����-�� � ������ �����, ��� ��� ��� �� ������������ �����, ����� ����� ���������� ������ ��� ���
    requirements_.setup_path_data(this);
    usage_requirements_.setup_path_data(this);
 }
@@ -69,8 +68,6 @@ void basic_meta_target::instantiate_meta_targets(const meta_targets_t& targets,
                                                  std::vector<basic_target*>* result,
                                                  feature_set* usage_requirments) const
 {
-   // FIXME: ���� � result ��� ���� ������������������� ���� �� ����� ��������� � ������ ����������� ��� ���� ��������
-   // ���� ��� ��������� ������ �� ������ ���������� ���������������, ���� ���, �� ������ ����������
    for(meta_targets_t::const_iterator i = targets.begin(), last = targets.end(); i != last; ++i)
    {
       i->first->instantiate(owner, i->second == NULL ? build_request : *build_request.join(*i->second),

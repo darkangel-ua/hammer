@@ -1,0 +1,4 @@
+project hammer.core ;
+
+lib hammer.core : hammer_core.cpp /boost/filesystem/<version>1.58.0 ;
+

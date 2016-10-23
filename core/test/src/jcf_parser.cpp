@@ -98,7 +98,7 @@ void jcf_parser::reset()
    impl_->input_ = 0;
 }                 
 
-bool jcf_parser::walk(const vector<hammer::basic_target*>& targets, hammer::engine* e)
+void jcf_parser::walk(const vector<hammer::basic_target*>& targets, hammer::engine* e)
 {
    pANTLR3_COMMON_TREE_NODE_STREAM nodes;
    pjcf_walker          jcf_walker;
@@ -110,6 +110,4 @@ bool jcf_parser::walk(const vector<hammer::basic_target*>& targets, hammer::engi
    
    jcf_walker->free(jcf_walker);
    nodes->free(nodes);
-
-   return true;
 }

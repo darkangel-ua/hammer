@@ -17,7 +17,7 @@ class jcf_parser : public boost::noncopyable
       jcf_parser();
       bool parse(const char* file_name);
       bool parse(const boost::filesystem::path& file_name);
-      bool walk(const std::vector<hammer::basic_target*>& targets, hammer::engine* e);
+      void walk(const std::vector<hammer::basic_target*>& targets, hammer::engine* e);
       ~jcf_parser() { reset(); }
 
    private:

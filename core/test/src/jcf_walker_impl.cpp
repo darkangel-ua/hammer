@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "jcf_walker_impl.h"
+#include <boost/format.hpp>
 #include <hammer/core/project.h>
 #include <hammer/core/main_target.h>
 #include <iostream>
@@ -14,6 +15,7 @@
 
 using namespace hammer;
 using namespace std;
+using boost::format;
 
 void* get_target(const char* id, void* t, int is_top)
 {
@@ -29,7 +31,7 @@ void* get_target(const char* id, void* t, int is_top)
             return *i;
       }
 
-      cout << "checker(0): error: Target '" << id << "' is not found.\n";
+      BOOST_CHECK_MESSAGE(false, format("Target '%s' was not found") % id);
       return 0;
    }
    else
@@ -44,12 +46,12 @@ void* get_target(const char* id, void* t, int is_top)
                return *i;
          }
 
-         cout << "checker(0): error: Target '" << id << "' is not found.\n";
+         BOOST_CHECK_MESSAGE(false, format("Target '%s' was not found") % id);
          return 0;
       }
       else
       {
-         cout << "checker(0): error: '" << id << "' is not a main target\n";
+         BOOST_CHECK_MESSAGE(false, format("'%s' is not a main target") % id);
          return 0;
       }
    }
@@ -67,13 +69,15 @@ void check_type(void* e, void *t, const char* type_id)
    et = eng->get_type_registry().find(type_tag(type_id));
    if (et == 0)
    {
-      cout << "checker(0): error : Type '" << type_id << "' is unknown.\n";
+      BOOST_CHECK_MESSAGE(false, format("Type '%s'  is unknown.") % type_id);
       return;
    }
 
    if (!bt->type().equal_or_derived_from(*et))
-      cout << "checker(0): error: Expected type '" << type_id << "' but got '" << bt->type().tag().name() << "'. "
-              "Target '" << bt->name() << "'";
+      BOOST_CHECK_MESSAGE(false, format("Expected type '%s' but got '%s'. Target '%s'")
+                                    % type_id
+                                    % bt->type().tag().name()
+                                    % bt->name());
 }
 
 void* get_features(void* t)
@@ -103,9 +107,11 @@ void check_feature(void* e, void* t, void* features, const pANTLR3_COMMON_TOKEN 
       feature_set::const_iterator f = fs->find(name);
       if (f == fs->end())
       {
-         cout << name_token->input->fileName->chars << "(" << name_token->line << "): error: "
-            "Expected feature '" << name << "' with value '" << value << "' not founded.\n";
-
+         BOOST_CHECK_MESSAGE(false, format("%s(%d) : Expected feature '%s' with value '%s' was not found")
+                                       % reinterpret_cast<const char*>(name_token->input->fileName->chars)
+                                       % name_token->line
+                                       % name
+                                       % value);
          return;
       }
 
@@ -118,17 +124,24 @@ void check_feature(void* e, void* t, void* features, const pANTLR3_COMMON_TOKEN 
       location_t expected_path(value);
       expected_path.normalize();
       if (p != expected_path)      
-         cout << name_token->input->fileName->chars << "(" << name_token->line << "): error: "
-                 "Expected feature '" << name << "' with value '" << value << "' but found value '" << p << "'.\n";
-
+         BOOST_CHECK_MESSAGE(false, format("%s(%d) : Expected feature '%s' with value '%s' but found value '%s'")
+                                       % reinterpret_cast<const char*>(name_token->input->fileName->chars)
+                                       % name_token->line
+                                       % name
+                                       % value
+                                       % p);
       return;
    }
 
    if (!fs->find(name, value))
    {
-      cout << name_token->input->fileName->chars << "(" << name_token->line << "): error: "
-              "Expected feature '" << name << "' with value '" << value <<
-              "' for target '" << bt->get_main_target()->location() << "\\\\" << bt->name() << "' not found.\n";
+      BOOST_CHECK_MESSAGE(false, format("%s(%d) : Expected feature '%s' with value '%s' for target '%s\\\\%s' was not found")
+                                    % reinterpret_cast<const char*>(name_token->input->fileName->chars)
+                                    % name_token->line
+                                    % name
+                                    % value
+                                    % bt->get_main_target()->location()
+                                    % bt->name());
       return;
    }
 } 
@@ -137,7 +150,7 @@ void check_not_feature(void* e, void* t, void* features, const char* name, const
 {
    const feature_set* fs = static_cast<const feature_set*>(features);
    if (fs->find(name, value))
-      cout << "checker(0): error: Unexpected feature '" << name << "' with value '" << value << " found in properties.\n";
+      BOOST_CHECK_MESSAGE(false, format("Unexpected feature '%s' with value '%s' found in properties") % name % value);
 }
 
 void check_location(void* t, const char* location)
@@ -146,8 +159,8 @@ void check_location(void* t, const char* location)
    if (const main_target* mt = dynamic_cast<const main_target*>(bt))
    {
       if (mt->location() != location)
-         cout << "checker(0): error: Expected location '"  << location << "' but got '" << mt->location() << "'.\n";
+         BOOST_CHECK_MESSAGE(false, format("Expected location '%s' but got '%s'") % location % mt->location());
    }
    else
-      cout << "checker(0): error: Target '" << bt->name() << "' is not a main target.\n"; 
+      BOOST_CHECK_MESSAGE(false, format("Target '%s' is not a main target") % bt->name());
 }

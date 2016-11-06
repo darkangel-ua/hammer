@@ -116,9 +116,9 @@ bool build_environment_impl::run_shell_commands(std::ostream* captured_output_st
 
       if (st.exit_status() != 0)
 #if defined(_WIN32)
-         dump_shell_command(std::cerr, full_tmp_file_name);
+         dump_shell_command(captured_error_stream ? *captured_error_stream : cerr, full_tmp_file_name);
 #else
-         cerr << cmd_stream.str();
+         (captured_error_stream ? *captured_error_stream : cerr) << cmd_stream.str();
 #endif
 
 
@@ -130,18 +130,18 @@ bool build_environment_impl::run_shell_commands(std::ostream* captured_output_st
    }
    catch(const std::exception& e)
    {
-      std::cerr << "Error: " << e.what() << std::endl;
+      (captured_error_stream ? *captured_error_stream : cerr) << "Error: " << e.what() << std::endl;
    }
    catch(...)
    {
-      std::cerr << "Error: Unknown error\n";
+      (captured_error_stream ? *captured_error_stream : cerr) << "Error: Unknown error\n";
    }
 
 #if defined(_WIN32)
-   dump_shell_command(std::cerr, full_tmp_file_name);
+   dump_shell_command(captured_error_stream ? *captured_error_stream : cerr, full_tmp_file_name);
    remove(full_tmp_file_name);
 #else
-   cerr << cmd_stream.str();
+   (captured_error_stream ? *captured_error_stream : cerr) << cmd_stream.str();
 #endif
    return false;
 }

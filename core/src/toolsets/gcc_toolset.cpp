@@ -16,6 +16,7 @@
 #include <hammer/core/exe_and_shared_lib_generator.h>
 #include <hammer/core/static_lib_generator.h>
 #include <hammer/core/unix_libraries_argument_writer.h>
+#include <hammer/core/testing_generators.h>
 
 using namespace boost;
 using std::string;
@@ -122,7 +123,13 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::C), 1, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::OBJ)));
       auto_ptr<generator> g(new generator(e, "gcc.c.compiler", source, target, false, generator_condition));
+
+      std::unique_ptr<generator> g_copy(new generator(e, "gcc.c.compiler", source, target, false, generator_condition));
+      std::unique_ptr<cmdline_action> obj_action_copy(new cmdline_action(*obj_action));
+
       g->action(obj_action);
+
+      add_compile_fail_generator(e, std::move(g_copy), std::move(obj_action_copy));
       e.generators().insert(g);
    }
 
@@ -144,7 +151,13 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::CPP), 1, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::OBJ)));
       auto_ptr<generator> g(new generator(e, "gcc.cpp.compiler", source, target, false, generator_condition));
+
+      std::unique_ptr<generator> g_copy(new generator(e, "gcc.cpp.compiler", source, target, false, generator_condition));
+      std::unique_ptr<cmdline_action> obj_action_copy(new cmdline_action(*obj_action));
+
       g->action(obj_action);
+
+      add_compile_fail_generator(e, std::move(g_copy), std::move(obj_action_copy));
       e.generators().insert(g);
    }
 

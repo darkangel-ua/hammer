@@ -215,6 +215,11 @@ namespace hammer
                                        std::vector<pstring>* input_files, 
                                        requirements_decl* requirements,
                                        pstring* target_name);
+         sources_decl testing_compile_fail_rule(project* p,
+                                                const sources_decl& sources,
+                                                requirements_decl* requirements,
+                                                requirements_decl* default_build,
+                                                requirements_decl* usage_requirements);
          void copy_rule(project* p, pstring& name, sources_decl& sources, requirements_decl* fs,
                         feature_set* default_build, requirements_decl* usage_requirements);
          void import_rule(project* p, std::vector<pstring>& name);

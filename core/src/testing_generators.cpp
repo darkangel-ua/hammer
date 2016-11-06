@@ -9,7 +9,9 @@
 #include <hammer/core/shared_lib_dirs_writer.h>
 #include <hammer/core/free_feature_arg_writer.h>
 #include <hammer/core/feature_registry.h>
+#include <hammer/core/compile_fail_generator.h>
 
+using std::auto_ptr;
 using namespace boost;
 
 namespace hammer{
@@ -53,6 +55,14 @@ void add_testing_generators(engine& e, generator_registry& gr)
    *action += cmdline;
    g->action(action);
    gr.insert(g);
+}
+
+void add_compile_fail_generator(engine& e,
+                                std::unique_ptr<generator> compile_generator,
+                                std::unique_ptr<build_action> compile_action)
+{
+   auto_ptr<generator> g(new compile_fail_generator(e, std::move(compile_generator), std::move(compile_action)));
+   e.generators().insert(g);
 }
 
 }

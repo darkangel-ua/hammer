@@ -33,6 +33,7 @@ namespace hammer
       extern const type_tag COPIED;
       extern const type_tag TESTING_OUTPUT;
       extern const type_tag TESTING_RUN_PASSED;
+      extern const type_tag TESTING_COMPILE_FAIL;
 
       void register_standart_types(type_registry& tr, feature_registry& fr);
    }

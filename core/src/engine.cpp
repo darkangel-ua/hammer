@@ -30,6 +30,7 @@
 #include <hammer/core/copy_meta_target.h>
 #include <hammer/core/testing_meta_target.h>
 #include <hammer/core/testing_intermediate_meta_target.h>
+#include <hammer/core/testing_compile_fail_meta_target.h>
 #include <hammer/core/toolset_manager.h>
 #include <hammer/core/scaner_manager.h>
 #include <hammer/core/default_output_location_strategy.h>
@@ -64,6 +65,7 @@ engine::engine()
    resolver_.insert("version-alias", boost::function<void (project*, pstring&, pstring&, sources_decl*)>(boost::bind(&engine::version_alias_rule, this, _1, _2, _3, _4)));
    resolver_.insert("test-suite", boost::function<void (project*, pstring&, sources_decl&, sources_decl*)>(boost::bind(&engine::test_suite_rule, this, _1, _2, _3, _4)));
    resolver_.insert("testing.run", boost::function<sources_decl (project*, sources_decl*, std::vector<pstring>*, std::vector<pstring>*, requirements_decl*, pstring*)>(boost::bind(&engine::testing_run_rule, this, _1, _2, _3, _4, _5, _6)));
+   resolver_.insert("testing.compile-fail", boost::function<sources_decl (project*, const sources_decl&, requirements_decl*, requirements_decl*, requirements_decl*)>(boost::bind(&engine::testing_compile_fail_rule, this, _1, _2, _3, _4, _5)));
    resolver_.insert("import", boost::function<void (project*, vector<pstring>&)>(boost::bind(&engine::import_rule, this, _1, _2)));
    resolver_.insert("feature.feature", boost::function<void (project*, vector<pstring>&, vector<pstring>*, vector<pstring>*)>(boost::bind(&engine::feature_feature_rule, this, _1, _2, _3, _4)));
    resolver_.insert("feature.subfeature", boost::function<void (project*, pstring&, pstring&, vector<pstring>*, vector<pstring>*)>(boost::bind(&engine::feature_subfeature_rule, this, _1, _2, _3, _4, _5)));
@@ -1055,6 +1057,33 @@ sources_decl engine::testing_run_rule(project* p,
 
    sources_decl result;
    result.push_back(run_target_source);
+
+   return result;
+}
+
+sources_decl
+engine::testing_compile_fail_rule(project* p,
+                                  const sources_decl& sources,
+                                  requirements_decl* requirements,
+                                  requirements_decl* default_build,
+                                  requirements_decl* usage_requirements)
+{
+   const string target_name = location_t(sources.begin()->target_path().to_string()).stem().string();
+   auto_ptr<basic_meta_target> mt(new testing_compile_fail_meta_target(p,
+                                                                       pstring(p->get_engine()->pstring_pool(), target_name),
+                                                                       requirements ? *requirements : requirements_decl(),
+                                                                       usage_requirements ? *usage_requirements : requirements_decl()));
+   mt->sources(sources);
+
+   const source_decl compile_source(mt->name(),
+                                    pstring(),
+                                    NULL /*to signal that this is meta target*/,
+                                    NULL);
+
+   p->add_target(mt);
+
+   sources_decl result;
+   result.push_back(compile_source);
 
    return result;
 }

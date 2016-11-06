@@ -35,6 +35,7 @@ const type_tag UNKNOWN("UNKNOWN");
 const type_tag COPIED("COPIED");
 const type_tag TESTING_OUTPUT("TESTING_OUTPUT");
 const type_tag TESTING_RUN_PASSED("TESTING_RUN_PASSED");
+const type_tag TESTING_COMPILE_FAIL("TESTING_COMPILE_FAIL");
 
 void register_standart_types(type_registry& tr, feature_registry& fr)
 {
@@ -81,6 +82,7 @@ void register_standart_types(type_registry& tr, feature_registry& fr)
    tr.insert(target_type(COPIED, ""));
    tr.insert(target_type(TESTING_OUTPUT, ".test_output"));
    tr.insert(target_type(TESTING_RUN_PASSED, ".run_passed"));
+   tr.insert(target_type(TESTING_COMPILE_FAIL, ""));
 }
 
 }}

@@ -282,6 +282,7 @@ void builder::generate_graphviz(std::ostream& os, nodes_t& nodes, const project*
    for(const build_queue_node_t* n : all_build_nodes)
    {
       string labels = (boost::format("%s|dependencies_count = %s") % n % n->dependencies_count_).str();
+      labels += "|{action |{ " + (n->node_->action() ? n->node_->action()->name() : string("null")) + "}}";
       // write build node sources 
       {
          labels += "|{src|{";

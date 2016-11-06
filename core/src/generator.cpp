@@ -145,4 +145,15 @@ void remove_dups(build_node::nodes_t& nodes)
    nodes.swap(result);
 }
 
+generator::producable_types_t
+make_product_types(engine& e,
+                   const std::vector<type_tag>& types)
+{
+   generator::producable_types_t result;
+   for(const type_tag& t : types)
+      result.push_back(e.get_type_registry().get(t));
+
+   return result;
+}
+
 }

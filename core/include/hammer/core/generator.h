@@ -15,6 +15,7 @@ namespace hammer
    class pstring;
    class engine;
    class main_target;
+   class type_tag;
 
    class generator
    {
@@ -93,6 +94,10 @@ namespace hammer
    // because of gcc library ordering we leave only last ocurrancies of some library.
    // if input is A B C B D then output will be A C B D
    void remove_dups(build_node::nodes_t& nodes);
+
+   generator::producable_types_t
+   make_product_types(engine& e,
+                      const std::vector<type_tag>& types);
 }
 
 #endif //h_9b0699bd_cc04_4e19_874b_45c95b909551

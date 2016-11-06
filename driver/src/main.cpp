@@ -936,6 +936,10 @@ int main(int argc, char** argv) {
             generate_msvc80_solution(nodes, project_to_build);
          else
             run_build(nodes, engine, opts);
+
+         cout << flush;
+         cerr << flush;
+
          break;
       }
 

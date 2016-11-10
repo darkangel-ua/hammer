@@ -26,6 +26,7 @@
 #include <hammer/core/output_location_strategy.h>
 
 using std::string;
+using std::unique_ptr;
 using std::auto_ptr;
 using std::vector;
 using namespace boost;
@@ -400,16 +401,16 @@ void add_types_and_generators(engine& e,
       uic_cmd += ui_source;
       uic_cmd += uic_product;
 
-      auto_ptr<cmdline_action> uic_action(new cmdline_action("qt.uic", uic_product));
+      unique_ptr<cmdline_action> uic_action(new cmdline_action("qt.uic", uic_product));
       *uic_action += uic_cmd;
 
       generator::consumable_types_t source;
       generator::producable_types_t target;
       source.push_back(generator::consumable_type(e.get_type_registry().get(qt_ui), 1, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(qt_uiced_h)));
-      auto_ptr<generator> g(new generator(e, "qt.uic", source, target, false));
-      g->action(uic_action);
-      e.generators().insert(g);
+      unique_ptr<generator> g(new generator(e, "qt.uic", source, target, false));
+      g->action(std::move(uic_action));
+      e.generators().insert(std::move(g));
    }
 
    // QT_RC -> QT_RCED_CPP
@@ -421,16 +422,16 @@ void add_types_and_generators(engine& e,
       rcc_cmd += rcc_source;
       rcc_cmd += rcc_product;
 
-      auto_ptr<cmdline_action> rcc_action(new cmdline_action("qt.rcc", rcc_product));
+      unique_ptr<cmdline_action> rcc_action(new cmdline_action("qt.rcc", rcc_product));
       *rcc_action += rcc_cmd;
 
       generator::consumable_types_t source;
       generator::producable_types_t target;
       source.push_back(generator::consumable_type(e.get_type_registry().get(qt_rc), 1, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(qt_rced_cpp)));
-      auto_ptr<generator> g(new generator(e, "qt.rcc", source, target, false));
-      g->action(rcc_action);
-      e.generators().insert(g);
+      unique_ptr<generator> g(new generator(e, "qt.rcc", source, target, false));
+      g->action(std::move(rcc_action));
+      e.generators().insert(std::move(g));
    }
 
    // QT_MOCABLE -> CPP
@@ -442,16 +443,16 @@ void add_types_and_generators(engine& e,
       moc_cmd += mocable_source;
       moc_cmd += cpp_product;
 
-      auto_ptr<cmdline_action> moc_action(new cmdline_action("qt.moc", cpp_product));
+      unique_ptr<cmdline_action> moc_action(new cmdline_action("qt.moc", cpp_product));
       *moc_action += moc_cmd;
 
       generator::consumable_types_t source;
       generator::producable_types_t target;
       source.push_back(generator::consumable_type(e.get_type_registry().get(qt_mocable), 1, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::CPP)));
-      auto_ptr<generator> g(new generator(e, "qt.moc", source, target, false));
-      g->action(moc_action);
-      e.generators().insert(g);
+      unique_ptr<generator> g(new generator(e, "qt.moc", source, target, false));
+      g->action(std::move(moc_action));
+      e.generators().insert(std::move(g));
    }
 
    // many QT_UICED_H -> HEADER_LIB
@@ -461,7 +462,7 @@ void add_types_and_generators(engine& e,
       source.push_back(generator::consumable_type(e.get_type_registry().get(qt_uiced_h), 0, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(qt_uic_main)));
       auto_ptr<generator> g(new fake_generator(e, "qt.uic-main", source, target, true));
-      e.generators().insert(g);
+      e.generators().insert(std::move(g));
    }
 
    // QT_UIC_MAIN -> many H(QT_UICED_H)
@@ -471,7 +472,7 @@ void add_types_and_generators(engine& e,
       source.push_back(generator::consumable_type(e.get_type_registry().get(qt_uic_main), 0, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::H)));
       auto_ptr<generator> g(new fake_generator(e, "qt.uic-proxy", source, target, false));
-      e.generators().insert(g);
+      e.generators().insert(std::move(g));
    }
 
    // register qt libs

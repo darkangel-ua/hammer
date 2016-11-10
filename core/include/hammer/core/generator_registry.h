@@ -2,7 +2,7 @@
 #define h_fd9d533e_506e_440b_b081_a3cf5544771d
 
 #include "generator.h"
-#include <boost/ptr_container/ptr_map.hpp>
+#include <unordered_map>
 
 namespace hammer
 {
@@ -12,10 +12,10 @@ namespace hammer
    class generator_registry
    {
       public:
-         typedef boost::ptr_map<std::string, generator> generators_t;
+         typedef std::unordered_map<std::string, std::unique_ptr<generator>> generators_t;
          typedef std::vector<std::pair<const generator*, const target_type* /* type_to_construct */ > > viable_generators_t;
 
-         void insert(std::auto_ptr<generator> g);
+         void insert(std::unique_ptr<generator> g);
          build_nodes_t construct(const main_target* mt) const;
 
          viable_generators_t 

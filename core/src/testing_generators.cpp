@@ -11,7 +11,7 @@
 #include <hammer/core/feature_registry.h>
 #include <hammer/core/compile_fail_generator.h>
 
-using std::auto_ptr;
+using std::unique_ptr;
 using namespace boost;
 
 namespace hammer{
@@ -30,7 +30,7 @@ void add_testing_generators(engine& e, generator_registry& gr)
 
    target.push_back(generator::produced_type(e.get_type_registry().get(types::TESTING_OUTPUT)));
    target.push_back(generator::produced_type(e.get_type_registry().get(types::TESTING_RUN_PASSED)));
-   std::auto_ptr<generator> g(new generator(e, "testing.run", source, target, true));
+   unique_ptr<generator> g(new generator(e, "testing.run", source, target, true));
    g->include_composite_generators(true);
 
    shared_ptr<product_argument_writer> run_product(new product_argument_writer("run_product", e.get_type_registry().get(types::TESTING_RUN_PASSED)));
@@ -51,18 +51,18 @@ void add_testing_generators(engine& e, generator_registry& gr)
    cmdline += additional_dirs;
    cmdline += input_files;
 
-   std::auto_ptr<testing_run_action> action(new testing_run_action("testing.run", run_product, run_output_product));
+   unique_ptr<testing_run_action> action(new testing_run_action("testing.run", run_product, run_output_product));
    *action += cmdline;
-   g->action(action);
-   gr.insert(g);
+   g->action(std::move(action));
+   gr.insert(std::move(g));
 }
 
 void add_compile_fail_generator(engine& e,
-                                std::unique_ptr<generator> compile_generator,
-                                std::unique_ptr<build_action> compile_action)
+                                unique_ptr<generator> compile_generator,
+                                unique_ptr<build_action> compile_action)
 {
-   auto_ptr<generator> g(new compile_fail_generator(e, std::move(compile_generator), std::move(compile_action)));
-   e.generators().insert(g);
+   unique_ptr<generator> g(new compile_fail_generator(e, std::move(compile_generator), std::move(compile_action)));
+   e.generators().insert(std::move(g));
 }
 
 }

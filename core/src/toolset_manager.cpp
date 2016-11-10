@@ -7,11 +7,10 @@
 namespace hammer
 {
 
-void toolset_manager::add_toolset(std::auto_ptr<toolset> t)
+void toolset_manager::add_toolset(std::unique_ptr<toolset> t)
 {
-   if (!toolsets_.insert(make_pair(t->name(), boost::shared_ptr<toolset>(t.get()))).second)
+   if (!toolsets_.emplace(t->name(), std::move(t)).second)
       throw std::runtime_error("Toolset '" + t->name() + "' already registered");
-   t.release();
 }
 
 void toolset_manager::init_toolset(engine& e,
@@ -33,6 +32,11 @@ void toolset_manager::autoconfigure(engine& e) const
          if (!fd->is_legal_value(i->first))
             i->second->autoconfigure(e);
       }
+}
+
+toolset_manager::~toolset_manager()
+{
+
 }
 
 }

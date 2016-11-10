@@ -71,7 +71,7 @@ class proxied_build_environment : public build_environment
          return env_.write_tag_file(filename, content);
       }
 
-      std::auto_ptr<std::ostream>
+      std::unique_ptr<std::ostream>
       create_output_file(const char* filename,
                          std::ios_base::openmode mode) const override
       {

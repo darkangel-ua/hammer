@@ -80,8 +80,8 @@ compile_fail_generator::compile_fail_generator(engine& e,
      compile_generator_(move(compile_generator))
 {
    const target_type& output_type = e.get_type_registry().get(types::TESTING_OUTPUT);
-   auto_ptr<compile_fail_build_action> compile_fail_action(new compile_fail_build_action(move(compile_action), output_type));
-   compile_generator_->action(compile_fail_action);
+   unique_ptr<compile_fail_build_action> compile_fail_action(new compile_fail_build_action(move(compile_action), output_type));
+   compile_generator_->action(move(compile_fail_action));
 }
 
 build_nodes_t

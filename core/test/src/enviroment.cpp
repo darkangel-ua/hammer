@@ -12,13 +12,13 @@ setuped_engine::setuped_engine(bool install_toolsets)
    hammer::types::register_standart_types(engine_.get_type_registry(), engine_.feature_registry());
    if (install_toolsets)
    {
-      engine_.toolset_manager().add_toolset(std::auto_ptr<hammer::toolset>(new hammer::msvc_toolset()));
+      engine_.toolset_manager().add_toolset(std::unique_ptr<hammer::toolset>(new hammer::msvc_toolset()));
       hammer::location_t empty;
       engine_.toolset_manager().init_toolset(engine_, "msvc", "8.0", &empty);
    }
 
    hammer::add_testing_generators(engine_, engine_.generators());
 
-   std::auto_ptr<hammer::generator> g(new hammer::copy_generator(engine_));
-   engine_.generators().insert(g);
+   std::unique_ptr<hammer::generator> g(new hammer::copy_generator(engine_));
+   engine_.generators().insert(std::move(g));
 }

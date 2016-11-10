@@ -30,7 +30,7 @@ bool mksig_action::execute_impl(const build_node& node, const build_environment&
    location_t target_file_name = node.products_.front()->location() / node.products_.front()->name().to_string();
    target_file_name.normalize();
    
-   std::auto_ptr<std::ostream> f = 
+   std::unique_ptr<std::ostream> f =
       environment.create_output_file(target_file_name.string().c_str(),
                                      std::ios_base::trunc | std::ios_base::out);
    if (!*f)

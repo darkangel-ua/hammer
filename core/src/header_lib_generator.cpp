@@ -56,8 +56,8 @@ void add_header_lib_generator(engine& e, generator_registry& gr)
    source.push_back(generator::consumable_type(e.get_type_registry().get(types::H), 0, 0));
    source.push_back(generator::consumable_type(e.get_type_registry().get(types::LIB), 0, 0));
    target.push_back(generator::produced_type(e.get_type_registry().get(types::HEADER_LIB), 1));
-   std::auto_ptr<generator> g(new header_lib_generator(e, "header_lib.linker", source, target));
-   gr.insert(g);
+   std::unique_ptr<generator> g(new header_lib_generator(e, "header_lib.linker", source, target));
+   gr.insert(std::move(g));
 }
 
 }

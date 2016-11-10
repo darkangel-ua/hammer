@@ -114,7 +114,7 @@ namespace hammer{
 
    const target_type& type_registry::insert(const target_type& a_t)
    {
-      std::auto_ptr<target_type> t(a_t.clone(*this));
+      std::unique_ptr<target_type> t(a_t.clone(*this));
       // FIXME: This is due bug in ptr_container insert method
       type_tag tag(t->tag());
       pair<types_t::iterator, bool> i = types_.insert(tag, t.get());

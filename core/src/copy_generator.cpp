@@ -78,8 +78,8 @@ copy_generator::copy_generator(hammer::engine& e)
                           list_of<produced_type>(e.get_type_registry().get(types::COPIED), 0),
                           true)
 {
-   std::auto_ptr<build_action> a(new copy_action(e.get_type_registry().get(types::COPIED)));
-   action(a);
+   std::unique_ptr<build_action> a(new copy_action(e.get_type_registry().get(types::COPIED)));
+   action(std::move(a));
 }
 
 typedef std::vector<boost::intrusive_ptr<build_node> > nodes_t;

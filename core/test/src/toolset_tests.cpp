@@ -43,8 +43,8 @@ class toolset_test : public setuped_engine
    public:
       toolset_test() : setuped_engine(false)
       {
-         engine_.toolset_manager().add_toolset(auto_ptr<toolset>(new test_msvc_toolset));
-         engine_.toolset_manager().add_toolset(auto_ptr<toolset>(new gcc_toolset));
+         engine_.toolset_manager().add_toolset(unique_ptr<toolset>(new test_msvc_toolset));
+         engine_.toolset_manager().add_toolset(unique_ptr<toolset>(new gcc_toolset));
          engine_.toolset_manager().init_toolset(engine_, "msvc", "8.0");
          engine_.toolset_manager().init_toolset(engine_, "gcc", "");
       }
@@ -120,9 +120,9 @@ namespace{
             return true;
          }
 
-         std::auto_ptr<ostream> create_output_file(const char* filename, std::ios_base::openmode mode) const
+         std::unique_ptr<ostream> create_output_file(const char* filename, std::ios_base::openmode mode) const
          {
-            return std::auto_ptr<ostream>(new ostringstream);
+            return std::unique_ptr<ostream>(new ostringstream);
          }
 
          virtual location_t working_directory(const basic_target& t) const

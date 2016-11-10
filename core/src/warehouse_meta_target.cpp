@@ -36,7 +36,7 @@ void warehouse_meta_target::instantiate_impl(const main_target* owner,
                                              std::vector<basic_target*>* result,
                                              feature_set* usage_requirements) const
 {
-   auto_ptr<basic_target> t(new warehouse_target(*owner, name(), build_request));
+   unique_ptr<basic_target> t(new warehouse_target(*owner, name(), build_request));
    result->push_back(t.get());
    t.release();
 }

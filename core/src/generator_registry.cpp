@@ -11,10 +11,10 @@ using namespace boost;
 
 namespace hammer{
 
-void generator_registry::insert(std::auto_ptr<generator> g)
+void generator_registry::insert(std::unique_ptr<generator> g)
 {
    std::string g_name = g->name();
-   if (!generators_.insert(g_name, g).second)
+   if (!generators_.emplace(g_name, std::move(g)).second)
       throw std::runtime_error("Generator '" + g_name + "' already registered.");
 }
 
@@ -75,7 +75,7 @@ generator_registry::find_viable_generators(const target_type& t,
             }
 
             if (rank == generator_rank)
-               result.push_back(make_pair(i->second, j->type_));
+               result.push_back(make_pair(i->second.get(), j->type_));
          }
       }
    }

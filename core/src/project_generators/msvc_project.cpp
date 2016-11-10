@@ -47,9 +47,9 @@ namespace
          virtual void remove_file_by_pattern(const location_t& dir, const std::string& pattern) const {};
          virtual void copy(const location_t& source, const location_t& destination) const {};
          virtual bool write_tag_file(const std::string& filename, const std::string& content) const { return true; }
-         virtual std::auto_ptr<std::ostream> create_output_file(const char* filename, std::ios_base::openmode mode) const
+         virtual std::unique_ptr<std::ostream> create_output_file(const char* filename, std::ios_base::openmode mode) const
          {
-            return std::auto_ptr<std::ostream>(new ostringstream);
+            return std::unique_ptr<std::ostream>(new ostringstream);
          }
 
          virtual location_t working_directory(const basic_target& t) const

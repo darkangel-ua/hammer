@@ -135,10 +135,14 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
 
    // CPP -> OBJ
    {
+      shared_ptr<fs_argument_writer> cxxflags(new fs_argument_writer("cxxflags", e.feature_registry()));
+      cxxflags->add("<rtti>off", "-fno-rtti");
+
       shared_ptr<source_argument_writer> cpp_input(new source_argument_writer("cpp_input", e.get_type_registry().get(types::CPP), /*exact_type=*/false, source_argument_writer::FULL_PATH));
       cmdline_builder obj_cmd(install_data.compiler_.string() +
-                              " -c -ftemplate-depth-128 $(cflags) $(user_cxx_flags) $(includes) $(defines) -o \"$(obj_product)\" $(cpp_input)");
+                              " -c -ftemplate-depth-128 $(cflags) $(cxxflags) $(user_cxx_flags) $(includes) $(defines) -o \"$(obj_product)\" $(cpp_input)");
       obj_cmd += cflags;
+      obj_cmd += cxxflags;
       obj_cmd += user_cxx_flags;
       obj_cmd += cpp_input;
       obj_cmd += includes;

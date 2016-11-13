@@ -468,4 +468,19 @@ namespace hammer{
 
       return result;
    }
+
+   feature* feature_registry::clone_feature(const feature& f)
+   {
+      feature* result = create_feature(f.name(), f.value().to_string());
+      if (f.attributes().dependency)
+         result->get_dependency_data() = f.get_dependency_data();
+
+      if (f.attributes().path)
+         result->get_path_data() = f.get_path_data();
+
+      if (f.attributes().generated)
+         result->get_generated_data() = f.get_generated_data();
+
+      return result;
+   }
 }

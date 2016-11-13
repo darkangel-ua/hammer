@@ -22,6 +22,7 @@ namespace hammer
          feature* create_feature(const feature& f, 
                                  const std::string& subfeature_name, 
                                  const std::string& subfeature_value);
+         feature* clone_feature(const feature& f);
 
          // returns s, just for convenient usage
          feature_set* add_defaults(feature_set* s);

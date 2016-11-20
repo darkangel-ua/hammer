@@ -5,6 +5,9 @@ pch pch
    ;
 explicit pch ;
 
+alias pch : : <toolset>gcc ;
+explicit pch ;
+
 testing.run
     pch
     [ glob ../src/*.cpp : stdafx.cpp ]

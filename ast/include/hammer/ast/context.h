@@ -2,6 +2,7 @@
 #define h_0483f3e2_249b_44b1_b048_e8bbbf8ba158
 
 #include <vector>
+#include <memory>
 #include <cassert>
 
 namespace hammer{
@@ -31,7 +32,7 @@ class context
 
       ~context();
       void* allocate(size_t bytes, size_t alignment);
-      void set_parser_context(std::auto_ptr<parser_context>& p_ctx)
+      void set_parser_context(std::auto_ptr<parser_context> p_ctx)
       {
          parser_context_ = p_ctx;
       }

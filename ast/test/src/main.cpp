@@ -181,7 +181,7 @@ void test_function(const fs::path& hamfile)
    BOOST_REQUIRE(ast_top);
    diag.report_unreported_diagnostics();
 
-   fs::ofstream f(hamfile.branch_path() / (hamfile.filename() + ".ast"));
+   fs::ofstream f(hamfile.branch_path() / (hamfile.filename().string() + ".ast"));
    ast::ast_xml_printer printer(f);
    ast_top->accept(printer);
 }

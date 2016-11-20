@@ -50,12 +50,12 @@ parser::parse(const boost::filesystem::path& hamfile,
 const ast::hamfile* parser::parse_impl()
 {
    if (!exists(hamfile_))
-      throw std::runtime_error("Path does not exists '" + hamfile_.native_file_string() + "'");
+      throw std::runtime_error("Path does not exists '" + hamfile_.string() + "'");
 
    parser_context* ctx = new parser_context;
    actions_.on_begin_parse(ctx);
 
-   ctx->input_ = antlr3AsciiFileStreamNew((pANTLR3_UINT8)hamfile_.native_file_string().c_str());
+   ctx->input_ = antlr3AsciiFileStreamNew((pANTLR3_UINT8)hamfile_.string().c_str());
    ctx->lexer_ = hammerLexerNew(ctx->input_);
    ctx->tstream_ = antlr3CommonTokenStreamSourceNew(ANTLR3_SIZE_HINT, TOKENSOURCE(ctx->lexer_));
    ctx->parser_ = hammerParserNew(ctx->tstream_);

@@ -22,7 +22,8 @@ namespace hammer{namespace sema{
 class actions
 {
    public:
-      virtual void on_begin_parse(ast::parser_context* ctx) const = 0;
+      actions(ast::context& ctx) : ctx_(ctx) {}
+
       virtual const ast::hamfile* 
          on_hamfile(const ast::project_def* p,
                     const ast::statements_t& statements) const = 0;
@@ -72,6 +73,10 @@ class actions
                        const ast::path_like_seq* head,
                        const parscore::identifier& target_name,
                        const ast::requirement_set* requirements) const = 0;
+      ast::context& get_context() const { return ctx_; }
+
+   protected:
+      ast::context& ctx_;
 };
 
 

@@ -21,13 +21,8 @@ using namespace hammer::parscore;
 namespace hammer{namespace sema{
 
 actions_impl::actions_impl(ast::context& ctx)
-   : ctx_(ctx)
+   : actions(ctx)
 {
-}
-
-void actions_impl::on_begin_parse(ast::parser_context* ctx) const
-{
-   ctx_.set_parser_context(std::auto_ptr<ast::parser_context>(ctx));
 }
 
 const ast::hamfile* 
@@ -174,7 +169,7 @@ expressions_t process_arguments(const parscore::identifier& rule_name,
                                 ast::context& ctx)
 {
    typedef std::set<const rule_argument*> used_named_args_t;
-   expressions_t result;
+   expressions_t result(expressions_t::allocator_type{ctx});
    used_named_args_t used_named_args;
 
    bool only_named = false;

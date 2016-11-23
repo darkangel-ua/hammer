@@ -15,15 +15,16 @@ options {
 #include <hammer/ast/path_like_seq.h>
 
 #define SEMA static_cast<const hammer::sema::actions*>(PARSER->super)
+#define DECLARE_TYPE(Type, name) Type name ( Type ::allocator_type{SEMA->get_context()});
 }
 
 hamfile returns [const hammer::ast::hamfile* result]
-@init { hammer::ast::statements_t statements; }
+@init { DECLARE_TYPE(hammer::ast::statements_t, statements); }
         : ^(HAMFILE project_def statement[&statements]*) { result = SEMA->on_hamfile($project_def.result, statements); }
         ;
         
 project_def returns[const hammer::ast::project_def* result]
-@init { hammer::ast::expressions_t args; }
+@init { DECLARE_TYPE(hammer::ast::expressions_t, args); }
         : IMPLICIT_PROJECT_DEF { result = SEMA->on_implicit_project_def(); }
         | ^(EXPLICIT_PROJECT_DEF p='project' arguments[&args] EXP_END) { result = SEMA->on_explicit_project_def($p->getToken($p), args); }
         ;
@@ -33,7 +34,7 @@ statement[hammer::ast::statements_t* statements]
 	;
 
 target_def_or_rule_call returns[const hammer::ast::expression* result] 
-@init { hammer::ast::expressions_t args; }
+@init { DECLARE_TYPE(hammer::ast::expressions_t, args); }
 	: ^(TARGET_DECL_OR_RULE_CALL name=ID arguments[&args]) { result = SEMA->on_target_or_rule_call($name->getToken($name), args); }
 	; 
 
@@ -51,7 +52,7 @@ named_expression returns[const hammer::ast::expression* result]
 	;	
 	
 expression returns[const hammer::ast::expression* result]
-@init { hammer::ast::expressions_t args; }
+@init { DECLARE_TYPE(hammer::ast::expressions_t, args); }
 	: EMPTY_EXPRESSION{ 
 		// next tokens will be COLON or UP UP EXP_END
 	   	if (LA(1) == COLON)
@@ -64,7 +65,7 @@ expression returns[const hammer::ast::expression* result]
         ;
 
 requirement_set returns[const hammer::ast::requirement_set* result]
-@init { hammer::ast::requirements_t requirements; }
+@init { DECLARE_TYPE(hammer::ast::requirements_t, requirements); }
  	: ^(REQUIREMENT_SET (requirement { requirements.push_back($requirement.result); })+) { result = SEMA->on_requirement_set(requirements); }
  	;
 
@@ -75,7 +76,7 @@ requirement returns[const hammer::ast::requirement* result]
 	
 conditional_requirement returns[const hammer::ast::requirement* result]
 @init { 
-   hammer::ast::features_t features; 
+   DECLARE_TYPE(hammer::ast::features_t, features);
    hammer::parscore::source_location tag_loc;
 }
 	: ^(REQUIREMENT public_tag[&tag_loc] ^(CONDITION (con=feature { features.push_back($con.result); })+ COLON) res=feature) { result = SEMA->on_conditional_requirement(tag_loc, features, $res.result); }

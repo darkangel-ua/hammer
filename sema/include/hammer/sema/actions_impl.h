@@ -10,7 +10,6 @@ class actions_impl : public actions
 {
    public:
       actions_impl(ast::context& ctx);
-      virtual void on_begin_parse(ast::parser_context* ctx) const;
       
       virtual const ast::hamfile* 
          on_hamfile(const ast::project_def* p,
@@ -62,9 +61,6 @@ class actions_impl : public actions
                        const ast::path_like_seq* head,
                        const parscore::identifier& target_name,
                        const ast::requirement_set* requirements) const;
-
-   private:
-      ast::context& ctx_;
 };
 
 }}

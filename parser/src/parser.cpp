@@ -5,32 +5,35 @@
 #include "hammerParser.h"
 #include "hammer_sema.h"
 #include <hammer/ast/context.h>
+#include <hammer/ast/hamfile.h>
 
-namespace hammer{namespace parser{
+namespace hammer{ namespace parser{
 
-namespace{
-   struct parser_context : public ast::parser_context
+namespace {
+
+struct parser_context : public ast::parser_context
+{
+   parser_context() : input_(NULL) {}
+   ~parser_context()
    {
-      parser_context() : input_(NULL) {}
-      ~parser_context()
+      if (input_)
       {
-         if (input_)
-         {
-//            langAST_.tree->free(langAST_.tree);
-            parser_->free(parser_);
-            tstream_->free(tstream_);
-            lexer_->free(lexer_);
-            input_->close(input_);
-         }
+         parser_->free(parser_);
+         tstream_->free(tstream_);
+         lexer_->free(lexer_);
+         input_->close(input_);
       }
+   }
 
-      pANTLR3_INPUT_STREAM input_;
-      phammerLexer lexer_;
-      pANTLR3_COMMON_TOKEN_STREAM tstream_;
-      phammerParser parser_;
-      hammerParser_hamfile_return langAST_;
-   };
+   pANTLR3_INPUT_STREAM input_;
+   phammerLexer lexer_;
+   pANTLR3_COMMON_TOKEN_STREAM tstream_;
+   phammerParser parser_;
+   hammerParser_hamfile_return langAST_;
+};
+
 }
+
 parser::parser(const boost::filesystem::path& hamfile,
                const sema::actions& actions)
    : hamfile_(hamfile),
@@ -39,21 +42,21 @@ parser::parser(const boost::filesystem::path& hamfile,
 
 }
 
-const ast::hamfile* 
+parser::hamfile_ptr
 parser::parse(const boost::filesystem::path& hamfile,
-             const sema::actions& actions)
+              const sema::actions& actions)
 {
    parser p(hamfile, actions);
    return p.parse_impl();
 }
 
-const ast::hamfile* parser::parse_impl()
+parser::hamfile_ptr
+parser::parse_impl()
 {
    if (!exists(hamfile_))
       throw std::runtime_error("Path does not exists '" + hamfile_.string() + "'");
 
    parser_context* ctx = new parser_context;
-   actions_.on_begin_parse(ctx);
 
    ctx->input_ = antlr3AsciiFileStreamNew((pANTLR3_UINT8)hamfile_.string().c_str());
    ctx->lexer_ = hammerLexerNew(ctx->input_);
@@ -73,7 +76,7 @@ const ast::hamfile* parser::parse_impl()
    nodes->free(nodes);
    hammer_sema->free(hammer_sema);
 
-   return result;
+   return { result, [=](const ast::hamfile*) { delete ctx; } };
 }
 
 }}

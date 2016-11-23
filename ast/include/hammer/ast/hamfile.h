@@ -16,7 +16,7 @@ class hamfile : public node
               const statements_t& s)
          : project_(p), 
            statements_(s)
-      {};
+      {}
 
       virtual bool accept(visitor& v) const;
       

@@ -176,9 +176,10 @@ void test_function(const fs::path& hamfile)
 
    ast::context ctx(rule_manager, diag);
    sema::actions_impl actions(ctx);
-   const ast::hamfile* ast_top = parser::parser::parse(hamfile, actions);
+   parser::parser::hamfile_ptr ast_top = parser::parser::parse(hamfile, actions);
    
    BOOST_REQUIRE(ast_top);
+
    diag.report_unreported_diagnostics();
 
    fs::ofstream f(hamfile.branch_path() / (hamfile.filename().string() + ".ast"));
@@ -201,11 +202,6 @@ init_unit_test_suite( int argc, char* argv[] )
       test_data_path = fs::current_path() / test_data_path;
       test_data_path.normalize();
    }
-
-
-   // Because we have massive memleaks we disable leak reporting until we resolve memleaks
-//   _CrtSetDbgFlag(_CrtSetDbgFlag( _CRTDBG_REPORT_FLAG ) & ~_CRTDBG_LEAK_CHECK_DF);
-//   _CrtSetBreakAlloc(1935);
 
    test_suite* ts = BOOST_TEST_SUITE("main");
    for(fs::directory_iterator i(test_data_path); i != fs::directory_iterator(); ++i)

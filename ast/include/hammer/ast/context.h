@@ -31,11 +31,8 @@ class context
       }
 
       ~context();
-      void* allocate(size_t bytes, size_t alignment);
-      void set_parser_context(std::auto_ptr<parser_context> p_ctx)
-      {
-         parser_context_ = p_ctx;
-      }
+      void* allocate(std::size_t bytes,
+                     std::size_t alignment);
 
       const hammer::rule_manager& rule_manager_;
       hammer::diagnostic& diag_;
@@ -43,21 +40,14 @@ class context
 
    private:
       std::vector<char*> allocated_blocks_;
-      std::auto_ptr<parser_context> parser_context_;
 };
 
 }}
 
-inline void *operator new(size_t bytes, 
+inline void *operator new(std::size_t bytes,
                           hammer::ast::context& c) throw () 
 {
    return c.allocate(bytes, 0);
-}
-
-inline void operator delete(void*, 
-                             hammer::ast::context&) throw () 
-{
-   assert(false && "You should never call this operator!");
 }
 
 #endif //h_0483f3e2_249b_44b1_b048_e8bbbf8ba158

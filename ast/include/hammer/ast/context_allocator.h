@@ -23,7 +23,7 @@ class context_allocator
 
       context_allocator(context& ctx) : ctx_(&ctx) {}
 
-      pointer allocate(size_type n) { ctx_->allocate(n * sizeof(value_type), 0); }
+      pointer allocate(size_type n) { return static_cast<pointer>(ctx_->allocate(n * sizeof(value_type), 0)); }
       void deallocate(T* p, std::size_t n) {}
       size_type max_size() const { return std::numeric_limits<size_type>::max() / sizeof(value_type); }
       void construct(pointer p, const_reference val) { new((void*)p) T(val); }

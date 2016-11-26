@@ -18,9 +18,10 @@ class hamfile : public node
            statements_(s)
       {}
 
-      virtual bool accept(visitor& v) const;
-      
+      bool accept(visitor& v) const override;
+
       const project_def* get_project_def() const { return project_; }
+      const statements_t& get_statements() const { return statements_; }
 
    private:
       const project_def* project_;

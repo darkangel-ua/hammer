@@ -6,15 +6,13 @@
 #include <hammer/ast/requirement_set.h>
 #include <hammer/ast/target_ref.h>
 #include <hammer/ast/feature.h>
+#include <hammer/ast/sources_decl.h>
+#include <hammer/ast/list_of.h>
+#include <hammer/ast/hamfile.h>
 #include <iostream>
 #include <iomanip>
 
 namespace hammer{namespace ast{
-
-static void write_indent(std::ostream& os, unsigned indent)
-{
-   os << std::setw(indent);
-}
 
 ast_xml_printer::ast_xml_printer(std::ostream& os,
                                  bool write_header) 
@@ -24,33 +22,30 @@ ast_xml_printer::ast_xml_printer(std::ostream& os,
       os_ << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
 }
 
-bool ast_xml_printer::visit_enter(const hamfile& v)
+bool ast_xml_printer::visit(const hamfile& v)
 {
    os_ << "<hamfile>\n";
+
    indent_ += 3;
-
-   return true; 
-}
-
-bool ast_xml_printer::visit_leave(const hamfile& v) 
-{
-   os_ << "</hamfile>\n";
+   v.get_project_def()->accept(*this);
+   for(const statement* s : v.get_statements())
+      s->accept(*this);
    indent_ -= 3;
-   
+
+   os_ << "</hamfile>\n";
+
    return true; 
 }
 
-bool ast_xml_printer::visit_enter(const explicit_project_def& v)
+bool ast_xml_printer::visit(const explicit_project_def& v)
 {
    os_ << std::setw(indent_) << ' ' << "<explicit_project_def>\n";
+
    indent_ += 3;
-
-   return true; 
-}
-
-bool ast_xml_printer::visit_leave(const explicit_project_def& v)
-{
+   for(const auto& arg : v.arguments())
+      arg->accept(*this);
    indent_ -= 3;
+
    os_ << std::setw(indent_) << ' ' << "</explicit_project_def>\n";
 
    return true; 
@@ -63,57 +58,64 @@ bool ast_xml_printer::visit(const implicit_project_def& v)
    return true; 
 }
 
-bool ast_xml_printer::visit_enter(const rule_invocation& v) 
+bool ast_xml_printer::visit(const rule_invocation& v)
 { 
    os_ << std::setw(indent_) << ' ' << "<rule_invocation name=\"" << v.name() << "\">\n";
+
    indent_ += 3;
+      os_ << std::setw(indent_) << ' ' << "<arguments>\n";
 
-   return true; 
-}
+      indent_ += 3;
+      for(const expression* e : v.arguments())
+         e->accept(*this);
+      indent_ -= 3;
 
-bool ast_xml_printer::visit_leave(const rule_invocation& v) 
-{ 
+      os_ << std::setw(indent_) << ' ' << "</arguments>\n";
    indent_ -= 3;
+
    os_ << std::setw(indent_) << ' ' << "</rule_invocation>\n";
-   
+
    return true; 
 }
 
-bool ast_xml_printer::visit_enter(const list_of& v)
+bool ast_xml_printer::visit(const list_of& v)
 {
    os_ << std::setw(indent_) << ' ' << "<list_of>\n";
+
    indent_ += 3;
-
-   return true; 
-}
-
-bool ast_xml_printer::visit_leave(const list_of& v)
-{
+   for(const expression* e : v.values())
+      e->accept(*this);
    indent_ -= 3;
+
    os_ << std::setw(indent_) << ' ' << "</list_of>\n";
-   
+
    return true; 
 }
 
 bool ast_xml_printer::visit(const empty_expr& v)
 {
+   os_ << std::setw(indent_) << ' ' << "<empty_expr/>\n";
+
    return true;
 }
 
-bool ast_xml_printer::visit(const id_expr& v) 
+bool ast_xml_printer::visit(const id_expr& v)
 { 
-   return true; 
+   os_ << std::setw(indent_) << ' ' << "<id_expr value=\"" << v.id().to_string() << "\"/>\n";
+
+   return true;
 }
 
 bool ast_xml_printer::visit(const named_expr& v)
 {
    os_ << std::setw(indent_) << ' ' << "<named_expr name=\"" << v.name() << "\">\n";
-   
+
    indent_ += 3;
-      v.value()->accept(*this);
+   v.value()->accept(*this);
    indent_ -= 3;
 
    os_ << std::setw(indent_) << ' ' << "</named_expr>\n";
+
    return true;   
 }
 
@@ -124,88 +126,25 @@ bool ast_xml_printer::visit(const path_like_seq& v)
    return true;
 }
 
-bool ast_xml_printer::visit(const statements_t& v)
-{
-   if (v.empty())
-      return true; 
-
-   os_ << std::setw(indent_) << ' ' << "<statements>\n";
-   indent_ += 3;
-
-   for(statements_t::const_iterator i = v.begin(), last = v.end(); i != last; ++i)
-      (**i).accept(*this);
-
-   indent_ -= 3;
-   os_ << std::setw(indent_) << ' ' << "</statements>\n";
-   
-   return true;
-}
-
-bool ast_xml_printer::visit(const requirements_t& v)
-{
-   if (v.empty())
-      return true; 
-
-   os_ << std::setw(indent_) << ' ' << "<requirements>\n";
-   indent_ += 3;
-
-   for(requirements_t::const_iterator i = v.begin(), last = v.end(); i != last; ++i)
-      (**i).accept(*this);
-
-   indent_ -= 3;
-   os_ << std::setw(indent_) << ' ' << "</requirements>\n";
-
-   return true;
-}
-
-bool ast_xml_printer::visit(const features_t& v)
-{
-   if (v.empty())
-      return true; 
-
-   os_ << std::setw(indent_) << ' ' << "<features>\n";
-   indent_ += 3;
-
-   for(features_t::const_iterator i = v.begin(), last = v.end(); i != last; ++i)
-      (**i).accept(*this);
-
-   indent_ -= 3;
-   os_ << std::setw(indent_) << ' ' << "</features>\n";
-
-   return true;
-}
-
-bool ast_xml_printer::visit(const expressions_t& v)
-{
-   if (v.empty())
-      return true; 
-
-   os_ << std::setw(indent_) << ' ' << "<expressions>\n";
-   indent_ += 3;
-
-   for(expressions_t::const_iterator i = v.begin(), last = v.end(); i != last; ++i)
-      (**i).accept(*this);
-
-   indent_ -= 3;
-   os_ << std::setw(indent_) << ' ' << "</expressions>\n";
-
-   return true;
-}
-
-bool ast_xml_printer::visit_enter(const requirement_set& v)
+bool ast_xml_printer::visit(const requirement_set& v)
 {
    os_ << std::setw(indent_) << ' ' << "<requirement_set>\n";
+
    indent_ += 3;
-
-   return true; 
-}
-
-bool ast_xml_printer::visit_leave(const requirement_set& v)
-{
+   for(const expression* e : v.requirements())
+      e->accept(*this);
    indent_ -= 3;
+
    os_ << std::setw(indent_) << ' ' << "</requirement_set>\n";
 
    return true; 
+}
+
+bool ast_xml_printer::visit(const error_expression& v)
+{
+   os_ << std::setw(indent_) << ' ' << "<error_expression/>\n";
+
+   return true;
 }
 
 bool ast_xml_printer::visit(const simple_requirement& v)
@@ -226,7 +165,13 @@ bool ast_xml_printer::visit(const conditional_requirement& v)
    os_ << std::setw(indent_) << ' ' << "<conditional_requirement public=\"" << v.is_public() << "\">\n";
 
    indent_ += 3;
-      visit(v.features());
+      os_ << std::setw(indent_) << ' ' << "<condition>\n";
+      indent_ += 3;
+         for(const feature* f : v.condition())
+            f->accept(*this);
+      indent_ -= 3;
+      os_ << std::setw(indent_) << ' ' << "</condition>\n";
+
       os_ << std::setw(indent_) << ' ' << "<value>\n";
       indent_ += 3;
          v.value()->accept(*this);
@@ -237,7 +182,6 @@ bool ast_xml_printer::visit(const conditional_requirement& v)
    os_ << std::setw(indent_) << ' ' << "</conditional_requirement>\n";
 
    return true;
-
 }
 
 bool ast_xml_printer::visit(const target_ref& v)
@@ -274,6 +218,19 @@ bool ast_xml_printer::visit(const feature& v)
    indent_ -= 3;
 
    os_ << std::setw(indent_) << ' ' << "</feature>\n";
+
+   return true;
+}
+
+bool ast_xml_printer::visit(const sources_decl& v)
+{
+   os_ << std::setw(indent_) << ' ' << "<sourses>\n";
+
+   indent_ += 3;
+      v.sources()->accept(*this);
+   indent_ -= 3;
+
+   os_ << std::setw(indent_) << ' ' << "</sources>\n";
 
    return true;
 }

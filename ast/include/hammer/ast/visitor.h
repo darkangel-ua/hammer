@@ -21,22 +21,17 @@ class simple_requirement;
 class conditional_requirement;
 class target_ref;
 class feature;
-class source_decl;
+class sources_decl;
 
 class visitor
 {
    public:
-      virtual bool visit_enter(const hamfile& v) { return true; }
-      virtual bool visit_leave(const hamfile& v) { return true; }
-      virtual bool visit_enter(const explicit_project_def& v) { return true; }
-      virtual bool visit_leave(const explicit_project_def& v) { return true; }
+      virtual bool visit(const hamfile& v) { return true; }
+      virtual bool visit(const explicit_project_def& v) { return true; }
       virtual bool visit(const implicit_project_def& v) { return true; }
-      virtual bool visit_enter(const rule_invocation& v) { return true; }
-      virtual bool visit_leave(const rule_invocation& v) { return true; }
-      virtual bool visit_enter(const list_of& v) { return true; }
-      virtual bool visit_leave(const list_of& v) { return true; }
-      virtual bool visit_enter(const requirement_set& v) { return true; }
-      virtual bool visit_leave(const requirement_set& v) { return true; }
+      virtual bool visit(const rule_invocation& v) { return true; }
+      virtual bool visit(const list_of& v) { return true; }
+      virtual bool visit(const requirement_set& v) { return true; }
       virtual bool visit(const error_expression& v) { return true; }
       virtual bool visit(const empty_expr& v) { return true; }
       virtual bool visit(const id_expr& v) { return true; }
@@ -46,14 +41,9 @@ class visitor
       virtual bool visit(const conditional_requirement& v) { return true; }
       virtual bool visit(const target_ref& v) { return true; }
       virtual bool visit(const feature& v) { return true; }
-      virtual bool visit(const source_decl& v) { return true; }
-      
-      // FIXME: May this is wrong and we should make statements separate class?
-      virtual bool visit(const statements_t& v) { return true; } 
-      virtual bool visit(const expressions_t& v) { return true; } 
-      virtual bool visit(const requirements_t& v) { return true; } 
-      virtual bool visit(const features_t& v) { return true; } 
+      virtual bool visit(const sources_decl& v) { return true; }
 };
 
 }}
-#endif //h_484613f1_a4c9_4315_8c2d_b4bb1421f61b
+
+#endif

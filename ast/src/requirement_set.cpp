@@ -2,6 +2,7 @@
 #include <hammer/ast/requirement_set.h>
 #include <hammer/ast/requirement.h>
 #include <hammer/ast/visitor.h>
+#include <hammer/ast/casts.h>
 
 namespace hammer{ namespace ast{
 
@@ -16,10 +17,11 @@ parscore::source_location requirement_set::start_loc() const
 
 bool requirement_set::accept(visitor& v) const
 {
-   if (v.visit_enter(*this))
-      v.visit(requirements_);
-
-   return v.visit_leave(*this);
+   return v.visit(*this);
 }
 
+template<>
+bool is_a<requirement_set>(const node& v) { return dynamic_cast<const requirement_set*>(&v); }
+
 }}
+

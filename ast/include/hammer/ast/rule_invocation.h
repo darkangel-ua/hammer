@@ -22,7 +22,7 @@ class rule_invocation : public expression
       const expressions_t& arguments() const { return arguments_; }
 
       virtual parscore::source_location start_loc() const { return name_.start_lok(); }
-      virtual bool accept(visitor& v) const;
+      bool accept(visitor& v) const override;
 
    private:
       parscore::identifier name_;
@@ -31,4 +31,4 @@ class rule_invocation : public expression
 
 }}
 
-#endif //h_e74debf9_095f_4cc3_935e_8f3c18fda0aa
+#endif

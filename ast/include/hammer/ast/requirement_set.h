@@ -13,11 +13,12 @@ class requirement_set : public expression
       
       const requirements_t& requirements() const { return requirements_; }
       virtual parscore::source_location start_loc() const;
-      virtual bool accept(visitor& v) const;
-      
+      bool accept(visitor& v) const override;
+
    private:
       requirements_t requirements_;
 };
 
 }}
-#endif //h_3afdbfac_9e89_47b9_840a_f08a75ea6aa5
+
+#endif

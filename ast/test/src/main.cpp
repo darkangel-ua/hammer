@@ -203,15 +203,12 @@ init_unit_test_suite( int argc, char* argv[] )
       test_data_path.normalize();
    }
 
-   test_suite* ts = BOOST_TEST_SUITE("main");
    for(fs::directory_iterator i(test_data_path); i != fs::directory_iterator(); ++i)
       if (i->path().filename() != ".svn" &&
           extension(i->path()) == ".ham")
       {
-         ts->add(make_test_case(boost::bind(&test_function, i->path()), basename(i->path())));
+         framework::master_test_suite().add(make_test_case(boost::bind(&test_function, i->path()), basename(i->path())));
       }
-
-   framework::master_test_suite().add(ts);
 
    return 0;
 }                             

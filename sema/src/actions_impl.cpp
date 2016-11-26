@@ -4,6 +4,7 @@
 #include <hammer/ast/project_def.h>
 #include <hammer/ast/expression.h>
 #include <hammer/ast/list_of.h>
+#include <hammer/ast/sources_decl.h>
 #include <hammer/ast/path_like_seq.h>
 #include <hammer/ast/requirement_set.h>
 #include <hammer/ast/requirement.h>
@@ -102,13 +103,18 @@ process_feature_set_arg(const rule_argument& ra, const expression* arg, context&
 static const expression*
 process_sources_decl_arg(const rule_argument& ra, const expression* arg, context& ctx)
 {
-   return new (ctx) error_expression(arg);
+   return new (ctx) hammer::ast::sources_decl(arg);
 }
 
 static const expression*
 process_requirements_decl_arg(const rule_argument& ra, const expression* arg, context& ctx)
 {
-   return new (ctx) error_expression(arg);
+   requirements_t requirements(requirements_t::allocator_type{ctx});
+   if (!is_a<requirement_set>(arg)) {
+      return new (ctx) error_expression(arg->start_loc());
+   }
+
+   return arg;
 }
 
 static const expression*

@@ -13,12 +13,7 @@ explicit_project_def::explicit_project_def(const parscore::identifier& rule_name
 
 bool explicit_project_def::accept(visitor& v) const
 {
-   if (v.visit_enter(*this))
-   {
-      v.visit(arguments());
-   }
-
-   return v.visit_leave(*this);
+   return v.visit(*this);
 }
 
 bool implicit_project_def::accept(visitor& v) const

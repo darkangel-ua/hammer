@@ -27,9 +27,8 @@ class error_expression : public expression
       {}
 
       virtual parscore::source_location start_loc() const { return loc_; }
+      bool accept(visitor& v) const override;
 
-      virtual bool accept(visitor& v) const;
-   
    private:
       parscore::source_location loc_;
 };
@@ -42,7 +41,7 @@ class empty_expr : public expression
       {}
 
       virtual parscore::source_location start_loc() const { return next_.start_lok(); }
-      virtual bool accept(visitor& v) const;
+      bool accept(visitor& v) const override;
       const parscore::identifier& next_token() const { return next_; }
 
    private:
@@ -59,8 +58,8 @@ class id_expr : public expression
       const parscore::identifier& id() const { return id_; } 
 
       virtual parscore::source_location start_loc() const { return id_.start_lok(); }
-      virtual bool accept(visitor& v) const;
-   
+      bool accept(visitor& v) const override;
+
    private:
       parscore::identifier id_;
 };
@@ -78,7 +77,7 @@ class named_expr : public expression
       const parscore::identifier& name() const { return name_; }
       const expression* value() const { return value_; }
       virtual parscore::source_location start_loc() const { return name_.start_lok(); }
-      virtual bool accept(visitor& v) const;
+      bool accept(visitor& v) const override;
 
    private:
       parscore::identifier name_;
@@ -89,4 +88,4 @@ bool is_error_expr(const expression* e);
 
 }}
 
-#endif //h_8babae10_1ba8_479f_ae25_e20b77eb41dc
+#endif

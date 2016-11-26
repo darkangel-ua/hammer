@@ -23,7 +23,7 @@ parscore::source_location simple_requirement::start_loc() const
 parscore::source_location 
 conditional_requirement::start_loc() const 
 { 
-   return features_.front()->start_loc(); 
+   return condition_.front()->start_loc();
 }
 
 }}

@@ -5,16 +5,16 @@
 
 namespace hammer{namespace ast{
 
-class source_decl : public expression
+class sources_decl : public expression
 {
    public:
-      source_decl(const expression* sources) 
+      sources_decl(const expression* sources)
          : sources_(sources) 
       {}
       
       const expression* sources() const { return sources_; }
       virtual parscore::source_location start_loc() const { return sources_->start_loc(); }
-      virtual bool accept(visitor& v) const;
+      bool accept(visitor& v) const override;
 
    private:
       const expression* sources_;
@@ -22,4 +22,4 @@ class source_decl : public expression
 
 }}
 
-#endif //h_ff7955c3_3e98_46bd_bbe9_96c416a5134f
+#endif

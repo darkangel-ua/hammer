@@ -13,7 +13,7 @@ class project_def : public expression
 class implicit_project_def : public project_def
 {
    public:
-      virtual bool accept(visitor& v) const;
+      bool accept(visitor& v) const override;
       virtual parscore::source_location start_loc() const { return parscore::source_location(); }
 };
 
@@ -25,7 +25,7 @@ class explicit_project_def : public project_def,
                            const expressions_t& arguments);
 
       virtual parscore::source_location start_loc() const { return rule_invocation::start_loc(); }
-      virtual bool accept(visitor& v) const;
+      bool accept(visitor& v) const override;
 };
 
 }}

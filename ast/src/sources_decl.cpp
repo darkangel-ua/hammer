@@ -1,12 +1,13 @@
 #include "stdafx.h"
-#include <hammer/ast/rule_invocation.h>
+#include <hammer/ast/sources_decl.h>
 #include <hammer/ast/visitor.h>
 
 namespace hammer{namespace ast{
 
-bool rule_invocation::accept(visitor& v) const
-{
+bool sources_decl::accept(visitor& v) const
+{ 
    return v.visit(*this);
 }
 
 }}
+

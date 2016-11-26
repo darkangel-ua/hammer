@@ -26,8 +26,8 @@ class target_ref : public expression
       bool is_public() const { return public_tag_.valid(); }
       
       virtual parscore::source_location start_loc() const;
-      virtual bool accept(visitor& v) const;
-   
+      bool accept(visitor& v) const override;
+
    private:
       parscore::source_location public_tag_;
       const path_like_seq* head_;

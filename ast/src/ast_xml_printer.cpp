@@ -27,7 +27,8 @@ bool ast_xml_printer::visit(const hamfile& v)
    os_ << "<hamfile>\n";
 
    indent_ += 3;
-   v.get_project_def()->accept(*this);
+   if (v.get_project_def())
+      v.get_project_def()->accept(*this);
    for(const statement* s : v.get_statements())
       s->accept(*this);
    indent_ -= 3;
@@ -37,23 +38,16 @@ bool ast_xml_printer::visit(const hamfile& v)
    return true; 
 }
 
-bool ast_xml_printer::visit(const explicit_project_def& v)
+bool ast_xml_printer::visit(const project_def& v)
 {
-   os_ << std::setw(indent_) << ' ' << "<explicit_project_def>\n";
+   os_ << std::setw(indent_) << ' ' << "<project_def>\n";
 
    indent_ += 3;
    for(const auto& arg : v.arguments())
       arg->accept(*this);
    indent_ -= 3;
 
-   os_ << std::setw(indent_) << ' ' << "</explicit_project_def>\n";
-
-   return true; 
-}
-
-bool ast_xml_printer::visit(const implicit_project_def& v)
-{
-   os_ << std::setw(indent_) << ' ' << "<implicit_project_def/>\n";
+   os_ << std::setw(indent_) << ' ' << "</project_def>\n";
 
    return true; 
 }

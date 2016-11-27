@@ -25,8 +25,8 @@ hamfile returns [const hammer::ast::hamfile* result]
         
 project_def returns[const hammer::ast::project_def* result]
 @init { DECLARE_TYPE(hammer::ast::expressions_t, args); }
-        : IMPLICIT_PROJECT_DEF { result = SEMA->on_implicit_project_def(); }
-        | ^(EXPLICIT_PROJECT_DEF p='project' arguments[&args] EXP_END) { result = SEMA->on_explicit_project_def($p->getToken($p), args); }
+        : NO_PROJECT_DEF { result = nullptr; }
+        | ^(PROJECT_DEF p='project' arguments[&args] EXP_END) { result = SEMA->on_project_def($p->getToken($p), args); }
         ;
 
 statement[hammer::ast::statements_t* statements]

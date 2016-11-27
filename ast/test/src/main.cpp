@@ -25,6 +25,14 @@ using namespace boost::unit_test;
 using namespace boost::assign;
 namespace fs = boost::filesystem;
 
+static
+void project_rule(const parscore::identifier& id,
+                  const hammer::requirements_decl* requirements,
+                  const hammer::requirements_decl* usage_requirements)
+{
+
+}
+
 static void lib_rule(const parscore::identifier& id, 
                      const hammer::sources_decl* sources,
                      const hammer::requirements_decl* requirements,
@@ -53,7 +61,7 @@ static void rglob_rule(const hammer::path_like_seq& pattern)
 
 }
 
-typedef std::map<int, std::pair<std::string, diagnostic::type::value> > expected_diags_t;
+typedef map<int, pair<string, diagnostic::type::value> > expected_diags_t;
 
 class checked_diagnostic : public diagnostic
 {
@@ -63,12 +71,13 @@ class checked_diagnostic : public diagnostic
       {
       }
       void report_unreported_diagnostics() const;     
+      size_t expected_error_count() const { return expected_diags_.size(); }
 
    private:
-      typedef std::set<int> checked_lines_t;
+      typedef map<int, string> reported_lines_t;
 
       expected_diags_t expected_diags_;
-      checked_lines_t checked_lines_;
+      reported_lines_t reported_lines_;
 
       virtual void report(const char* formated_message);
 };
@@ -76,12 +85,11 @@ class checked_diagnostic : public diagnostic
 void checked_diagnostic::report(const char* formated_message)
 {
    boost::cmatch m;
-   if (regex_search(formated_message, m, boost::regex(".+?\\((\\d+)\\) : (\\w+): (.*)")))
-   {
+   if (regex_search(formated_message, m, boost::regex(".+?\\((\\d+)\\) : (\\w+): (.*)"))) {
       // m[1] line number
       // m[2] message type
       // m[3] message
-      int line = boost::lexical_cast<int>(m[1]);
+      int line_number = boost::lexical_cast<int>(m[1]);
       
       diagnostic::type::value type;
       if (m[2] == "error")
@@ -89,25 +97,31 @@ void checked_diagnostic::report(const char* formated_message)
       else
          BOOST_CHECK(false && "Unknown diagnostic type");
       
-      expected_diags_t::const_iterator i = expected_diags_.find(line);
+      expected_diags_t::const_iterator i = expected_diags_.find(line_number);
       if (i == expected_diags_.end())
          BOOST_CHECK_MESSAGE(false, "Unexpected diagnostic: " + m[3]);
-      else
-      {
-         checked_lines_.insert(line);
+      else {
+         reported_lines_.insert({line_number, formated_message});
          BOOST_CHECK_EQUAL(i->second.second, type);
          BOOST_CHECK_EQUAL(i->second.first, m[3]);
       }
-   }
-   else
+   } else
       BOOST_CHECK(false && "Unknown diagnostic format");
 }
 
 void checked_diagnostic::report_unreported_diagnostics() const
 {
-   for(expected_diags_t::const_iterator i = expected_diags_.begin(), last = expected_diags_.end(); i != last; ++i)
-      if (checked_lines_.find(i->first) == checked_lines_.end())
-         BOOST_CHECK_MESSAGE(false, string("Diagnostic '") + i->second.first + "' was not reported");
+   set<int> covered_lines;
+
+   for (const auto& i : expected_diags_)
+      if (reported_lines_.find(i.first) == reported_lines_.end())
+         BOOST_CHECK_MESSAGE(false, string("Diagnostic '") + i.second.first + "' was not reported");
+      else
+         covered_lines.insert(i.first);
+
+   for (const auto& line : reported_lines_)
+      if (covered_lines.find(line.first) == covered_lines.end())
+         BOOST_CHECK_MESSAGE(false, line.second);
 }
 
 static expected_diags_t extract_expected_diags(const fs::path& hamfile)
@@ -133,6 +147,16 @@ void test_function(const fs::path& hamfile)
 {
    rule_manager rule_manager;
    checked_diagnostic diag(extract_expected_diags(hamfile));
+
+   {
+      vector<parscore::identifier> arg_names;
+      arg_names += "project-name", "requirements", "usage-requirements";
+      rule_manager.add_target("__project",
+                              boost::function<void(const parscore::identifier&,
+                                                   const hammer::requirements_decl*,
+                                                   const hammer::requirements_decl*)>(&project_rule),
+                              arg_names);
+   }
 
    {
       vector<parscore::identifier> arg_names;

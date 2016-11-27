@@ -24,50 +24,47 @@ class actions
    public:
       actions(ast::context& ctx) : ctx_(ctx) {}
 
-      virtual const ast::hamfile* 
+      virtual const ast::hamfile*
          on_hamfile(const ast::project_def* p,
                     const ast::statements_t& statements) const = 0;
-      
-      virtual const ast::project_def* 
-         on_implicit_project_def() const = 0;
-      
-      virtual const ast::project_def* 
-         on_explicit_project_def(const parscore::identifier& name, 
-                                 const ast::expressions_t& expressions) const = 0;
-      virtual const ast::expression* 
+
+      virtual const ast::project_def*
+         on_project_def(const parscore::identifier& name,
+                        const ast::expressions_t& expressions) const = 0;
+      virtual const ast::expression*
          on_empty_expr(const parscore::identifier& next_token) const = 0;
 
-      virtual const ast::expression* 
+      virtual const ast::expression*
          on_named_expr(const parscore::identifier& name,
                        const ast::expression* value) const = 0;
 
-      virtual const ast::expression* 
+      virtual const ast::expression*
          on_list_of(const ast::expressions_t& e) const = 0;
 
-      virtual const ast::path_like_seq* 
-         on_path_like_seq(const parscore::identifier& first, 
+      virtual const ast::path_like_seq*
+         on_path_like_seq(const parscore::identifier& first,
                           const parscore::identifier& last) const = 0;
-      
-      virtual const ast::expression* 
-         on_target_or_rule_call(const parscore::identifier& rule_name, 
+
+      virtual const ast::expression*
+         on_target_or_rule_call(const parscore::identifier& rule_name,
                                 const ast::expressions_t& arguments) const = 0;
 
-      virtual const ast::requirement_set* 
+      virtual const ast::requirement_set*
          on_requirement_set(const ast::requirements_t& requirements) const = 0;
 
       virtual const ast::feature*
          on_feature(parscore::identifier name,
                     const ast::expression* value) const = 0;
 
-      virtual const ast::requirement* 
+      virtual const ast::requirement*
          on_simple_requirement(parscore::source_location public_tag_loc,
                                const ast::feature* value) const = 0;
 
-      virtual const ast::requirement* 
+      virtual const ast::requirement*
          on_conditional_requirement(parscore::source_location public_tag_loc,
                                     const ast::features_t& features,
                                     const ast::feature* value) const = 0;
-      
+
       virtual const ast::expression*
          on_target_ref(parscore::source_location public_tag,
                        const ast::path_like_seq* head,

@@ -21,6 +21,12 @@ using namespace hammer::parscore;
 
 namespace hammer{namespace sema{
 
+static
+expressions_t process_arguments(const parscore::identifier& rule_name,
+                                const rule_declaration& rule_decl,
+                                const ast::expressions_t& arguments,
+                                ast::context& ctx);
+
 actions_impl::actions_impl(ast::context& ctx)
    : actions(ctx)
 {
@@ -30,19 +36,24 @@ const ast::hamfile*
 actions_impl::on_hamfile(const ast::project_def* p,
                          const ast::statements_t& statements) const
 {
-   return new (ctx_) ast::hamfile(p, statements);
-}
+   if (p) {
+      rule_manager::const_iterator i = ctx_.rule_manager_.find("__project");
+      if (i == ctx_.rule_manager_.end()) {
+         assert(false && "rule_manager MUST have builtin declaration of __project rule");
+         abort();
+      }
 
-const ast::project_def* actions_impl::on_implicit_project_def() const
-{
-   return new (ctx_) ast::implicit_project_def();
+      const project_def* processed_project_def = new (ctx_) project_def(p->name() ,process_arguments(p->name(), i->second, p->arguments(), ctx_));
+      return new (ctx_) ast::hamfile(processed_project_def, statements);
+   } else
+      return new (ctx_) ast::hamfile(p, statements);
 }
 
 const ast::project_def* 
-actions_impl::on_explicit_project_def(const parscore::identifier& name, 
-                                      const ast::expressions_t& expressions) const
+actions_impl::on_project_def(const parscore::identifier& name,
+                             const ast::expressions_t& expressions) const
 {
-   return new (ctx_) ast::explicit_project_def(name, expressions);
+   return new (ctx_) ast::project_def(name, expressions);
 }
 
 const ast::expression* 

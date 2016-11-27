@@ -16,11 +16,8 @@ class actions_impl : public actions
                     const ast::statements_t& statements) const;
       
       virtual const ast::project_def* 
-         on_implicit_project_def() const;
-
-      virtual const ast::project_def* 
-         on_explicit_project_def(const parscore::identifier& name, 
-                                 const ast::expressions_t& expressions) const;
+         on_project_def(const parscore::identifier& name,
+                        const ast::expressions_t& expressions) const;
 
       virtual const ast::expression* 
          on_empty_expr(const parscore::identifier& next_token) const;

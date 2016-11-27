@@ -4,19 +4,14 @@
 
 namespace hammer{namespace ast{
 
-explicit_project_def::explicit_project_def(const parscore::identifier& rule_name,
-                                           const expressions_t& arguments)
+project_def::project_def(const parscore::identifier& rule_name,
+                         const expressions_t& arguments)
    : rule_invocation(rule_name, arguments)
 {
 
 }
 
-bool explicit_project_def::accept(visitor& v) const
-{
-   return v.visit(*this);
-}
-
-bool implicit_project_def::accept(visitor& v) const
+bool project_def::accept(visitor& v) const
 {
    return v.visit(*this);
 }

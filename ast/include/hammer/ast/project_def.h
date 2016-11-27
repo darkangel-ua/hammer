@@ -5,24 +5,11 @@
 
 namespace hammer{namespace ast{
 
-class project_def : public expression
+class project_def : public rule_invocation
 {
    public:
-};
-
-class implicit_project_def : public project_def
-{
-   public:
-      bool accept(visitor& v) const override;
-      virtual parscore::source_location start_loc() const { return parscore::source_location(); }
-};
-
-class explicit_project_def : public project_def,
-                             public rule_invocation
-{
-   public:
-      explicit_project_def(const parscore::identifier& rule_name,
-                           const expressions_t& arguments);
+      project_def(const parscore::identifier& rule_name,
+                  const expressions_t& arguments);
 
       virtual parscore::source_location start_loc() const { return rule_invocation::start_loc(); }
       bool accept(visitor& v) const override;

@@ -6,8 +6,7 @@
 namespace hammer{namespace ast{
 
 class hamfile;
-class explicit_project_def;
-class implicit_project_def;
+class project_def;
 class rule_invocation;
 class rule_arguments;
 class error_expression;
@@ -27,8 +26,7 @@ class visitor
 {
    public:
       virtual bool visit(const hamfile& v) { return true; }
-      virtual bool visit(const explicit_project_def& v) { return true; }
-      virtual bool visit(const implicit_project_def& v) { return true; }
+      virtual bool visit(const project_def& v) { return true; }
       virtual bool visit(const rule_invocation& v) { return true; }
       virtual bool visit(const list_of& v) { return true; }
       virtual bool visit(const requirement_set& v) { return true; }

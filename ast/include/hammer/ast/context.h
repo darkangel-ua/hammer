@@ -31,6 +31,7 @@ class context
       }
 
       context(const context&) = delete;
+      context& operator = (const context&) = delete;
 
       ~context();
       void* allocate(std::size_t bytes,

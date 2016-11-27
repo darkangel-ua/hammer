@@ -20,15 +20,9 @@ options {
 
 hamfile returns [const hammer::ast::hamfile* result]
 @init { DECLARE_TYPE(hammer::ast::statements_t, statements); }
-        : ^(HAMFILE project_def statement[&statements]*) { result = SEMA->on_hamfile($project_def.result, statements); }
+        : ^(HAMFILE statement[&statements]*) { result = SEMA->on_hamfile(statements); }
         ;
         
-project_def returns[const hammer::ast::project_def* result]
-@init { DECLARE_TYPE(hammer::ast::expressions_t, args); }
-        : NO_PROJECT_DEF { result = nullptr; }
-        | ^(PROJECT_DEF p='project' arguments[&args] EXP_END) { result = SEMA->on_project_def($p->getToken($p), args); }
-        ;
-
 statement[hammer::ast::statements_t* statements]
 	: target_def_or_rule_call EXP_END{ statements->push_back($target_def_or_rule_call.result); }
 	;

@@ -1,0 +1,3 @@
+
+exe test ;
+project foo ; #error: Rule 'project' MUST be the first statement in the file

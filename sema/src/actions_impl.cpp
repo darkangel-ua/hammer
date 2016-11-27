@@ -1,13 +1,13 @@
 #include "stdafx.h"
 #include <hammer/sema/actions_impl.h>
 #include <hammer/ast/hamfile.h>
-#include <hammer/ast/project_def.h>
 #include <hammer/ast/expression.h>
 #include <hammer/ast/list_of.h>
 #include <hammer/ast/sources_decl.h>
 #include <hammer/ast/path_like_seq.h>
 #include <hammer/ast/requirement_set.h>
 #include <hammer/ast/requirement.h>
+#include <hammer/ast/rule_invocation.h>
 #include <hammer/ast/target_ref.h>
 #include <hammer/ast/feature.h>
 #include <hammer/ast/casts.h>
@@ -33,27 +33,16 @@ actions_impl::actions_impl(ast::context& ctx)
 }
 
 const ast::hamfile* 
-actions_impl::on_hamfile(const ast::project_def* p,
-                         const ast::statements_t& statements) const
+actions_impl::on_hamfile(const ast::statements_t& statements) const
 {
-   if (p) {
-      rule_manager::const_iterator i = ctx_.rule_manager_.find("__project");
-      if (i == ctx_.rule_manager_.end()) {
-         assert(false && "rule_manager MUST have builtin declaration of __project rule");
-         abort();
-      }
-
-      const project_def* processed_project_def = new (ctx_) project_def(p->name() ,process_arguments(p->name(), i->second, p->arguments(), ctx_));
-      return new (ctx_) ast::hamfile(processed_project_def, statements);
+   if (!statements.empty() &&
+       is_a<rule_invocation>(statements.front()) &&
+       as<rule_invocation>(statements.front())->name() == "project")
+   {
+      const ast::statements_t st_without_project_def(statements.begin() + 1, statements.end(), statements.get_allocator());
+      return new (ctx_) ast::hamfile(as<rule_invocation>(statements.front()), st_without_project_def);
    } else
-      return new (ctx_) ast::hamfile(p, statements);
-}
-
-const ast::project_def* 
-actions_impl::on_project_def(const parscore::identifier& name,
-                             const ast::expressions_t& expressions) const
-{
-   return new (ctx_) ast::project_def(name, expressions);
+      return new (ctx_) ast::hamfile(nullptr, statements);
 }
 
 const ast::expression* 
@@ -133,7 +122,7 @@ process_path_like_seq_arg(const rule_argument& ra, const expression* arg, contex
 {
    if (const list_of* list = as<list_of>(arg))
       if(list->values().size() == 1)
-         if (const ast::path_like_seq* pls = as<ast::path_like_seq>(list->values().front()))
+         if (as<ast::path_like_seq>(list->values().front()))
             return arg;
 
    ctx.diag_.error(arg->start_loc(), "Argument '%s': must be path like sequence") << ra.name();
@@ -287,10 +276,15 @@ actions_impl::on_target_or_rule_call(const parscore::identifier& rule_name,
                                      const ast::expressions_t& arguments) const
 {
    rule_manager::const_iterator i = ctx_.rule_manager_.find(rule_name);
-   if (i != ctx_.rule_manager_.end())
+   if (i != ctx_.rule_manager_.end()) {
+      if (!first_rule_in_file_) {
+         if (rule_name == "project")
+            ctx_.diag_.error(rule_name.start_lok(), "Rule 'project' MUST be the first statement in the file");
+      } else
+         first_rule_in_file_ = false;
+
       return new (ctx_) ast::rule_invocation(rule_name, process_arguments(rule_name, i->second, arguments, ctx_));
-   else
-   {
+   } else {
       ctx_.diag_.error(rule_name.start_lok(), "Target or rule '%s' was not defined") << rule_name;
       return new (ctx_) ast::error_expression(rule_name.start_lok());
    }

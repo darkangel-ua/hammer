@@ -12,7 +12,6 @@ class ast_xml_printer : public visitor
       ast_xml_printer(std::ostream& os, 
                       bool write_header = true);
       bool visit(const hamfile& v) override;
-      bool visit(const project_def& v) override;
       bool visit(const rule_invocation& v) override;
       bool visit(const list_of& v) override;
       bool visit(const requirement_set& v) override;

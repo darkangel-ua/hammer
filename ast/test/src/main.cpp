@@ -151,7 +151,7 @@ void test_function(const fs::path& hamfile)
    {
       vector<parscore::identifier> arg_names;
       arg_names += "project-name", "requirements", "usage-requirements";
-      rule_manager.add_target("__project",
+      rule_manager.add_target("project",
                               boost::function<void(const parscore::identifier&,
                                                    const hammer::requirements_decl*,
                                                    const hammer::requirements_decl*)>(&project_rule),

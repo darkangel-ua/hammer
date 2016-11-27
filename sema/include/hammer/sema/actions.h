@@ -12,12 +12,12 @@ namespace hammer{ namespace ast{
    class requirement_set;
 }}
 
-namespace hammer{namespace parscore{
+namespace hammer{ namespace parscore{
    class identifier;
    class source_location;
 }}
 
-namespace hammer{namespace sema{
+namespace hammer{ namespace sema{
 
 class actions
 {
@@ -25,12 +25,8 @@ class actions
       actions(ast::context& ctx) : ctx_(ctx) {}
 
       virtual const ast::hamfile*
-         on_hamfile(const ast::project_def* p,
-                    const ast::statements_t& statements) const = 0;
+         on_hamfile(const ast::statements_t& statements) const = 0;
 
-      virtual const ast::project_def*
-         on_project_def(const parscore::identifier& name,
-                        const ast::expressions_t& expressions) const = 0;
       virtual const ast::expression*
          on_empty_expr(const parscore::identifier& next_token) const = 0;
 

@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include <hammer/ast/ast_xml_printer.h>
-#include <hammer/ast/project_def.h>
 #include <hammer/ast/path_like_seq.h>
 #include <hammer/ast/requirement.h>
 #include <hammer/ast/requirement_set.h>
@@ -8,6 +7,7 @@
 #include <hammer/ast/feature.h>
 #include <hammer/ast/sources_decl.h>
 #include <hammer/ast/list_of.h>
+#include <hammer/ast/rule_invocation.h>
 #include <hammer/ast/hamfile.h>
 #include <iostream>
 #include <iomanip>
@@ -34,20 +34,6 @@ bool ast_xml_printer::visit(const hamfile& v)
    indent_ -= 3;
 
    os_ << "</hamfile>\n";
-
-   return true; 
-}
-
-bool ast_xml_printer::visit(const project_def& v)
-{
-   os_ << std::setw(indent_) << ' ' << "<project_def>\n";
-
-   indent_ += 3;
-   for(const auto& arg : v.arguments())
-      arg->accept(*this);
-   indent_ -= 3;
-
-   os_ << std::setw(indent_) << ' ' << "</project_def>\n";
 
    return true; 
 }

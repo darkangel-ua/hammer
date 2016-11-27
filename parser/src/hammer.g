@@ -8,8 +8,6 @@ options{
 
 tokens{
 HAMFILE;
-PROJECT_DEF;
-NO_PROJECT_DEF;
 TARGET_DECL_OR_RULE_CALL;
 TARGET_REF;
 TARGET_NAME;
@@ -29,9 +27,7 @@ FEATURE;
 @parser::preincludes{
 }
 
-hamfile       : WS* project_def target_decl_or_rule_call* -> ^(HAMFILE project_def? target_decl_or_rule_call*);
-project_def   : 'project' arguments WS* EXP_END WS* -> ^(PROJECT_DEF 'project' arguments EXP_END)
-              | -> NO_PROJECT_DEF;
+hamfile       : WS* target_decl_or_rule_call* -> ^(HAMFILE target_decl_or_rule_call*);
 
 target_decl_or_rule_call : target_decl_or_rule_call_impl WS* EXP_END WS* -> target_decl_or_rule_call_impl EXP_END;
 target_decl_or_rule_call_impl : ID arguments -> ^(TARGET_DECL_OR_RULE_CALL ID arguments);

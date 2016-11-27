@@ -5,28 +5,29 @@
 #include <hammer/ast/node.h>
 #include <hammer/ast/types.h>
 
-namespace hammer{namespace ast{
+namespace hammer{ namespace ast{
 
-class project_def;
+class rule_invocation;
 
 class hamfile : public node
 {
    public:
-      hamfile(const project_def* p, 
+      hamfile(const rule_invocation* project_def,
               const statements_t& s)
-         : project_(p), 
+         : project_def_(project_def),
            statements_(s)
       {}
 
       bool accept(visitor& v) const override;
 
-      const project_def* get_project_def() const { return project_; }
+      const rule_invocation* get_project_def() const { return project_def_; }
       const statements_t& get_statements() const { return statements_; }
 
    private:
-      const project_def* project_;
+      const rule_invocation* project_def_;
       statements_t statements_;
 };
 
 }}
-#endif //h_f169f8f8_dd1c_4f6a_9071_3a123619437f
+
+#endif

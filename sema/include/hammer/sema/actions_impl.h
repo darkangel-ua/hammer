@@ -4,7 +4,7 @@
 #include <hammer/sema/actions.h>
 #include <hammer/ast/context.h>
 
-namespace hammer{namespace sema{
+namespace hammer{ namespace sema{
 
 class actions_impl : public actions
 {
@@ -12,13 +12,8 @@ class actions_impl : public actions
       actions_impl(ast::context& ctx);
       
       virtual const ast::hamfile* 
-         on_hamfile(const ast::project_def* p,
-                    const ast::statements_t& statements) const;
+         on_hamfile(const ast::statements_t& statements) const;
       
-      virtual const ast::project_def* 
-         on_project_def(const parscore::identifier& name,
-                        const ast::expressions_t& expressions) const;
-
       virtual const ast::expression* 
          on_empty_expr(const parscore::identifier& next_token) const;
 
@@ -58,8 +53,10 @@ class actions_impl : public actions
                        const ast::path_like_seq* head,
                        const parscore::identifier& target_name,
                        const ast::requirement_set* requirements) const;
+   private:
+      mutable bool first_rule_in_file_ = true;
 };
 
 }}
 
-#endif //h_7858a0f2_780c_4919_9a5a_86104e12c129
+#endif

@@ -3,7 +3,7 @@
 
 #include <hammer/ast/expression.h>
 
-namespace hammer{namespace ast{
+namespace hammer{ namespace ast{
 
 class sources_decl : public expression
 {
@@ -13,7 +13,7 @@ class sources_decl : public expression
       {}
       
       const expression* sources() const { return sources_; }
-      virtual parscore::source_location start_loc() const { return sources_->start_loc(); }
+      parscore::source_location start_loc() const override { return sources_->start_loc(); }
       bool accept(visitor& v) const override;
 
    private:

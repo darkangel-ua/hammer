@@ -3,7 +3,7 @@
 
 #include <hammer/ast/types.h>
 
-namespace hammer{namespace ast{
+namespace hammer{ namespace ast{
 
 class hamfile;
 class project_def;

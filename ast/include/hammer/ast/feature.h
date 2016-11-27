@@ -3,7 +3,7 @@
 
 #include <hammer/ast/expression.h>
 
-namespace hammer{namespace ast{
+namespace hammer{ namespace ast{
 
 class feature : public expression
 {
@@ -16,7 +16,7 @@ class feature : public expression
 
       const parscore::identifier& name() const { return name_; }
       const expression* value() const { return value_; }
-      virtual parscore::source_location start_loc() const { return name_.start_lok(); }
+      parscore::source_location start_loc() const override { return name_.start_lok(); }
       bool accept(visitor& v) const override;
 
    private:
@@ -26,4 +26,4 @@ class feature : public expression
 
 }}
 
-#endif //h_a2e1a047_b168_45ff_978b_efac35d5573d
+#endif

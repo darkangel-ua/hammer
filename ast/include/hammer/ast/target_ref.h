@@ -4,7 +4,7 @@
 #include <hammer/ast/expression.h>
 #include <hammer/parscore/identifier.h>
 
-namespace hammer{namespace ast{
+namespace hammer{ namespace ast{
 
 class path_like_seq;
 class requirement_set;
@@ -25,7 +25,7 @@ class target_ref : public expression
       bool has_target_name() const;
       bool is_public() const { return public_tag_.valid(); }
       
-      virtual parscore::source_location start_loc() const;
+      parscore::source_location start_loc() const override;
       bool accept(visitor& v) const override;
 
    private:
@@ -37,4 +37,4 @@ class target_ref : public expression
 
 }}
 
-#endif //h_bd428576_c9b2_4eb5_8a5a_1fe3dd0e85cb
+#endif

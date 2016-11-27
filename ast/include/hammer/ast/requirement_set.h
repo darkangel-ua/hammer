@@ -12,7 +12,7 @@ class requirement_set : public expression
       requirement_set(const requirements_t& requirements);
       
       const requirements_t& requirements() const { return requirements_; }
-      virtual parscore::source_location start_loc() const;
+      parscore::source_location start_loc() const override;
       bool accept(visitor& v) const override;
 
    private:

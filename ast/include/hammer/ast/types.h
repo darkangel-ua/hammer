@@ -24,4 +24,4 @@ typedef std::vector<const feature*, context_allocator<const feature*> > features
    
 }}
 
-#endif //h_392947bd_0bce_4d6c_9796_24d72580e72e
+#endif

@@ -178,7 +178,7 @@ void test_function(const fs::path& hamfile)
                                                    const hammer::sources_decl*,
                                                    const hammer::requirements_decl*,
                                                    const hammer::feature_set*,
-                                                   const hammer::requirements_decl*)>(&lib_rule),
+                                                   const hammer::requirements_decl*)>(&exe_rule),
                               arg_names);
    }
 

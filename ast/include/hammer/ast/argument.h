@@ -14,4 +14,5 @@ class empty_argument : public argument
 };
 
 }}
-#endif //h_357ccec4_7918_4ddb_903f_4ae6ed1333ca
+
+#endif

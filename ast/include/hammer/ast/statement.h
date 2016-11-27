@@ -3,7 +3,7 @@
 
 #include <hammer/ast/node.h>
 
-namespace hammer{namespace ast{
+namespace hammer{ namespace ast{
 
 class statement : public node
 {
@@ -12,4 +12,4 @@ class statement : public node
 
 }}
 
-#endif //h_b334fba6_7c3c_4ba6_b1ac_7178bcecb812
+#endif

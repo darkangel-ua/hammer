@@ -7,7 +7,7 @@
 
 struct ANTLR3_COMMON_TOKEN_struct;
 
-namespace hammer{namespace parscore{
+namespace hammer{ namespace parscore{
 
 class identifier
 {
@@ -47,4 +47,4 @@ std::ostream& operator << (std::ostream& os, const identifier& v);
 
 }}
 
-#endif //h_5a04546f_8ebb_4a2b_925b_9da5fd7285a2
+#endif

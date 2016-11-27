@@ -32,7 +32,7 @@ class simple_requirement : public requirement
       {}
 
       const feature* value() const { return value_; }
-      virtual parscore::source_location start_loc() const;
+      parscore::source_location start_loc() const override;
       bool accept(visitor& v) const override;
 
    private:
@@ -52,7 +52,7 @@ class conditional_requirement : public requirement
       
       const features_t& condition() const { return condition_; }
       const feature* value() const { return value_; }
-      virtual parscore::source_location start_loc() const;
+      parscore::source_location start_loc() const override;
       bool accept(visitor& v) const override;
 
    private:
@@ -61,4 +61,5 @@ class conditional_requirement : public requirement
 };
 
 }}
-#endif //h_66fabe72_d8a5_489a_a602_95149c6b80c4
+
+#endif

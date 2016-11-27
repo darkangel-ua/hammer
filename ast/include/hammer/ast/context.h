@@ -30,6 +30,8 @@ class context
       {
       }
 
+      context(const context&) = delete;
+
       ~context();
       void* allocate(std::size_t bytes,
                      std::size_t alignment);
@@ -50,4 +52,4 @@ inline void *operator new(std::size_t bytes,
    return c.allocate(bytes, 0);
 }
 
-#endif //h_0483f3e2_249b_44b1_b048_e8bbbf8ba158
+#endif

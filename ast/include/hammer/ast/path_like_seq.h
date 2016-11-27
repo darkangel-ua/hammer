@@ -18,7 +18,7 @@ class path_like_seq : public expression
 
       parscore::identifier to_identifier() const;
       bool is_simple() const;
-      virtual parscore::source_location start_loc() const { return first_.start_lok(); }
+      parscore::source_location start_loc() const override { return first_.start_lok(); }
       bool accept(visitor& v) const override;
 
    private:
@@ -28,4 +28,4 @@ class path_like_seq : public expression
 
 }}
 
-#endif //h_bfff9dfc_78a7_4dd6_94c5_9033e1fd6b33
+#endif

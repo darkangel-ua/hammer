@@ -3,7 +3,7 @@
 #include <cstring>
 #include <antlr3.h>
 
-namespace hammer{namespace parscore{
+namespace hammer{ namespace parscore{
 
 identifier::identifier(const char* v)
    : v_(v),

@@ -95,7 +95,9 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
 
    shared_ptr<fs_argument_writer> link_flags(new fs_argument_writer("link_flags", e.feature_registry()));
    link_flags->add("<debug-symbols>on", "-g").
-               add("<profiling>on", "-pg");
+               add("<profiling>on", "-pg").
+               add("<address-model>32", "-m32").
+               add("<address-model>64", "-m64");
 
    shared_ptr<free_feature_arg_writer> user_link_flags(new free_feature_arg_writer("user_link_flags", e.feature_registry().get_def("linkflags")));
    shared_ptr<free_feature_arg_writer> user_cxx_flags(new free_feature_arg_writer("user_cxx_flags", e.feature_registry().get_def("cxxflags")));

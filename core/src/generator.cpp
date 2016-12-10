@@ -156,4 +156,15 @@ make_product_types(engine& e,
    return result;
 }
 
+generator::consumable_types_t
+make_consume_types(engine& e,
+                   const std::vector<type_tag>& types)
+{
+   generator::consumable_types_t result;
+   for(const type_tag& t : types)
+      result.push_back(e.get_type_registry().get(t));
+
+   return result;
+}
+
 }

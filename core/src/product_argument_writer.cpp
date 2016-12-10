@@ -33,8 +33,6 @@ void product_argument_writer::write_impl(std::ostream& output, const build_node&
    {
       if (accept(**i))
       {
-         // FIXME: по идее именно сдесь лучше всего вычислять суфикс для продукта, а не на стадии генераторов
-//         location_t product_path = relative_path((**i).mtarget()->intermediate_dir(), environment.current_directory()) / (**i).name().to_string();
          switch(output_strategy_)
          {
             case output_strategy::RELATIVE_TO_MAIN_TARGET:

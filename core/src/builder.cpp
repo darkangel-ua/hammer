@@ -365,7 +365,7 @@ builder::result builder::impl_t::build(nodes_t& nodes, const project* bounds)
    // gather information about all nodes needed to be built
    nodes_to_build_t nodes_to_build;
    for(nodes_t::const_iterator i = nodes.begin(), last = nodes.end(); i != last; ++i)
-      if (!(**i).up_to_date())
+      if (!(**i).up_to_date() || unconditional_build_)
          gather_nodes(nodes_to_build, **i, bounds);
 
    // make build queue

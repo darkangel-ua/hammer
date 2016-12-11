@@ -267,7 +267,7 @@ void builder::generate_graphviz(std::ostream& os, nodes_t& nodes, const project*
 {
    nodes_to_build_t nodes_to_build;
    for(nodes_t::const_iterator i = nodes.begin(), last = nodes.end(); i != last; ++i)
-      if (!(**i).up_to_date())
+      if (!(**i).up_to_date() || impl_->unconditional_build_)
          impl_->gather_nodes(nodes_to_build, **i, bounds);
 
    unordered_set<const build_queue_node_t*> all_build_nodes;

@@ -10,7 +10,7 @@ namespace hammer
    class product_argument_writer : public targets_argument_writer
    {
       public:
-         struct output_strategy{ enum value{ RELATIVE_TO_MAIN_TARGET, FULL_UNC_PATH }; };
+         struct output_strategy{ enum value{ RELATIVE_TO_MAIN_TARGET, RELATIVE_TO_WORKING_DIR, FULL_PATH, FULL_UNC_PATH }; };
 
          product_argument_writer(const std::string& name, 
                                  const target_type& t,

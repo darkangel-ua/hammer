@@ -42,6 +42,23 @@ void product_argument_writer::write_impl(std::ostream& output, const build_node&
                break;
             }
 
+            case output_strategy::RELATIVE_TO_WORKING_DIR:
+            {
+               const location_t full_product_path = (**i).get_main_target()->intermediate_dir() / (**i).name().to_string();
+               const location_t product_path = relative_path(full_product_path, environment.working_directory(**i));
+
+               output << product_path.string();
+               break;
+            }
+
+            case output_strategy::FULL_PATH:
+            {
+               const location_t full_product_path = (**i).get_main_target()->intermediate_dir() / (**i).name().to_string();
+               output << full_product_path.string();
+
+               break;
+            }
+
             case output_strategy::FULL_UNC_PATH:
             {
                location_t product_path = (**i).get_main_target()->intermediate_dir() / (**i).name().to_string();

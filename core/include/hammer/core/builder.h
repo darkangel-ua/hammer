@@ -33,7 +33,7 @@ namespace hammer
 
          result build(nodes_t& nodes, const project* bounds = NULL);
          result build(build_node& node, const project* bounds = NULL);
-         void generate_graphviz(std::ostream& os, nodes_t& nodes, const project* bounds = NULL);
+         void generate_graphviz(std::ostream& os, const nodes_t& nodes, const project* bounds = NULL);
 
       private:
          struct impl_t;

@@ -263,7 +263,7 @@ void builder::impl_t::task_completition_handler(shared_ptr<worker_ctx_t> ctx)
    }
 }
 
-void builder::generate_graphviz(std::ostream& os, nodes_t& nodes, const project* bounds)
+void builder::generate_graphviz(std::ostream& os, const nodes_t& nodes, const project* bounds)
 {
    nodes_to_build_t nodes_to_build;
    for(nodes_t::const_iterator i = nodes.begin(), last = nodes.end(); i != last; ++i)
@@ -426,36 +426,18 @@ build_queue_node_t& builder::impl_t::gather_nodes(nodes_to_build_t& nodes_to_bui
                                                   build_node& node,
                                                   const project* bounds)
 {
-   typedef std::vector<build_queue_node_t*> sd_nodes_t;
-
    build_queue_node_t& ctx_node = *nodes_pool_.construct(&node);
    nodes_to_build.insert(std::make_pair(&node, &ctx_node));
 
-   sd_nodes_t sources_nodes;
    for(build_node::sources_t::const_iterator i = node.sources_.begin(), last = node.sources_.end(); i != last; ++i)
       if (!i->source_node_->up_to_date() || unconditional_build_)
          if (bounds == NULL || i->source_node_->products_owner().get_project() == bounds) // we don't build nodes that don't belongs to bounds
-            sources_nodes.push_back(&gather_nodes(nodes_to_build, ctx_node, *i->source_node_, bounds));
+            gather_nodes(nodes_to_build, ctx_node, *i->source_node_, bounds);
 
-   sort(sources_nodes.begin(), sources_nodes.end());
-   sources_nodes.erase(unique(sources_nodes.begin(), sources_nodes.end()), sources_nodes.end());
-
-   sd_nodes_t dependencies_nodes;
    for(build_node::nodes_t::const_iterator i = node.dependencies_.begin(), last = node.dependencies_.end(); i != last; ++i)
       if (!(**i).up_to_date() || unconditional_build_)
          if (bounds == NULL || (**i).products_owner().get_project() == bounds) // we don't build nodes that don't belongs to bounds
-            dependencies_nodes.push_back(&gather_nodes(nodes_to_build, ctx_node, **i, bounds));
-
-   sort(dependencies_nodes.begin(), dependencies_nodes.end());
-   dependencies_nodes.erase(unique(dependencies_nodes.begin(), dependencies_nodes.end()), dependencies_nodes.end());
-
-   for(sd_nodes_t::iterator i = sources_nodes.begin(), last = sources_nodes.end(); i != last; ++i)
-      for(sd_nodes_t::iterator d = dependencies_nodes.begin(), d_last = dependencies_nodes.end(); d != d_last; ++d)
-         if (find(dependencies_nodes.begin(), dependencies_nodes.end(), *i) == dependencies_nodes.end() &&
-             (**d).uses_nodes_.insert(*i).second)
-         {
-            ++(**i).dependencies_count_;
-         }
+            gather_nodes(nodes_to_build, ctx_node, **i, bounds);
 
    return ctx_node;
 }

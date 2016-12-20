@@ -108,11 +108,13 @@ void qt_uic_meta_target::compute_usage_requirements(feature_set& result,
 
    feature* uic_inc = result.owner().create_feature("include", relative_path(owner->intermediate_dir(), location()).string());
    uic_inc->get_path_data().target_ = owner->get_meta_target();
-   feature* src_dep = result.owner().create_feature("src-dependency", name().to_string());
-   src_dep->get_dependency_data().source_ = source_decl(pstring(), name(), NULL, NULL);
+
+   // making dependency on self :)
+   feature* dependency = result.owner().create_feature("dependency", "");
+   dependency->get_dependency_data().source_ = source_decl(name(), pstring(), nullptr, nullptr);
 
    result.join(uic_inc)
-         .join(src_dep);
+         .join(dependency);
 }
 
 static sources_decl qt_uic_rule(project* p,
@@ -182,39 +184,6 @@ static void qt_moc_rule(project* p,
 
    p->add_target(mt);
 }
-
-/*
-class qt_uic_generator : public generator
-{
-   public:
-      qt_uic_generator(engine& e,
-                       const std::string& name,
-                       const consumable_types_t& source_types,
-                       const producable_types_t& target_types,
-                       bool composite,
-                       const feature_set* c = NULL)
-         : generator(e, name, source_types, target_types, composite, c)
-      {
-      }
-
-      virtual construct_result_t
-      construct(const target_type& type_to_construct,
-                const feature_set& props,
-                const std::vector<boost::intrusive_ptr<build_node> >& sources,
-                const basic_target* source_target,
-                const pstring* composite_target_name,
-                const main_target& owner) const
-      {
-         // getting from QT_UIC_MAIN all its source and pass they up
-         build_nodes_t result;
-         assert(source_target && sources.size() == 1 && "this is non composite generator so source target must be present");
-         BOOST_FOREACH(const build_node::source_t& s, sources.at(0)->sources_)
-            result.push_back(s.source_node_);
-
-         return result;
-      }
-};
-*/
 
 qt_toolset::qt_toolset()
    : toolset("qt")
@@ -328,6 +297,12 @@ void add_lib(project& qt_project,
                                pstring(e.pstring_pool(), lib_name),
                                pstring(e.pstring_pool(), "./lib/" + lib_name + lib_tag + ".lib"), profile_req, requirements_decl()));
 #else
+   feature* search_feature = e.feature_registry().create_feature("search", "./lib/");
+   search_feature->get_path_data().target_ = &qt_project;
+   {
+      auto_ptr<just_feature_requirement> search_req(new just_feature_requirement(search_feature));
+      debug_req.add(auto_ptr<requirement_base>(search_req));
+   }
    auto_ptr<searched_lib_meta_target> lib_debug(
          new searched_lib_meta_target(&qt_project,
                                       pstring(e.pstring_pool(), lib_name),
@@ -335,6 +310,11 @@ void add_lib(project& qt_project,
                                       debug_req,
                                       requirements_decl(),
                                       e.get_type_registry().get(types::SEARCHED_SHARED_LIB)));
+
+   {
+      auto_ptr<just_feature_requirement> search_req(new just_feature_requirement(search_feature));
+      release_req.add(auto_ptr<requirement_base>(search_req));
+   }
    auto_ptr<searched_lib_meta_target> lib_release(
          new searched_lib_meta_target(&qt_project,
                                       pstring(e.pstring_pool(), lib_name),
@@ -342,6 +322,10 @@ void add_lib(project& qt_project,
                                       release_req,
                                       requirements_decl(),
                                       e.get_type_registry().get(types::SEARCHED_SHARED_LIB)));
+   {
+      auto_ptr<just_feature_requirement> search_req(new just_feature_requirement(search_feature));
+      profile_req.add(auto_ptr<requirement_base>(search_req));
+   }
    auto_ptr<searched_lib_meta_target> lib_profile(
          new searched_lib_meta_target(&qt_project,
                                       pstring(e.pstring_pool(), lib_name),

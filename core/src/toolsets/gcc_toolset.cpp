@@ -201,14 +201,22 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
 
    // ... -> EXE
    {
+      shared_ptr<free_feature_arg_writer> ld_library_path_dirs(
+         new free_feature_arg_writer("ld_library_path_dirs",
+                                     e.feature_registry().get_def("search"),
+                                     string(),
+                                     string(),
+                                     ":"));
+
       shared_ptr<source_argument_writer> obj_sources(new source_argument_writer("obj_sources", e.get_type_registry().get(types::OBJ)));
       shared_ptr<product_argument_writer> exe_product(new product_argument_writer("exe_product", e.get_type_registry().get(types::EXE)));
       shared_ptr<unix_libraries_argument_writer> libraries_writer(new unix_libraries_argument_writer("libraries", linker_type::GNU, e));
       unique_ptr<cmdline_action> exe_action(new cmdline_action("link-exe", exe_product));
-      cmdline_builder exe_cmd(install_data.linker_.string() + " $(link_flags) $(searched_lib_searched_dirs) -o \"$(exe_product)\" $(obj_sources) $(libraries)\n");
+      cmdline_builder exe_cmd("LD_LIBRARY_PATH=$(ld_library_path_dirs):LD_LIBRARY_PATH " + install_data.linker_.string() + " $(link_flags) $(searched_lib_searched_dirs) -o \"$(exe_product)\" $(obj_sources) $(libraries)\n");
 
       exe_cmd += link_flags;
       exe_cmd += searched_lib_searched_dirs;
+      exe_cmd += ld_library_path_dirs;
       exe_cmd += obj_sources;
       exe_cmd += libraries_writer;
       exe_cmd += exe_product;

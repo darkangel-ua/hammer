@@ -42,30 +42,16 @@ void main_target::dependencies(const dependencies_t& deps)
    dependencies_ = deps;
 }
 
-void main_target::src_dependencies(const dependencies_t& deps)
-{
-   src_dependencies_ = deps;
-}
-
 void main_target::generate_and_add_dependencies(hammer::build_node& node) const
 {
-   build_nodes_t result;
+   build_nodes_t dependency_nodes;
    for(dependencies_t::const_iterator i = dependencies_.begin(), last = dependencies_.end(); i != last; ++i)
    {
       build_nodes_t tmp((*i)->generate());
-      result.insert(result.end(), tmp.begin(), tmp.end());
+      dependency_nodes.insert(dependency_nodes.end(), tmp.begin(), tmp.end());
    }
 
-   node.dependencies_.insert(node.dependencies_.end(), result.begin(), result.end());
-
-   build_nodes_t src_deps;
-   for(basic_target* t : src_dependencies_)
-   {
-      build_nodes_t tmp(static_cast<main_target*>(t)->generate());
-      src_deps.insert(src_deps.end(), tmp.begin(), tmp.end());
-   }
-   
-   add_this_target_dependency(node, src_deps);
+   add_this_target_dependency(node, dependency_nodes);
 }
 
 std::vector<boost::intrusive_ptr<build_node> >
@@ -86,52 +72,51 @@ main_target::generate() const
 }
 
 build_node_ptr 
-main_target::add_intermediate_dir_dependency(hammer::build_node& generated_node) const
+main_target::create_intermediate_dir_dependency() const
 {
    build_node_ptr int_dir_node(new hammer::build_node(*this, false));
    int_dir_node->products_.push_back(new directory_target(this, intermediate_dir()));
    int_dir_node->action(static_cast<const directory_target*>(int_dir_node->products_.front())->action());
-   generated_node.dependencies_.push_back(int_dir_node);
    
    return int_dir_node;
 }
 
 void main_target::add_additional_dependencies(hammer::build_node& generated_node) const
 {
-   build_node_ptr intr_dir_node = add_intermediate_dir_dependency(generated_node);
+   build_node_ptr intr_dir_node = create_intermediate_dir_dependency();
    add_hamfile_dependency(generated_node, intr_dir_node);
 }
 
 void main_target::add_hamfile_dependency(hammer::build_node& node,
                                          const build_node_ptr& intermediate_dir_node) const
 {
-   boost::intrusive_ptr<hammer::build_node> hamfile_node(new hammer::build_node(*this, false));
-   hamfile_node->products_.push_back(
+   boost::intrusive_ptr<hammer::build_node> signature_node(new hammer::build_node(*this, false));
+   signature_node->products_.push_back(
       new signature_target(this, 
                            pstring(get_engine()->pstring_pool(), name().to_string() + ".target.sig"), 
                            &get_engine()->get_type_registry().get(types::UNKNOWN),
                            &properties()));
    
-   hamfile_node->action(mksig_action_.get());
-   hamfile_node->dependencies_.push_back(intermediate_dir_node);
+   signature_node->action(mksig_action_.get());
+   signature_node->dependencies_.push_back(intermediate_dir_node);
 
-   add_this_target_dependency(node, build_nodes_t(1, hamfile_node));
+   add_this_target_dependency(node, build_nodes_t(1, signature_node));
 }
 
 // search for all leaf nodes and add hamfile_node to it as dependency
-void main_target::add_this_target_dependency(hammer::build_node& node, 
+bool main_target::add_this_target_dependency(hammer::build_node& node,
                                              const build_nodes_t& nodes) const
 {
-   for(hammer::build_node::sources_t::iterator i = node.sources_.begin(), last = node.sources_.end(); i != last; ++i)
-   {
-      if (&i->source_node_->products_owner() == this)
-      {
+   for(hammer::build_node::sources_t::iterator i = node.sources_.begin(), last = node.sources_.end(); i != last; ++i) {
+      if (&i->source_node_->products_owner() == this) {
          if (i->source_node_->sources_.empty())
             node.dependencies_.insert(node.dependencies_.begin(), nodes.begin(), nodes.end());
          else
             add_this_target_dependency(*i->source_node_, nodes);
       }
    }
+
+   return false;
 }
 
 location_t main_target::intermediate_dir_impl() const

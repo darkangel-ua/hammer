@@ -199,16 +199,6 @@ void extract_dependencies(sources_decl& result, const feature_set& fs)
    }
 }
 
-void extract_src_dependencies(sources_decl& result, const feature_set& fs)
-{
-   feature_set::const_iterator i = fs.find("src-dependency");
-   while(i != fs.end())
-   {
-      result.push_back((**i).get_dependency_data().source_);
-      i = fs.find(++i, "src-dependency");
-   }
-}
-
 void extract_uses(sources_decl& result, const feature_set& fs)
 {
    // FIXME: need refactor this block

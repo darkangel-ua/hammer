@@ -31,8 +31,6 @@ namespace hammer
          const sources_t& sources() const { return sources_; }
          void dependencies(const dependencies_t& deps);
          const dependencies_t& dependencies() const { return dependencies_; }
-         void src_dependencies(const dependencies_t& deps);
-         const dependencies_t& src_dependencies() const { return src_dependencies_; }
          const hammer::meta_target* get_meta_target() const { return meta_target_; }
          virtual build_nodes_t generate() const;
          const location_t& intermediate_dir() const;
@@ -51,7 +49,6 @@ namespace hammer
          const hammer::meta_target* meta_target_;
          sources_t sources_;
          sources_t dependencies_;
-         sources_t src_dependencies_;
          // FIXME: should call generate if no build_node_ assigned
          mutable boost::intrusive_ptr<hammer::build_node> build_node_;
          mutable location_t intermediate_dir_;
@@ -62,11 +59,11 @@ namespace hammer
          virtual void timestamp_info_impl() const;
          
          build_node_ptr 
-         add_intermediate_dir_dependency(hammer::build_node& generated_node) const;
+         create_intermediate_dir_dependency() const;
          
          void add_hamfile_dependency(hammer::build_node& node,
                                      const build_node_ptr& intermediate_dir_node) const;
-         void add_this_target_dependency(hammer::build_node& node, 
+         bool add_this_target_dependency(hammer::build_node& node,
                                          const build_nodes_t& nodes) const;
    };
 }

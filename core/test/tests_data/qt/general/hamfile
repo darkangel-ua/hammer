@@ -1,0 +1,12 @@
+exe test 
+   : main.cpp
+     mainwindow.cpp
+     mainwindow.h
+     [ qt.uic mainwindow.ui ]
+#     [ qt.moc mainwindow.h ]
+     pp
+     /Qt
+   ;
+
+qt.moc pp : mainwindow.h ;
+explicit pp ;

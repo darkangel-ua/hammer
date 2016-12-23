@@ -35,6 +35,7 @@
 #include <hammer/core/toolsets/msvc_toolset.h>
 #include <hammer/core/toolsets/gcc_toolset.h>
 #include <hammer/core/toolsets/qt_toolset.h>
+#include <hammer/core/htmpl/htmpl.h>
 #include <hammer/core/toolset_manager.h>
 #include <hammer/core/scaner_manager.h>
 #include <hammer/core/c_scanner.h>
@@ -748,6 +749,7 @@ int main(int argc, char** argv) {
          engine.generators().insert(std::auto_ptr<generator>(new obj_generator(engine)));
          add_testing_generators(engine, engine.generators());
          add_header_lib_generator(engine, engine.generators());
+         install_htmpl(engine);
 
          if (opts.debug_level_ > 0)
             cout << "Done" << endl;

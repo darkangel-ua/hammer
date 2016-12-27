@@ -7,10 +7,20 @@
 
 namespace hammer{
    
-static source_decl make_default_source(engine& e, const pstring& version)
+static
+source_decl make_default_source(engine& e,
+                                const pstring& version)
 {
    std::string location(version.to_string() + "/build");
    return source_decl(pstring(e.pstring_pool(), location), pstring(), NULL, NULL);
+}
+
+static
+source_decl make_non_default_source(engine& e,
+                                    const source_decl& source)
+{
+   const location_t source_target_path = location_t("./") / source.target_path().to_string();
+   return source_decl(pstring(e.pstring_pool(), source_target_path.string()), pstring(), NULL, NULL);
 }
 
 version_aliase_meta_target::version_aliase_meta_target(hammer::project* p,
@@ -27,7 +37,9 @@ version_aliase_meta_target::version_aliase_meta_target(hammer::project* p,
    props->join("version", version.begin());
 
    sources_decl src;
-   source_decl s(sources != NULL ? *sources->begin() : make_default_source(*get_engine(), version));
+   source_decl s(sources != NULL ? make_non_default_source(*get_engine(), *sources->begin())
+                                 : make_default_source(*get_engine(), version));
+
    s.properties(s.properties() == NULL ? props : &s.properties()->join(*props));
    src.push_back(s);
    this->sources(src);

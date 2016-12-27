@@ -99,8 +99,16 @@ namespace hammer{
       usage_requirements.join(*local_usage_requirements);
    }
 
-   // we need to convert source_decl from just 'foo' form to './/foo' form
-   // this will helps 'extract_sources' to correctly adjust target_path later
+   static
+   bool has_slash(const pstring& s)
+   {
+      for (const char c : s)
+         if (c == '/')
+            return true;
+
+      return false;
+   }
+
    void adjust_dependency_features_sources(feature_set& set_to_adjust,
                                            const basic_meta_target& relative_to_target,
                                            const main_target* transfer_to_target)
@@ -111,9 +119,10 @@ namespace hammer{
 
          const source_decl& source = f->get_dependency_data().source_;
          if (transfer_to_target &&
-             transfer_to_target->get_project() == relative_to_target.get_project(),
+             transfer_to_target->get_project() != relative_to_target.get_project() &&
              source.type() == nullptr /*source is meta-target*/ &&
-             !source.target_path_is_global())
+             !source.target_path_is_global() &&
+             !has_slash(source.target_path()))
          {
             source_decl adjusted_source = source;
             adjusted_source.target_path(pstring(relative_to_target.get_engine()->pstring_pool(), "./"), nullptr);

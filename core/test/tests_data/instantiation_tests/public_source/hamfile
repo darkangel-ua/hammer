@@ -1,6 +1,7 @@
 # we use lib3 & lib4 to check that we correctly adjust <use> feature path
+# lib5 used to check correct handling of public source of alias meta-target type
 
 lib lib1 : lib1.cpp : : : <define>USE_LIB1 ;
 lib lib2 : lib2.cpp @lib1 ;
 
-exe test : main.cpp lib2 lib3 lib4;
+exe test : main.cpp lib2 ./lib3 ./lib4 ./lib5 ;

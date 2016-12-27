@@ -1,2 +1,2 @@
-alias lib1 : 1 : <version>1.0 ;
+alias lib1 : ./1 : <version>1.0 ;
 alias lib1 : 2 : <version>2.0 ;

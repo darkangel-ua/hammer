@@ -1,0 +1,1 @@
+lib lib5 : lib5.cpp @./foo ;

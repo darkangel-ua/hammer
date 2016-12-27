@@ -118,7 +118,7 @@ void add_tests_from_filesystem(const boost::filesystem::path& test_data_path,
       if (!is_directory(test_path))
          continue;
 
-      const string test_name = test_suite_name + "/" + i->path().filename().string();
+      const string test_name = i->path().filename().string();
       ts->add(make_test_case([=] { test_function(test_path); }, test_name));
    }
 

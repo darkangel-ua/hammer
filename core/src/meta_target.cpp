@@ -37,7 +37,7 @@ namespace hammer{
                                                   &instantiated_meta_targets, &local_usage_requirements);
 
       sources_decl sources_from_features;
-      extract_sources(sources_from_features, local_usage_requirements);
+      extract_sources(sources_from_features, local_usage_requirements, *this);
       usage_requirements.join(local_usage_requirements);
       if (!sources_from_features.empty())
       {
@@ -68,14 +68,14 @@ namespace hammer{
                                                   &ignored_instantiated_meta_targets, local_usage_requirements);
 
       sources_decl sources_from_uses;
-      extract_uses(sources_from_uses, *local_usage_requirements);
+      extract_uses(sources_from_uses, *local_usage_requirements, *this);
       if (!sources_from_uses.empty())
          compute_additional_usage_requirements(simple_targets, instantiated_meta_targets, 
                                                *local_usage_requirements, sources_from_uses, 
                                                build_request, owner_for_new_targets);
 
       sources_decl sources_from_usage_requirements;
-      extract_sources(sources_from_usage_requirements, *local_usage_requirements);
+      extract_sources(sources_from_usage_requirements, *local_usage_requirements, *this);
       if (!sources_from_usage_requirements.empty())
       {
          meta_targets_t meta_targets;
@@ -87,7 +87,7 @@ namespace hammer{
                                      *local_usage_requirements, meta_targets,
                                      build_request, owner_for_new_targets);
             sources_decl sources_from_usage_requirements;
-            extract_uses(sources_from_usage_requirements, *local_usage_requirements);
+            extract_uses(sources_from_usage_requirements, *local_usage_requirements, *this);
             if (!sources_from_usage_requirements.empty())
                compute_additional_usage_requirements(simple_targets, instantiated_meta_targets, 
                                                      *local_usage_requirements, sources_from_usage_requirements, 
@@ -102,19 +102,37 @@ namespace hammer{
    static void transfer_public_sources(feature_set& dest,
                                        const sources_decl& sources, 
                                        const feature_set& build_request,
-                                       feature_registry& fr)
+                                       feature_registry& fr,
+                                       const basic_meta_target& relative_to_target,
+                                       const main_target* transfer_to_target)
    {
       // when transferring public sources we should make <use> with current build request applied
       // because this is the only way to produce correct usage requirements in dependent targets
       // same as in compute_usage_requirements
       feature_set& uses = *fr.make_set();
-      for(sources_decl::const_iterator i = sources.begin(), last = sources.end(); i != last; ++i)
-         if (i->is_public())
-         {
+      for (const source_decl& source : sources) {
+         if (source.is_public()) {
             feature* f = fr.create_feature("use", "");
-            f->get_dependency_data().source_ = *i;
+            // if we transfer sources between meta-targets that belongs to the same project
+            // we need to convert source_decl from just 'foo' form to './/foo' form
+            // this will helps 'extract_sources' to correctly adjust target_path later
+            if (transfer_to_target &&
+                transfer_to_target->get_project() == relative_to_target.get_project(),
+                source.type() == nullptr /*source is meta-target*/ &&
+                !source.target_path_is_global())
+            {
+               source_decl sd_copy = source;
+               sd_copy.target_path(pstring(relative_to_target.get_engine()->pstring_pool(), "./"), nullptr);
+               sd_copy.target_name(source.target_path());
+
+               f->set_dependency_data(sd_copy, &relative_to_target);
+            } else
+               f->set_dependency_data(source, &relative_to_target);
+
             uses.join(f);
          }
+      }
+
       apply_build_request(uses, build_request);
       dest.join(uses);
    }
@@ -146,8 +164,8 @@ namespace hammer{
       sources_decl sources_from_requirements;
       sources_decl sources_from_features;
       sources_decl dependencies_from_requierements;
-      extract_sources(sources_from_requirements, *mt_fs);
-      extract_dependencies(dependencies_from_requierements, *mt_fs);
+      extract_sources(sources_from_requirements, *mt_fs, *this);
+      extract_dependencies(dependencies_from_requierements, *mt_fs, *this);
 
       split_sources(&simple_targets, &meta_targets, sources(), *build_request_for_dependencies); 
       split_sources(&simple_targets, &meta_targets, sources_from_requirements, *build_request_for_dependencies);
@@ -166,7 +184,7 @@ namespace hammer{
                                   *build_request_for_dependencies, *mt);
       
       sources_decl dependencies_from_instantiations;
-      extract_dependencies(dependencies_from_instantiations, *local_usage_requirements);
+      extract_dependencies(dependencies_from_instantiations, *local_usage_requirements, *this);
       split_sources(&simple_targets, &dependency_meta_targets, dependencies_from_instantiations, *build_request_for_dependencies);
 
       feature_set* ignored_dependencies_usage_requirements = get_engine()->feature_registry().make_set();
@@ -176,8 +194,8 @@ namespace hammer{
                                  *build_request_for_dependencies, *mt);
 
       sources_decl sources_from_uses;
-      extract_uses(sources_from_uses, *mt_fs);
-      extract_uses(sources_from_uses, *local_usage_requirements);
+      extract_uses(sources_from_uses, *mt_fs, *this);
+      extract_uses(sources_from_uses, *local_usage_requirements, *this);
       if (!sources_from_uses.empty())
          compute_additional_usage_requirements(simple_targets, instantiated_meta_targets, 
                                                *local_usage_requirements, sources_from_uses,
@@ -192,7 +210,7 @@ namespace hammer{
       sources_decl all_sources = sources();
       all_sources.insert(sources_from_requirements);
       all_sources.insert(sources_from_features);
-      transfer_public_sources(*usage_requirements, all_sources, build_request, get_engine()->feature_registry());
+      transfer_public_sources(*usage_requirements, all_sources, build_request, get_engine()->feature_registry(), *this, owner);
       compute_usage_requirements(*usage_requirements, *mt, build_request, *local_usage_requirements, owner);
       
       result->push_back(mt);

@@ -1,4 +1,4 @@
-test [ features = <define>USE_LIB1; ]
+test [ features = <define>USE_LIB1 <define>LIB_3 <define>LIB_4 <define>FOO <define>BAR; ]
 {
    lib2 [ features = <define>USE_LIB1; ] 
    {

@@ -5,6 +5,7 @@
 #include <hammer/core/location.h>
 #include <hammer/core/basic_meta_target.h>
 #include <hammer/core/fs_helpers.h>
+#include <hammer/core/engine.h>
 #include <iterator>
 #include <stdexcept>
 #include <sstream>
@@ -171,43 +172,50 @@ void set_path_data(feature_set* f, const basic_meta_target* t)
    }
 }
 
-void extract_sources(sources_decl& result, const feature_set& fs)
+static
+void extract_dependency_like_sources(sources_decl& result,
+                                     const feature_set& fs,
+                                     const basic_meta_target& relative_to_target,
+                                     const char* feature_name)
 {
-   // FIXME: need refactor this two blocks
-   feature_set::const_iterator i = fs.find("source");
-   while(i != fs.end())
-   {
-      result.push_back((**i).get_dependency_data().source_);
-      i = fs.find(++i, "source");
-   }
+   feature_set::const_iterator i = fs.find(feature_name);
+   while(i != fs.end()) {
+      source_decl sd_copy = (**i).get_dependency_data().source_;
 
-   i = fs.find("library");
-   while(i != fs.end())
-   {
-      result.push_back((**i).get_dependency_data().source_);
-      i = fs.find(++i, "library");
+      if (!sd_copy.target_path().empty() &&
+          !sd_copy.target_path_is_global() &&
+          relative_to_target.get_project() != (**i).get_path_data().target_->get_project())
+      {
+         const location_t full_target_path = ((**i).get_path_data().target_->location() / sd_copy.target_path().to_string()).normalize();
+         const boost::filesystem::path p = relative_path(full_target_path, relative_to_target.location());
+         sd_copy.target_path(pstring(relative_to_target.get_engine()->pstring_pool(), p.string()), sd_copy.type());
+      }
+
+      result.push_back(sd_copy);
+      i = fs.find(++i, feature_name);
    }
 }
 
-void extract_dependencies(sources_decl& result, const feature_set& fs)
+void extract_sources(sources_decl& result,
+                     const feature_set& fs,
+                     const basic_meta_target& relative_to_target)
 {
-   feature_set::const_iterator i = fs.find("dependency");
-   while(i != fs.end())
-   {
-      result.push_back((**i).get_dependency_data().source_);
-      i = fs.find(++i, "dependency");
-   }
+   extract_dependency_like_sources(result, fs, relative_to_target, "source");
+   extract_dependency_like_sources(result, fs, relative_to_target, "library");
 }
 
-void extract_uses(sources_decl& result, const feature_set& fs)
+void extract_dependencies(sources_decl& result,
+                          const feature_set& fs,
+                          const basic_meta_target& relative_to_target)
 {
-   // FIXME: need refactor this block
-   feature_set::const_iterator i = fs.find("use");
-   while(i != fs.end())
-   {
-      result.push_back((**i).get_dependency_data().source_);
-      i = fs.find(++i, "use");
-   }
+   extract_dependency_like_sources(result, fs, relative_to_target, "dependency");
+}
+
+void extract_uses(sources_decl& result,
+                  const feature_set& fs,
+                  const basic_meta_target& relative_to_target)
+{
+   extract_dependency_like_sources(result, fs, relative_to_target, "use");
 }
 
 // FIXME: this is wrong. If we compare two sets with same free features that placed in different order
@@ -450,7 +458,7 @@ void apply_build_request(feature_set& dest,
       {
          const source_decl old = (**i).get_dependency_data().source_;
          feature_set& new_props = old.properties() == NULL ? *build_request.clone() : old.properties()->clone()->join(build_request);
-         (**i).get_dependency_data().source_ = source_decl(old.target_path(), old.target_name(), old.type(), &new_props);
+         (**i).set_dependency_data(source_decl(old.target_path(), old.target_name(), old.type(), &new_props), (**i).get_path_data().target_);
       }
 }
 

@@ -32,13 +32,14 @@ resolve_target_type(const fs::path& filename,
 static
 requirements_decl
 make_usage_requirements(feature_registry& fr,
-                        const pstring& target_name)
+                        const pstring& target_name,
+                        const basic_meta_target* this_)
 {
    requirements_decl result;
 
    // making dependency on self :)
    feature* dependency = fr.create_feature("dependency", "");
-   dependency->get_dependency_data().source_ = source_decl(target_name, pstring(), nullptr, nullptr);
+   dependency->set_dependency_data(source_decl(target_name, pstring(), nullptr, nullptr), this_);
    result.add(*dependency);
 
    return result;
@@ -50,7 +51,7 @@ htmpl_meta_target::htmpl_meta_target(project* p,
    : typed_meta_target(p,
                        name,
                        requirements_decl(),
-                       make_usage_requirements(p->get_engine()->feature_registry(), name),
+                       make_usage_requirements(p->get_engine()->feature_registry(), name, this),
                        resolve_target_type(src.target_path().to_string(), *p->get_engine()))
 {
    set_explicit(true);

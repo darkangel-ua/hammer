@@ -44,8 +44,16 @@ namespace hammer
          feature_attributes attributes() const { return definition_->attributes(); }
          const path_data& get_path_data() const { return path_data_; }
          path_data& get_path_data() { return path_data_; }
+
          const dependency_data& get_dependency_data() const { return dependency_data_; }
-         dependency_data& get_dependency_data() { return dependency_data_; }
+         // dependency data ALWAYS has target relative to which source_decl.target_path was calculated
+         void set_dependency_data(const source_decl& sd,
+                                  const basic_meta_target* relative_to_target)
+         {
+            dependency_data_.source_ = sd;
+            path_data_.target_ = relative_to_target;
+         }
+
          const generated_data& get_generated_data() const { return generated_data_; }
          generated_data& get_generated_data() { return generated_data_; }
          

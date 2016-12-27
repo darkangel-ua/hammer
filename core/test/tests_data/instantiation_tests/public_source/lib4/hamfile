@@ -1,0 +1,3 @@
+use-project /bar : bar ;
+ 
+lib lib4 : lib4.cpp @/bar : @<define>LIB_4 ;

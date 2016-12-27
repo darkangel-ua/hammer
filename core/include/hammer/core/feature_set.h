@@ -65,9 +65,16 @@ namespace hammer
    };
 
    void set_path_data(feature_set* f, const basic_meta_target* t);
-   void extract_sources(sources_decl& result, const feature_set& fs);
-   void extract_uses(sources_decl& result, const feature_set& fs);
-   void extract_dependencies(sources_decl& result, const feature_set& fs);
+   // relative_to_target - target relative to which we adjust sources_decl path
+   void extract_sources(sources_decl& result,
+                        const feature_set& fs,
+                        const basic_meta_target& relative_to_target);
+   void extract_uses(sources_decl& result,
+                     const feature_set& fs,
+                     const basic_meta_target& relative_to_target);
+   void extract_dependencies(sources_decl& result,
+                             const feature_set& fs,
+                             const basic_meta_target& relative_to_target);
    feature_set* parse_simple_set(const std::string& s, feature_registry& r);
    void dump_for_hash(std::ostream& s, const feature_set& fs, bool dump_all = false);
    std::string dump_for_hash(const feature_set& fs, bool dump_all = false);

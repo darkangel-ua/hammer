@@ -473,7 +473,7 @@ namespace hammer{
    {
       feature* result = create_feature(f.name(), f.value().to_string());
       if (f.attributes().dependency)
-         result->get_dependency_data() = f.get_dependency_data();
+         result->set_dependency_data(f.get_dependency_data().source_, f.get_path_data().target_);
 
       if (f.attributes().path)
          result->get_path_data() = f.get_path_data();

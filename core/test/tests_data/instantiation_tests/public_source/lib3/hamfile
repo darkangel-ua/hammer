@@ -1,0 +1,4 @@
+lib foo : foo.cpp : @<define>FOO ;
+explicit foo ;
+
+lib lib3 : lib1.cpp @foo : @<define>LIB_3 ;

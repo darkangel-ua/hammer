@@ -111,7 +111,7 @@ void qt_uic_meta_target::compute_usage_requirements(feature_set& result,
 
    // making dependency on self :)
    feature* dependency = result.owner().create_feature("dependency", "");
-   dependency->get_dependency_data().source_ = source_decl(name(), pstring(), nullptr, nullptr);
+   dependency->set_dependency_data(source_decl(name(), pstring(), nullptr, nullptr), this);
 
    result.join(uic_inc)
          .join(dependency);
@@ -344,7 +344,7 @@ void add_lib(project& qt_project,
                         pstring(e.pstring_pool(), dependencies[i]),
                         NULL,
                         e.feature_registry().make_set());
-         source_feature->get_dependency_data().source_ = sd;
+         source_feature->set_dependency_data(sd, &qt_project);
          auto_ptr<just_feature_requirement> source_req(new just_feature_requirement(source_feature));
          usage_req.add(auto_ptr<requirement_base>(source_req));
       }

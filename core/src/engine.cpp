@@ -979,7 +979,7 @@ void engine::test_suite_rule(project* p,
    for(sources_decl::const_iterator i = real_propagated_sources.begin(), last = real_propagated_sources.end(); i != last; ++i)
    {
       feature* f = feature_registry_->create_feature("testing.additional-source", "");
-      f->get_dependency_data().source_ = *i;
+      f->set_dependency_data(*i, p);
       additional_sources_set->join(f);
    }
 

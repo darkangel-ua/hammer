@@ -99,12 +99,36 @@ namespace hammer{
       usage_requirements.join(*local_usage_requirements);
    }
 
+   // we need to convert source_decl from just 'foo' form to './/foo' form
+   // this will helps 'extract_sources' to correctly adjust target_path later
+   void adjust_dependency_features_sources(feature_set& set_to_adjust,
+                                           const basic_meta_target& relative_to_target,
+                                           const main_target* transfer_to_target)
+   {
+      for (feature* f : set_to_adjust) {
+         if (!f->attributes().dependency)
+            continue;
+
+         const source_decl& source = f->get_dependency_data().source_;
+         if (transfer_to_target &&
+             transfer_to_target->get_project() == relative_to_target.get_project(),
+             source.type() == nullptr /*source is meta-target*/ &&
+             !source.target_path_is_global())
+         {
+            source_decl adjusted_source = source;
+            adjusted_source.target_path(pstring(relative_to_target.get_engine()->pstring_pool(), "./"), nullptr);
+            adjusted_source.target_name(source.target_path());
+
+            f->set_dependency_data(adjusted_source, &relative_to_target);
+         }
+      }
+   }
+
    static void transfer_public_sources(feature_set& dest,
                                        const sources_decl& sources, 
                                        const feature_set& build_request,
                                        feature_registry& fr,
-                                       const basic_meta_target& relative_to_target,
-                                       const main_target* transfer_to_target)
+                                       const basic_meta_target& relative_to_target)
    {
       // when transferring public sources we should make <use> with current build request applied
       // because this is the only way to produce correct usage requirements in dependent targets
@@ -113,21 +137,7 @@ namespace hammer{
       for (const source_decl& source : sources) {
          if (source.is_public()) {
             feature* f = fr.create_feature("use", "");
-            // if we transfer sources between meta-targets that belongs to the same project
-            // we need to convert source_decl from just 'foo' form to './/foo' form
-            // this will helps 'extract_sources' to correctly adjust target_path later
-            if (transfer_to_target &&
-                transfer_to_target->get_project() == relative_to_target.get_project(),
-                source.type() == nullptr /*source is meta-target*/ &&
-                !source.target_path_is_global())
-            {
-               source_decl sd_copy = source;
-               sd_copy.target_path(pstring(relative_to_target.get_engine()->pstring_pool(), "./"), nullptr);
-               sd_copy.target_name(source.target_path());
-
-               f->set_dependency_data(sd_copy, &relative_to_target);
-            } else
-               f->set_dependency_data(source, &relative_to_target);
+            f->set_dependency_data(source, &relative_to_target);
 
             uses.join(f);
          }
@@ -210,9 +220,12 @@ namespace hammer{
       sources_decl all_sources = sources();
       all_sources.insert(sources_from_requirements);
       all_sources.insert(sources_from_features);
-      transfer_public_sources(*usage_requirements, all_sources, build_request, get_engine()->feature_registry(), *this, owner);
+      transfer_public_sources(*usage_requirements, all_sources, build_request, get_engine()->feature_registry(), *this);
       compute_usage_requirements(*usage_requirements, *mt, build_request, *local_usage_requirements, owner);
-      
+
+      // we need to transform references in dependency features to local meta-targets to './/foo' form
+      adjust_dependency_features_sources(*usage_requirements, *this, owner);
+
       result->push_back(mt);
    }
 

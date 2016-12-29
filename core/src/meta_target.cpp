@@ -229,8 +229,8 @@ namespace hammer{
       sources_decl all_sources = sources();
       all_sources.insert(sources_from_requirements);
       all_sources.insert(sources_from_features);
-      transfer_public_sources(*usage_requirements, all_sources, build_request, get_engine()->feature_registry(), *this);
-      compute_usage_requirements(*usage_requirements, *mt, build_request, *local_usage_requirements, owner);
+      transfer_public_sources(*usage_requirements, all_sources, *build_request_for_dependencies, get_engine()->feature_registry(), *this);
+      compute_usage_requirements(*usage_requirements, *mt, *build_request_for_dependencies, *local_usage_requirements, owner);
 
       // we need to transform references in dependency features to local meta-targets to './/foo' form
       adjust_dependency_features_sources(*usage_requirements, *this, owner);

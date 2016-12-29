@@ -1,0 +1,12 @@
+test [ type = EXE; ]
+{  
+   main.cpp [ type = CPP; ] {}
+   lib2 [ type = SHARED_LIB; features = <version>2.0; ]
+   {
+      lib2.cpp [ type = CPP; ] {}
+      lib1 [ type = SHARED_LIB; features = <version>1.0; ]
+      {
+          lib1.cpp {}
+      }
+   }
+}

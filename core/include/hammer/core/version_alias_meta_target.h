@@ -12,6 +12,11 @@ namespace hammer
                                     const pstring& name,
                                     const pstring& version,
                                     const sources_decl* sources);
+      protected:
+         void instantiate_impl(const main_target* owner,
+                               const feature_set& build_request,
+                               std::vector<basic_target*>* result,
+                               feature_set* usage_requirements) const override;
    };
 }
 

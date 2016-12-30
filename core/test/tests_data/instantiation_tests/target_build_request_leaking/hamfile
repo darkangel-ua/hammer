@@ -1,7 +1,8 @@
 # check that we do not leak <version>2.0 build request for lib2
 # when produce <use>/lib1/<version>1.0 usage requirement for lib2 
+# and same for lib4 to test version-alias meta-target
 
 lib lib1 : lib1.cpp : <version>1.0 ;
 lib lib2 : @lib1/<version>1.0 lib2.cpp : <version>2.0 ;
 
-exe test : main.cpp lib2/<version>2.0 ;
+exe test : main.cpp lib2/<version>2.0 ./lib4/<version>2.0 ;

@@ -33,16 +33,23 @@ version_aliase_meta_target::version_aliase_meta_target(hammer::project* p,
    reqs.add(*get_engine()->feature_registry().create_feature("version", version.to_string()));
    requirements(reqs);
 
-   feature_set* props = get_engine()->feature_registry().make_set();
-   props->join("version", version.begin());
-
    sources_decl src;
    source_decl s(sources != NULL ? make_non_default_source(*get_engine(), *sources->begin())
                                  : make_default_source(*get_engine(), version));
 
-   s.properties(s.properties() == NULL ? props : &s.properties()->join(*props));
    src.push_back(s);
    this->sources(src);
+}
+
+void version_aliase_meta_target::instantiate_impl(const main_target* owner,
+                                                  const feature_set& build_request,
+                                                  std::vector<basic_target*>* result,
+                                                  feature_set* usage_requirements) const
+{
+   feature_set& adjusted_build_request = *build_request.clone();
+   adjusted_build_request.erase_all("version");
+
+   alias_meta_target::instantiate_impl(owner, adjusted_build_request, result, usage_requirements);
 }
 
 }

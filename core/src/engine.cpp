@@ -963,8 +963,8 @@ void engine::version_alias_rule(project* p,
    if (sources != NULL && sources->size() != 1)
       throw std::runtime_error("version-alias can have only one source not many.");
 
-   auto_ptr<basic_meta_target> mt(new version_aliase_meta_target(p, name,
-                                                                 version, sources));
+   auto_ptr<basic_meta_target> mt(new version_alias_meta_target(p, name,
+                                                                version, sources));
    p->add_target(mt);
 }
 

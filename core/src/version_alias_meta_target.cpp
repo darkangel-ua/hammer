@@ -23,10 +23,10 @@ source_decl make_non_default_source(engine& e,
    return source_decl(pstring(e.pstring_pool(), source_target_path.string()), pstring(), NULL, NULL);
 }
 
-version_aliase_meta_target::version_aliase_meta_target(hammer::project* p,
-                                                       const pstring& name,
-                                                       const pstring& version,
-                                                       const sources_decl* sources)
+version_alias_meta_target::version_alias_meta_target(hammer::project* p,
+                                                     const pstring& name,
+                                                     const pstring& version,
+                                                     const sources_decl* sources)
    : alias_meta_target(p, name, sources_decl(), requirements_decl(), requirements_decl())
 {
    requirements_decl reqs;
@@ -41,10 +41,10 @@ version_aliase_meta_target::version_aliase_meta_target(hammer::project* p,
    this->sources(src);
 }
 
-void version_aliase_meta_target::instantiate_impl(const main_target* owner,
-                                                  const feature_set& build_request,
-                                                  std::vector<basic_target*>* result,
-                                                  feature_set* usage_requirements) const
+void version_alias_meta_target::instantiate_impl(const main_target* owner,
+                                                 const feature_set& build_request,
+                                                 std::vector<basic_target*>* result,
+                                                 feature_set* usage_requirements) const
 {
    feature_set& adjusted_build_request = *build_request.clone();
    adjusted_build_request.erase_all("version");

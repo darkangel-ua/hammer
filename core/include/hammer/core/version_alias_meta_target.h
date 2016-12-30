@@ -5,13 +5,13 @@
 
 namespace hammer
 {
-   class version_aliase_meta_target : public alias_meta_target
+   class version_alias_meta_target : public alias_meta_target
    {
       public:
-         version_aliase_meta_target(hammer::project* p, 
-                                    const pstring& name,
-                                    const pstring& version,
-                                    const sources_decl* sources);
+         version_alias_meta_target(hammer::project* p,
+                                   const pstring& name,
+                                   const pstring& version,
+                                   const sources_decl* sources);
       protected:
          void instantiate_impl(const main_target* owner,
                                const feature_set& build_request,

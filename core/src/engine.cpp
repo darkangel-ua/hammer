@@ -1313,6 +1313,18 @@ engine::loaded_projects_t::select_best_alternative(const pstring& target_name,
          result.push_back(st);
    }
 
+   if (result.empty()) {
+      stringstream s;
+      s << "Can't select best alternative for target '"+ target_name.to_string() + "' - no one founded. \n"
+           "Projects to search are:\n";
+      for (const project* p : projects_)
+         s << "'" << p->location().string() << "'\n";
+      s << "Build request: ";
+      dump_for_hash(s, build_request);
+
+      throw std::runtime_error(s.str());
+   }
+
    if (result.size() == 1)
       return result.front();
 

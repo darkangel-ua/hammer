@@ -11,7 +11,7 @@ namespace hammer
          version_alias_meta_target(hammer::project* p,
                                    const pstring& name,
                                    const pstring& version,
-                                   const sources_decl* sources);
+                                   const pstring* target_path);
       protected:
          void instantiate_impl(const main_target* owner,
                                const feature_set& build_request,

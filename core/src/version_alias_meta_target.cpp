@@ -17,16 +17,16 @@ source_decl make_default_source(engine& e,
 
 static
 source_decl make_non_default_source(engine& e,
-                                    const source_decl& source)
+                                    const pstring& target_path)
 {
-   const location_t source_target_path = location_t("./") / source.target_path().to_string();
+   const location_t source_target_path = location_t("./") / target_path.to_string();
    return source_decl(pstring(e.pstring_pool(), source_target_path.string()), pstring(), NULL, NULL);
 }
 
 version_alias_meta_target::version_alias_meta_target(hammer::project* p,
                                                      const pstring& name,
                                                      const pstring& version,
-                                                     const sources_decl* sources)
+                                                     const pstring* target_path)
    : alias_meta_target(p, name, sources_decl(), requirements_decl(), requirements_decl())
 {
    requirements_decl reqs;
@@ -34,8 +34,8 @@ version_alias_meta_target::version_alias_meta_target(hammer::project* p,
    requirements(reqs);
 
    sources_decl src;
-   source_decl s(sources != NULL ? make_non_default_source(*get_engine(), *sources->begin())
-                                 : make_default_source(*get_engine(), version));
+   source_decl s(target_path != NULL ? make_non_default_source(*get_engine(), *target_path)
+                                     : make_default_source(*get_engine(), version));
 
    src.push_back(s);
    this->sources(src);

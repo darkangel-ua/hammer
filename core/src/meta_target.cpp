@@ -99,40 +99,6 @@ namespace hammer{
       usage_requirements.join(*local_usage_requirements);
    }
 
-   static
-   bool has_slash(const pstring& s)
-   {
-      for (const char c : s)
-         if (c == '/')
-            return true;
-
-      return false;
-   }
-
-   void adjust_dependency_features_sources(feature_set& set_to_adjust,
-                                           const basic_meta_target& relative_to_target,
-                                           const main_target* transfer_to_target)
-   {
-      for (feature* f : set_to_adjust) {
-         if (!f->attributes().dependency)
-            continue;
-
-         const source_decl& source = f->get_dependency_data().source_;
-         if (transfer_to_target &&
-             transfer_to_target->get_project() != relative_to_target.get_project() &&
-             source.type() == nullptr /*source is meta-target*/ &&
-             !source.target_path_is_global() &&
-             !has_slash(source.target_path()))
-         {
-            source_decl adjusted_source = source;
-            adjusted_source.target_path(pstring(relative_to_target.get_engine()->pstring_pool(), "./"), nullptr);
-            adjusted_source.target_name(source.target_path());
-
-            f->set_dependency_data(adjusted_source, &relative_to_target);
-         }
-      }
-   }
-
    static void transfer_public_sources(feature_set& dest,
                                        const sources_decl& sources, 
                                        const feature_set& build_request,

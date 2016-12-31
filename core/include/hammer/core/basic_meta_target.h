@@ -102,6 +102,12 @@ namespace hammer
          bool is_explicit_;
          mutable instantiation_cache_t instantiation_cache_;
    };
+
+   // we need to convert source_decl from just 'foo' form to './/foo' form
+   // this will helps 'extract_sources' to correctly adjust target_path later
+   void adjust_dependency_features_sources(feature_set& set_to_adjust,
+                                           const basic_meta_target& relative_to_target,
+                                           const main_target* transfer_to_target);
 }
 
 #endif //h_28ffa573_8792_4330_8c82_27921827e424

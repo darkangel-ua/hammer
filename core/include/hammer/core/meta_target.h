@@ -58,12 +58,6 @@ namespace hammer
                                                     const feature_set& build_request,
                                                     const main_target& owner_for_new_targets) const;
    };
-
-   // we need to convert source_decl from just 'foo' form to './/foo' form
-   // this will helps 'extract_sources' to correctly adjust target_path later
-   void adjust_dependency_features_sources(feature_set& set_to_adjust,
-                                           const basic_meta_target& relative_to_target,
-                                           const main_target* transfer_to_target);
 }
 
 #endif //h_f089a0da_32ba_4ee0_ad36_f3e366a47018

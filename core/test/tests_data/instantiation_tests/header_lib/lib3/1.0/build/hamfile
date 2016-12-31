@@ -1,0 +1,1 @@
+lib lib3 : lib3.cpp : @<define>USE_LIB3 <version>1.0 ;

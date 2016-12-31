@@ -1,1 +1,4 @@
-exe test : main.cpp lib1 ;
+header-lib lib4 : lib4.h ./lib3/<version>1.0 : <version>2.0 ;
+
+exe test : main.cpp lib1 lib4/<version>2.0 ;
+

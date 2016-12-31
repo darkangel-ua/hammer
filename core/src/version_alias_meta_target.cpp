@@ -11,7 +11,7 @@ static
 source_decl make_default_source(engine& e,
                                 const pstring& version)
 {
-   std::string location(version.to_string() + "/build");
+   std::string location("./" + version.to_string() + "/build");
    return source_decl(pstring(e.pstring_pool(), location), pstring(), NULL, NULL);
 }
 

@@ -33,7 +33,6 @@ struct instantiation_tests : public setuped_engine
       // FIXME: else we just parse project for now
       if (exists(test_data_path / "instantiation.jcf")) {
          feature_set* build_request = engine_.feature_registry().make_set();
-         build_request->join("host-os", engine_.feature_registry().get_def("host-os").get_default().c_str());
 
          vector<basic_target*> instantiated_targets;
          if (opts.exists("should-fail"))

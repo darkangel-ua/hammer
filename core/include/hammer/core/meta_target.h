@@ -40,23 +40,6 @@ namespace hammer
                                                  const feature_set& computed_usage_requirements,
                                                  const main_target* owner) const;
          
-      private:
-         void instantiate_meta_targets(sources_decl& simple_targets,
-                                       std::vector<basic_target*>& instantiated_meta_targets,
-                                       sources_decl& additional_sources,
-                                       feature_set& usage_requirements,
-                                       const meta_targets_t& meta_targets,
-                                       const feature_set& build_request,
-                                       const main_target& owner_for_new_targets) const;
-
-         // instantiate targets that we found in use feature and 
-         // add additional usage requirements to main target usage requirements
-         void compute_additional_usage_requirements(sources_decl& simple_targets,
-                                                    std::vector<basic_target*>& instantiated_meta_targets,
-                                                    feature_set& usage_requirements,
-                                                    const sources_decl& sources_from_usage,
-                                                    const feature_set& build_request,
-                                                    const main_target& owner_for_new_targets) const;
    };
 }
 

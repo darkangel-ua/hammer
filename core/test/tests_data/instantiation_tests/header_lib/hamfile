@@ -1,4 +1,9 @@
 header-lib lib4 : lib4.h ./lib3/<version>1.0 : <version>2.0 ;
 
-exe test : main.cpp lib1 lib4/<version>2.0 ;
+# this block should check that we don't have two lib5 sources for 'test' target
+lib lib5 : lib5.cpp ;
+header-lib lib6 : lib6.h lib5 ;
+header-lib lib7 : lib7.h lib5 ;
+
+exe test : main.cpp lib1 lib4/<version>2.0 lib6 lib7 ;
 

@@ -45,7 +45,7 @@ void alias_meta_target::instantiate_impl(const main_target* owner,
          sources_as_features.join(f);
       }
 
-      adjust_dependency_features_sources(sources_as_features, *this, owner);
+      adjust_dependency_features_sources(sources_as_features, *this);
       usage_requirements->join(sources_as_features);
    } else {
       // top level alias instantiation

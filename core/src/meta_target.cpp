@@ -265,7 +265,7 @@ void remove_duplicates(deduplicator_t& deduplicator,
       compute_usage_requirements(*usage_requirements, *mt, *build_request_for_dependencies, *local_usage_requirements, owner);
 
       // we need to transform references in dependency features to local meta-targets to './/foo' form
-      adjust_dependency_features_sources(*usage_requirements, *this, owner);
+      adjust_dependency_features_sources(*usage_requirements, *this);
 
       result->push_back(mt);
    }

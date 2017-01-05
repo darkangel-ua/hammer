@@ -62,16 +62,15 @@ void basic_meta_target::instantiate_simple_targets(const sources_decl& targets,
    }
 }
 
-void basic_meta_target::instantiate_meta_targets(const meta_targets_t& targets,
-                                                 const feature_set& build_request,
-                                                 const main_target* owner,
-                                                 std::vector<basic_target*>* result,
-                                                 feature_set* usage_requirments) const
+void instantiate_meta_targets(const meta_targets_t& targets,
+                              const feature_set& build_request,
+                              const main_target* owner,
+                              std::vector<basic_target*>* result,
+                              feature_set* usage_requirments)
 {
-   for(meta_targets_t::const_iterator i = targets.begin(), last = targets.end(); i != last; ++i)
-   {
-      i->first->instantiate(owner, i->second == NULL ? build_request : *build_request.join(*i->second),
-                            result, usage_requirments);
+   for (auto& t : targets) {
+      t.first->instantiate(owner, t.second == NULL ? build_request : *build_request.join(*t.second),
+                           result, usage_requirments);
    }
 }
 

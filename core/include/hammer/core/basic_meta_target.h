@@ -16,6 +16,9 @@ namespace hammer
    class main_target;
    class type_registry;
 
+   typedef std::vector<std::pair<const basic_meta_target* /* target */,
+                                 const feature_set* /* requested build properties*/> > meta_targets_t;
+
    class basic_meta_target
    {
       public:
@@ -40,6 +43,11 @@ namespace hammer
          void requirements(const requirements_decl& r) { requirements_ = r; }
          virtual const location_t& location() const;
 
+         void split_sources(sources_decl* simple_targets,
+                            meta_targets_t* meta_targets,
+                            const sources_decl& sources,
+                            const feature_set& build_request) const;
+
          virtual void instantiate(const main_target* owner, 
                                   const feature_set& build_request,
                                   std::vector<basic_target*>* result, 
@@ -49,9 +57,6 @@ namespace hammer
          bool is_explicit() const { return is_explicit_; }
 
       protected:
-         typedef std::vector<std::pair<const basic_meta_target* /* target */, 
-                                       const feature_set* /* requested build properties*/> > meta_targets_t;
-
          // returns true if instantiate() can cache instantiation for build_request
          virtual bool is_cachable(const main_target* owner) const { return true; }
 
@@ -64,15 +69,6 @@ namespace hammer
                                          const feature_set& build_request,
                                          const main_target& owner, 
                                          std::vector<basic_target*>* result) const;
-         void instantiate_meta_targets(const meta_targets_t& targets, 
-                                       const feature_set& build_request,
-                                       const main_target* owner, 
-                                       std::vector<basic_target*>* result, 
-                                       feature_set* usage_requirments) const;
-         void split_sources(sources_decl* simple_targets, 
-                            meta_targets_t* meta_targets,
-                            const sources_decl& sources, 
-                            const feature_set& build_request) const;
          void split_one_source(sources_decl* simple_targets,
                                meta_targets_t* meta_targets,
                                const source_decl& source,
@@ -102,6 +98,12 @@ namespace hammer
          bool is_explicit_;
          mutable instantiation_cache_t instantiation_cache_;
    };
+
+   void instantiate_meta_targets(const meta_targets_t& targets,
+                                 const feature_set& build_request,
+                                 const main_target* owner,
+                                 std::vector<basic_target*>* result,
+                                 feature_set* usage_requirments);
 
    // we need to convert source_decl from just 'foo' form to './/foo' form
    // this will helps 'extract_sources' to correctly adjust target_path later

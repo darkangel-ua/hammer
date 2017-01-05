@@ -21,10 +21,12 @@ attributes[void* t] : ^(ATTRIBUTES attribute[t]+);
 attribute[void* t] 
         : type[t] 
         | features[t, get_features(t)]
-        | location[t] ;
+        | location[t]
+        | number_of_sources[t];
         
 type[void* t]   : ^(TYPE_ATTR ID) { check_type(PARSER->super, t, $ID.text->chars); };   
 features[void* t, void* f] : ^(FEATURES_ATTR feature[t, f]+);
 feature[void* t, void* f]  : ^(FEATURE name=ID value=ID) { check_feature(PARSER->super, t, f, $name->getToken($name), $value->getToken($value)); }
                            | ^(NOT_FEATURE name=ID value=ID) { check_not_feature(PARSER->super, t, f, $name.text->chars, $value.text->chars); };
 location[void* t] : ^(LOCATION ID) { check_location(t, $ID.text->chars); };
+number_of_sources[void* t] : ^(NUMBER_OF_SOURCES number=NUMBER) { check_number_of_sources(t, $number.text->chars); };

@@ -6,7 +6,7 @@ options {
           ASTLabelType = pANTLR3_BASE_TREE;
         }
 
-tokens{ TARGET; ATTRIBUTES; TARGETS; TYPE_ATTR; FEATURES_ATTR; FEATURE; NOT_FEATURE; LOCATION; }
+tokens{ TARGET; ATTRIBUTES; TARGETS; TYPE_ATTR; FEATURES_ATTR; FEATURE; NOT_FEATURE; LOCATION; NUMBER_OF_SOURCES; }
 
 jsf_file : targets ;
 targets : target+ -> ^(TARGETS target+)
@@ -19,6 +19,7 @@ attribute
         : type 
         | features
         | location
+        | number_of_sources
         ;
         
 type    : 'type' '=' ID -> ^(TYPE_ATTR ID);     
@@ -26,9 +27,11 @@ features : 'features' '=' feature+ -> ^(FEATURES_ATTR feature+);
 feature  : '<' ID '>' ID -> ^(FEATURE ID ID)
          | '!<' ID '>' ID-> ^(NOT_FEATURE ID ID);
 location : 'location' '=' ID -> ^(LOCATION ID);        
+number_of_sources : 'number_of_sources' '=' NUMBER -> ^(NUMBER_OF_SOURCES NUMBER);
 
 sources : ID ;
-ID  :   ('a'..'z' | 'A'..'Z' | '0'..'9' | '.' | '-' | '_' | '=' | '/')+  | STRING;
+NUMBER : '0'..'9';
+ID  :   ('a'..'z' | 'A'..'Z' | NUMBER | '.' | '-' | '_' | '=' | '/')+  | STRING;
 
 fragment 
 STRING  : '"' ('\\"' | ~('"' | '\n' | '\r'))* '"' ;

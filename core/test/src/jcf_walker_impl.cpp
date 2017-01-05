@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "jcf_walker_impl.h"
 #include <boost/format.hpp>
+#include <boost/lexical_cast.hpp>
 #include <hammer/core/project.h>
 #include <hammer/core/main_target.h>
 #include <iostream>
@@ -163,4 +164,13 @@ void check_location(void* t, const char* location)
    }
    else
       BOOST_CHECK_MESSAGE(false, format("Target '%s' is not a main target") % bt->name());
+}
+
+void check_number_of_sources(void* t, const char* number)
+{
+   const basic_target* bt = static_cast<const basic_target*>(t);
+   const main_target* mt = dynamic_cast<const main_target*>(bt);
+   BOOST_REQUIRE(mt);
+   const size_t expected_number_of_sources = boost::lexical_cast<size_t>(number);
+   BOOST_CHECK_EQUAL(mt->sources().size(), expected_number_of_sources);
 }

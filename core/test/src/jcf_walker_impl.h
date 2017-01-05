@@ -14,6 +14,7 @@ extern "C"
    void check_feature(void* e, void* t, void* f, const pANTLR3_COMMON_TOKEN name, const pANTLR3_COMMON_TOKEN value);
    void check_not_feature(void* e, void* t, void* f, const char* name, const char* value);
    void check_location(void* t, const char* location);
+   void check_number_of_sources(void* t, const char* number);
 #ifdef __cplusplus
 };
 #endif

@@ -17,11 +17,6 @@ namespace hammer
                                        const feature_set& build_request,
                                        std::vector<basic_target*>* result,
                                        feature_set* usage_requirements) const;
-
-         virtual bool is_cachable(const main_target* owner) const
-         {
-            return false;
-         }
    };
 }
 

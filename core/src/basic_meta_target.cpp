@@ -107,7 +107,7 @@ void basic_meta_target::resolve_meta_target_source(const source_decl& source,
 	{
       if (project_->find_target(source.target_path()))
 		{
-         project::selected_target selected_target = project_->select_best_alternative(source.target_path(), *build_request_with_source_properties);
+         project::selected_target selected_target = project_->select_best_alternative(source.target_path(), *build_request_with_source_properties, /*allow_locals=*/true);
          meta_targets->push_back({selected_target.target_, source.properties()});
          return;
 		}

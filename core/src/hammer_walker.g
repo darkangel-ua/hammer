@@ -17,7 +17,8 @@ rules : (rule { hammer_delete_rule_result($rule.result); })*;
 
 rule returns[void* result] 
 @init { void * args_list = hammer_make_args_list(PARSER->super); }
-: ^(RULE_CALL ID args[args_list]*) { result = hammer_rule_call(PARSER->super, $ID.text->chars, args_list); }; 
+: ^(RULE_CALL ID LOCAL args[args_list]*) { result = hammer_rule_call(PARSER->super, $ID.text->chars, 1, args_list); }
+| ^(RULE_CALL ID args[args_list]*) { result = hammer_rule_call(PARSER->super, $ID.text->chars, 0, args_list); };
 
 args[void* args_list] : string_list[args_list]  
                       | feature_set_arg[args_list]

@@ -25,6 +25,7 @@ TARGET_PATH;
 TARGET_NAME;
 SOURCE_DECL_EXPLICIT_TARGET;
 PUBLIC_TAG;
+LOCAL;
 }
 
 @parser::preincludes
@@ -42,7 +43,7 @@ PUBLIC_TAG;
 project : WS* rules -> rules;
 rules :  rule*;
 rule    : rule_impl ';' -> rule_impl;
-rule_impl : ID { on_enter_rule(PARSER, $ID.text->chars); } rule_args -> ^(RULE_CALL ID rule_args);
+rule_impl : LOCAL? ID { on_enter_rule(PARSER, $ID.text->chars); } rule_args -> ^(RULE_CALL ID LOCAL? rule_args);
 rule_args  : (rule_posible_args { on_rule_argument(PARSER); })? (maybe_arg { on_rule_argument(PARSER); })*;
 
 maybe_arg 
@@ -91,6 +92,7 @@ target_features : path_slash feature (path_slash feature)* -> ^(FEATURE_SET feat
 path_slash : { is_path_slash(PARSER) }?=> SLASH ;
 trail_slash : { is_trailing_slash(PARSER) }?=> SLASH;
 head_slash : { is_head_slash(PARSER) }?=> SLASH; 
+LOCAL : 'local';
 SLASH : { is_lexing_sources_decl(LEXER) }?=> '/';
 ID            : ('a'..'z' | 'A'..'Z' | '0'..'9' | '.' | '-' | '+' | { !is_lexing_sources_decl(LEXER) }?=> '/' | '_'| '=' | '*')+  
 	      | STRING { LEXSTATE->type = _type; {pANTLR3_COMMON_TOKEN t = LEXER->emit(LEXER); ++t->start, --t->stop; t->type = _type;} };

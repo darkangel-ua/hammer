@@ -75,7 +75,10 @@ namespace hammer
          feature_registry& local_feature_registry() const { return local_feature_registry_; }
          bool is_root() const { return is_root_; }
          void set_root(bool v) { is_root_ = v; }
+         // FIXME: both functions are hacks. We should remove them after migrate to new parser
          void add_targets_as_explicit(bool v);
+         void add_targets_as_local(bool v) { add_targets_as_local_ = v; }
+
          void mark_as_explicit(const pstring& name);
 
          void instantiate(const std::string& target_name, 
@@ -88,8 +91,8 @@ namespace hammer
          selected_targets_t select_best_alternative(const feature_set& build_request) const;
 
          // choose best alternative for target_name satisfied build_request
-         selected_target select_best_alternative(const pstring& target_name, const feature_set& build_request) const;
-         selected_target try_select_best_alternative(const pstring& target_name, const feature_set& build_request) const;
+         selected_target select_best_alternative(const pstring& target_name, const feature_set& build_request, const bool allow_locals = false) const;
+         selected_target try_select_best_alternative(const pstring& target_name, const feature_set& build_request, const bool allow_locals = false) const;
          feature_set* try_resolve_local_features(const feature_set& fs) const;
 
       private:
@@ -100,6 +103,7 @@ namespace hammer
          hammer::scm_info scm_info_;
          bool is_root_;
          bool add_targets_as_explicit_;
+         bool add_targets_as_local_ = false;
          pool pool_for_feature_registry_; //FIXME:
          mutable feature_registry local_feature_registry_;
 

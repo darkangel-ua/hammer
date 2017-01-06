@@ -26,12 +26,20 @@ void* hammer_make_args_list(void* context)
    return new args_list_t();
 }
 
-void* hammer_rule_call(void* context, const char* rule_name, void* args_list_in)
+void* hammer_rule_call(void* context, const char* rule_name, int local, void* args_list_in)
 {
    auto_ptr<args_list_t> args_list(static_cast<args_list_t*>(args_list_in));
    hammer_walker_context* ctx = static_cast<hammer_walker_context*>(context);
    args_list->insert(args_list->begin(), new call_resolver_call_arg<project>(ctx->project_, false));
+
+   if (local)
+      ctx->project_->add_targets_as_local(true);
+
    auto_ptr<call_resolver_call_arg_base> result(ctx->call_resolver_->invoke(rule_name, *args_list));
+
+   if (local)
+      ctx->project_->add_targets_as_local(false);
+
    return result.release();
 }
 

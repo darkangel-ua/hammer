@@ -7,7 +7,7 @@
 extern "C"
 {
 #endif
-   void* hammer_rule_call(void* context, const char* rule_name, void* args_list);
+   void* hammer_rule_call(void* context, const char* rule_name, int local, void* args_list);
    void  hammer_delete_rule_result(void* result);
    void* hammer_make_args_list(void* context);
    void* hammer_make_null_arg();

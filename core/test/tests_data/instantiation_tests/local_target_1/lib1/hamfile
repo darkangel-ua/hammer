@@ -1,0 +1,4 @@
+local
+lib local_target : local_target.cpp ;
+
+lib public_target : public_target.cpp ;

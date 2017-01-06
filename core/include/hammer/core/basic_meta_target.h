@@ -56,6 +56,9 @@ namespace hammer
          void set_explicit(bool v) { is_explicit_ = v; }
          bool is_explicit() const { return is_explicit_; }
 
+         void set_local(bool v) { is_local_ = v; }
+         bool is_local() const { return is_local_; }
+
       protected:
          // returns true if instantiate() can cache instantiation for build_request
          virtual bool is_cachable(const main_target* owner) const { return true; }
@@ -96,6 +99,7 @@ namespace hammer
          requirements_decl requirements_;
          requirements_decl usage_requirements_;
          bool is_explicit_;
+         bool is_local_ = false;
          mutable instantiation_cache_t instantiation_cache_;
    };
 

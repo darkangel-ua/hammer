@@ -1,0 +1,7 @@
+test [ type = EXE; features = <define>PUBLIC_LIB2 !<define>LOCAL_LIB2 <define>PUBLIC_LIB3 !<define>LOCAL_LIB3; ]
+{
+   main.cpp {}
+   lib1 { lib1.cpp {} }
+   lib2 { public_lib2.cpp {} }
+   lib3 { public_lib3.cpp {} }
+}

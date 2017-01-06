@@ -44,6 +44,9 @@ void project::add_target(std::auto_ptr<basic_meta_target> t)
    if (add_targets_as_explicit_)
       t->set_explicit(true);
 
+   if (add_targets_as_local_)
+      t->set_local(true);
+
    targets_.insert(t->name(), t.get());
 
    t.release();
@@ -95,10 +98,11 @@ int compute_alternative_rank(const feature_set& target_properties,
 
 project::selected_target
 project::select_best_alternative(const pstring& target_name,
-                                 const feature_set& build_request) const
+                                 const feature_set& build_request,
+                                 const bool allow_locals) const
 {
 
-   selected_target result = try_select_best_alternative(target_name, build_request);
+   selected_target result = try_select_best_alternative(target_name, build_request, allow_locals);
    if (result.target_ == NULL)
       throw std::runtime_error("Can't select alternative for target '" + target_name.to_string() + "'.");
 
@@ -126,7 +130,8 @@ void error_cannot_choose_alternative(const project& p,
 
 project::selected_target
 project::try_select_best_alternative(const pstring& target_name,
-                                     const feature_set& build_request_param) const
+                                     const feature_set& build_request_param,
+                                     const bool allow_locals) const
 {
    const feature_set& build_request = build_request_param.has_undefined_features()
                                          ? *try_resolve_local_features(build_request_param)
@@ -141,6 +146,9 @@ project::try_select_best_alternative(const pstring& target_name,
 
    for(targets_t::const_iterator first = r.begin(), last = r.end(); first != last; ++first)
    {
+      if (!allow_locals && first->second->is_local())
+         continue;
+
       feature_set* fs = engine_->feature_registry().make_set();
       first->second->requirements().eval(build_request, fs);
       int rank = compute_alternative_rank(*fs, build_request);

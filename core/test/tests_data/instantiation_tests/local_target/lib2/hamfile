@@ -1,0 +1,6 @@
+
+local 
+lib lib2 : local_lib2.cpp : @<define>LOCAL_LIB2 ;
+
+lib lib2 : public_lib2.cpp : @<define>PUBLIC_LIB2 ;
+

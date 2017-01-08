@@ -1,0 +1,8 @@
+test [ features = <define>LIB1_1_0; ]
+{
+   main.cpp {}
+   lib1 [ type = SHARED_LIB; ]
+   {
+       lib1.cpp [ features = <define>LIB1_1_0; ] {}
+   }
+}

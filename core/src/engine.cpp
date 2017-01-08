@@ -36,7 +36,7 @@
 #include <hammer/core/default_output_location_strategy.h>
 #include <hammer/core/prebuilt_lib_meta_target.h>
 #include <hammer/core/file_meta_target.h>
-#include "warehouse_impl.h"
+#include <hammer/core/warehouse_impl.h>
 #include "builtin_features.h"
 
 using namespace std;
@@ -123,8 +123,6 @@ engine::engine()
    toolset_manager_.reset(new hammer::toolset_manager);
    scanner_manager_.reset(new hammer::scanner_manager);
    output_location_strategy_.reset(new default_output_location_strategy);
-
-   warehouse_.reset(new warehouse_impl(*this));
 }
 
 project* engine::get_upper_project(const location_t& project_path)
@@ -290,7 +288,7 @@ engine::try_load_project(location_t project_path,
             for(project_alias_node::aliases_data_t::const_iterator j = i->symlinks_data_->begin(), j_last = i->symlinks_data_->end(); j != j_last; ++j)
                result += try_load_project(i->tail_, *j);
 
-         if (warehouse_->has_project(project_path, string())) {
+         if (warehouse_ && warehouse_->has_project(project_path, string())) {
             // If we can find project in warehouse than we need to add alternatives to resulting set of projects
             const project* materialized_warehouse_project = nullptr;
             for (const project* p : result) {
@@ -301,7 +299,7 @@ engine::try_load_project(location_t project_path,
             }
 
             if (!materialized_warehouse_project) {
-               boost::shared_ptr<project> not_yet_materialized_versions = warehouse_->load_project(project_path);
+               boost::shared_ptr<project> not_yet_materialized_versions = warehouse_->load_project(*this, project_path);
                // we need to check if we already inserted this project before. When we doing warehouse::download_and_install we check
                // if project knows to engine and that trigger loading project again, but engine may already manadge this project loaded before
                auto i = projects_.find(not_yet_materialized_versions->location());
@@ -1251,7 +1249,8 @@ void engine::setup_warehouse_rule(project* p,
       }
    }
 
-   warehouse_->init(url.to_string(), storage_dir);
+   warehouse_.reset(new warehouse_impl(name.to_string(), url.to_string(), storage_dir));
+   load_project(storage_dir);
 }
 
 project::selected_targets_t

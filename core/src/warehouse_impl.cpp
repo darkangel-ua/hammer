@@ -1,5 +1,5 @@
 #include <stdlib.h>
-#include "warehouse_impl.h"
+#include <hammer/core/warehouse_impl.h>
 #include <hammer/core/engine.h>
 //#define BOOST_SPIRIT_DEBUG
 #include <boost/spirit/include/classic_core.hpp>
@@ -135,12 +135,6 @@ fs::path get_home_path()
 
 }
 
-warehouse_impl::warehouse_impl(engine& e)
-   : engine_(e),
-     repository_path_(get_home_path() / ".hammer")
-{
-}
-
 static
 void download_file(const fs::path& working_dir,
                    const string& url,
@@ -164,6 +158,31 @@ void download_file(const fs::path& working_dir,
    bp::status status = child.wait();
    if (status.exit_status() != 0)
       throw std::runtime_error("Failed to download '" + url + "'");
+}
+
+warehouse_impl::warehouse_impl(const std::string& name,
+                               const std::string& url,
+                               const boost::filesystem::path& storage_dir)
+   : repository_path_(storage_dir.empty() ? (get_home_path() / ".hammer") : storage_dir),
+     repository_url_(url)
+{
+   if (!exists(repository_path_)) {
+      if (!create_directory(repository_path_))
+         throw std::runtime_error("Failed to create directory '" + repository_path_.string() + "'");
+   }
+
+   const fs::path hamroot_path = repository_path_ / "hamroot";
+   if (!exists(hamroot_path)) {
+      fs::ofstream f(hamroot_path, ios_base::trunc);
+      if (!f)
+         throw std::runtime_error("Can't create '" + hamroot_path.string() + "'");
+   }
+
+   const fs::path packages_full_filename = repository_path_ / packages_filename;
+   if (!exists(packages_full_filename))
+      download_file(repository_path_, url + "/" + packages_filename.string());
+
+   packages_ = load_packages(packages_full_filename);
 }
 
 static
@@ -191,36 +210,6 @@ warehouse_impl::load_packages(const fs::path& filepath)
       packages.insert(make_pair(i->public_id_, *i));
 
    return packages;
-}
-
-void warehouse_impl::init_impl(const std::string& url,
-                               const string& storage_dir)
-{
-   if (!storage_dir.empty())
-      repository_path_ = storage_dir;
-
-   if (!exists(repository_path_)) {
-      if (!create_directory(repository_path_))
-         throw std::runtime_error("Failed to create directory '" + repository_path_.string() + "'");
-   }
-
-   const fs::path hamroot_path = repository_path_ / "hamroot";
-   if (!exists(hamroot_path)) {
-      fs::ofstream f(hamroot_path, ios_base::trunc);
-      if (!f)
-         throw std::runtime_error("Can't create '" + hamroot_path.string() + "'");
-   }
-
-   const fs::path packages_full_filename = repository_path_ / packages_filename;
-   if (!exists(packages_full_filename))
-      download_file(repository_path_, url + "/" + packages_filename.string());
-
-   packages_t new_packages = load_packages(packages_full_filename);
-
-   engine_.load_project(repository_path_);
-
-   repository_url_ = url;
-   packages_.swap(new_packages);
 }
 
 static const string packages_update_filename = "packages.json.new";
@@ -265,11 +254,11 @@ warehouse_impl::update_impl()
    return packages_needs_to_be_updated;
 }
 
-void warehouse_impl::update_all_packages_impl()
+void warehouse_impl::update_all_packages_impl(engine& e)
 {
    for(auto& p : packages_) {
       if (p.second.need_update_)
-         update_package(p.second);
+         update_package(e, p.second);
    }
 
    write_packages(repository_path_ / packages_filename, packages_);
@@ -322,11 +311,12 @@ bool warehouse_impl::has_project(const location_t& project_path,
 }
 
 boost::shared_ptr<project>
-warehouse_impl::load_project(const location_t& project_path)
+warehouse_impl::load_project(engine& e,
+                             const location_t& project_path)
 {
    const string public_id = package_id_from_location(project_path);
 
-   boost::shared_ptr<project> wproject(new warehouse_project(engine_, repository_path_ / "libs" / public_id));
+   boost::shared_ptr<project> wproject(new warehouse_project(e, repository_path_ / "libs" / public_id));
    add_traps(*wproject, public_id);
 
    return wproject;
@@ -355,6 +345,7 @@ warehouse_impl::to_package_info(const package_t& package)
 }
 
 void warehouse_impl::resolve_dependency(unresolved_packages_t& packages,
+                                        engine& e,
                                         const dependency_t& d,
                                         const project& repository_project) const
 {
@@ -363,8 +354,8 @@ void warehouse_impl::resolve_dependency(unresolved_packages_t& packages,
    if (i != packages.end())
       return;
 
-   engine::loaded_projects_t loaded_projects = engine_.try_load_project("/" + d.public_id_, repository_project);
-   feature_set* build_request = engine_.feature_registry().make_set();
+   engine::loaded_projects_t loaded_projects = e.try_load_project("/" + d.public_id_, repository_project);
+   feature_set* build_request = e.feature_registry().make_set();
    build_request->join("version", d.version_.c_str());
    project::selected_targets_t targets = loaded_projects.select_best_alternative(*build_request);
    if (targets.size() != 1)
@@ -381,11 +372,12 @@ void warehouse_impl::resolve_dependency(unresolved_packages_t& packages,
    packages.insert(make_pair(dep_hash, to_package_info(package)));
 
    for(vector<dependency_t>::const_iterator i = package.dependencies_.begin(), last = package.dependencies_.end(); i != last; ++i)
-      resolve_dependency(packages, *i, repository_project);
+      resolve_dependency(packages, e, *i, repository_project);
 }
 
 vector<warehouse::package_info>
-warehouse_impl::get_unresoved_targets_info(const std::vector<const warehouse_target*>& targets) const
+warehouse_impl::get_unresoved_targets_info(engine& e,
+                                           const std::vector<const warehouse_target*>& targets) const
 {
    unresolved_dependencies_t deps;
    unresolved_packages_t packages;
@@ -414,9 +406,9 @@ warehouse_impl::get_unresoved_targets_info(const std::vector<const warehouse_tar
       packages.insert(make_pair(package_hash, p));
    }
 
-   const project& repository_project = engine_.load_project(repository_path_);
+   const project& repository_project = e.load_project(repository_path_);
    for(unresolved_dependencies_t::const_iterator i = deps.begin(), last = deps.end(); i != last; ++i)
-      resolve_dependency(packages, i->second, repository_project);
+      resolve_dependency(packages, e, i->second, repository_project);
 
    vector<package_info> result;
    for(unresolved_packages_t::const_iterator i = packages.begin(), last = packages.end(); i != last; ++i)
@@ -496,10 +488,11 @@ void warehouse_impl::install_package(const package_t& p,
    insert_line_in_front(package_hamfile, make_package_alias_line(p.public_id_, p.version_));
 }
 
-bool warehouse_impl::resolves_to_real_project(const string& public_id,
+bool warehouse_impl::resolves_to_real_project(engine& e,
+                                              const string& public_id,
                                               const project& repository_project)
 {
-   engine::loaded_projects_t loaded_projects = engine_.try_load_project("/" + public_id, repository_project);
+   engine::loaded_projects_t loaded_projects = e.try_load_project("/" + public_id, repository_project);
    if (loaded_projects.empty())
       return true;
 
@@ -511,14 +504,15 @@ bool warehouse_impl::resolves_to_real_project(const string& public_id,
    return true;
 }
 
-void warehouse_impl::download_and_install(const std::vector<package_info>& packages,
+void warehouse_impl::download_and_install(engine& e,
+                                          const std::vector<package_info>& packages,
                                           iwarehouse_download_and_install& notifier)
 {
    fs::path working_dir = repository_path_ / "downloads";
    if (!exists(working_dir))
       create_directory(working_dir);
 
-   const project& repository_project = engine_.load_project(repository_path_);
+   const project& repository_project = e.load_project(repository_path_);
 
    for(std::vector<package_info>::const_iterator i = packages.begin(), last = packages.end(); i != last; ++i) {
       packages_t::const_iterator pi = find_package(i->name_, i->version_);
@@ -532,7 +526,7 @@ void warehouse_impl::download_and_install(const std::vector<package_info>& packa
 
       notifier.on_install_begin(bpi);
       install_package(pi->second, repository_path_);
-      if (!resolves_to_real_project(pi->second.public_id_, repository_project)) {
+      if (!resolves_to_real_project(e, pi->second.public_id_, repository_project)) {
          const fs::path repository_hamroot = repository_path_ / "hamroot";
          append_line(repository_hamroot, "use-project /" + pi->second.public_id_ + " : ./libs/" + pi->second.public_id_ + ";");
       }
@@ -773,7 +767,8 @@ void warehouse_impl::remove_package(const package_t& package_to_remove)
    fs::remove(repository_path_ / "downloads" / package_to_remove.filename_);
 }
 
-void warehouse_impl::update_package(package_t& package_to_update)
+void warehouse_impl::update_package(engine& e,
+                                    package_t& package_to_update)
 {
    remove_package(package_to_update);
 
@@ -782,7 +777,7 @@ void warehouse_impl::update_package(package_t& package_to_update)
    pi.version_ = package_to_update.version_;
 
    null_warehouse_download_and_install dl_notifier;
-   download_and_install({pi}, dl_notifier);
+   download_and_install(e, {pi}, dl_notifier);
 
    package_to_update.need_update_ = false;
 }

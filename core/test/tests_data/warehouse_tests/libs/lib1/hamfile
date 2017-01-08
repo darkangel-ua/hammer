@@ -1,0 +1,2 @@
+version-alias lib1 : 1.0 ;
+version-alias lib1 : 2.0 ;

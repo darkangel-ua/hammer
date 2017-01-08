@@ -803,7 +803,7 @@ int main(int argc, char** argv) {
          }
 
          if (opts.update_all_warehouse_packages_) {
-            engine.warehouse().update_all_packages();
+            engine.warehouse().update_all_packages(engine);
             break;
          }
 
@@ -886,7 +886,7 @@ int main(int argc, char** argv) {
          } catch(const warehouse_unresolved_target_exception& e) {
             // ups - we have some libs to download
             warehouse& wh = engine.warehouse();
-            vector<warehouse::package_info> packages = wh.get_unresoved_targets_info(find_all_warehouse_unresolved_targets(instantiated_targets));
+            vector<warehouse::package_info> packages = wh.get_unresoved_targets_info(engine, find_all_warehouse_unresolved_targets(instantiated_targets));
 
             cout << boost::format("\n\nThere are %d unresolved package(s) to download and install:\n\n") % packages.size();
 
@@ -915,7 +915,7 @@ int main(int argc, char** argv) {
             }
 
             warehouse_dl_notifier notifier(max_package_name_lenght);
-            wh.download_and_install(packages, notifier);
+            wh.download_and_install(engine, packages, notifier);
             continue; // restart
          }
 

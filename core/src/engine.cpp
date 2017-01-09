@@ -15,6 +15,7 @@
 #include <hammer/core/typed_meta_target.h>
 #include <hammer/core/alias_meta_target.h>
 #include <hammer/core/version_alias_meta_target.h>
+#include <hammer/core/target_version_alias_meta_target.h>
 #include <boost/assign/list_of.hpp>
 #include <boost/assign/std/vector.hpp>
 #include <boost/format.hpp>
@@ -63,6 +64,7 @@ engine::engine()
    resolver_.insert("copy", boost::function<void (project*, pstring&, sources_decl&, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::copy_rule, this, _1, _2, _3, _4, _5, _6)));
    resolver_.insert("alias", boost::function<void (project*, pstring&, sources_decl*, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::alias_rule, this, _1, _2, _3, _4, _5, _6)));
    resolver_.insert("version-alias", boost::function<void (project*, pstring&, pstring&, const pstring*)>(boost::bind(&engine::version_alias_rule, this, _1, _2, _3, _4)));
+   resolver_.insert("target-version-alias", boost::function<void (project*, pstring&, pstring&, const pstring*)>(boost::bind(&engine::target_version_alias_rule, this, _1, _2, _3, _4)));
    resolver_.insert("test-suite", boost::function<void (project*, pstring&, sources_decl&, sources_decl*)>(boost::bind(&engine::test_suite_rule, this, _1, _2, _3, _4)));
    resolver_.insert("testing.run", boost::function<sources_decl (project*, sources_decl*, std::vector<pstring>*, std::vector<pstring>*, requirements_decl*, pstring*)>(boost::bind(&engine::testing_run_rule, this, _1, _2, _3, _4, _5, _6)));
    resolver_.insert("testing.compile-fail", boost::function<sources_decl (project*, const sources_decl&, requirements_decl*, requirements_decl*, requirements_decl*)>(boost::bind(&engine::testing_compile_fail_rule, this, _1, _2, _3, _4, _5)));
@@ -959,6 +961,15 @@ void engine::version_alias_rule(project* p,
                                 const pstring* target_path)
 {
    auto_ptr<basic_meta_target> mt(new version_alias_meta_target(p, name, version, target_path));
+   p->add_target(mt);
+}
+
+void engine::target_version_alias_rule(project* p,
+                                       pstring& name,
+                                       pstring& version,
+                                       const pstring* target_path)
+{
+   auto_ptr<basic_meta_target> mt(new target_version_alias_meta_target(p, name, version, target_path));
    p->add_target(mt);
 }
 

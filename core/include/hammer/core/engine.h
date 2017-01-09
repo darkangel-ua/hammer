@@ -205,7 +205,11 @@ namespace hammer
                                  pstring& name,
                                  pstring& version,
                                  const pstring* target_path);
-         void test_suite_rule(project* p, 
+         void target_version_alias_rule(project* p,
+                                        pstring& name,
+                                        pstring& version,
+                                        const pstring* target_path);
+         void test_suite_rule(project* p,
                               pstring& name, 
                               sources_decl& sources, 
                               sources_decl* propagated_sources);

@@ -24,6 +24,7 @@
 #include <hammer/core/feature.h>
 #include <cassert>
 #include <unordered_set>
+#include <unordered_map>
 
 using namespace std;
 using namespace boost::spirit::classic;
@@ -60,6 +61,8 @@ struct warehouse_impl::gramma : public grammar<warehouse_impl::gramma>
          md5_p = str_p("md5") >> colon >> value_p;
          public_id_p = str_p("public_id") >> colon >> value_p;
          need_update_p = str_p("need_update") >> colon >> bool_value_p;
+         list_of_target_names_p = list_p(value_p[push_back_a(self.targets_, self.value_)], ch_p(','));
+         targets_p = str_p("targets") >> colon >> confix_p(ch_p('['), list_of_target_names_p, ch_p(']'));
          dependency_attrs_p = public_id_p[assign_a(self.dependency_.public_id_, self.value_)] |
                               version_p[assign_a(self.dependency_.version_, self.value_)];
          dependencies_list_p = list_p(dependency_attrs_p, ch_p(','));
@@ -71,6 +74,7 @@ struct warehouse_impl::gramma : public grammar<warehouse_impl::gramma>
                        filesize_p[assign_a(self.package_.filesize_, self.int_value_)] |
                        public_id_p[assign_a(self.package_.public_id_, self.value_)] |
                        need_update_p[assign_a(self.package_.need_update_, self.bool_value_)] |
+                       targets_p[assign_a(self.package_.targets_, self.targets_)][assign_a(self.targets_, self.empty_targets_)] |
                        dependencies_p;
          package_p = confix_p(ch_p('{'), list_p(attribute_p, ch_p(',')), ch_p('}'));
          packages_p = list_p(package_p[push_back_a(self.packages_, self.package_)][assign_a(self.package_, self.empty_package_)], ch_p(','));
@@ -85,6 +89,7 @@ struct warehouse_impl::gramma : public grammar<warehouse_impl::gramma>
          BOOST_SPIRIT_DEBUG_RULE(attribute_p);
          BOOST_SPIRIT_DEBUG_RULE(package_name_p);
          BOOST_SPIRIT_DEBUG_RULE(need_update_p);
+         BOOST_SPIRIT_DEBUG_RULE(targets_p);
          BOOST_SPIRIT_DEBUG_RULE(dependencies_p);
          BOOST_SPIRIT_DEBUG_RULE(dependency_p);
          BOOST_SPIRIT_DEBUG_RULE(dependency_attrs_p);
@@ -92,7 +97,7 @@ struct warehouse_impl::gramma : public grammar<warehouse_impl::gramma>
 
       rule_t const& start() const { return whole; }
       rule_t whole, value_p, int_value_p, bool_value_p, version_p, filename_p, filesize_p, public_id_p, md5_p, need_update_p, attribute_p, package_p, packages_p, package_name_p,
-             dependencies_p, dependency_p, dependency_attrs_p, dependencies_list_p;
+             list_of_target_names_p, targets_p, dependencies_p, dependency_p, dependency_attrs_p, dependencies_list_p;
    };
 
    mutable string value_;
@@ -100,9 +105,11 @@ struct warehouse_impl::gramma : public grammar<warehouse_impl::gramma>
    mutable bool bool_value_;
    mutable vector<warehouse_impl::package_t> packages_;
    mutable warehouse_impl::package_t package_;
+   mutable vector<string> targets_;
    mutable dependency_t dependency_;
    const warehouse_impl::package_t empty_package_;
    const dependency_t empty_dependency_;
+   const vector<string> empty_targets_;
 
    void assign_int_value(unsigned v) const { int_value_ = v; }
    void assign_bool_value(bool v) const { bool_value_ = v; }
@@ -316,7 +323,8 @@ warehouse_impl::load_project(engine& e,
 {
    const string public_id = package_id_from_location(project_path);
 
-   boost::shared_ptr<project> wproject(new warehouse_project(e, repository_path_ / "libs" / public_id));
+   pstring project_name = pstring(e.pstring_pool(), public_id);
+   boost::shared_ptr<project> wproject(new warehouse_project(e, project_name, repository_path_ / "libs" / public_id));
    add_traps(*wproject, public_id);
 
    return wproject;
@@ -391,7 +399,13 @@ warehouse_impl::get_unresoved_targets_info(engine& e,
       else
          throw std::runtime_error("Unable to get unresolved target info - no version specified");
 
-      p.name_ = (**i).name().to_string();
+      p.name_ = (**i).get_project()->name().to_string();
+
+      const string package_hash = p.name_ + ":" + p.version_;
+      // check for duplicates
+      if (packages.find(package_hash) != packages.end())
+         continue;
+
       packages_t::const_iterator pi = find_package(p.name_, p.version_);
       p.package_file_size_ = pi->second.filesize_;
 
@@ -402,7 +416,6 @@ warehouse_impl::get_unresoved_targets_info(engine& e,
             deps.insert(make_pair(dependency_hash, *i));
       }
 
-      const string package_hash = p.name_ + ":" + p.version_;
       packages.insert(make_pair(package_hash, p));
    }
 
@@ -450,9 +463,24 @@ void append_line(const fs::path filename,
 
 static
 string make_package_alias_line(const string& package_public_id,
-                               const string& package_version)
+                               const string& package_version,
+                               const vector<string>& targets)
 {
-   return "version-alias " + package_public_id + " : " + package_version + ";";
+   stringstream s;
+   for (const string& target : targets) {
+      if (target[0] == '@')
+         s << "version-alias ";
+      else
+         s << "target-version-alias ";
+
+      if (target[0] != '@')
+         s << target;
+      else
+         s << target.substr(1);
+      s << " : " << package_version << ";\n";
+   }
+
+   return s.str();
 }
 
 void warehouse_impl::install_package(const package_t& p,
@@ -481,11 +509,12 @@ void warehouse_impl::install_package(const package_t& p,
    const fs::path package_hamfile = lib_path / "hamfile";
    if (!exists(package_hamfile)) {
       fs::ofstream f(package_hamfile);
+      f << "project " << p.public_id_ << " ;\n\n";
       f << "warehouse-trap " << p.public_id_ << ";";
       f.close();
    }
 
-   insert_line_in_front(package_hamfile, make_package_alias_line(p.public_id_, p.version_));
+   insert_line_in_front(package_hamfile, make_package_alias_line(p.public_id_, p.version_, p.targets_));
 }
 
 bool warehouse_impl::resolves_to_real_project(engine& e,
@@ -553,6 +582,21 @@ void warehouse_impl::write_packages(const location_t& packages_db_path,
       tmp_packages << "       md5        : \"" << i->second.md5_ << "\",\n";
       tmp_packages << "       need_update: " << boolalpha << i->second.need_update_ << ",\n";
       tmp_packages << "       filesize   : " << i->second.filesize_;
+      if (!i->second.targets_.empty()) {
+         tmp_packages << ",\n       targets    : [ ";
+         bool first = true;
+         for (const string& t : i->second.targets_) {
+            if (first)
+               first = false;
+            else
+               tmp_packages << ", ";
+
+            tmp_packages << '"' << t << '"';
+         }
+
+         tmp_packages << " ]";
+      }
+
       if (i->second.dependencies_.empty())
          tmp_packages << "\n";
       else {
@@ -679,6 +723,32 @@ string extract_filepath_from_url(const string& url)
    return url.substr(file_schema.size());
 }
 
+static
+vector<string>
+gather_targets(const project& p)
+{
+   unordered_map<string, unsigned> targets_info;
+
+   for (const auto& bt : p.targets()) {
+      if (bt.second->is_local())
+         continue;
+
+      if (bt.second->is_explicit())
+         ++targets_info[bt.second->name().to_string()];
+      else
+         ++targets_info["@" + bt.second->name().to_string()];
+   }
+
+   if (targets_info.empty())
+      throw std::runtime_error("There is no targets to export");
+
+   vector<string> targets;
+   for (const auto& ti : targets_info)
+      targets.push_back(ti.first);
+
+   return targets;
+}
+
 void warehouse_impl::add_to_packages(const project& p,
                                      const location_t& packages_db_root_)
 {
@@ -712,6 +782,7 @@ void warehouse_impl::add_to_packages(const project& p,
    package.md5_ = calculate_md5(package_full_path);
    package.filesize_ = file_size(package_full_path);
    package.dependencies_ = gather_dependencies(p);
+   package.targets_ =  gather_targets(p);
 
    packages_t::iterator i = find_package(packages, public_id, version);
    if (i == packages.end())
@@ -728,7 +799,7 @@ warehouse_impl::get_package_versions(const string& public_id) const
    auto versions = packages_.equal_range(public_id);
    versions_t result;
    for(; versions.first != versions.second; ++versions.first)
-      result.push_back(versions.first->second.version_);
+      result.push_back({versions.first->second.version_, versions.first->second.targets_});
 
    return result;
 }
@@ -736,14 +807,18 @@ warehouse_impl::get_package_versions(const string& public_id) const
 static
 void remove_alias_from_package_hamfile(const string& package_public_id,
                                        const string& package_version,
+                                       const vector<string>& package_targets,
                                        const fs::path& path_to_hamfile)
 {
+   if (!package_targets.empty())
+      throw std::runtime_error("Can't remove package with non-empty targets");
+
    const fs::path tmp_hamfile = path_to_hamfile.branch_path() / (path_to_hamfile.filename().string() + ".tmp");
    fs::ofstream tmp_f(tmp_hamfile);
    fs::ifstream current_f(path_to_hamfile);
 
    string line;
-   const string alias_line = make_package_alias_line(package_public_id, package_version);
+   const string alias_line = make_package_alias_line(package_public_id, package_version, package_targets);
    while(getline(current_f, line)) {
       if (line != alias_line)
          tmp_f << line << endl;
@@ -762,7 +837,7 @@ void warehouse_impl::remove_package(const package_t& package_to_remove)
    const fs::path lib_path = libs_path / package_to_remove.public_id_;
    const fs::path package_root = lib_path / package_to_remove.version_;
 
-   remove_alias_from_package_hamfile(package_to_remove.public_id_, package_to_remove.version_, lib_path / "hamfile");
+   remove_alias_from_package_hamfile(package_to_remove.public_id_, package_to_remove.version_, package_to_remove.targets_, lib_path / "hamfile");
    fs::remove_all(package_root);
    fs::remove(repository_path_ / "downloads" / package_to_remove.filename_);
 }

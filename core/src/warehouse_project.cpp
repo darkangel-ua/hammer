@@ -4,8 +4,9 @@
 namespace hammer {
 
 warehouse_project::warehouse_project(engine& e,
+                                     const pstring& name,
                                      const location_t& location)
-   : project(&e, pstring(), location, requirements_decl(), requirements_decl())
+   : project(&e, name, location, requirements_decl(), requirements_decl())
 {
 
 }

@@ -1,0 +1,8 @@
+test [ features = <define>LIB2_BAR_1_0 !<define>LIB2_FOO_1_0; ]
+{
+   main.cpp {}
+   bar [ type = SHARED_LIB; ]
+   {
+       bar.cpp [ features = <define>LIB2_BAR_1_0; ] {}
+   }
+}

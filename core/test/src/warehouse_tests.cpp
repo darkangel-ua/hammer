@@ -60,6 +60,8 @@ void warehouse_test::add_all_libs()
 {
    warehouse_->add_to_packages(engine_.load_project(libs_path_ / "lib1/1.0/build"));
    warehouse_->add_to_packages(engine_.load_project(libs_path_ / "lib1/2.0/build"));
+   warehouse_->add_to_packages(engine_.load_project(libs_path_ / "lib2/1.0/build"));
+   warehouse_->add_to_packages(engine_.load_project(libs_path_ / "lib2/2.0/build"));
 }
 
 void warehouse_test::setup_engine_warehouse()

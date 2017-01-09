@@ -24,8 +24,15 @@ namespace hammer {
             std::string version_;
             size_t package_file_size_;
          };
+
+         struct version_info
+         {
+            std::string version_;
+            std::vector<std::string> targets_;
+         };
+
          typedef std::vector<package_info> package_infos_t;
-         typedef std::vector<std::string> versions_t;
+         typedef std::vector<version_info> versions_t;
 
          static const std::string any_version;
 

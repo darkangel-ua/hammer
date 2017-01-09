@@ -48,10 +48,10 @@ find_all_warehouse_unresolved_targets(const vector<basic_target*>& targets)
 }
 
 static
-warehouse::versions_t
+vector<string>
 collect_installed_versions(const project& p)
 {
-   warehouse::versions_t result;
+   vector<string> result;
 
    const feature_set& build_request = *p.get_engine()->feature_registry().make_set();
    for(const auto& t : p.targets()) {
@@ -62,6 +62,9 @@ collect_installed_versions(const project& p)
          result.push_back((**i).value().to_string());
    }
 
+   sort(result.begin(), result.end());
+   result.erase(unique(result.begin(), result.end()), result.end());
+
    return result;
 }
 
@@ -70,18 +73,31 @@ void add_traps(project& p,
 {
    warehouse& wh = p.get_engine()->warehouse();
    warehouse::versions_t all_versions = wh.get_package_versions(public_id);
-   warehouse::versions_t installed_versions = collect_installed_versions(p);
+   vector<string> installed_versions = collect_installed_versions(p);
 
    warehouse::versions_t not_installed_versions;
-   sort(all_versions.begin(), all_versions.end());
-   sort(installed_versions.begin(), installed_versions.end());
+
+   sort(all_versions.begin(), all_versions.end(),
+        [] (const warehouse::version_info& lhs, const warehouse::version_info& rhs)
+      {
+         return lhs.version_ < rhs.version_;
+      });
+
+   struct pred
+   {
+      bool operator()(const warehouse::version_info& lhs, const string& rhs) const { return lhs.version_ < rhs; }
+      bool operator()(const string& lhs, const warehouse::version_info& rhs) const { return lhs < rhs.version_; }
+   };
+
    set_difference(all_versions.begin(), all_versions.end(),
                   installed_versions.begin(), installed_versions.end(),
-                  back_inserter(not_installed_versions));
+                  back_inserter(not_installed_versions), pred());
 
-   for(const string& v : not_installed_versions) {
-      auto_ptr<basic_meta_target> trap_target(new warehouse_meta_target(p, pstring(p.get_engine()->pstring_pool(), public_id), v));
-      p.add_target(trap_target);
+   for(const auto& v : not_installed_versions) {
+      for (const string& target_name : v.targets_) {
+         auto_ptr<basic_meta_target> trap_target(new warehouse_meta_target(p, pstring(p.get_engine()->pstring_pool(), target_name), v.version_));
+         p.add_target(trap_target);
+      }
    }
 }
 

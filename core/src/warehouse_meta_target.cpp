@@ -22,7 +22,7 @@ make_requirements(feature_registry& fr,
 warehouse_meta_target::warehouse_meta_target(project& p,
                                              const pstring& name,
                                              const string& version)
-   : basic_meta_target(&p, name, make_requirements(p.get_engine()->feature_registry(), version), requirements_decl())
+   : meta_target(&p, name, make_requirements(p.get_engine()->feature_registry(), version), requirements_decl())
 {
 }
 
@@ -36,9 +36,17 @@ void warehouse_meta_target::instantiate_impl(const main_target* owner,
                                              std::vector<basic_target*>* result,
                                              feature_set* usage_requirements) const
 {
-   unique_ptr<basic_target> t(new warehouse_target(*owner, name(), build_request));
+   unique_ptr<basic_target> t(new warehouse_target(*this, name(), build_request));
    result->push_back(t.get());
    t.release();
+}
+
+main_target*
+warehouse_meta_target::construct_main_target(const main_target* owner,
+                                             const feature_set* properties) const
+{
+   assert(false);
+   return nullptr;
 }
 
 }

@@ -58,6 +58,7 @@ class warehouse_impl : public warehouse
          std::string md5_;
          std::string version_;
          std::string public_id_;
+         std::vector<std::string> targets_;
          bool need_update_ = false;
          std::vector<dependency_t> dependencies_;
       };

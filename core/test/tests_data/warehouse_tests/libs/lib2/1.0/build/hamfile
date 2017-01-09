@@ -1,0 +1,8 @@
+project lib2 : requirements <version>1.0 ;
+ 
+lib foo : foo.cpp : @<define>LIB2_FOO_1_0 ;
+explicit foo ;
+
+lib bar : bar.cpp : @<define>LIB2_BAR_1_0 ; 
+explicit bar ;
+

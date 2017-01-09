@@ -1,11 +1,13 @@
 #ifndef WAREHOUSE_META_TARGET_H
 #define WAREHOUSE_META_TARGET_H
 
-#include <hammer/core/basic_meta_target.h>
+#include <hammer/core/meta_target.h>
 
 namespace hammer {
 
-class warehouse_meta_target : public basic_meta_target
+// FIXME: we should inherit from basic_meta_target but
+// main_target take meta_target istead of basic_meta_target
+class warehouse_meta_target : public meta_target
 {
    public:
       warehouse_meta_target(project& p,
@@ -14,11 +16,13 @@ class warehouse_meta_target : public basic_meta_target
       ~warehouse_meta_target();
 
    protected:
-      virtual void instantiate_impl(const main_target* owner,
-                                    const feature_set& build_request,
-                                    std::vector<basic_target*>* result,
-                                    feature_set* usage_requirements) const;
-
+      void instantiate_impl(const main_target* owner,
+                            const feature_set& build_request,
+                            std::vector<basic_target*>* result,
+                            feature_set* usage_requirements) const override;
+      main_target*
+      construct_main_target(const main_target* owner,
+                            const feature_set* properties) const override;
 };
 
 }

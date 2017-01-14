@@ -8,10 +8,10 @@ namespace hammer
    class pch_main_target : public main_target
    {
       public:
-         pch_main_target(const hammer::meta_target* mt,
+         pch_main_target(const basic_meta_target* mt,
                          const main_target& owner,
-                         const pstring& name, 
-                         const target_type* t, 
+                         const pstring& name,
+                         const target_type* t,
                          const feature_set* props,
                          pool& p);
 

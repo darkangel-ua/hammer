@@ -8,7 +8,7 @@ namespace hammer{
 class file_main_target : public main_target
 {
    public:
-      file_main_target(const hammer::meta_target* mt, 
+      file_main_target(const basic_meta_target* mt,
                        const pstring& name, 
                        const pstring& filename,
                        const feature_set* props,

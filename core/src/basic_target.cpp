@@ -52,7 +52,7 @@ std::string basic_target::hash_string(const feature_set& fs, const main_target& 
       return fs.get("variant").value().to_string();
 }
 
-const meta_target* basic_target::get_meta_target() const
+const basic_meta_target* basic_target::get_meta_target() const
 {
    return main_target_->get_meta_target();
 }

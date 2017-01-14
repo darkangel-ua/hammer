@@ -20,7 +20,7 @@ namespace hammer
    class basic_target;
    class target_type;
    class engine;
-   class meta_target;
+   class basic_meta_target;
    class main_target;
 
    namespace project_generators
@@ -42,7 +42,7 @@ namespace hammer
                const main_target* target_;
                const feature_set* properties_;
                std::string name_;
-               msvc_project* owner_; // FIXME: выглядит это очень странно, но без этого поля не работает file_configuration::write
+               msvc_project* owner_;
             };
 
             typedef boost::ptr_vector<variant> variants_t;
@@ -59,9 +59,9 @@ namespace hammer
             const std::string& id() const { return id_; }
             const boost::guid& guid() const { return uid_; }
             void guid(const boost::guid& new_uid) { uid_ = new_uid; }
-            const hammer::meta_target& meta_target() const { return *meta_target_; }
+            const basic_meta_target& meta_target() const { return *meta_target_; }
             const dependencies_t& dependencies() const { return dependencies_;}
-            location_t full_project_name() const { return full_project_name_; } // путь относительно meta_target проекта и имя файла проекта
+            location_t full_project_name() const { return full_project_name_; }
             const location_t& output_dir() const { return output_dir_; }
             const location_t& project_output_dir() const { return project_output_dir_; }
             const std::string name() const;
@@ -101,8 +101,8 @@ namespace hammer
 
                void write(write_context& ctx, const std::string& path_prefix) const;
                
-               pstring file_name_; // Это файл который будет в секции File в vcproj
-               file_config_t file_config;  // для каждого варианта своя basic_target со своими свойствами
+               pstring file_name_; 
+               file_config_t file_config;
             };
 
             class filter_t
@@ -138,7 +138,7 @@ namespace hammer
             files_t files_;
             boost::guid uid_;
             std::string id_;
-            const hammer::meta_target* meta_target_;
+            const basic_meta_target* meta_target_;
             mutable dependencies_t dependencies_;
             location_t full_project_name_;
             location_t output_dir_;

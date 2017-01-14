@@ -11,7 +11,7 @@
 
 namespace hammer{
 
-copy_main_target::copy_main_target(const hammer::meta_target* mt, 
+copy_main_target::copy_main_target(const basic_meta_target* mt,
                                    const pstring& name, 
                                    const target_type* t, 
                                    const feature_set* props,

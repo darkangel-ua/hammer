@@ -6,9 +6,9 @@
 
 namespace hammer{
 
-testing_main_target::testing_main_target(const meta_target* mt, 
-                                         const pstring& name, 
-                                         const target_type* t, 
+testing_main_target::testing_main_target(const basic_meta_target* mt,
+                                         const pstring& name,
+                                         const target_type* t,
                                          const feature_set* props,
                                          pool& p)
    : main_target(mt, name, t, props, p)

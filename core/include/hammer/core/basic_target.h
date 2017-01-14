@@ -14,7 +14,7 @@ namespace hammer
    class target_type;
    class feature_set;
    class main_target;
-   class meta_target;
+   class basic_meta_target;
    class engine;
    class project;
    class build_environment;
@@ -37,7 +37,7 @@ namespace hammer
          const feature_set& properties() const { return *features_; }
          void properties(const feature_set* p);
          const main_target* get_main_target() const { return main_target_; }
-         const meta_target* get_meta_target() const;
+         const basic_meta_target* get_meta_target() const;
          const project* get_project() const;
          engine* get_engine() const;
          

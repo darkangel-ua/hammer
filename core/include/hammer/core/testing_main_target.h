@@ -8,7 +8,7 @@ namespace hammer{
 class testing_main_target : public main_target
 {
    public:
-      testing_main_target(const meta_target* mt, 
+      testing_main_target(const basic_meta_target* mt,
                           const pstring& name, 
                           const target_type* t, 
                           const feature_set* props,

@@ -28,7 +28,7 @@ namespace
 struct msvc_solution::impl_t
 {
    typedef msvc_project::dependencies_t dependencies_t;
-   typedef boost::ptr_map<const meta_target*, msvc_project> projects_t;
+   typedef boost::ptr_map<const basic_meta_target*, msvc_project> projects_t;
    typedef std::vector<std::string> variant_names_t;
 
    impl_t(msvc_solution* owner, const project& source_project, 
@@ -103,12 +103,11 @@ void impl_t::generate_dependencies(impl_t::dependencies_t::const_iterator first,
    }
 }
 
-// FIXME: при генерации солюшена может произойти хохма
+// FIXME:
 // lib a : a.cpp ;
 // lib b : a/<link>static b.cpp ;
 // exe xoxma : main.cpp a b ;
 //
-// в этом случае имеем две разные конфигурации проекта в одной конфигурации солюшена чего студия не позволяет
  
 
 void msvc_solution::impl_t::write_project_section(ostream& os, const msvc_project& project) const
@@ -209,8 +208,6 @@ void msvc_solution::write() const
    f << "Microsoft Visual Studio Solution File, Format Version 9.00\n"
         "# Visual Studio 2005\n";
    
-   // стабилизируем порядок проектов с солюшине, а то он все время меняется и 
-   // невозможно нормально это тестировать
    typedef impl_t::projects_t::const_iterator iter;
    typedef vector<const msvc_project*> sorted_projects_t;
 

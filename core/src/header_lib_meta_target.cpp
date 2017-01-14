@@ -16,7 +16,7 @@ header_lib_meta_target::header_lib_meta_target(hammer::project* p,
                                                const pstring& name,
                                                const requirements_decl& requirements,
                                                const requirements_decl& usage_requirements)
-   : meta_target(p, name, requirements, usage_requirements)
+   : basic_meta_target(p, name, requirements, usage_requirements)
 {
 
 }
@@ -62,7 +62,11 @@ void header_lib_meta_target::instantiate_impl(const main_target* owner,
    feature_set* mt_fs = build_request.clone();
    requirements().eval(build_request, mt_fs, usage_requirements);
 
-   main_target* mt = construct_main_target(owner, mt_fs);
+   main_target* mt = new header_lib_main_target(this,
+                                                name(),
+                                                &get_engine()->get_type_registry().get(types::HEADER_LIB),
+                                                mt_fs,
+                                                get_engine()->targets_pool());
    mt_fs = mt->properties().clone();
 
    vector<basic_target*> instantiated_simple_targets;
@@ -74,18 +78,6 @@ void header_lib_meta_target::instantiate_impl(const main_target* owner,
 
    // we just transfer downstream usage requirements to upstream + own
    this->usage_requirements().eval(owner->properties(), usage_requirements);
-}
-
-main_target*
-header_lib_meta_target::construct_main_target(const main_target* owner,
-                                              const feature_set* properties) const
-{
-   main_target* mt = new header_lib_main_target(this,
-                                                name(),
-                                                &get_engine()->get_type_registry().get(types::HEADER_LIB),
-                                                properties,
-                                                get_engine()->targets_pool());
-   return mt;
 }
 
 }

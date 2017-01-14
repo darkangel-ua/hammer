@@ -22,7 +22,7 @@ namespace hammer{
 
 boost::shared_ptr<mksig_action> main_target::mksig_action_ = boost::shared_ptr<mksig_action>(new mksig_action);
 
-main_target::main_target(const hammer::meta_target* mt,
+main_target::main_target(const basic_meta_target* mt,
                          const pstring& name,
                          const hammer::target_type* t,
                          const feature_set* props,

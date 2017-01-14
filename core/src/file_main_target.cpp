@@ -4,7 +4,7 @@
 
 namespace hammer{
 
-file_main_target::file_main_target(const hammer::meta_target* mt, 
+file_main_target::file_main_target(const basic_meta_target* mt,
                                    const pstring& name, 
                                    const pstring& filename,
                                    const feature_set* props,

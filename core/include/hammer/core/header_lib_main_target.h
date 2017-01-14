@@ -8,9 +8,9 @@ namespace hammer
    class header_lib_main_target : public main_target
    {
       public:
-         header_lib_main_target(const hammer::meta_target* mt, 
-                                const pstring& name, 
-                                const target_type* t, 
+         header_lib_main_target(const basic_meta_target* mt,
+                                const pstring& name,
+                                const target_type* t,
                                 const feature_set* props,
                                 pool& p);
       

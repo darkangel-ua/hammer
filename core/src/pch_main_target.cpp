@@ -11,7 +11,7 @@
 namespace hammer
 {
 
-pch_main_target::pch_main_target(const hammer::meta_target* mt, 
+pch_main_target::pch_main_target(const basic_meta_target* mt,
                                  const main_target& owner,
                                  const pstring& name, 
                                  const target_type* t, 

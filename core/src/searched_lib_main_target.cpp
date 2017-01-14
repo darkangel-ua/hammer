@@ -15,7 +15,7 @@
 
 namespace hammer{
 
-searched_lib_main_target::searched_lib_main_target(const hammer::meta_target* mt, 
+searched_lib_main_target::searched_lib_main_target(const basic_meta_target* mt,
                                                    const pstring& name, 
                                                    const pstring& lib_name, 
                                                    const feature_set* props,

@@ -8,9 +8,9 @@ namespace hammer
    class searched_lib_main_target : public main_target
    {
       public:
-         searched_lib_main_target(const hammer::meta_target* mt, 
-                                  const pstring& name, 
-                                  const pstring& lib_name, 
+         searched_lib_main_target(const basic_meta_target* mt,
+                                  const pstring& name,
+                                  const pstring& lib_name,
                                   const feature_set* props,
                                   const target_type& t,
                                   pool& p);

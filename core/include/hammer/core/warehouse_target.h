@@ -8,7 +8,7 @@ namespace hammer {
 class warehouse_target : public main_target
 {
    public:
-      warehouse_target(const meta_target& mt,
+      warehouse_target(const basic_meta_target& mt,
                        const pstring& name,
                        const feature_set& build_request);
       ~warehouse_target();

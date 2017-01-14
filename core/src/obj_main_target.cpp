@@ -7,7 +7,7 @@
 
 namespace hammer{
 
-obj_main_target::obj_main_target(const hammer::meta_target* mt, 
+obj_main_target::obj_main_target(const basic_meta_target* mt,
                                  const main_target& owner,
                                  const pstring& name, 
                                  const target_type* t, 

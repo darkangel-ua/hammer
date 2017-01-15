@@ -5,6 +5,7 @@
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature.h>
 #include <boost/format.hpp>
+#include <sstream>
 
 using namespace std;
 

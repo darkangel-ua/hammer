@@ -87,6 +87,9 @@ void add_traps(project& p,
    {
       bool operator()(const warehouse::version_info& lhs, const string& rhs) const { return lhs.version_ < rhs; }
       bool operator()(const string& lhs, const warehouse::version_info& rhs) const { return lhs < rhs.version_; }
+      // These two need by msvc debug implementation
+      bool operator()(const warehouse::version_info& lhs, const warehouse::version_info& rhs) const { return lhs.version_ < rhs.version_; }
+      bool operator()(const string& lhs, const string& rhs) const { return lhs < rhs; }
    };
 
    set_difference(all_versions.begin(), all_versions.end(),

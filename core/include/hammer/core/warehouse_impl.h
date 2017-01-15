@@ -17,7 +17,7 @@ class warehouse_impl : public warehouse
    public:
       warehouse_impl(const std::string& name,
                      const std::string& url,
-                     const boost::filesystem::path& storage_dir = {});
+                     const boost::filesystem::path& storage_dir = boost::filesystem::path());
       ~warehouse_impl();
       bool project_from_warehouse(const project& p) const override;
       bool has_project(const location_t& project_path,

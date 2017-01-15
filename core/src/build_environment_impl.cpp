@@ -253,12 +253,13 @@ build_environment_impl::create_output_file(const char* filename, ios_base::openm
    unique_ptr<ofstream> f(new ofstream);
    f->exceptions(ios_base::badbit | ios_base::eofbit | ios_base::failbit);
 #if defined(_WIN32) && !defined(__MINGW32__)
-   wstring unc_path(L"\\\\?\\" + to_wide(location_t(full_filename_path)).string<wstring>());
+   wstring unc_path(to_wide(location_t(full_filename_path)).string<wstring>());
    f->open(unc_path.c_str(), mode);
 #else
    f->open(full_filename_path.string().c_str(), mode);
 #endif
-   return f;
+   // FIXME: msvc 12 can't just return f
+   return std::unique_ptr<ostream>(std::move(f));
 }
 
 location_t build_environment_impl::working_directory(const basic_target& t) const

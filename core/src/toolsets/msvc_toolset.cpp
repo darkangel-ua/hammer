@@ -289,7 +289,7 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
    { 
       shared_ptr<source_argument_writer> obj_sources(new source_argument_writer("obj_sources", e.get_type_registry().get(types::OBJ)));
       shared_ptr<product_argument_writer> exe_product_unc(new product_argument_writer("exe_product_unc", e.get_type_registry().get(types::EXE),
-                                                                                      product_argument_writer::output_strategy::FULL_UNC_PATH));
+                                                                                      product_argument_writer::output_strategy::FULL_PATH));
       shared_ptr<product_argument_writer> exe_product(new product_argument_writer("exe_product", e.get_type_registry().get(types::EXE)));
       shared_ptr<product_argument_writer> exe_manifest_product(new product_argument_writer("exe_manifest_product", e.get_type_registry().get(types::EXE_MANIFEST)));
       cmdline_builder exe_cmd(config_data.linker_.string() + " \"@$(exe_product).rsp\"\n"
@@ -337,7 +337,7 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
       shared_ptr<product_argument_writer> static_lib_product(new product_argument_writer("static_lib_product", e.get_type_registry().get(types::STATIC_LIB)));
       shared_ptr<product_argument_writer> static_lib_product_unc(new product_argument_writer("static_lib_product_unc", 
                                                                                              e.get_type_registry().get(types::STATIC_LIB),
-                                                                                             product_argument_writer::output_strategy::FULL_UNC_PATH));
+                                                                                             product_argument_writer::output_strategy::FULL_PATH));
       cmdline_builder static_lib_rsp("$(user_archive_flags) /out:\"$(static_lib_product)\"\n$(obj_sources)");
       static_lib_rsp += user_archive_flags;
       static_lib_rsp += obj_sources;
@@ -370,7 +370,7 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
       shared_ptr<product_argument_writer> import_lib_product(new product_argument_writer("import_lib_product", e.get_type_registry().get(types::IMPORT_LIB)));
       shared_ptr<product_argument_writer> shared_lib_rel_product(new product_argument_writer("shared_lib_rel_product", e.get_type_registry().get(types::SHARED_LIB)));
       shared_ptr<product_argument_writer> shared_lib_product(new product_argument_writer("shared_lib_product", e.get_type_registry().get(types::SHARED_LIB), 
-                                                                                         product_argument_writer::output_strategy::FULL_UNC_PATH));
+                                                                                         product_argument_writer::output_strategy::FULL_PATH));
       shared_ptr<product_argument_writer> dll_manifest_product(new product_argument_writer("dll_manifest_product", e.get_type_registry().get(types::DLL_MANIFEST)));
       cmdline_builder shared_lib_cmd(config_data.linker_.string() + " \"@$(shared_lib_rel_product).rsp\"\n"
                                      "if %ERRORLEVEL% NEQ 0 EXIT %ERRORLEVEL%\n"

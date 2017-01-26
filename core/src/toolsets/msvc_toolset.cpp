@@ -186,7 +186,7 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
       *batched_obj_action += setup_vars;
       *batched_obj_action += batched_obj_cmd;
 
-      obj_action->batched_action(batched_obj_action);
+//      obj_action->batched_action(batched_obj_action);
 
       generator::consumable_types_t source;
       generator::producable_types_t target;

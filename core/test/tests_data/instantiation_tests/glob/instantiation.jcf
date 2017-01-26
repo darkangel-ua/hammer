@@ -1,11 +1,11 @@
 test [ type = EXE; ]
 {
    main.cpp [ type = CPP; ] {}
-   glob_src1/src1.cpp [ type = CPP; ] {}
-   rglob_src/top_src.cpp [ type = CPP; ] {}
-   rglob_src/level_1/level_1.cpp [ type = CPP; ] {}
+   src1.cpp [ type = CPP; ] {}
+   top_src.cpp [ type = CPP; ] {}
+   level_1.cpp [ type = CPP; ] {}
    lib1 [ type = SHARED_LIB; ]
    {
-      ../lib1_src/lib1.cpp [ type = CPP; ] {}
+      lib1.cpp [ type = CPP; ] {}
    }
 }

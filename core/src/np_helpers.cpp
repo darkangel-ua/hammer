@@ -33,12 +33,6 @@ pstring make_product_name(pool& p,
 {
    string source_name = source_target.name().to_string();
    const std::string& source_suffix = source_target.type().suffix_for(source_name, source_target.properties());
-   // find leaf in source name to leave only filename
-   string::size_type slash_pos = source_name.find_last_of('/');
-   if (slash_pos == string::npos)
-      slash_pos = 0;
-   else
-      ++slash_pos;
 
    std::string hash_suffix;
    if (owner != NULL)
@@ -50,7 +44,7 @@ pstring make_product_name(pool& p,
       hash_suffix += '-' + compute_hash(product_properties, *owner);
    }
  
-   string source_name_without_suffix = std::string(source_name.begin() + slash_pos, 
+   string source_name_without_suffix = std::string(source_name.begin(),
                                                    source_name.begin() + (source_name.size() - source_suffix.size()));
    return pstring(p, product_type.prefix_for(product_properties) + source_name_without_suffix + hash_suffix + product_type.suffix_for(product_properties));
 }

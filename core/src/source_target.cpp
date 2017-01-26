@@ -4,9 +4,13 @@
 
 namespace hammer{
 
-source_target::source_target(const main_target* mt, const pstring& name,
-                             const target_type* t, const feature_set* f)
-                            : file_target(mt, name, t, f)
+source_target::source_target(const main_target* mt,
+                             const location_t& l,
+                             const pstring& name,
+                             const target_type* t,
+                             const feature_set* f)
+   : file_target(mt, name, t, f),
+     location_(l)
 {
 }
 

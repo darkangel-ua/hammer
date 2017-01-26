@@ -57,7 +57,9 @@ void basic_meta_target::instantiate_simple_targets(const sources_decl& targets,
       if (tp == 0)
          throw std::runtime_error("Can't resolve type from source '" + i->target_path().to_string() + "'.");
 
-      source_target* st = new source_target(&owner, i->target_path(), tp, &owner.properties());
+      location_t source_location = (owner.location() / i->target_path().to_string()).normalize();
+      const pstring source_filename = pstring(get_engine()->pstring_pool(), source_location.filename().string());
+      source_target* st = new source_target(&owner, source_location.branch_path(), source_filename, tp, &owner.properties());
       result->push_back(st);
    }
 }

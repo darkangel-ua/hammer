@@ -14,9 +14,17 @@ namespace hammer
    class source_target : public file_target
    {
       public:  
-         source_target(const main_target* mt, const pstring& name, 
-                       const target_type* t, const feature_set* f);
-         virtual std::vector<boost::intrusive_ptr<build_node> > generate() const;
+         source_target(const main_target* mt,
+                       const location_t& l,
+                       const pstring& name,
+                       const target_type* t,
+                       const feature_set* f);
+
+         const location_t& location() const override { return location_; }
+         std::vector<boost::intrusive_ptr<build_node> > generate() const override;
+
+      private:
+         const location_t location_;
    };
 }
 

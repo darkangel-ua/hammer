@@ -173,6 +173,14 @@ warehouse_impl::warehouse_impl(const std::string& name,
    : repository_path_(storage_dir.empty() ? (get_home_path() / ".hammer") : storage_dir),
      repository_url_(url)
 {
+   if (!repository_path_.has_root_path())
+      throw std::runtime_error("Warehouse storage directory should be a full path");
+
+   // path should be without trailing '.' to be correctly compared in package_from_warehouse()
+   repository_path_.normalize();
+   if (repository_path_.filename() == ".")
+      repository_path_.remove_leaf();
+
    if (!exists(repository_path_)) {
       if (!create_directory(repository_path_))
          throw std::runtime_error("Failed to create directory '" + repository_path_.string() + "'");
@@ -337,7 +345,23 @@ warehouse_impl::~warehouse_impl()
 
 bool warehouse_impl::project_from_warehouse(const project& p) const
 {
-   return p.location().string().find(repository_path_.string()) == 0;
+   // For some misterious reason this doesn't work with gcc
+   // Some bug in boost::iterator? or path iterator?
+   // FIXME
+
+   // return std::search(p.location().begin(), p.location().end(), repository_path_.begin(), repository_path_.end()) == p.location().begin();
+
+   auto pi = p.location().begin();
+   auto plast = p.location().end();
+   auto ri = repository_path_.begin();
+   auto rlast = repository_path_.end();
+
+   for ( ;pi != plast && ri != rlast; ++pi, ++ri) {
+      if (*pi != *ri)
+         return false;
+   }
+
+   return true;
 }
 
 warehouse::package_info

@@ -501,7 +501,7 @@ void warehouse_impl::install_package(const package_t& p,
    bp::context ctx;
    ctx.work_directory = package_root.string();
    const fs::path package_archive = working_dir / "downloads" / p.filename_;
-   bp::child child = bp::launch_shell("tar -xf '" + package_archive.string() + "'", ctx);
+   bp::child child = bp::launch_shell("bzcat '" + package_archive.string() + "' | tar -x", ctx);
    bp::status status = child.wait();
    if (status.exit_status() != 0)
       throw std::runtime_error("Failed to unpack package '" + p.public_id_ + "'");
@@ -640,7 +640,7 @@ void make_package_archive(const fs::path& package_root,
 {
    bp::context ctx;
    ctx.work_directory = package_root.string();
-   bp::child child = bp::launch_shell("tar --exclude \"\\.hammer\" --exclude-vcs -cjf '" + package_filename.string() + "' .", ctx);
+   bp::child child = bp::launch_shell("tar -c --exclude \"\\.hammer\" --exclude-vcs -c . | bzip2 -c > '" + package_filename.string() + "'", ctx);
    bp::status status = child.wait();
    if (status.exit_status() != 0)
       throw std::runtime_error("Failed to create package archive");

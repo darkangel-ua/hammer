@@ -99,7 +99,11 @@ void test_function_phase_1(const fs::path& test_data_path)
       return;
 
    feature_set* build_request = env.engine_.feature_registry().make_set();
+#ifdef _WIN32
+   build_request->join("toolset", "msvc");
+#else
    build_request->join("toolset", "gcc");
+#endif
    build_request->join("variant", "debug");
 
    vector<basic_target*> instantiated_targets;
@@ -132,7 +136,11 @@ void test_function_phase_2(const fs::path& test_data_path)
    project& p = env_2.engine_.load_project(test_data_path);
 
    feature_set* build_request = env_2.engine_.feature_registry().make_set();
+#ifdef _WIN32
+   build_request->join("toolset", "msvc");
+#else
    build_request->join("toolset", "gcc");
+#endif
    build_request->join("variant", "debug");
 
    vector<basic_target*> instantiated_targets;

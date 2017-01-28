@@ -82,7 +82,11 @@ void complete_build_tests_environment::run_test(const boost::filesystem::path& w
    project& p = engine_.load_project(working_dir);
 
    feature_set* build_request = engine_.feature_registry().make_set();
+#ifdef _WIN32
+   build_request->join("toolset", "msvc");
+#else
    build_request->join("toolset", "gcc");
+#endif
    build_request->join("variant", "debug");
 
    vector<basic_target*> instantiated_targets;

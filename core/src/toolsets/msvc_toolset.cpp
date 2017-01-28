@@ -158,11 +158,11 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
    {
       cmdline_builder obj_cmd(config_data.compiler_.string() +
                               " /c /nologo $(cflags) $(cppflags) $(user_cxx_flags) $(includes) $(undefines) $(defines) $(use_pch_header) $(use_pch_product) $(cpp_input)"
-                              " /Fo\"$(obj_product)\" /Fd\"$(output_dir)\\vc.pdb\"");
+                              " /Fo\"$(obj_product)\" /FS /Fd\"$(output_dir)\\vc.pdb\"");
 
       cmdline_builder batched_obj_cmd(config_data.compiler_.string() +
                                       " /c /nologo $(cflags) $(cppflags) $(user_cxx_flags) $(includes) $(undefines) $(defines) $(use_pch_header) $(use_pch_product) $(cpp_input)"
-                                      " /Fo\"$(output_dir)\\\\\" /Fd\"$(output_dir)\\vc.pdb\"");
+                                      " /Fo\"$(output_dir)\\\\\" /FS /Fd\"$(output_dir)\\vc.pdb\"");
       obj_cmd += cflags;
       obj_cmd += cppflags;
       obj_cmd += user_cxx_flags;
@@ -201,7 +201,7 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
    {
       cmdline_builder obj_cmd(config_data.compiler_.string() +
                               " /c /nologo $(create_pch_header) $(cflags) $(cppflags) $(user_cxx_flags) $(includes) $(undefines) $(defines) $(cpp_input)"
-                              " /Fo\"$(obj_product)\" /Fp\"$(pch_product)\" /Fd\"$(output_dir)\\vc.pdb\"");
+                              " /Fo\"$(obj_product)\" /Fp\"$(pch_product)\" /FS /Fd\"$(output_dir)\\vc.pdb\"");
       obj_cmd += cflags;
       obj_cmd += cppflags;
       obj_cmd += user_cxx_flags;
@@ -238,7 +238,7 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
    {
       shared_ptr<source_argument_writer> c_source(new source_argument_writer("c_source", e.get_type_registry().get(types::C)));
       cmdline_builder obj_cmd(config_data.compiler_.string() +
-                              " /c /TC /nologo $(cflags) $(user_c_flags) $(includes) $(undefines) $(defines) $(c_source) /Fo\"$(obj_product)\" /Fd\"$(output_dir)\\vc.pdb\"");
+                              " /c /TC /nologo $(cflags) $(user_c_flags) $(includes) $(undefines) $(defines) $(c_source) /Fo\"$(obj_product)\" /FS /Fd\"$(output_dir)\\vc.pdb\"");
       obj_cmd += cflags;
       obj_cmd += user_c_flags;
       obj_cmd += c_source;

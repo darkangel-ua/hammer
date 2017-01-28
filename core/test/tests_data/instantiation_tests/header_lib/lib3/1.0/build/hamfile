@@ -1,1 +1,1 @@
-lib lib3 : lib3.cpp : @<define>USE_LIB3 <version>1.0 ;
+lib lib3 : lib3.cpp : @<variant>debug:<define>USE_LIB3 <version>1.0 ;

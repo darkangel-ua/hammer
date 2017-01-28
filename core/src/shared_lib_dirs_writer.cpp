@@ -28,7 +28,7 @@ void shared_lib_dirs_writer::write_impl(std::ostream& output,
 #else
          output << ':';
 #endif
-      output << i->source_target_->location();
+      output << i->source_target_->location().string();
    }
 }
 

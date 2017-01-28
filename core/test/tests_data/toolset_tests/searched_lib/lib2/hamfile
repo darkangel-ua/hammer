@@ -1,1 +1,0 @@
-prebuilt-lib lib2 : : ../lib2.lib : <search>. ;

@@ -1,1 +1,0 @@
-lib lib1 : lib1.cpp : <link>static @<include>. ;

@@ -1,7 +1,0 @@
-lib lib1 : lib1.cpp ;
-lib lib2 : lib2.cpp ;
-exe etest_without_lib : main.cpp ;
-exe etest_with_lib : main.cpp lib1 ;
-
-copy test_without_lib : etest_without_lib : <destination>./work ; 
-copy test_with_lib : etest_with_lib : <destination>./work ; 

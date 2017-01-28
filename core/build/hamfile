@@ -1,10 +1,6 @@
-project hammer.core : requirements <character-set>multi-byte 
-                                   <toolset>msvc:<define>HAMMER_ENABLE_PRECOMPILED_HEADER
-                                   <library>/boost/ptr_container/<version>1.58.0+1 ;
-
-pch stdafx : ../src/stdafx.cpp ../src/stdafx.h : <toolset>msvc ;
-alias stdafx ;
-explicit stdafx ;
+project hammer.core : requirements 
+                         <library>/boost/ptr_container/<version>1.58.0+1 
+                    ;
 
 obj parser_and_lexer
    : 
@@ -21,23 +17,19 @@ obj parser_and_lexer
     <include>../include
    ;
 
-obj without_pch 
-   :
-    ../src/dos_wildcard.cpp
-    ../src/build/hammer_walker.c
-   :
-    <use>/boost/regex/<version>1.58.0+1/<link>static
-    <use>/boost/filesystem/<version>1.58.0+1/<link>static
-    <use>/libantlr3c/<version>3.1.1+3 
-   ;
+obj hammer_walker 
+    :
+      ../src/build/hammer_walker.c 
+    :
+     <use>/libantlr3c/<version>3.1.1+3
+    ;
 
 lib hammer.core 
    : 
-    stdafx
     parser_and_lexer
-    without_pch
-    [ rglob ../src/*.cpp : stdafx.cpp dos_wildcard.cpp ]
-    [ rglob ../src/*.h : stdafx.h ]
+    hammer_walker
+    [ rglob ../src/*.cpp ]
+    [ rglob ../src/*.h ]
     [ rglob ../include/*.h ]
     /libantlr3c/<version>3.1.1+3
     @/boost/optional/<version>1.58.0+1

@@ -29,6 +29,19 @@ using namespace boost;
 
 namespace hammer{
 
+namespace {
+
+struct msvc_data {
+   location_t setup_script_;
+   location_t compiler_;
+   location_t linker_;
+   location_t librarian_;
+   location_t manifest_tool_;
+   location_t resource_compiler_;
+};
+
+}
+
 struct msvc_toolset::impl_t
 {
    impl_t();
@@ -49,28 +62,34 @@ msvc_toolset::~msvc_toolset()
    delete impl_;
 }
 
-void msvc_toolset::init_impl(engine& e, const std::string& version_id,
+void msvc_toolset::init_impl(engine& e,
+                             const std::string& version_id,
                              const location_t* toolset_home) const
 {
    feature_def& toolset_def = e.feature_registry().get_def("toolset");
    if (!toolset_def.is_legal_value("msvc"))
       toolset_def.extend_legal_values("msvc");
 
+   if (!toolset_home)
+      throw std::runtime_error("[msvc_toolset]: You must specify toolset home directory");
+
    if (!version_id.empty())
-      if (version_id == "8.0")
-         init_8_0(e, toolset_home);
-      else
-         throw std::runtime_error("Unknown version for msvc toolset");
-   else
-      throw std::runtime_error("You must specify version for msvc toolset initialization or use 'all' to autodetect");
+      toolset_def.get_subfeature("version").extend_legal_values(version_id);
+   init(e, version_id, *toolset_home);
 }
 
-void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
+void msvc_toolset::init(engine& e,
+                        const std::string& version_id,
+                        const location_t& toolset_home) const
 {
-   msvc_8_0_data config_data = resolve_8_0_data(toolset_home);
+   msvc_data config_data;
+   config_data.setup_script_ = toolset_home / "bin/vcvars32.bat";
+   config_data.compiler_ = "cl.exe";
+   config_data.librarian_ = "lib.exe";
+   config_data.linker_ = "link.exe";
+   config_data.manifest_tool_ = "mt.exe";
+   config_data.resource_compiler_ = "rc.exe";
 
-   e.feature_registry().get_def("toolset").get_subfeature("version").extend_legal_values("8.0");
-   
    {
       feature_attributes fa = {0};
       fa.propagated = true;
@@ -79,7 +98,10 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
    }
 
    feature_set* generator_condition = e.feature_registry().make_set();
-   generator_condition->join("toolset", "msvc-8.0");
+   if (!version_id.empty())
+      generator_condition->join("toolset", ("msvc-" + version_id).c_str());
+   else
+      generator_condition->join("toolset", "msvc");
 
    cmdline_builder setup_vars("call \"" + config_data.setup_script_.string() + "\" >nul");
    shared_ptr<source_argument_writer> static_lib_sources(new source_argument_writer("static_lib_sources", e.get_type_registry().get(types::STATIC_LIB), true, source_argument_writer::FULL_PATH));
@@ -416,30 +438,20 @@ void msvc_toolset::init_8_0(engine& e, const location_t* toolset_home) const
    }
 }
 
-msvc_toolset::msvc_8_0_data msvc_toolset::resolve_8_0_data(const location_t* toolset_home_) const
-{
-   location_t toolset_home;
-   if (toolset_home_ == NULL)
-      toolset_home = "c:\\Program Files\\Microsoft Visual Studio 8\\VC";
-   else
-      toolset_home = *toolset_home_;
-
-   msvc_8_0_data result;
-   result.setup_script_ = toolset_home / "bin/vcvars32.bat";
-   result.compiler_ = "cl.exe";
-   result.librarian_ = "lib.exe";
-   result.linker_ = "link.exe";
-   result.manifest_tool_ = "mt.exe";
-   result.resource_compiler_ = "rc.exe";
-
-   return result;
-}
-
 void msvc_toolset::autoconfigure(engine& e) const
 {
-   location_t msvc_8_0_home("c:\\Program Files\\Microsoft Visual Studio 8\\VC");
-   if (exists(msvc_8_0_home))
-      init_impl(e, "8.0", &msvc_8_0_home);
+   using namespace std;
+   const vector<pair<string, location_t> > known_versions =
+      {
+         {"11.0", R"(c:\Program Files\Microsoft Visual Studio 11.0\VC)"},
+         {"12.0", R"(c:\Program Files\Microsoft Visual Studio 12.0\VC)"},
+         {"14.0", R"(c:\Program Files\Microsoft Visual Studio 14.0\VC)"},
+      };
+
+   for (const auto& v : known_versions) {
+      if (exists(v.second))
+         init_impl(e, v.first, &v.second);
+   }
 }
 
 }

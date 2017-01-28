@@ -31,8 +31,8 @@ setuped_engine::setuped_engine(bool install_toolsets)
    if (install_toolsets)
    {
       engine_.toolset_manager().add_toolset(std::unique_ptr<hammer::toolset>(new hammer::msvc_toolset()));
-      hammer::location_t empty;
-      engine_.toolset_manager().init_toolset(engine_, "msvc", "8.0", &empty);
+      hammer::location_t fake_location("fake_msvc_location");
+      engine_.toolset_manager().init_toolset(engine_, "msvc", "8.0", &fake_location);
    }
 
    hammer::add_testing_generators(engine_, engine_.generators());

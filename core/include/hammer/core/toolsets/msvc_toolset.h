@@ -8,29 +8,22 @@ namespace hammer
    class msvc_toolset : public toolset
    {
       public:
-         struct msvc_8_0_data
-         {
-            location_t setup_script_;
-            location_t compiler_;
-            location_t linker_;
-            location_t librarian_;
-            location_t manifest_tool_;
-            location_t resource_compiler_;
-         };
-
          msvc_toolset();
          ~msvc_toolset();
-         virtual void autoconfigure(engine& e) const;
+         void autoconfigure(engine& e) const override;
 
       protected:
-         virtual void init_impl(engine& e, const std::string& version_id = std::string(),
-                                const location_t* toolset_home = NULL) const;
-         virtual msvc_8_0_data resolve_8_0_data(const location_t* toolset_home) const;
+         void init_impl(engine& e,
+                        const std::string& version_id = std::string(),
+                        const location_t* toolset_home = NULL) const override;
 
       private:
          struct impl_t;
          impl_t* impl_;
-         void init_8_0(engine& e, const location_t* toolset_home) const;
+
+         void init(engine& e,
+                   const std::string& version_id,
+                   const location_t& toolset_home) const;
    };
 }
 

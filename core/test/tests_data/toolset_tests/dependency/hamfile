@@ -1,2 +1,0 @@
-exe test : main.cpp : <dependency>lib1 ;
-lib lib1 : lib1.cpp ;

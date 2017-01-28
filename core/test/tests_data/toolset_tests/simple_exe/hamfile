@@ -1,4 +1,0 @@
-exe test_debug : main.cpp a.cpp ;
-exe test_includes : main.cpp a.cpp : <include>. <include>../ ;
-exe test_defines : main.cpp a.cpp : <define>FOO <define>BAR ;
-exe test_undefines : main.cpp a.cpp : <undef>FOO <undef>BAR ;

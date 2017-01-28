@@ -1,4 +1,4 @@
-test [ type = EXE; features = <define>USE_LIB1 <define>USE_LIB2 <define>USE_LIB3; number_of_sources = 8; ]
+test [ type = EXE; features = <define>USE_LIB1 <define>USE_LIB2 <define>USE_LIB3 <define>LIB3_DEBUG; number_of_sources = 8; ]
 {
     main.cpp [ type = CPP; ] {}
     lib1 [ type = HEADER_LIB; features = <define>USE_LIB1 !<define>USE_LIB2; ]

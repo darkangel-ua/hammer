@@ -1,1 +1,0 @@
-lib lib3 : lib3.cpp ../lib1/<link>static : <link>static ;

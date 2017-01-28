@@ -664,6 +664,7 @@ void make_package_archive(const fs::path& package_root,
 {
    bp::context ctx;
    ctx.work_directory = package_root.string();
+   ctx.stdout_behavior = bp::inherit_stream();
    bp::child child = bp::launch_shell("tar --exclude \\.git --exclude \\.svn --exclude \\.hammer -c . | bzip2 -c > " + package_filename.string(), ctx);
    bp::status status = child.wait();
    if (status.exit_status() != 0)

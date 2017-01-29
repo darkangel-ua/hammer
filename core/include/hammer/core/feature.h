@@ -17,7 +17,7 @@ namespace hammer
          const feature_def& definition() const { return *static_cast<const feature_def*>(definition_); }
          const subfeature* find_subfeature(const subfeature& v) const;
          const subfeature* find_subfeature(const std::string& v) const;
-         const subfeatures_t subfeatures() const { return subfeatures_; }
+         const subfeatures_t& subfeatures() const { return subfeatures_; }
 
          bool operator == (const feature& rhs) const;
          bool operator < (const feature& rhs) const;

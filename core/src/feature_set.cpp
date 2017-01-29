@@ -368,18 +368,20 @@ static void dump_for_hash(std::ostream& s, const feature& f, bool dump_all)
    std::sort(subfeatures.begin(), subfeatures.end(), &subf_less_by_name);
    bool first = true;
 
+   s << '(';
    for(subfeatures_t::const_iterator i = subfeatures.begin(), last = subfeatures.end(); i != last; ++i)
    {
       if (!first)
       {
-         s << '-';
+         s << ' ';
          first = false;
       }
 
-      s << (**i).name() << ':' << (**i).value();
+      s << '<' << (**i).name() << '>' << (**i).value();
       if (dump_all)
          s << endl;
    }
+   s << ')';
 }
 
 void dump_for_hash(std::ostream& s, const feature_set& fs, bool dump_all)

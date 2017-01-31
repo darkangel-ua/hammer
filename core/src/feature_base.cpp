@@ -4,9 +4,10 @@
 
 namespace hammer{
 
-feature_base::feature_base(const feature_def_base* def, const pstring& value)
-                          : 
-                           definition_(def), value_(value)
+feature_base::feature_base(const feature_def* def,
+                           const pstring& value)
+   : definition_(def),
+     value_(value)
 {
    assert(def && "Definition cannot be NULL");   
 }

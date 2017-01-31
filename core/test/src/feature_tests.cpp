@@ -11,13 +11,16 @@ using namespace hammer;
 
 BOOST_AUTO_TEST_CASE(feature_def_simple_methods)
 {
+   pool p;
+   feature_registry fr(&p);
+
    vector<string> empty_values;
    vector<string> values;
       values.push_back("on");
       values.push_back("of");
 
    feature_attributes base_fa = {0};
-   feature_def d1("name", empty_values, base_fa);
+   feature_def& d1 = fr.add_feature_def("name", empty_values, base_fa);
    BOOST_CHECK_EQUAL(d1.name(), "name");
    BOOST_CHECK_EQUAL(d1.get_default(), "");
    BOOST_CHECK_THROW(d1.set_default("on"), std::exception);
@@ -32,9 +35,11 @@ BOOST_AUTO_TEST_CASE(feature_def_simple_methods)
 
 BOOST_AUTO_TEST_CASE(feature_def_subfeatures)
 {
-   feature_def d("toolset");
-   subfeature_def sd("version");
-   BOOST_REQUIRE_NO_THROW(d.add_subfeature(sd));
-   BOOST_REQUIRE_THROW(d.add_subfeature(sd), std::exception);
+   pool p;
+   feature_registry fr(&p);
+
+   feature_def& d = fr.add_feature_def("toolset");
+   subfeature_def& sd = d.add_subfeature("version");
+   BOOST_REQUIRE_THROW(d.add_subfeature("version"), std::exception);
    BOOST_CHECK(d.find_subfeature(sd.name()) != NULL);
 }

@@ -35,7 +35,7 @@ void on_enter_rule(pANTLR3_PARSER parser, pANTLR3_UINT8 rule_name_)
          {
             ctx.rule_context_.in_feature_feature_rule_ = true;
             typedef hammer_parser_context::new_features_t::iterator iter;
-            iter i = ctx.new_features_.insert(make_pair(feature_name, feature_def(feature_name))).first;
+            iter i = ctx.new_features_.insert({feature_name, {feature_name, false}}).first;
             ctx.rule_context_.new_feature_ = &i->second;
          }
       }
@@ -84,7 +84,7 @@ void on_string_list_element(pANTLR3_PARSER parser, pANTLR3_UINT8 id_)
        ctx.rule_context_.arg_ == 3 &&
        strcmp(id, "dependency") == 0)
    {
-      ctx.rule_context_.new_feature_->attributes().dependency = true;
+      ctx.rule_context_.new_feature_->dependency_ = true;
    }
 }
 
@@ -161,31 +161,31 @@ void leave_rule_invoke(pANTLR3_PARSER parser)
 
 bool is_path_element(pANTLR3_PARSER parser)
 {
-   pANTLR3_COMMON_TOKEN t_1 = parser->tstream->_LT(parser->tstream, -1); // токен до слеша
-   pANTLR3_COMMON_TOKEN t1 = parser->tstream->_LT(parser->tstream, 1); // вот тут находиться проверяемый слеш
-   pANTLR3_COMMON_TOKEN t2 = parser->tstream->_LT(parser->tstream, 2); // токен после слеша
+   pANTLR3_COMMON_TOKEN t_1 = parser->tstream->_LT(parser->tstream, -1);
+   pANTLR3_COMMON_TOKEN t1 = parser->tstream->_LT(parser->tstream, 1);
+   pANTLR3_COMMON_TOKEN t2 = parser->tstream->_LT(parser->tstream, 2);
    return t_1->stop + 1 == t1->start && t1->stop + 1 == t2->start;
 }
 
 bool is_path_slash(pANTLR3_PARSER parser)
 {
-	pANTLR3_COMMON_TOKEN t_1 = parser->tstream->_LT(parser->tstream, -1); // токен до слеша
-	pANTLR3_COMMON_TOKEN t1 = parser->tstream->_LT(parser->tstream, 1); // вот тут находиться проверяемый слеш
-	pANTLR3_COMMON_TOKEN t2 = parser->tstream->_LT(parser->tstream, 2); // токен после слеша
+	pANTLR3_COMMON_TOKEN t_1 = parser->tstream->_LT(parser->tstream, -1);
+	pANTLR3_COMMON_TOKEN t1 = parser->tstream->_LT(parser->tstream, 1);
+	pANTLR3_COMMON_TOKEN t2 = parser->tstream->_LT(parser->tstream, 2);
 	return t_1->stop + 1 == t1->start && t1->stop + 1 == t2->start;
 }
 
 bool is_trailing_slash(pANTLR3_PARSER parser)
 {
-   pANTLR3_COMMON_TOKEN t1 = parser->tstream->_LT(parser->tstream, 1); // вот тут находиться проверяемый слеш
-   pANTLR3_COMMON_TOKEN t2 = parser->tstream->_LT(parser->tstream, 2); // токен после слеша
+   pANTLR3_COMMON_TOKEN t1 = parser->tstream->_LT(parser->tstream, 1);
+   pANTLR3_COMMON_TOKEN t2 = parser->tstream->_LT(parser->tstream, 2);
    return t1->stop + 1 != t2->start;
 }
 
 bool is_head_slash(pANTLR3_PARSER parser)
 {
-   pANTLR3_COMMON_TOKEN t1 = parser->tstream->_LT(parser->tstream, 1); // вот тут находиться проверяемый слеш
-   pANTLR3_COMMON_TOKEN t2 = parser->tstream->_LT(parser->tstream, 2); // токен после слеша
+   pANTLR3_COMMON_TOKEN t1 = parser->tstream->_LT(parser->tstream, 1);
+   pANTLR3_COMMON_TOKEN t2 = parser->tstream->_LT(parser->tstream, 2);
    return t1->stop + 1 == t2->start;
 }
 
@@ -199,7 +199,7 @@ bool is_dependency_feature(pANTLR3_PARSER parser)
    {
       hammer_parser_context::new_features_t::const_iterator i = ctx.new_features_.find(feature_name);
       if (i != ctx.new_features_.end())
-         return i->second.attributes().dependency;
+         return i->second.dependency_;
       else
          return false;
    }

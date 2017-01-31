@@ -37,6 +37,7 @@ gcc_toolset::resolve_install_data(const location_t* toolset_home_, const std::st
    gcc_install_data install_data;
    install_data.version_ = version_id;
    if (version_id.empty() || version_id == "system") {
+      install_data.version_ = "system";
       install_data.compiler_ = toolset_home / "g++" ;
       install_data.linker_ = toolset_home / "g++";
    } else {
@@ -55,15 +56,14 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
                             const location_t* toolset_home) const
 {
    feature_def& toolset_def = e.feature_registry().get_def("toolset");
-   if (!toolset_def.is_legal_value("gcc"))
-      toolset_def.extend_legal_values("gcc");
-
-   feature_set* generator_condition = e.feature_registry().make_set();
-   generator_condition->join("toolset", "gcc");
+   if (!toolset_def.is_legal_value(name()))
+      toolset_def.extend_legal_values(name());
 
    gcc_install_data install_data(resolve_install_data(toolset_home, version_id));
+   toolset_def.get_subfeature("version").extend_legal_values(name(), install_data.version_);
 
-   toolset_def.get_subfeature("version").extend_legal_values(install_data.version_);
+   feature_set* generator_condition = e.feature_registry().make_set();
+   generator_condition->join("toolset", (name() + "-" + version_id).c_str());
 
    shared_ptr<product_argument_writer> obj_product(new product_argument_writer("obj_product", e.get_type_registry().get(types::OBJ)));
    shared_ptr<source_argument_writer> static_lib_sources(new source_argument_writer("static_lib_sources", e.get_type_registry().get(types::STATIC_LIB), true, source_argument_writer::FULL_PATH));
@@ -108,6 +108,8 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
    shared_ptr<free_feature_arg_writer> includes(new free_feature_arg_writer("includes", e.feature_registry().get_def("include"), "-I\"", "\""));
    shared_ptr<free_feature_arg_writer> defines(new free_feature_arg_writer("defines", e.feature_registry().get_def("define"), "-D"));
 
+   const string generator_prefix = name() + "-" + install_data.version_;
+
    // C -> OBJ
    {
       shared_ptr<source_argument_writer> c_input(new source_argument_writer("c_input", e.get_type_registry().get(types::C), /*exact_type=*/false, source_argument_writer::FULL_PATH));
@@ -125,9 +127,9 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
       generator::producable_types_t target;
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::C), 1, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::OBJ)));
-      unique_ptr<generator> g(new generator(e, "gcc.c.compiler", source, target, false, generator_condition));
+      unique_ptr<generator> g(new generator(e, generator_prefix + ".compiler.c", source, target, false, generator_condition));
 
-      std::unique_ptr<generator> g_copy(new generator(e, "gcc.c.compiler", source, target, false, generator_condition));
+      std::unique_ptr<generator> g_copy(new generator(e, generator_prefix + ".compiler.c", source, target, false, generator_condition));
       std::unique_ptr<cmdline_action> obj_action_copy(new cmdline_action(*obj_action));
 
       g->action(std::move(obj_action));
@@ -157,9 +159,9 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
       generator::producable_types_t target;
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::CPP), 1, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::OBJ)));
-      unique_ptr<generator> g(new generator(e, "gcc.cpp.compiler", source, target, false, generator_condition));
+      unique_ptr<generator> g(new generator(e, generator_prefix + ".compiler.cpp", source, target, false, generator_condition));
 
-      std::unique_ptr<generator> g_copy(new generator(e, "gcc.cpp.compiler", source, target, false, generator_condition));
+      std::unique_ptr<generator> g_copy(new generator(e, generator_prefix + ".compiler.cpp", source, target, false, generator_condition));
       std::unique_ptr<cmdline_action> obj_action_copy(new cmdline_action(*obj_action));
 
       g->action(std::move(obj_action));
@@ -194,7 +196,7 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::SEARCHED_SHARED_LIB), 0, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::SHARED_LIB), true));
 
-      unique_ptr<generator> g(new exe_and_shared_lib_generator(e, "gcc.shared_lib.linker", source, target, true, generator_condition));
+      unique_ptr<generator> g(new exe_and_shared_lib_generator(e, generator_prefix + ".linker.shared_lib", source, target, true, generator_condition));
       g->action(std::move(shared_lib_action));
       e.generators().insert(std::move(g));
    }
@@ -232,7 +234,7 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::SEARCHED_SHARED_LIB), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::HEADER_LIB), 0, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::EXE)));
-      unique_ptr<generator> g(new exe_and_shared_lib_generator(e, "gcc.exe.linker", source, target, true, generator_condition));
+      unique_ptr<generator> g(new exe_and_shared_lib_generator(e, generator_prefix + ".linker.exe", source, target, true, generator_condition));
       g->action(std::move(exe_action));
       e.generators().insert(std::move(g));
    }
@@ -259,7 +261,7 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::SEARCHED_STATIC_LIB), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::SEARCHED_SHARED_LIB), 0, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::STATIC_LIB), true));
-      unique_ptr<generator> g(new static_lib_generator(e, "gcc.static_lib.linker", source, target, true, generator_condition));
+      unique_ptr<generator> g(new static_lib_generator(e, generator_prefix + ".linker.static_lib", source, target, true, generator_condition));
       g->action(std::move(static_lib_action));
       e.generators().insert(std::move(g));
    }
@@ -267,8 +269,10 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
 
 void gcc_toolset::autoconfigure(engine& e) const
 {
-   //FIXME: Pure hack
-   init_impl(e, "system", NULL);
+   if (exists(location_t("/usr/bin/gcc"))) {
+      const location_t l("/usr/bin");
+      init_impl(e, "system", &l);
+   }
 }
 
 }

@@ -38,7 +38,7 @@ namespace hammer
             bool operator != (const generated_data& rhs) const { return target_ != rhs.target_; }
          };
 
-         feature_base(const feature_def_base* def, const pstring& value);
+         feature_base(const feature_def* def, const pstring& value);
          const std::string& name() const { return definition_->name(); }
          const pstring& value() const { return value_; }
          feature_attributes attributes() const { return definition_->attributes(); }
@@ -58,7 +58,7 @@ namespace hammer
          generated_data& get_generated_data() { return generated_data_; }
          
       protected:
-         const feature_def_base* definition_;
+         const feature_def* definition_;
          pstring value_;
          path_data path_data_;
          dependency_data dependency_data_;

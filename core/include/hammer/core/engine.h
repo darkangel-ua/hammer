@@ -229,8 +229,9 @@ namespace hammer
          void import_rule(project* p, std::vector<pstring>& name);
          void feature_feature_rule(project* p, std::vector<pstring>& name, std::vector<pstring>* values,
                                    std::vector<pstring>* attributes);
-         void feature_subfeature_rule(project* p, pstring& feature_name, pstring& subfeature_name, std::vector<pstring>* values,
-                                      std::vector<pstring>* attributes);
+         void feature_subfeature_rule(project* p,
+                                      pstring& feature_name,
+                                      pstring& subfeature_name);
          void feature_local_rule(project* p, std::vector<pstring>& name, std::vector<pstring>* values,
                                  std::vector<pstring>* attributes);
          void feature_compose_rule(project* p, feature& f, feature_set& components);

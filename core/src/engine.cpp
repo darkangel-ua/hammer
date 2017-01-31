@@ -70,7 +70,7 @@ engine::engine()
    resolver_.insert("testing.compile-fail", boost::function<sources_decl (project*, const sources_decl&, requirements_decl*, requirements_decl*, requirements_decl*)>(boost::bind(&engine::testing_compile_fail_rule, this, _1, _2, _3, _4, _5)));
    resolver_.insert("import", boost::function<void (project*, vector<pstring>&)>(boost::bind(&engine::import_rule, this, _1, _2)));
    resolver_.insert("feature.feature", boost::function<void (project*, vector<pstring>&, vector<pstring>*, vector<pstring>*)>(boost::bind(&engine::feature_feature_rule, this, _1, _2, _3, _4)));
-   resolver_.insert("feature.subfeature", boost::function<void (project*, pstring&, pstring&, vector<pstring>*, vector<pstring>*)>(boost::bind(&engine::feature_subfeature_rule, this, _1, _2, _3, _4, _5)));
+   resolver_.insert("feature.subfeature", boost::function<void (project*, pstring&, pstring&)>(boost::bind(&engine::feature_subfeature_rule, this, _1, _2, _3)));
    resolver_.insert("feature.local", boost::function<void (project*, vector<pstring>&, vector<pstring>*, vector<pstring>*)>(boost::bind(&engine::feature_local_rule, this, _1, _2, _3, _4)));
    resolver_.insert("feature.compose", boost::function<void (project*, feature&, feature_set&)>(boost::bind(&engine::feature_compose_rule, this, _1, _2, _3)));
    resolver_.insert("variant", boost::function<void (project*, pstring&, pstring*, feature_set&)>(boost::bind(&engine::variant_rule, this, _1, _2, _3, _4)));
@@ -83,19 +83,19 @@ engine::engine()
 
    {
       feature_attributes ft = {0}; ft.free = 1;
-      fr->add_def(feature_def("__searched_lib_name", vector<string>(), ft));
+      fr->add_feature_def("__searched_lib_name", vector<string>(), ft);
    }
 
    {
       // used to mark targets that belong to pch meta target. Needed for distinguishing PCH and OBJ generators
       feature_attributes ft = {0}; ft.free = 1;
-      fr->add_def(feature_def("__pch", vector<string>(), ft));
+      fr->add_feature_def("__pch", vector<string>(), ft);
    }
 
    {
       feature_attributes ft = {0};
       ft.propagated = true;
-      fr->add_def(feature_def("host-os", list_of("windows")("linux"), ft));
+      fr->add_feature_def("host-os", list_of("windows")("linux"), ft);
    }
 
 #if defined(_WIN32)
@@ -877,27 +877,15 @@ void engine::feature_feature_rule(project* p, std::vector<pstring>& name,
          def_values.push_back(i->to_string());
    }
 
-   feature_def def(name[0].to_string(), def_values, resolve_attributes(attributes));
-
-   feature_registry_->add_def(def);
+   feature_registry_->add_feature_def(name[0].to_string(), def_values, resolve_attributes(attributes));
 }
 
 void engine::feature_subfeature_rule(project* p,
                                      pstring& feature_name,
-                                     pstring& subfeature_name,
-                                     std::vector<pstring>* values,
-                                     std::vector<pstring>* attributes)
+                                     pstring& subfeature_name)
 {
-   vector<string> def_values;
-   if (values)
-   {
-      for(vector<pstring>::const_iterator i = values->begin(), last = values->end(); i != last; ++i)
-         def_values.push_back(i->to_string());
-   }
-
-   subfeature_def def(subfeature_name.to_string(), def_values, resolve_attributes(attributes));
-
-   feature_registry_->get_def(feature_name.to_string()).add_subfeature(def);
+   feature_def& def = feature_registry_->get_def(feature_name.to_string());
+   def.add_subfeature(subfeature_name.to_string());
 }
 
 void engine::feature_local_rule(project* p, std::vector<pstring>& name,
@@ -914,9 +902,7 @@ void engine::feature_local_rule(project* p, std::vector<pstring>& name,
          def_values.push_back(i->to_string());
    }
 
-   feature_def def(name[0].to_string(), def_values, resolve_attributes(attributes));
-
-   p->local_feature_registry().add_def(def);
+   p->local_feature_registry().add_feature_def(name[0].to_string(), def_values, resolve_attributes(attributes));
 }
 
 void engine::feature_compose_rule(project* p, feature& f, feature_set& components)

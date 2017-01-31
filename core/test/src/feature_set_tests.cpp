@@ -19,29 +19,25 @@ namespace
          {
             feature_attributes attrs = {0};
             attrs.free = 1;
-            feature_def def("define", vector<string>(), attrs);      
-            fr_.add_def(def);
+            fr_.add_feature_def("define", vector<string>(), attrs);
          }
 
          {
             feature_attributes attrs = {0};
             attrs.free = 1;
-            feature_def def("optimization", list_of<string>("off")("speed")("size"), attrs);
-            fr_.add_def(def);
+            fr_.add_feature_def("optimization", list_of<string>("off")("speed")("size"), attrs);
          }
 
          {
             feature_attributes attrs = {0};
             attrs.free = 1;
-            feature_def def("debug-symbols", list_of<string>("on")("off"), attrs);
-            fr_.add_def(def);
+            fr_.add_feature_def("debug-symbols", list_of<string>("on")("off"), attrs);
          }
 
          {
             feature_attributes attrs = {0};
             attrs.propagated = 1;
-            feature_def def("link", list_of<string>("shared")("static"), attrs);      
-            fr_.add_def(def);
+            fr_.add_feature_def("link", list_of<string>("shared")("static"), attrs);
          }
 
          {
@@ -56,10 +52,9 @@ namespace
             release_components->join("optimization", "on").
                                 join("debug-symbols", "off");
 
-            feature_def def("variant", list_of<string>("debug")("release"), attrs);
+            feature_def& def = fr_.add_feature_def("variant", list_of<string>("debug")("release"), attrs);
             def.compose("debug", debug_components);
             def.compose("release", release_components);
-            fr_.add_def(def);
          }
 
       }

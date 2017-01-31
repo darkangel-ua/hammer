@@ -270,7 +270,10 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
 
 void gcc_toolset::autoconfigure(engine& e) const
 {
-   init_impl(e, "system", NULL);
+   if (exists(location_t("/usr/bin/gcc"))) {
+      const location_t l("/usr/bin");
+      init_impl(e, "system", &l);
+   }
 }
 
 }

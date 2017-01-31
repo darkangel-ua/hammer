@@ -348,7 +348,7 @@ static void dump_value(std::ostream& s, const feature& f)
          s << f.value();
 }
 
-static void dump_for_hash(std::ostream& s, const feature& f, bool dump_all)
+static void dump_for_hash(std::ostream& s, const feature& f)
 {
    s << '<' << f.name() << '>';
    dump_value(s, f);
@@ -377,8 +377,6 @@ static void dump_for_hash(std::ostream& s, const feature& f, bool dump_all)
       }
 
       s << '<' << (**i).name() << '>' << (**i).value();
-      if (dump_all)
-         s << endl;
    }
    s << ')';
 }
@@ -417,7 +415,7 @@ void dump_for_hash(std::ostream& s, const feature_set& fs, bool dump_all)
       else
          first = false;
 
-      dump_for_hash(s, **i, dump_all);
+      dump_for_hash(s, **i);
    }
 }
 

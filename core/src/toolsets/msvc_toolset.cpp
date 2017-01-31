@@ -175,6 +175,8 @@ void msvc_toolset::init(engine& e,
                                                                            "/Fp\"", "\""));
    shared_ptr<output_dir_argument_writer> output_dir(new output_dir_argument_writer("output_dir"));
 
+   const string generator_prefix = name() + "-" + version_id;
+
    // CPP -> OBJ
    {
       cmdline_builder obj_cmd(config_data.compiler_.string() +
@@ -213,7 +215,7 @@ void msvc_toolset::init(engine& e,
       generator::producable_types_t target;
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::CPP), 1, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::OBJ)));
-      unique_ptr<generator> g(new generator(e, "msvc.cpp.compiler", source, target, false, generator_condition));
+      unique_ptr<generator> g(new generator(e, generator_prefix + ".cpp.compiler", source, target, false, generator_condition));
       g->action(std::move(obj_action));
       e.generators().insert(std::move(g));
    }
@@ -250,7 +252,7 @@ void msvc_toolset::init(engine& e,
       feature_set* constraints = e.feature_registry().make_set();
       constraints->join("__pch", "");
       constraints->join(*generator_condition);
-      unique_ptr<generator> g(new pch_generator(e, "msvc.c++-pch.compiler", source, target, true, constraints));
+      unique_ptr<generator> g(new pch_generator(e, generator_prefix + ".c++-pch.compiler", source, target, true, constraints));
       g->action(std::move(obj_action));
       e.generators().insert(std::move(g));
    }
@@ -276,7 +278,7 @@ void msvc_toolset::init(engine& e,
       generator::producable_types_t target;
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::C), 1, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::OBJ)));
-      unique_ptr<generator> g(new generator(e, "msvc.c.compiler", source, target, false, generator_condition));
+      unique_ptr<generator> g(new generator(e, generator_prefix + ".c.compiler", source, target, false, generator_condition));
       g->action(std::move(obj_action));
       e.generators().insert(std::move(g));
    }
@@ -301,7 +303,7 @@ void msvc_toolset::init(engine& e,
       generator::producable_types_t target;
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::RC), 1, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::RES)));
-      unique_ptr<generator> g(new generator(e, "msvc.resource-compiler", source, target, false, generator_condition));
+      unique_ptr<generator> g(new generator(e, generator_prefix + ".resource-compiler", source, target, false, generator_condition));
       g->action(std::move(res_action));
       e.generators().insert(std::move(g));
    }
@@ -347,7 +349,7 @@ void msvc_toolset::init(engine& e,
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::HEADER_LIB), 0, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::EXE)));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::EXE_MANIFEST)));
-      unique_ptr<generator> g(new exe_and_shared_lib_generator(e, "msvc.exe.linker", source, target, true, generator_condition));
+      unique_ptr<generator> g(new exe_and_shared_lib_generator(e, generator_prefix + ".exe.linker", source, target, true, generator_condition));
       g->action(std::move(exe_action));
       e.generators().insert(std::move(g));
    }
@@ -380,7 +382,7 @@ void msvc_toolset::init(engine& e,
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::HEADER_LIB), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::H), 0, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::STATIC_LIB), true));
-      unique_ptr<generator> g(new static_lib_generator(e, "msvc.static_lib.linker", source, target, true, generator_condition));
+      unique_ptr<generator> g(new static_lib_generator(e, generator_prefix + ".static_lib.linker", source, target, true, generator_condition));
       g->action(std::move(static_lib_action));
       e.generators().insert(std::move(g));
    }
@@ -431,7 +433,7 @@ void msvc_toolset::init(engine& e,
       target.push_back(generator::produced_type(e.get_type_registry().get(types::IMPORT_LIB), true));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::DLL_MANIFEST), true));
 
-      unique_ptr<generator> g(new exe_and_shared_lib_generator(e, "msvc.shared_lib.linker", source, target, true, generator_condition));
+      unique_ptr<generator> g(new exe_and_shared_lib_generator(e, generator_prefix + ".shared_lib.linker", source, target, true, generator_condition));
       g->action(std::move(shared_lib_action));
       e.generators().insert(std::move(g));
    }

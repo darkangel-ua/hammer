@@ -17,6 +17,12 @@ namespace hammer
       struct non_buffered_token_stream;
       struct hammer_parser_context
       {
+         struct feature_info
+         {
+            std::string name_;
+            bool dependency_;
+         };
+
          struct rule_context
          {
             rule_context() : arg_(0), 
@@ -27,10 +33,10 @@ namespace hammer
             int arg_;
             call_resolver::const_iterator rule_;
             bool in_feature_feature_rule_;
-            feature_def* new_feature_;
+            feature_info* new_feature_;
          };
          
-         typedef std::map<std::string, feature_def> new_features_t;
+         typedef std::map<std::string, feature_info> new_features_t;
 
          hammer_parser_context() : error_count_(0) {}
          engine* engine_;

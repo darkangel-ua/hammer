@@ -14,6 +14,8 @@
 #include <signal.h>
 
 #include <hammer/core/engine.h>
+#include <hammer/core/feature.h>
+#include <hammer/core/subfeature.h>
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature_registry.h>
 #include <hammer/core/type_registry.h>
@@ -147,7 +149,10 @@ namespace
       return desc;
    }
 
-   static feature* try_resolve_implicit_feature(feature_registry& fr, feature_def& fd, const std::string& value)
+   feature*
+   try_resolve_implicit_feature(feature_registry& fr,
+                                feature_def& fd,
+                                const std::string& value)
    {
       string::size_type p = value.find('-');
       if (p != string::npos)
@@ -156,7 +161,7 @@ namespace
          string subfeature(value.substr(p + 1, value.size() - p - 1));
          if (!fd.is_legal_value(main_feature))
             return NULL;
-         if (!fd.find_subfeature_for_value(subfeature))
+         if (!fd.find_subfeature_for_value(main_feature, subfeature))
             return NULL;
       }
       else
@@ -168,7 +173,9 @@ namespace
       return fr.create_feature(fd.name(), value);
    }
 
-   static feature* try_resolve_implicit_feature(feature_registry& fr, const std::string& value)
+   feature*
+   try_resolve_implicit_feature(feature_registry& fr,
+                                const std::string& value)
    {
       feature* result = try_resolve_implicit_feature(fr, fr.get_def("toolset"), value);
       if (result != NULL)
@@ -821,19 +828,45 @@ int main(int argc, char** argv) {
          if (vm.count("build-request"))
             resolve_arguments(targets, build_request, engine.feature_registry(), vm["build-request"].as<vector<string> >());
 
+         // lets handle 'toolset' feature in build request
 #if defined(_WIN32)
-         if (build_request->find("toolset") == build_request->end())
-            build_request->join("toolset", "msvc");
+         const string default_toolset_name = "msvc";
 #else
-         if (build_request->find("toolset") == build_request->end())
-            build_request->join("toolset", "gcc");
+         const string default_toolset_name = "gcc";
 #endif
+         auto i_toolset_in_build_request = build_request->find("toolset");
+         if (i_toolset_in_build_request == build_request->end()) {
+            const feature_def& toolset_definition = engine.feature_registry().get_def("toolset");
+            if (!toolset_definition.is_legal_value(default_toolset_name))
+               throw std::runtime_error("Default toolset is set to '"+ default_toolset_name + "', but either you didn't configure it in user-config.ham or it has failed to autoconfigure");
+
+            const subfeature_def& toolset_version_def = toolset_definition.get_subfeature("version");
+            if (toolset_version_def.legal_values(default_toolset_name).size() == 1)
+               build_request->join("toolset", (default_toolset_name + "-" + *toolset_version_def.legal_values(default_toolset_name).begin()).c_str());
+            else
+               throw std::runtime_error("Default toolset is set to '"+ default_toolset_name + "', but has multiple version configured. You should request specific version to use.");
+         } else {
+            const feature& used_toolset = **i_toolset_in_build_request;
+            if (!used_toolset.find_subfeature("version")) {
+               const subfeature_def& toolset_version_def = used_toolset.definition().get_subfeature("version");
+               if (toolset_version_def.legal_values(used_toolset.value().to_string()).size() > 1)
+                  throw std::runtime_error("Toolset is set to '"+ used_toolset.value().to_string() + "', but has multiple version configured. You should request specific version to use.");
+               else {
+                  const string toolset = used_toolset.value().to_string();
+                  build_request->erase_all("toolset");
+                  build_request->join("toolset", (toolset + "-" + *toolset_version_def.legal_values(toolset).begin()).c_str());
+               }
+            }
+         }
 
          if (build_request->find("variant") == build_request->end())
             build_request->join("variant", "debug");
 
          if (build_request->find("host-os") == build_request->end())
             build_request->join("host-os", engine.feature_registry().get_def("host-os").get_default().c_str());
+
+         if (opts.debug_level_ > 0)
+            cout << "...Build request: " << dump_for_hash(*build_request) << endl;
 
          if (opts.debug_level_ > 0)
             cout << "...Loading project at '" << fs::current_path() << "'... " << flush;

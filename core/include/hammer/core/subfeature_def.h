@@ -1,18 +1,43 @@
 #if !defined(h_295945d1_c56e_43fa_ad45_659b96d6bd21)
 #define h_295945d1_c56e_43fa_ad45_659b96d6bd21
 
-#include "feature_def_base.h"
+#include <unordered_map>
+#include <string>
+#include <set>
 
-namespace hammer
+namespace hammer{
+
+class feature_def;
+
+class subfeature_def
 {
-   // FIXME: inheritance here I think is a bad idea
-   class subfeature_def : public feature_def_base
-   {
-      public:
-         explicit subfeature_def(const std::string& name, 
-                                 const std::vector<std::string>& legal_values = std::vector<std::string>(),
-                                 feature_attributes fdtype = feature_attributes());
-   };
+      friend class feature_def;
+   public:
+      typedef std::set<std::string> legal_values_t;
+
+      subfeature_def(const subfeature_def&) = delete;
+      subfeature_def(subfeature_def&&) = delete;
+      subfeature_def& operator = (const subfeature_def&) = delete;
+
+      const std::string& name() const { return name_; }
+      const legal_values_t& legal_values(const std::string& feature_value) const;
+      bool is_legal_value(const std::string& feature_value,
+                          const std::string& value) const;
+      void extend_legal_values(const std::string& feature_value,
+                               const std::string& new_legal_value);
+
+   private:
+      typedef std::unordered_map<std::string/*feature value*/, legal_values_t> all_legal_values;
+
+      // used only by feature_def
+      subfeature_def(const feature_def& owner,
+                     const std::string& name);
+
+      const feature_def* owner_;
+      const std::string name_;
+      all_legal_values all_legal_values_;
+};
+
 }
 
-#endif //h_295945d1_c56e_43fa_ad45_659b96d6bd21
+#endif

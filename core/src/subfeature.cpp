@@ -1,12 +1,25 @@
 #include "stdafx.h"
 #include <hammer/core/subfeature.h>
+#include <hammer/core/subfeature_def.h>
 
 namespace hammer{
 
-subfeature::subfeature(const subfeature_def* def, const pstring& value)
-                      : feature_base(def, value)
+subfeature::subfeature(const subfeature_def& def,
+                       const pstring& value)
+   : definition_(&def),
+     value_(value)
 {
 
+}
+
+subfeature::~subfeature()
+{
+
+}
+
+const std::string& subfeature::name() const
+{
+   return definition_->name();
 }
 
 }

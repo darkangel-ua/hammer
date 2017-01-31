@@ -37,6 +37,7 @@ gcc_toolset::resolve_install_data(const location_t* toolset_home_, const std::st
    gcc_install_data install_data;
    install_data.version_ = version_id;
    if (version_id.empty() || version_id == "system") {
+      install_data.version_ = "system";
       install_data.compiler_ = toolset_home / "g++" ;
       install_data.linker_ = toolset_home / "g++";
    } else {
@@ -55,15 +56,15 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
                             const location_t* toolset_home) const
 {
    feature_def& toolset_def = e.feature_registry().get_def("toolset");
-   if (!toolset_def.is_legal_value("gcc"))
-      toolset_def.extend_legal_values("gcc");
+   if (!toolset_def.is_legal_value(name()))
+      toolset_def.extend_legal_values(name());
 
    feature_set* generator_condition = e.feature_registry().make_set();
-   generator_condition->join("toolset", "gcc");
+   generator_condition->join("toolset", name().c_str());
 
    gcc_install_data install_data(resolve_install_data(toolset_home, version_id));
 
-   toolset_def.get_subfeature("version").extend_legal_values(install_data.version_);
+   toolset_def.get_subfeature("version").extend_legal_values(name(), install_data.version_);
 
    shared_ptr<product_argument_writer> obj_product(new product_argument_writer("obj_product", e.get_type_registry().get(types::OBJ)));
    shared_ptr<source_argument_writer> static_lib_sources(new source_argument_writer("static_lib_sources", e.get_type_registry().get(types::STATIC_LIB), true, source_argument_writer::FULL_PATH));
@@ -267,7 +268,6 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
 
 void gcc_toolset::autoconfigure(engine& e) const
 {
-   //FIXME: Pure hack
    init_impl(e, "system", NULL);
 }
 

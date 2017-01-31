@@ -18,10 +18,9 @@ struct feature_registry_test
 
 BOOST_FIXTURE_TEST_CASE(create_feature, feature_registry_test)
 {
-   feature_def toolset_def("toolset");
+   feature_def& toolset_def = registry_.add_feature_def("toolset");
    toolset_def.extend_legal_values("msvc");
-   BOOST_REQUIRE_NO_THROW(registry_.add_def(toolset_def));
-   BOOST_REQUIRE_THROW(registry_.add_def(toolset_def), std::exception);
+   BOOST_REQUIRE_THROW(registry_.add_feature_def("toolset");, std::exception);
    BOOST_REQUIRE_THROW(registry_.create_feature("", ""), std::exception);
 };
 
@@ -29,12 +28,10 @@ struct complex_feature_registry_test : public feature_registry_test
 {
    complex_feature_registry_test()
    {
-      feature_def toolset_def("toolset");
+      feature_def& toolset_def = registry_.add_feature_def("toolset");
       toolset_def.extend_legal_values("msvc");
-      subfeature_def version_def("version");
-      version_def.extend_legal_values("8.0");
-      toolset_def.add_subfeature(version_def);
-      registry_.add_def(toolset_def);
+      subfeature_def& version_def = toolset_def.add_subfeature("version");
+      version_def.extend_legal_values("msvc", "8.0");
    }
 };
 

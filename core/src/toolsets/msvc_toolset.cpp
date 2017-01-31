@@ -67,14 +67,14 @@ void msvc_toolset::init_impl(engine& e,
                              const location_t* toolset_home) const
 {
    feature_def& toolset_def = e.feature_registry().get_def("toolset");
-   if (!toolset_def.is_legal_value("msvc"))
-      toolset_def.extend_legal_values("msvc");
+   if (!toolset_def.is_legal_value(name()))
+      toolset_def.extend_legal_values(name());
 
    if (!toolset_home)
       throw std::runtime_error("[msvc_toolset]: You must specify toolset home directory");
 
    if (!version_id.empty())
-      toolset_def.get_subfeature("version").extend_legal_values(version_id);
+      toolset_def.get_subfeature("version").extend_legal_values(name(), version_id);
    init(e, version_id, *toolset_home);
 }
 
@@ -93,15 +93,14 @@ void msvc_toolset::init(engine& e,
    {
       feature_attributes fa = {0};
       fa.propagated = true;
-      feature_def debug_store("debug-store", list_of("database")("object"), fa);
-      e.feature_registry().add_def(debug_store);
+      e.feature_registry().add_feature_def("debug-store", list_of("database")("object"), fa);
    }
 
    feature_set* generator_condition = e.feature_registry().make_set();
    if (!version_id.empty())
-      generator_condition->join("toolset", ("msvc-" + version_id).c_str());
+      generator_condition->join("toolset", (name() + '-' + version_id).c_str());
    else
-      generator_condition->join("toolset", "msvc");
+      generator_condition->join("toolset", name().c_str());
 
    cmdline_builder setup_vars("call \"" + config_data.setup_script_.string() + "\" >nul");
    shared_ptr<source_argument_writer> static_lib_sources(new source_argument_writer("static_lib_sources", e.get_type_registry().get(types::STATIC_LIB), true, source_argument_writer::FULL_PATH));

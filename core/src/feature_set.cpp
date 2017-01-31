@@ -359,8 +359,7 @@ static void dump_for_hash(std::ostream& s, const feature& f, bool dump_all)
    typedef vector<const subfeature*> subfeatures_t;
    subfeatures_t subfeatures;
    for(feature::subfeatures_t::const_iterator i = f.subfeatures().begin(), last = f.subfeatures().end(); i != last; ++i)
-      if (dump_all || !(**i).attributes().incidental)
-         subfeatures.push_back(*i);
+      subfeatures.push_back(*i);
 
    if (subfeatures.empty())
       return;

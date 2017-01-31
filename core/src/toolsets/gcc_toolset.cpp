@@ -128,9 +128,9 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
       generator::producable_types_t target;
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::C), 1, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::OBJ)));
-      unique_ptr<generator> g(new generator(e, generator_prefix + ".c.compiler", source, target, false, generator_condition));
+      unique_ptr<generator> g(new generator(e, generator_prefix + ".compiler.c", source, target, false, generator_condition));
 
-      std::unique_ptr<generator> g_copy(new generator(e, generator_prefix + ".c.compiler", source, target, false, generator_condition));
+      std::unique_ptr<generator> g_copy(new generator(e, generator_prefix + ".compiler.c", source, target, false, generator_condition));
       std::unique_ptr<cmdline_action> obj_action_copy(new cmdline_action(*obj_action));
 
       g->action(std::move(obj_action));
@@ -160,9 +160,9 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
       generator::producable_types_t target;
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::CPP), 1, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::OBJ)));
-      unique_ptr<generator> g(new generator(e, generator_prefix + ".cpp.compiler", source, target, false, generator_condition));
+      unique_ptr<generator> g(new generator(e, generator_prefix + ".compiler.cpp", source, target, false, generator_condition));
 
-      std::unique_ptr<generator> g_copy(new generator(e, generator_prefix + ".cpp.compiler", source, target, false, generator_condition));
+      std::unique_ptr<generator> g_copy(new generator(e, generator_prefix + ".compiler.cpp", source, target, false, generator_condition));
       std::unique_ptr<cmdline_action> obj_action_copy(new cmdline_action(*obj_action));
 
       g->action(std::move(obj_action));
@@ -197,7 +197,7 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::SEARCHED_SHARED_LIB), 0, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::SHARED_LIB), true));
 
-      unique_ptr<generator> g(new exe_and_shared_lib_generator(e, generator_prefix + ".shared_lib.linker", source, target, true, generator_condition));
+      unique_ptr<generator> g(new exe_and_shared_lib_generator(e, generator_prefix + ".linker.shared_lib", source, target, true, generator_condition));
       g->action(std::move(shared_lib_action));
       e.generators().insert(std::move(g));
    }
@@ -235,7 +235,7 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::SEARCHED_SHARED_LIB), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::HEADER_LIB), 0, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::EXE)));
-      unique_ptr<generator> g(new exe_and_shared_lib_generator(e, generator_prefix + ".exe.linker", source, target, true, generator_condition));
+      unique_ptr<generator> g(new exe_and_shared_lib_generator(e, generator_prefix + ".linker.exe", source, target, true, generator_condition));
       g->action(std::move(exe_action));
       e.generators().insert(std::move(g));
    }
@@ -262,7 +262,7 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::SEARCHED_STATIC_LIB), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::SEARCHED_SHARED_LIB), 0, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::STATIC_LIB), true));
-      unique_ptr<generator> g(new static_lib_generator(e, generator_prefix + ".static_lib.linker", source, target, true, generator_condition));
+      unique_ptr<generator> g(new static_lib_generator(e, generator_prefix + ".linker.static_lib", source, target, true, generator_condition));
       g->action(std::move(static_lib_action));
       e.generators().insert(std::move(g));
    }

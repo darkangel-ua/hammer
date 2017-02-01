@@ -49,7 +49,21 @@ bool feature::operator == (const feature& rhs) const
       return value() == rhs.value() &&
              get_generated_data().target_ == rhs.get_generated_data().target_;
 
-   return value() == rhs.value();
+   if (value() != rhs.value())
+      return false;
+
+   if (subfeatures().size() != rhs.subfeatures().size())
+      return false;
+
+   // std::equal
+   auto s_first = subfeatures().begin();
+   auto s_last = subfeatures().end();
+   auto rhs_i = rhs.subfeatures().begin();
+   for (; s_first != s_last; ++s_first, ++rhs_i)
+      if (**s_first != **rhs_i)
+         return false;
+
+   return true;
 }
 
 bool feature::operator < (const feature& rhs) const

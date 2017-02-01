@@ -3,6 +3,7 @@
 #include <hammer/core/feature.h>
 #include <hammer/core/feature_def.h>
 #include <hammer/core/subfeature_def.h>
+#include <hammer/core/subfeature.h>
 #include <hammer/core/feature_registry.h>
 #include <hammer/core/pool.h>
 
@@ -38,8 +39,35 @@ BOOST_AUTO_TEST_CASE(feature_def_subfeatures)
    pool p;
    feature_registry fr(&p);
 
-   feature_def& d = fr.add_feature_def("toolset");
-   subfeature_def& sd = d.add_subfeature("version");
-   BOOST_REQUIRE_THROW(d.add_subfeature("version"), std::exception);
-   BOOST_CHECK(d.find_subfeature(sd.name()) != NULL);
+   feature_def& toolset_def = fr.add_feature_def("toolset");
+   subfeature_def& toolset_version_def = toolset_def.add_subfeature("version");
+   BOOST_REQUIRE_THROW(toolset_def.add_subfeature("version"), std::exception);
+   BOOST_CHECK(toolset_def.find_subfeature(toolset_version_def.name()) != NULL);
+}
+
+BOOST_AUTO_TEST_CASE(feature_compare_with_subfeatures)
+{
+   pool p;
+   feature_registry fr(&p);
+
+   feature_def& toolset_def = fr.add_feature_def("toolset");
+   subfeature_def& toolset_version_def = toolset_def.add_subfeature("version");
+
+   toolset_def.extend_legal_values("msvc");
+   toolset_version_def.extend_legal_values("msvc", "11.0");
+   toolset_version_def.extend_legal_values("msvc", "12.0");
+
+   const feature& toolset_msvc = *fr.create_feature("toolset", "msvc");
+
+   const feature& toolset_msvc_11 = *fr.create_feature("toolset", "msvc-11.0");
+   BOOST_REQUIRE_EQUAL(toolset_msvc_11.subfeatures().size(), 1);
+   BOOST_REQUIRE_EQUAL(toolset_msvc_11.subfeatures().front()->value(), "11.0");
+
+   const feature& toolset_msvc_12 = *fr.create_feature("toolset", "msvc-12.0");
+   BOOST_REQUIRE_EQUAL(toolset_msvc_12.subfeatures().size(), 1);
+   BOOST_REQUIRE_EQUAL(toolset_msvc_12.subfeatures().front()->value(), "12.0");
+
+   BOOST_CHECK(toolset_msvc != toolset_msvc_12);
+   BOOST_CHECK(toolset_msvc_11 != toolset_msvc_12);
+   BOOST_CHECK(toolset_msvc_11 == toolset_msvc_11);
 }

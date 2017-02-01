@@ -20,6 +20,7 @@ namespace hammer
          const subfeatures_t& subfeatures() const { return subfeatures_; }
 
          bool operator == (const feature& rhs) const;
+         bool operator != (const feature& rhs) const { return !(*this == rhs); }
          bool operator < (const feature& rhs) const;
 
       private:

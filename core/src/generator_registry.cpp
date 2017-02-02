@@ -5,6 +5,8 @@
 #include <hammer/core/target_type.h>
 #include <boost/format.hpp>
 #include <hammer/core/feature_set.h>
+#include <hammer/core/feature.h>
+#include <hammer/core/subfeature.h>
 
 using namespace std;
 using namespace boost;
@@ -18,14 +20,45 @@ void generator_registry::insert(std::unique_ptr<generator> g)
       throw std::runtime_error("Generator '" + g_name + "' already registered.");
 }
 
-static int compute_rank(const feature_set& build_properties, const feature_set& constraints)
+static
+int compute_rank(const feature& from_build_request,
+                 const feature& from_constraints)
+{
+   if (from_build_request.value() != from_constraints.value())
+      return -1;
+
+   int rank = 100;
+
+   auto br_first = from_build_request.subfeatures().begin();
+   auto br_last = from_build_request.subfeatures().end();
+
+   for (; br_first != br_last; ++br_first) {
+      const subfeature* cs = from_constraints.find_subfeature((**br_first).name());
+      if (!cs || cs->value() != (**br_first).value())
+         return -1;
+
+      rank += 1;
+   }
+
+   return rank;
+}
+
+static
+int compute_rank(const feature_set& build_properties,
+                 const feature_set& constraints)
 {
    int rank = 0;
-   for(feature_set::const_iterator i = constraints.begin(), last = constraints.end(); i != last; ++i)
-      if (build_properties.find(**i) != build_properties.end())
-         ++rank;
-      else
+   for(feature_set::const_iterator i = constraints.begin(), last = constraints.end(); i != last; ++i) {
+      auto i_in_build = build_properties.find((**i).name());
+      if (i_in_build != build_properties.end()) {
+         const int f_runk = compute_rank(**i_in_build, **i);
+         if (f_runk == -1)
+            return -1;
+
+         rank += f_runk;
+      } else
          return -1;
+   }
 
    return rank;
 }

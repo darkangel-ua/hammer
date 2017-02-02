@@ -18,6 +18,9 @@ class subfeature
       const std::string& name() const;
       const pstring& value() const { return value_; }
 
+      // FIXME: wrong results if we compare subfeatures from different feature_registries
+      bool operator == (const subfeature& rhs) const;
+      bool operator != (const subfeature& rhs) const { return !(*this == rhs); }
 
    private:
       const subfeature_def* definition_;

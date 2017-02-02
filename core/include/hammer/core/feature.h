@@ -15,6 +15,7 @@ namespace hammer
          typedef std::vector<const subfeature*> subfeatures_t;
 
          const feature_def& definition() const { return *static_cast<const feature_def*>(definition_); }
+         // FIXME: will not work when rhs and lhs from different feature_registries
          const subfeature* find_subfeature(const subfeature& v) const;
          const subfeature* find_subfeature(const std::string& v) const;
          const subfeatures_t& subfeatures() const { return subfeatures_; }

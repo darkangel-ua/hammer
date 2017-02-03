@@ -250,7 +250,8 @@ namespace
    }
 
    vector<basic_target*>
-   instantiate_targets(const vector<string>& targets, const hammer::project& project,
+   instantiate_targets(const vector<string>& targets,
+                       const hammer::project& project,
                        const feature_set& build_request)
    {
       typedef hammer::project::selected_targets_t selected_targets_t;
@@ -283,10 +284,9 @@ namespace
             if (project_has_multiple_targets(project, *i))
             {
                hammer::project::selected_target target = project.select_best_alternative(name, *build_request_with_defs);
-               target.target_->instantiate(0, build_request, &result, usage_requirements);
-            }
-            else
-               project.find_target(name)->instantiate(0, build_request, &result, usage_requirements);
+               target.target_->instantiate(nullptr, build_request, &result, usage_requirements);
+            } else if (const basic_meta_target* bt = project.find_target(name))
+               bt->instantiate(nullptr, build_request, &result, usage_requirements);
          }
       }
 

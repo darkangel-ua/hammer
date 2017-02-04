@@ -162,6 +162,22 @@ feature_set::const_iterator feature_set::find(const feature& f) const
    return end();
 }
 
+feature_set::const_iterator
+feature_set::contains(const feature& f) const
+{
+   for(const_iterator i = find(f.name()), last = end(); i != last;) {
+      if ((**i).contains(f))
+         return i;
+
+      if (f.attributes().free)
+         i = find(++i, f.name());
+      else
+         break;
+   }
+
+   return end();
+}
+
 void set_path_data(feature_set* f, const basic_meta_target* t)
 {
    typedef feature_set::iterator iter;

@@ -71,3 +71,26 @@ BOOST_AUTO_TEST_CASE(feature_compare_with_subfeatures)
    BOOST_CHECK(toolset_msvc_11 != toolset_msvc_12);
    BOOST_CHECK(toolset_msvc_11 == toolset_msvc_11);
 }
+
+BOOST_AUTO_TEST_CASE(feature_contains)
+{
+   pool p;
+   feature_registry fr(&p);
+
+   feature_def& toolset_def = fr.add_feature_def("toolset", { "gcc" } );
+   subfeature_def& toolset_version_def = toolset_def.add_subfeature("version");
+   toolset_version_def.extend_legal_values("gcc", "6");
+   toolset_version_def.extend_legal_values("gcc", "7");
+
+   const feature& gcc = *fr.create_feature("toolset", "gcc");
+   const feature& gcc_6 = *fr.create_feature("toolset", "gcc-6");
+   const feature& gcc_7 = *fr.create_feature("toolset", "gcc-7");
+
+   BOOST_CHECK(gcc.contains(gcc));
+   BOOST_CHECK(gcc_6.contains(gcc));
+   BOOST_CHECK(gcc_7.contains(gcc));
+   BOOST_CHECK(gcc_6.contains(gcc_6));
+
+   BOOST_CHECK(!gcc.contains(gcc_6));
+   BOOST_CHECK(!gcc_6.contains(gcc_7));
+}

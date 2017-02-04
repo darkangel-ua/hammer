@@ -31,7 +31,7 @@ feature::feature(const feature_def* def,
 
 }
 
-bool feature::operator == (const feature& rhs) const
+bool feature::equal_without_subfeatures(const feature& rhs) const
 {
    if (name() != rhs.name())
       return false;
@@ -39,7 +39,7 @@ bool feature::operator == (const feature& rhs) const
    // if target_path is global target doesn't matter
    if (attributes().dependency)
       return get_dependency_data().source_ == rhs.get_dependency_data().source_ &&
-             (get_dependency_data().source_.target_path_is_global() || 
+             (get_dependency_data().source_.target_path_is_global() ||
               get_path_data().target_ == rhs.get_path_data().target_);
 
    if (attributes().path)
@@ -52,6 +52,14 @@ bool feature::operator == (const feature& rhs) const
    if (value() != rhs.value())
       return false;
 
+   return true;
+}
+
+bool feature::operator == (const feature& rhs) const
+{
+   if (!equal_without_subfeatures(rhs))
+      return false;
+
    if (subfeatures().size() != rhs.subfeatures().size())
       return false;
 
@@ -62,6 +70,19 @@ bool feature::operator == (const feature& rhs) const
    for (; s_first != s_last; ++s_first, ++rhs_i)
       if (**s_first != **rhs_i)
          return false;
+
+   return true;
+}
+
+bool feature::contains(const feature& f) const
+{
+   if (!equal_without_subfeatures(f))
+      return false;
+
+   for (const subfeature* sf : f.subfeatures()) {
+      if (!find_subfeature(*sf))
+         return false;
+   }
 
    return true;
 }

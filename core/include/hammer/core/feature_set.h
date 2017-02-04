@@ -30,6 +30,9 @@ namespace hammer
          const_iterator find(const char* name) const; // find first occurrence 
          const_iterator find(const std::string& name) const { return find(name.c_str()); } // find first occurrence 
          const_iterator find(const feature& f) const;
+         // differs from find in terms of equality operator. It uses feature::contains(), so
+         // gcc and gcc-6 will match gcc-6, while find will return only gcc-6
+         const_iterator contains(const feature& f) const;
          iterator find(const std::string& name) { return find(name.c_str()); }
          iterator find(const char* name); // find first occurrence 
          const_iterator find(const_iterator from, const char* name) const; // find next occurrence 

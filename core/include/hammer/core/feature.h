@@ -20,7 +20,12 @@ namespace hammer
          const subfeature* find_subfeature(const std::string& v) const;
          const subfeatures_t& subfeatures() const { return subfeatures_; }
 
+         // <toolset>gcc will be equal only to <toolset>gcc - full match, including subfeatures
          bool operator == (const feature& rhs) const;
+
+         // if this == <toolset>gcc-6 then it will contain f == <toolset>gcc AND f == <toolset>gcc-6, partial match
+         bool contains(const feature& f) const;
+
          bool operator != (const feature& rhs) const { return !(*this == rhs); }
          bool operator < (const feature& rhs) const;
 
@@ -29,6 +34,8 @@ namespace hammer
 
          feature(const feature_def* def, const pstring& value);
          feature(const feature_def* def, const pstring& value, const subfeatures_t& subfeatures);
+
+         bool equal_without_subfeatures(const feature& rhs) const;
    };
 }
 

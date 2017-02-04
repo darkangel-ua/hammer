@@ -65,8 +65,6 @@ void requirements_decl::add(std::auto_ptr<requirement_base> r)
    impl_->requirements_.push_back(r);
 }
 
-// FIXME: это великий хак. Необходимо срочно переделать работу класса feature 
-// на COW вариант ибо невозможно нормально работать
 void requirements_decl::add(const feature& f)
 {
    std::auto_ptr<requirement_base> r(new just_feature_requirement(const_cast<feature*>(&f)));
@@ -94,8 +92,8 @@ void linear_and_condition::eval(const feature_set& build_request,
    bool satisfy = true;
    for(features_t::const_iterator i = features_.begin(), last = features_.end(); i != last; ++i)
    {
-      if (build_request.find(**i) != build_request.end() ||
-          result->find(**i) != result->end())
+      if (build_request.contains(**i) != build_request.end() ||
+          result->contains(**i) != result->end())
       {
          continue;
       }
@@ -112,7 +110,7 @@ void linear_and_condition::eval(const feature_set& build_request,
    if (satisfy)
    {
       result->join(result_);
-      
+
       if (is_public() && public_result != NULL)
          public_result->join(result_);
    }

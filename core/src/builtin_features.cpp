@@ -60,7 +60,7 @@ feature.feature warnings-as-errors :
   on         # fail the compilation if there are warnings
 : incidental propagated ;
 feature.feature def-file : : free dependency ;
-feature.feature address-model : 64 32 : propagated optional ;
+feature.feature address-model : 64 32 : propagated ;
 feature.feature architecture :
   # x86 and x86-64
   x86

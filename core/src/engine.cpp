@@ -1234,6 +1234,9 @@ void engine::setup_warehouse_rule(project* p,
                                   const pstring& url,
                                   const pstring* storage_dir_)
 {
+   if (warehouse_)
+      throw std::runtime_error("You can setup only one warehouse to use");
+
    string storage_dir;
    if (storage_dir_ && !storage_dir_->empty()) {
       fs::path sd(storage_dir_->to_string());

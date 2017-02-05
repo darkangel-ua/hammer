@@ -49,6 +49,7 @@
 
 #include "user_config_location.h"
 #include "dump_targets_to_update.h"
+#include "version.h"
 
 using namespace std;
 using namespace hammer;
@@ -106,6 +107,7 @@ namespace
       std::string path_to_packages_;
       bool update_all_warehouse_packages_ = false;
       bool release_package_ = false;
+      bool version_ = false;
    };
 
    po::positional_options_description build_request_options;
@@ -136,6 +138,7 @@ namespace
          ("add-to-packages", "add current project into packages database")
          ("path-to-packages", po::value<std::string>(&opts.path_to_packages_), "path to packages database")
          ("release-package", po::bool_switch(&opts.release_package_), "add (release) package current to configured warehouse")
+         ("version", po::bool_switch(&opts.version_), "print version information")
          ;
 
       return desc;
@@ -727,6 +730,13 @@ int main(int argc, char** argv) {
 
       if (vm.count("help")) {
          cout << "Usage: hammer.exe <options> <targets> <features>\n" << options_for_help();
+         return 0;
+      }
+
+      if (opts.version_) {
+         print_version(cout);
+         cout << endl << endl;
+
          return 0;
       }
 

@@ -157,9 +157,11 @@ void download_file(const fs::path& working_dir,
    bp::context ctx;
    ctx.work_directory = working_dir.string();
 
-   string cmd = "wget -c '" + url + "'";
-   if (!to_file.empty())
-      cmd += " -O " + to_file;
+   string cmd;
+   if (to_file.empty())
+       cmd = "curl -L -O " + url + "";
+   else
+       cmd = "curl -L -o " + to_file + " " + url;
 
    bp::child child = bp::launch_shell(cmd, ctx);
    bp::status status = child.wait();

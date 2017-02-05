@@ -90,7 +90,7 @@ void msvc_toolset::init(engine& e,
    config_data.manifest_tool_ = "mt.exe";
    config_data.resource_compiler_ = "rc.exe";
 
-   {
+   if (!e.feature_registry().find_def("debug-store")) {
       feature_attributes fa = {0};
       fa.propagated = true;
       e.feature_registry().add_feature_def("debug-store", list_of("database")("object"), fa);

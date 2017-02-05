@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
+#include <boost/test/debug.hpp>
 #include "enviroment.h"
 
 boost::filesystem::path test_data_path;
@@ -27,7 +28,8 @@ init_unit_test_suite( int argc, char* argv[] )
    if (argc < 2)
       throw std::runtime_error("Need test data directory path");
        
-   
+   boost::debug::detect_memory_leaks(false);
+
    test_data_path = fs::path(argv[1]); 
    if (!test_data_path.has_root_path()) {
       test_data_path = fs::current_path() / test_data_path;

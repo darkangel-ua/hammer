@@ -262,7 +262,9 @@ generator_registry::construct(const main_target* mt) const
    {
       // FIXME: error messages
       if (has_choosed_generator && i->all_consumed_)
-         throw runtime_error("Found more than one transformations from sources to target.");
+         throw runtime_error("Found more than one transformations from sources to target.\n"
+                             "First  was '" + choosed_generator->generator_->name() + "', constraints: " + dump_for_hash(*choosed_generator->generator_->constraints(), true) + "\n"
+                             "Second was '" + i->generator_->name() + "', constraints: " + dump_for_hash(*i->generator_->constraints(), true));
 
       if (i->all_consumed_)
       {

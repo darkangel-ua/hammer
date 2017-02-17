@@ -3,5 +3,6 @@ lib shared_lib
       shared_lib.cpp 
    : # requirements
      @<include>./    # @means 'public' requirement. It will appear in usage-requirements aswell 
-     <link>shared
+      <define>SHARED_LIB_EXPORTS
+      <link>shared
    ;

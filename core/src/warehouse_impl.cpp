@@ -155,6 +155,8 @@ void download_file(const fs::path& working_dir,
    }
 
    bp::context ctx;
+//   ctx.stderr_behavior = bp::inherit_stream();
+//   ctx.stdout_behavior = bp::inherit_stream();
    ctx.work_directory = working_dir.string();
 
    string cmd;

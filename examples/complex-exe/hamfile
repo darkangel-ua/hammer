@@ -1,0 +1,6 @@
+exe complex 
+   : #sources 
+    main.cpp 
+    /shared-lib    # global reference declared in hamroot
+    ../static-lib  # just path to library
+   ;

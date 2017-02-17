@@ -1,0 +1,2 @@
+use-project /static-lib : ./static-lib ;
+use-project /shared-lib : ./shared-lib ; 

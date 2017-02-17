@@ -1,0 +1,6 @@
+# will not work if you didn't setup warehouse !
+exe warehouse 
+   : #sources 
+    main.cpp
+    /boost/date_time # this one should be from warehouse
+   ;

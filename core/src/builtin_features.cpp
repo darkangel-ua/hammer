@@ -23,8 +23,6 @@ feature.feature cflags : : free ;
 feature.feature asmflags : : free ;
 feature.feature linkflags : : free ;
 feature.feature archiveflags : : free ;
-feature.feature scm  : : free ;
-feature.feature scm.url : : free path ;
 feature.feature version : : no-defaults no-checks ;
 feature.feature library : : free dependency incidental ;
 feature.feature source : : free dependency incidental ;

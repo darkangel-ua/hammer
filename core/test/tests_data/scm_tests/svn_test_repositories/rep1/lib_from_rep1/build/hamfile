@@ -1,1 +1,0 @@
-lib lib_from_rep1 : lib.cpp : : :<define>LIB_FROM_REP1 ;

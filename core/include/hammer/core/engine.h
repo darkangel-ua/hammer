@@ -19,8 +19,6 @@ namespace hammer
    class generator_registry;
    class feature;
    class project_requirements_decl;
-   class scm_manager;
-   class scm_client;
    class toolset_manager;
    class scanner_manager;
    class output_location_strategy;
@@ -106,30 +104,11 @@ namespace hammer
          };
          typedef std::vector<resolved_project_symlink_t> resolved_project_symlinks_t;
 
-         struct repository_data
-         {
-            repository_data(const project* defined_in_project, 
-                            const location_t& location,
-                            const feature_set* properties)
-                           :
-                            defined_in_project_(defined_in_project),
-                            location_(location),
-                            properties_(properties),
-                            materialized_(false)
-            {}
-
-            const project* defined_in_project_;
-            location_t location_;
-            const feature_set* properties_;
-            bool materialized_;
-         };
-
          typedef std::map<const project*, 
                           boost::unordered_map<location_t /* alias */, 
                                                std::string /* map to */,
                                                boost::hash<location_t>,
                                                location_equal_to> > use_project_data_t;
-         typedef std::deque<repository_data> repositories_t;
 
          projects_t projects_;
          global_project_links_t global_project_links_;
@@ -140,20 +119,16 @@ namespace hammer
          hammer::feature_registry* feature_registry_;
          hammer::call_resolver resolver_;
          boost::shared_ptr<generator_registry> generators_;
-         boost::shared_ptr<scm_manager> scm_manager_;
          boost::shared_ptr<hammer::toolset_manager> toolset_manager_;
          boost::shared_ptr<hammer::scanner_manager> scanner_manager_;
          boost::shared_ptr<hammer::output_location_strategy> output_location_strategy_;
 
          use_project_data_t use_project_data_;
-         repositories_t repositories_;
          boost::shared_ptr<hammer::warehouse> warehouse_;
 
          loaded_projects_t try_load_project(const location_t& tail_path, const project_alias_data& symlink);
          loaded_projects_t try_load_project(location_t project_path);
-         void update_project_scm_info(project& p, const project_alias_data& alias_data) const;
          project* get_upper_project(const location_t& project_path);
-         bool materialize_or_load_next_repository();
          void resolve_project_alias(resolved_project_symlinks_t& symlinks,
                                     const location_t& project_symlink);
          void resolve_project_alias(resolved_project_symlinks_t& symlinks,
@@ -161,15 +136,6 @@ namespace hammer
                                     global_project_links_t& symlink_storage);
          void resolve_use_project(location_t& resolved_use_path, location_t& tail_path,
                                   const hammer::project& project, const location_t& path_to_resolve);
-         const scm_client* try_resolve_scm_client(const project& p);
-         const scm_client& resolve_scm_client(const project& p);
-         const scm_client& resolve_scm_client_impl(const project& p);
-         void initial_materialization(const project_alias_data& alias_data) const;
-         bool try_materialize_project(const location_t& project_path, 
-                                      const project& upper_project);
-         const project* find_upper_materialized_project(const project& p);
-         const project* find_upper_materialized_project(const location_t& location);
-
          void project_rule(project* p, std::vector<pstring>& name, project_requirements_decl* req, project_requirements_decl* usage_req);
          void lib_rule(project* p, std::vector<pstring>& name, sources_decl* sources, 
                        requirements_decl* fs, feature_set* default_build, requirements_decl* usage_requirements);
@@ -241,7 +207,6 @@ namespace hammer
          void explicit_rule(project* p, const pstring& target_name);
          void use_project_rule(project* p, const pstring& project_id_alias, 
                                const pstring& project_location, feature_set* props);
-         void repository_rule(project* p, const pstring& project_location, feature_set* props);
          void setup_warehouse_rule(project* p,
                                    const pstring& name,
                                    const pstring& url,

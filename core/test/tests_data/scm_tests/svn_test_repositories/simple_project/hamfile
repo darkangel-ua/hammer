@@ -1,2 +1,0 @@
-alias simple-project : 1_0/build : <version>1.0 ;
-alias simple-project : 1_2/build : <version>1.2 ;

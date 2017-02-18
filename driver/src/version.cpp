@@ -3,5 +3,5 @@
 
 void print_version(std::ostream& s)
 {
-   s << "hammer v0.3.0";
+   s << "hammer v0.3.0-next";
 }

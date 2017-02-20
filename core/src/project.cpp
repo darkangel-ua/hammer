@@ -20,8 +20,7 @@ project::project(hammer::engine* e,
     basic_meta_target(this, name, req, usage_req),
     engine_(e),
     is_root_(false),
-    add_targets_as_explicit_(false),
-    local_feature_registry_(&pool_for_feature_registry_)
+    add_targets_as_explicit_(false)
 {
    this->location(location);
 }
@@ -227,7 +226,7 @@ feature_set* project::try_resolve_local_features(const feature_set& fs) const
       {
          const feature_def* def = local_feature_registry_.find_def_from_full_name((**i).name().c_str());
          if (def != NULL)
-            result->join(local_feature_registry_.create_feature((**i).name(), (**i).value().to_string()));
+            result->join(local_feature_registry_.create_feature((**i).name(), (**i).value()));
          else
             result->join(*i);
       }

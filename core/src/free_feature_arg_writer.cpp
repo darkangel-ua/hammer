@@ -42,7 +42,7 @@ void free_feature_arg_writer::write_impl(std::ostream& output, const build_node&
          if(node.products_.empty()) 
             throw std::runtime_error("[free_feature_arg_writer] Can't write path feature for node without products.");
 
-         location_t include_path((**i).get_path_data().target_->location() / (**i).value().to_string());
+         location_t include_path((**i).get_path_data().target_->location() / (**i).value());
          include_path.normalize();
          include_path = relative_path(include_path, environment.working_directory(*node.products_.front()));
          include_path.normalize();

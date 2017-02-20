@@ -10,9 +10,6 @@ using namespace std;
 
 struct feature_registry_test
 {
-   feature_registry_test() : registry_(&p_) {}
-
-   pool p_;
    feature_registry registry_;
 };
 

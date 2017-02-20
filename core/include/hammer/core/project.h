@@ -52,8 +52,7 @@ namespace hammer
 
          project(engine* e) : engine_(e), 
                               is_root_(false), 
-                              add_targets_as_explicit_(false), 
-                              local_feature_registry_(&pool_for_feature_registry_) 
+                              add_targets_as_explicit_(false)
          {};
          
          virtual const location_t& location() const { return location_; }
@@ -99,7 +98,6 @@ namespace hammer
          bool is_root_;
          bool add_targets_as_explicit_;
          bool add_targets_as_local_ = false;
-         pool pool_for_feature_registry_; //FIXME:
          mutable feature_registry local_feature_registry_;
 
          virtual void instantiate_impl(const main_target* owner, 

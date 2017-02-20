@@ -8,21 +8,21 @@ using namespace std;
 
 namespace hammer{
 
-feature::feature(const feature_def* def, 
-                 const pstring& value)
+feature::feature(const feature_def* def,
+                 const string& value)
                 : 
                  feature_base(def, value)
 {
    if (!attributes().free && 
        !attributes().no_checks && 
-       !def->is_legal_value(value.to_string()))   
+       !def->is_legal_value(value))
    {
-      throw std::runtime_error("Value '" + value.to_string() + "' is not legal for feature '" + name() + "'");
+      throw std::runtime_error("Value '" + value + "' is not legal for feature '" + name() + "'");
    }
 }
 
-feature::feature(const feature_def* def, 
-                 const pstring& value, 
+feature::feature(const feature_def* def,
+                 const string& value,
                  const subfeatures_t& subfeatures)
                 : 
                  feature_base(def, value),

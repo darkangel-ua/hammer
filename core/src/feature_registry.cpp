@@ -25,7 +25,6 @@ namespace hammer{
 
    struct feature_registry::impl_t
    {
-      impl_t(pool* p) : pstring_pool_(p) {}
       ~impl_t();
 
       struct generic_less_comparator
@@ -222,7 +221,6 @@ namespace hammer{
                             const subfeature& sf);
       subfeature& create_subfeature(const feature& f, const string& name, const string& value);
 
-      pool* pstring_pool_;
       defs_t defs_;
       feature_set_storage_t feature_set_list_;
       features_t features_;
@@ -261,7 +259,7 @@ namespace hammer{
       if (sdef == NULL)
          throw std::runtime_error("Feature '" + f.name() + "' does not have subfeature '" + name + "'.");
       
-      if (!sdef->is_legal_value(f.value().to_string(), value))
+      if (!sdef->is_legal_value(f.value(), value))
          throw std::runtime_error("Value '" + value + "' is not a legal value for subfeature '" + name + "'.");
 
       main_subfeature_index_t::iterator i = subfeatures_.get<0>().find(subfeature_find_data(f.definition(), *sdef, value));
@@ -271,7 +269,7 @@ namespace hammer{
       {
          subfeature_storage_item item;
          item.feature_def_ = &f.definition();
-         item.subfeature_.reset(new subfeature(*sdef, pstring(*pstring_pool_, value)));
+         item.subfeature_.reset(new subfeature(*sdef, value));
          subfeature* result = item.subfeature_.get();
          subfeatures_.get<0>().insert(item);
          return *result;
@@ -283,7 +281,7 @@ namespace hammer{
    {
       feature::subfeatures_t subfeatures(f.subfeatures());
       subfeatures.push_back(&sf);
-      main_feature_index_t::iterator i = features_.get<0>().find(find_feature_data(f.definition(), f.value().to_string(), subfeatures));
+      main_feature_index_t::iterator i = features_.get<0>().find(find_feature_data(f.definition(), f.value(), subfeatures));
       if (i == features_.get<0>().end())
          return NULL;
       else 
@@ -298,7 +296,7 @@ namespace hammer{
 
    typedef feature_registry::impl_t impl_t;
 
-   feature_registry::feature_registry(pool* p) : impl_(new impl_t(p))
+   feature_registry::feature_registry() : impl_(new impl_t)
    {
       impl_->singleton_ = make_set();
    }
@@ -354,7 +352,7 @@ namespace hammer{
           def.attributes().generated ||
           def.attributes().undefined_)
       {
-         unique_ptr<feature> f(new feature(&def, pstring(*impl_->pstring_pool_, value)));
+         unique_ptr<feature> f(new feature(&def, value));
          result = f.get();
          impl_->non_cached_features_.push_back(f.get());
          f.release();
@@ -364,7 +362,7 @@ namespace hammer{
          result = impl_->find_feature(name, value);
          if (result == NULL)
          {
-            shared_ptr<feature> f(new feature(&def, pstring(*impl_->pstring_pool_, value)));
+            shared_ptr<feature> f(new feature(&def, value));
             result = f.get();
             impl_->features_.get<0>().insert(f);
          }
@@ -477,7 +475,7 @@ namespace hammer{
 
    feature* feature_registry::clone_feature(const feature& f)
    {
-      feature* result = create_feature(f.name(), f.value().to_string());
+      feature* result = create_feature(f.name(), f.value());
       if (f.attributes().dependency)
          result->set_dependency_data(f.get_dependency_data().source_, f.get_path_data().target_);
 

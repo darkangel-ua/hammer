@@ -14,7 +14,7 @@ namespace
 {
    struct enviroment
    {
-      enviroment() : fr_(&pool_)
+      enviroment()
       {
          {
             feature_attributes attrs = {0};
@@ -59,7 +59,6 @@ namespace
 
       }
 
-      pool pool_;
       feature_registry fr_;
    }; 
 }

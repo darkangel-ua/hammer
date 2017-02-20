@@ -1,7 +1,6 @@
 #if !defined(h_039e543d_03a7_4517_bda4_4618e0db9794)
 #define h_039e543d_03a7_4517_bda4_4618e0db9794
 
-#include "pstring.h"
 #include <boost/noncopyable.hpp>
 #include "source_decl.h"
 #include "feature_attributes.h"
@@ -38,9 +37,9 @@ namespace hammer
             bool operator != (const generated_data& rhs) const { return target_ != rhs.target_; }
          };
 
-         feature_base(const feature_def* def, const pstring& value);
+         feature_base(const feature_def* def, const std::string& value);
          const std::string& name() const { return definition_->name(); }
-         const pstring& value() const { return value_; }
+         const std::string& value() const { return value_; }
          feature_attributes attributes() const { return definition_->attributes(); }
          const path_data& get_path_data() const { return path_data_; }
          path_data& get_path_data() { return path_data_; }
@@ -59,7 +58,7 @@ namespace hammer
          
       protected:
          const feature_def* definition_;
-         pstring value_;
+         std::string value_;
          path_data path_data_;
          dependency_data dependency_data_;
          generated_data generated_data_;

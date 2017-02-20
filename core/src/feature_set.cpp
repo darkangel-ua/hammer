@@ -41,14 +41,14 @@ feature_set& feature_set::join(feature* f)
          {
             *i = f;
             if (f->attributes().composite)
-               f->definition().expand_composites(f->value().to_string(), this);
+               f->definition().expand_composites(f->value(), this);
          }
       }
       else
       {
          features_.push_back(f);
          if (f->attributes().composite)
-            f->definition().expand_composites(f->value().to_string(), this);
+            f->definition().expand_composites(f->value(), this);
       }
    }
    else
@@ -276,7 +276,7 @@ bool feature_set::compatible_with(const feature_set& rhs) const
          {
             if (rhs_p->find((**i).name()) == rhs_p->end())
             {
-               if ((**i).definition().get_default() != (**i).value().to_string())
+               if ((**i).definition().get_default() != (**i).value())
                   return false;
             }
             else
@@ -340,7 +340,7 @@ static void dump_value(std::ostream& s, const feature& f)
    if (f.attributes().path)
    {
       const feature::path_data& pd = f.get_path_data();
-      location_t l(f.value().to_string());
+      location_t l(f.value());
       if (!l.has_root_name())
       {
          l = pd.target_->location() / l;   

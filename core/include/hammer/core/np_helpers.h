@@ -10,13 +10,13 @@ namespace hammer
    class main_target;
    class basic_target;
 
-   pstring make_product_name(pool& p, 
+   pstring make_product_name(pool& p,
                              const basic_target& source_target,
                              const target_type& product_type,
                              const feature_set& product_properties,
                              const main_target* owner);
-   pstring make_product_name(pool& p, 
-                             const pstring& composite_target_name, 
+   pstring make_product_name(pool& p,
+                             const pstring& composite_target_name,
                              const target_type& product_type,
                              const feature_set& product_properties,
                              const main_target* owner,

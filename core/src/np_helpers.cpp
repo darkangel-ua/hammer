@@ -20,12 +20,12 @@ static string get_version(const feature_set& properties)
 {
    feature_set::const_iterator i = properties.find("version");
    if (i != properties.end())
-      return (**i).value().to_string();
+      return (**i).value();
    else
       return string();
 }
 
-pstring make_product_name(pool& p, 
+pstring make_product_name(pool& p,
                           const basic_target& source_target,
                           const target_type& product_type,
                           const feature_set& product_properties,
@@ -49,8 +49,8 @@ pstring make_product_name(pool& p,
    return pstring(p, product_type.prefix_for(product_properties) + source_name_without_suffix + hash_suffix + product_type.suffix_for(product_properties));
 }
 
-pstring make_product_name(pool& p, 
-                          const pstring& composite_target_name, 
+pstring make_product_name(pool& p,
+                          const pstring& composite_target_name,
                           const target_type& product_type,
                           const feature_set& product_properties,
                           const main_target* owner,
@@ -58,7 +58,7 @@ pstring make_product_name(pool& p,
 {
    feature_set::const_iterator n = product_properties.find("name");
    if (n != product_properties.end() && primary_target)
-      return (**n).value();
+      return pstring(p, (**n).value());
 
    if (product_type.suffixes().empty())
       return composite_target_name;

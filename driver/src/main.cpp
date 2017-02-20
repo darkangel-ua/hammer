@@ -859,10 +859,10 @@ int main(int argc, char** argv) {
             const feature& used_toolset = **i_toolset_in_build_request;
             if (!used_toolset.find_subfeature("version")) {
                const subfeature_def& toolset_version_def = used_toolset.definition().get_subfeature("version");
-               if (toolset_version_def.legal_values(used_toolset.value().to_string()).size() > 1)
-                  throw std::runtime_error("Toolset is set to '"+ used_toolset.value().to_string() + "', but has multiple version configured. You should request specific version to use.");
+               if (toolset_version_def.legal_values(used_toolset.value()).size() > 1)
+                  throw std::runtime_error("Toolset is set to '"+ used_toolset.value() + "', but has multiple version configured. You should request specific version to use.");
                else {
-                  const string toolset = used_toolset.value().to_string();
+                  const string toolset = used_toolset.value();
                   build_request->erase_all("toolset");
                   build_request->join("toolset", (toolset + "-" + *toolset_version_def.legal_values(toolset).begin()).c_str());
                }

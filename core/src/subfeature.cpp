@@ -5,7 +5,7 @@
 namespace hammer{
 
 subfeature::subfeature(const subfeature_def& def,
-                       const pstring& value)
+                       const std::string& value)
    : definition_(&def),
      value_(value)
 {

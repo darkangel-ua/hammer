@@ -48,7 +48,7 @@ namespace hammer{
 engine::engine()
    :  feature_registry_(0)
 {
-   auto_ptr<hammer::feature_registry> fr(new hammer::feature_registry(&pstring_pool()));
+   auto_ptr<hammer::feature_registry> fr(new hammer::feature_registry());
 
    resolver_.insert("project", boost::function<void (project*, vector<pstring>&, project_requirements_decl*, project_requirements_decl*)>(boost::bind(&engine::project_rule, this, _1, _2, _3, _4)));
    resolver_.insert("lib", boost::function<void (project*, vector<pstring>&, sources_decl*, requirements_decl*, feature_set*, requirements_decl*)>(boost::bind(&engine::lib_rule, this, _1, _2, _3, _4, _5, _6)));
@@ -725,7 +725,7 @@ void engine::feature_local_rule(project* p, std::vector<pstring>& name,
 void engine::feature_compose_rule(project* p, feature& f, feature_set& components)
 {
    feature_set* cc = components.clone();
-   feature_registry_->get_def(f.definition().name()).compose(f.value().to_string(), cc);
+   feature_registry_->get_def(f.definition().name()).compose(f.value(), cc);
 }
 
 void engine::variant_rule(project* p, pstring& variant_name, pstring* base, feature_set& components)

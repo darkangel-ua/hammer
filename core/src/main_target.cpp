@@ -146,7 +146,7 @@ std::string main_target::version() const
 {
    feature_set::const_iterator i = properties().find("version");
    if (i != properties().end())
-      return (**i).value().to_string();
+      return (**i).value();
    else
       return string();
 }

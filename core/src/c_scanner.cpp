@@ -627,7 +627,7 @@ c_scanner_context::get_include_dirs(const feature_set& properties)
       directories_t result;
       for(feature_set::const_iterator i = properties.find("include"), last = properties.end(); i != last; i = properties.find(++i, "include"))
       {
-         location_t l = (**i).get_path_data().target_->location() / (**i).value().to_string() / ".";
+         location_t l = (**i).get_path_data().target_->location() / (**i).value() / ".";
          l.normalize();
          pair<const hashed_location*, bool> r = get_cached_location(l);
          load_directory(*r.first);

@@ -13,7 +13,7 @@ BOOST_AUTO_TEST_SUITE(requirements_decl_tests)
 
 struct environment
 {
-   environment() : fr_(&pool_)
+   environment()
    {
       {
          feature_attributes attrs = {0};
@@ -37,7 +37,6 @@ struct environment
       }
    }
 
-   pool pool_;
    feature_registry fr_;
 };
 

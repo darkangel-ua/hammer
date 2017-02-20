@@ -172,7 +172,7 @@ void msvc_solution::add_target(boost::intrusive_ptr<const build_node> node)
    if (!impl_->projects_.empty())
       throw std::runtime_error("MSVC solution generator can handle only one top level target.");
 
-   impl_->variant_names_.push_back(node->products_[0]->get_main_target()->properties().get("variant").value().to_string());
+   impl_->variant_names_.push_back(node->products_[0]->get_main_target()->properties().get("variant").value());
    std::auto_ptr<msvc_project> p_guarg(new msvc_project(impl_->engine_, 
                                                         impl_->project_output_dir(*node), 
                                                         impl_->variant_names_.front(), 

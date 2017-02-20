@@ -99,7 +99,7 @@ htmpl_action::execute_impl(const build_node& node,
       }
 
       product_stream->write(content_p, distance(content_p, &*(*first)[0].first));
-      product_stream->write((**i).value().begin(), (**i).value().size());
+      product_stream->write((**i).value().c_str(), (**i).value().size());
       content_p = &*(*first)[0].first + (*first)[0].length();
    }
 

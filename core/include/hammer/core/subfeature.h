@@ -1,7 +1,7 @@
 #if !defined(h_85f86c30_04b2_4778_838d_12e9b607ed32)
 #define h_85f86c30_04b2_4778_838d_12e9b607ed32
 
-#include <hammer/core/pstring.h>
+#include <string>
 
 namespace hammer{
 
@@ -11,12 +11,12 @@ class subfeature
 {
    public:
       subfeature(const subfeature_def& def,
-                 const pstring& value);
+                 const std::string& value);
       ~subfeature();
 
       const subfeature_def& definition() const { return *definition_; }
       const std::string& name() const;
-      const pstring& value() const { return value_; }
+      const std::string& value() const { return value_; }
 
       // FIXME: wrong results if we compare subfeatures from different feature_registries
       bool operator == (const subfeature& rhs) const;
@@ -24,7 +24,7 @@ class subfeature
 
    private:
       const subfeature_def* definition_;
-      const pstring value_;
+      const std::string value_;
 };
 
 }

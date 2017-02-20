@@ -59,7 +59,7 @@ collect_installed_versions(const project& p)
       t.second->requirements().eval(build_request, &requirements);
       auto i = requirements.find("version");
       if (i != requirements.end())
-         result.push_back((**i).value().to_string());
+         result.push_back((**i).value());
    }
 
    sort(result.begin(), result.end());

@@ -12,8 +12,7 @@ using namespace hammer;
 
 BOOST_AUTO_TEST_CASE(feature_def_simple_methods)
 {
-   pool p;
-   feature_registry fr(&p);
+   feature_registry fr;
 
    vector<string> empty_values;
    vector<string> values;
@@ -36,8 +35,7 @@ BOOST_AUTO_TEST_CASE(feature_def_simple_methods)
 
 BOOST_AUTO_TEST_CASE(feature_def_subfeatures)
 {
-   pool p;
-   feature_registry fr(&p);
+   feature_registry fr;
 
    feature_def& toolset_def = fr.add_feature_def("toolset");
    subfeature_def& toolset_version_def = toolset_def.add_subfeature("version");
@@ -47,8 +45,7 @@ BOOST_AUTO_TEST_CASE(feature_def_subfeatures)
 
 BOOST_AUTO_TEST_CASE(feature_compare_with_subfeatures)
 {
-   pool p;
-   feature_registry fr(&p);
+   feature_registry fr;
 
    feature_def& toolset_def = fr.add_feature_def("toolset");
    subfeature_def& toolset_version_def = toolset_def.add_subfeature("version");
@@ -74,8 +71,7 @@ BOOST_AUTO_TEST_CASE(feature_compare_with_subfeatures)
 
 BOOST_AUTO_TEST_CASE(feature_contains)
 {
-   pool p;
-   feature_registry fr(&p);
+   feature_registry fr;
 
    feature_def& toolset_def = fr.add_feature_def("toolset", { "gcc" } );
    subfeature_def& toolset_version_def = toolset_def.add_subfeature("version");

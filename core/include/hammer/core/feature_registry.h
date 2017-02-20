@@ -13,7 +13,7 @@ namespace hammer
    {
       public:
          struct impl_t;
-         feature_registry(pool* p);
+         feature_registry();
 
          feature_def&
          add_feature_def(const std::string& name,

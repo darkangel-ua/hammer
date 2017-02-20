@@ -423,7 +423,7 @@ warehouse_impl::get_unresoved_targets_info(engine& e,
       const feature_set& props = (**i).properties();
       feature_set::const_iterator version_i = props.find("version");
       if (version_i != props.end())
-         p.version_ = (**version_i).value().to_string();
+         p.version_ = (**version_i).value();
       else
          throw std::runtime_error("Unable to get unresolved target info - no version specified");
 
@@ -698,7 +698,7 @@ warehouse_impl::gather_dependencies(const project& p)
 
       dependency_t d;
       d.public_id_ = string(s.target_path().begin() + 1, s.target_path().end());
-      d.version_ = (**i).value().to_string();
+      d.version_ = (**i).value();
 
       dependencies.push_back(d);
    }
@@ -798,7 +798,7 @@ void warehouse_impl::add_to_packages(const project& p,
    if (i_version == project_requirements->end())
       throw std::runtime_error("Project doesn't have 'version' feature");
 
-   const string version = (**i_version).value().to_string();
+   const string version = (**i_version).value();
    const string public_id = p.name().to_string();
 
    package_t package;

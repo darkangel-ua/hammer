@@ -23,12 +23,12 @@ copy_main_target::copy_main_target(const basic_meta_target* mt,
    if (d == props->end())
       throw std::runtime_error("Copy main target must have <destination> feature in requirements");
    
-   destination_ = (**d).get_path_data().target_->location() / (**d).value().to_string();
+   destination_ = (**d).get_path_data().target_->location() / (**d).value();
    destination_.normalize();
 
    const type_registry& tr = get_engine()->get_type_registry();
    for(feature_set::const_iterator i = props->find("type-to-copy"), last = props->end(); i != last; i = props->find(i + 1, "type-to-copy"))
-      types_to_copy_.push_back(&tr.get(type_tag((**i).value().to_string())));
+      types_to_copy_.push_back(&tr.get(type_tag((**i).value())));
 
    if (types_to_copy_.empty())
       throw std::runtime_error("Copy main target must have at least one <type-to-copy> feature in requirements");

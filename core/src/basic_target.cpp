@@ -49,7 +49,7 @@ std::string basic_target::hash_string(const feature_set& fs, const main_target& 
       return boost::crypto::md5(s.str()).to_string();
    }
    else
-      return fs.get("variant").value().to_string();
+      return fs.get("variant").value();
 }
 
 const basic_meta_target* basic_target::get_meta_target() const

@@ -238,7 +238,7 @@ msvc_project::msvc_project(engine& e,
 static std::string make_variant_name(const main_target& mt)
 {
    const feature& f = mt.properties().get("variant");
-   return f.value().to_string() + '-' + mt.hash_string();
+   return f.value() + '-' + mt.hash_string();
 }
 
 void msvc_project::add_variant(boost::intrusive_ptr<const build_node> node)

@@ -2,7 +2,6 @@
 #define h_28ffa573_8792_4330_8c82_27921827e424
 
 #include <vector>
-#include "pstring.h"
 #include "requirements_decl.h"
 #include "location.h"
 #include "sources_decl.h"
@@ -23,15 +22,15 @@ namespace hammer
    {
       public:
          basic_meta_target(project* p,
-                           const pstring& name, 
+                           const std::string& name,
                            const requirements_decl& req,
                            const requirements_decl& usage_req);
          basic_meta_target() {}
          virtual ~basic_meta_target();
          const project* get_project() const { return project_; }
          engine* get_engine() const;
-         const pstring& name() const { return name_; }
-         void name(const pstring& v) { name_ = v; }
+         const std::string& name() const { return name_; }
+         void name(const std::string& v) { name_ = v; }
          void sources(const sources_decl& s);
          void add_sources(const sources_decl& s);
          const sources_decl& sources() const { return sources_; }
@@ -94,7 +93,7 @@ namespace hammer
          typedef std::vector<cached_instantiation_data_t> instantiation_cache_t;
 
          hammer::project* project_;
-         pstring name_;
+         std::string name_;
          sources_decl sources_;
          requirements_decl requirements_;
          requirements_decl usage_requirements_;

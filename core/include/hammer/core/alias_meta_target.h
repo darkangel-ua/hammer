@@ -8,7 +8,7 @@ namespace hammer
    class alias_meta_target : public basic_meta_target
    {
       public:
-         alias_meta_target(hammer::project* p, const pstring& name, 
+         alias_meta_target(hammer::project* p, const std::string& name,
                            const sources_decl& sources,
                            const requirements_decl& req,
                            const requirements_decl& usage_req);

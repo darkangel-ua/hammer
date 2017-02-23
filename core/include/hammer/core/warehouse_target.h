@@ -9,7 +9,7 @@ class warehouse_target : public main_target
 {
    public:
       warehouse_target(const basic_meta_target& mt,
-                       const pstring& name,
+                       const std::string& name,
                        const feature_set& build_request);
       ~warehouse_target();
 

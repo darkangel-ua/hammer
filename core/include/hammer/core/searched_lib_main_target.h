@@ -9,16 +9,15 @@ namespace hammer
    {
       public:
          searched_lib_main_target(const basic_meta_target* mt,
-                                  const pstring& name,
-                                  const pstring& lib_name,
+                                  const std::string& name,
+                                  const std::string& lib_name,
                                   const feature_set* props,
-                                  const target_type& t,
-                                  pool& p);
+                                  const target_type& t);
          virtual std::vector<boost::intrusive_ptr<hammer::build_node> > generate() const;
       
       private:
          const target_type* type_;
-         pstring lib_name_;
+         const std::string lib_name_;
    };
 }
 

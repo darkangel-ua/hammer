@@ -9,8 +9,8 @@ namespace hammer
    {
       public:
          prebuilt_lib_meta_target(hammer::project* p, 
-                                  const pstring& name, 
-                                  const pstring& lib_file_path,
+                                  const std::string& name,
+                                  const std::string& lib_file_path,
                                   const requirements_decl& props,
                                   const requirements_decl& usage_req);
    };

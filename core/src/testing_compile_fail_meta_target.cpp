@@ -8,7 +8,7 @@
 namespace hammer {
 
 testing_compile_fail_meta_target::testing_compile_fail_meta_target(project* p,
-                                                                   const pstring& name,
+                                                                   const std::string& name,
                                                                    const requirements_decl& req,
                                                                    const requirements_decl& usage_req)
    : typed_meta_target(p, name, req, usage_req, p->get_engine()->get_type_registry().get(types::TESTING_COMPILE_FAIL))

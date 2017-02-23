@@ -22,12 +22,11 @@ sources_decl htmpl_rule(project& p,
    sources_decl result;
 
    for (const source_decl& sd : src) {
-      const string target_name = "#unnamed::htmpl." + sd.target_path().to_string();
-      const pstring ptarget_name = pstring(p.get_engine()->pstring_pool(), target_name);
-      auto_ptr<basic_meta_target> mt(new htmpl_meta_target(&p, ptarget_name, sd));
+      const string target_name = "#unnamed::htmpl." + sd.target_path();
+      auto_ptr<basic_meta_target> mt(new htmpl_meta_target(&p, target_name, sd));
       p.add_target(mt);
 
-      result.push_back(source_decl(ptarget_name, pstring(), nullptr, nullptr));
+      result.push_back(source_decl(target_name, std::string(), nullptr, nullptr));
    }
 
    return result;

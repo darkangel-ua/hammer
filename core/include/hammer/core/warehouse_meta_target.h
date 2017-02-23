@@ -11,7 +11,7 @@ class warehouse_meta_target : public meta_target
 {
    public:
       warehouse_meta_target(project& p,
-                            const pstring& name,
+                            const std::string& name,
                             const std::string& version);
       ~warehouse_meta_target();
 

@@ -2,7 +2,6 @@
 #define h_29741f53_09ff_4880_b28d_86010263122e
 
 #include <vector>
-#include "pstring.h"
 #include "source_decl.h"
 
 namespace hammer
@@ -21,15 +20,12 @@ namespace hammer
          sources_decl(const sources_decl& rhs);
          sources_decl& operator = (const sources_decl& rhs);
 
-         void push_back(const pstring& v, const type_registry& tr);
+         void push_back(const std::string& v, const type_registry& tr);
          void push_back(const source_decl& v);
          
-         // добавляет в конец
-         void insert(const std::vector<pstring>& v, const type_registry& tr);
+         void insert(const std::vector<std::string>& v, const type_registry& tr);
          void insert(const sources_decl& s);
          
-         // перебрасывает все что есть в s в конец данного инстанса
-         // s после переброски пуст
          void transfer_from(sources_decl& s);
          void add_to_source_properties(const feature_set& props);
          const_iterator begin() const;

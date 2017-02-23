@@ -7,8 +7,8 @@
 namespace hammer{
 
 file_meta_target::file_meta_target(hammer::project* p, 
-                                   const pstring& name, 
-                                   const pstring& filename,
+                                   const std::string& name,
+                                   const std::string& filename,
                                    const requirements_decl& req, 
                                    const requirements_decl& usage_req)
    :
@@ -25,8 +25,7 @@ file_meta_target::construct_main_target(const main_target* owner,
                                           name(), 
                                           filename_,
                                           properties,
-                                          get_engine()->get_type_registry().soft_resolve_from_target_name(filename_),
-                                          get_engine()->targets_pool());
+                                          get_engine()->get_type_registry().soft_resolve_from_target_name(filename_));
    return mt;
 }
 

@@ -10,10 +10,9 @@ namespace hammer
       public:
          pch_main_target(const basic_meta_target* mt,
                          const main_target& owner,
-                         const pstring& name,
+                         const std::string& name,
                          const target_type* t,
-                         const feature_set* props,
-                         pool& p);
+                         const feature_set* props);
 
          const basic_target& pch_header() const { return *pch_header_; }
          const basic_target& pch_source() const { return *pch_source_; }

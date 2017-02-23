@@ -9,15 +9,15 @@ namespace hammer
    {
       public:
          file_meta_target(hammer::project* p, 
-                          const pstring& name, 
-                          const pstring& filename,
+                          const std::string& name,
+                          const std::string& filename,
                           const requirements_decl& req, 
                           const requirements_decl& usage_req);
       protected:
          virtual main_target* construct_main_target(const main_target* owner, const feature_set* properties) const;
 
       private:
-         pstring filename_;
+         const std::string filename_;
    };
 }
 

@@ -23,10 +23,9 @@ namespace hammer{
 boost::shared_ptr<mksig_action> main_target::mksig_action_ = boost::shared_ptr<mksig_action>(new mksig_action);
 
 main_target::main_target(const basic_meta_target* mt,
-                         const pstring& name,
+                         const std::string& name,
                          const hammer::target_type* t,
-                         const feature_set* props,
-                         pool& p)
+                         const feature_set* props)
    : basic_target(this, name, t, props), meta_target_(mt),
      generate_cache_filled_(false)
 {
@@ -93,7 +92,7 @@ void main_target::add_hamfile_dependency(hammer::build_node& node,
    boost::intrusive_ptr<hammer::build_node> signature_node(new hammer::build_node(*this, false));
    signature_node->products_.push_back(
       new signature_target(this, 
-                           pstring(get_engine()->pstring_pool(), name().to_string() + ".target.sig"), 
+                           name() + ".target.sig",
                            &get_engine()->get_type_registry().get(types::UNKNOWN),
                            &properties()));
    
@@ -162,7 +161,7 @@ void main_target::additional_hash_string_data(std::ostream& s) const
 
    vector<string> hashes;
    for(main_target_sources_t::const_iterator i = main_target_sources.begin(), last = main_target_sources.end(); i != last; ++i)
-      hashes.push_back((**i).name().to_string() + '-' + (**i).hash_string());
+      hashes.push_back((**i).name() + '-' + (**i).hash_string());
 
    sort(hashes.begin(), hashes.end());
 

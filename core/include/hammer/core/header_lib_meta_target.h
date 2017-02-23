@@ -9,7 +9,7 @@ class header_lib_meta_target : public basic_meta_target
 {
    public:
       header_lib_meta_target(hammer::project* p,
-                             const pstring& name,
+                             const std::string& name,
                              const requirements_decl& requirements,
                              const requirements_decl& usage_requirements);
    protected:

@@ -64,8 +64,8 @@ typedef msvc_solution::impl_t impl_t;
 
 static bool less_by_location_and_name(const main_target* lhs, const main_target* rhs)
 {
-   location_t lhs_id = lhs->location() / lhs->name().to_string();
-   location_t rhs_id = rhs->location() / rhs->name().to_string();
+   location_t lhs_id = lhs->location() / lhs->name();
+   location_t rhs_id = rhs->location() / rhs->name();
    lhs_id.normalize();
    rhs_id.normalize();
 
@@ -180,7 +180,7 @@ void msvc_solution::add_target(boost::intrusive_ptr<const build_node> node)
    msvc_project* p = p_guarg.get();
    p->add_variant(node);
    impl_->projects_.insert(&p->meta_target(), p_guarg);
-   impl_->name_ = p->meta_target().name().to_string();
+   impl_->name_ = p->meta_target().name();
 
    msvc_project::dependencies_t dependencies;
    p->generate();

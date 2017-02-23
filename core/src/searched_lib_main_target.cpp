@@ -16,13 +16,12 @@
 namespace hammer{
 
 searched_lib_main_target::searched_lib_main_target(const basic_meta_target* mt,
-                                                   const pstring& name, 
-                                                   const pstring& lib_name, 
+                                                   const std::string& name,
+                                                   const std::string& lib_name,
                                                    const feature_set* props,
-                                                   const target_type& t,
-                                                   pool& p)
+                                                   const target_type& t)
    : 
-    main_target(mt, name, &mt->get_engine()->get_type_registry().get(types::SEARCHED_LIB), props, p), 
+    main_target(mt, name, &mt->get_engine()->get_type_registry().get(types::SEARCHED_LIB), props),
     type_(&t),
     lib_name_(lib_name)
 {

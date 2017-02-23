@@ -6,8 +6,8 @@
 namespace hammer{
 
 searched_lib_meta_target::searched_lib_meta_target(hammer::project* p, 
-                                                   const pstring& name, 
-                                                   const pstring& lib_name,
+                                                   const std::string& name,
+                                                   const std::string& lib_name,
                                                    const requirements_decl& props,
                                                    const requirements_decl& usage_req,
                                                    const target_type& t)
@@ -24,8 +24,7 @@ searched_lib_meta_target::construct_main_target(const main_target* owner,
                                                   name(),
                                                   lib_name_,
                                                   properties,
-                                                  type(), 
-                                                  get_engine()->targets_pool());
+                                                  type());
    return mt;
 }
 

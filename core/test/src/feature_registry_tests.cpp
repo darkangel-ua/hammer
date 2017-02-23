@@ -3,7 +3,6 @@
 #include <hammer/core/feature.h>
 #include <hammer/core/subfeature.h>
 #include <hammer/core/feature_registry.h>
-#include <hammer/core/pool.h>
 
 using namespace hammer;
 using namespace std;

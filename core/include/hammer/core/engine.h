@@ -8,7 +8,6 @@
 #include <deque>
 #include "location.h"
 #include "project.h"
-#include "pool.h"
 #include "call_resolver.h"
 
 namespace hammer
@@ -39,8 +38,6 @@ namespace hammer
 
          void insert(project* p);
          type_registry& get_type_registry() { return *type_registry_; }
-         pool& pstring_pool() { return pool_; }
-         pool& targets_pool() { return pool_; }
          generator_registry& generators() const { return *generators_; }
          hammer::feature_registry& feature_registry() { return *feature_registry_; }
          const hammer::feature_registry& feature_registry() const { return *feature_registry_; }
@@ -52,7 +49,7 @@ namespace hammer
 
          hammer::output_location_strategy& output_location_strategy() { return *output_location_strategy_; }
          void output_location_strategy(boost::shared_ptr<hammer::output_location_strategy>& strategy);
-         void use_project(const project& p, const pstring& project_id_alias, const location_t& project_location);
+         void use_project(const project& p, const std::string& project_id_alias, const location_t& project_location);
          ~engine();
 
       private:
@@ -115,7 +112,6 @@ namespace hammer
          reversed_global_project_links_t reversed_global_project_links_;
          
          boost::shared_ptr<type_registry> type_registry_;
-         pool pool_;
          hammer::feature_registry* feature_registry_;
          hammer::call_resolver resolver_;
          boost::shared_ptr<generator_registry> generators_;
@@ -136,81 +132,81 @@ namespace hammer
                                     global_project_links_t& symlink_storage);
          void resolve_use_project(location_t& resolved_use_path, location_t& tail_path,
                                   const hammer::project& project, const location_t& path_to_resolve);
-         void project_rule(project* p, std::vector<pstring>& name, project_requirements_decl* req, project_requirements_decl* usage_req);
-         void lib_rule(project* p, std::vector<pstring>& name, sources_decl* sources, 
+         void project_rule(project* p, std::vector<std::string>& name, project_requirements_decl* req, project_requirements_decl* usage_req);
+         void lib_rule(project* p, std::vector<std::string>& name, sources_decl* sources,
                        requirements_decl* fs, feature_set* default_build, requirements_decl* usage_requirements);
-         void searched_shared_lib_rule(project* p, std::vector<pstring>& name, 
-                                       sources_decl* sources, pstring& lib_name,
+         void searched_shared_lib_rule(project* p, std::vector<std::string>& name,
+                                       sources_decl* sources, std::string& lib_name,
                                        requirements_decl* requirements, requirements_decl* usage_requirements);
-         void searched_static_lib_rule(project* p, pstring& name, 
-                                       sources_decl* sources, pstring& lib_name,
+         void searched_static_lib_rule(project* p, std::string& name,
+                                       sources_decl* sources, std::string& lib_name,
                                        requirements_decl* requirements, requirements_decl* usage_requirements);
-         void prebuilt_lib_rule(project* p, pstring& name, 
-                                sources_decl* sources, pstring& lib_filename,
+         void prebuilt_lib_rule(project* p, std::string& name,
+                                sources_decl* sources, std::string& lib_filename,
                                 requirements_decl* requirements, requirements_decl* usage_requirements);
          void file_rule(project* p, 
-                        std::vector<pstring>& name, 
-                        pstring& filename,
+                        std::vector<std::string>& name,
+                        std::string& filename,
                         requirements_decl* requirements, 
                         requirements_decl* usage_requirements);
-         void header_lib_rule(project* p, std::vector<pstring>& name, sources_decl* sources, 
+         void header_lib_rule(project* p, std::vector<std::string>& name, sources_decl* sources,
                               requirements_decl* fs, feature_set* default_build, requirements_decl* usage_requirements);
-         void exe_rule(project* p, std::vector<pstring>& name, sources_decl& sources, requirements_decl* fs, 
+         void exe_rule(project* p, std::vector<std::string>& name, sources_decl& sources, requirements_decl* fs,
                        feature_set* default_build, requirements_decl* usage_requirements);
-         void obj_rule(project* p, pstring& name, sources_decl& sources, requirements_decl* fs,
+         void obj_rule(project* p, std::string& name, sources_decl& sources, requirements_decl* fs,
                        feature_set* default_build, requirements_decl* usage_requirements);
-         void pch_rule(project* p, pstring& name, sources_decl& sources, requirements_decl* fs,
+         void pch_rule(project* p, std::string& name, sources_decl& sources, requirements_decl* fs,
                        feature_set* default_build, requirements_decl* usage_requirements);
          void alias_rule(project* p, 
-                         pstring& name, 
+                         std::string& name,
                          sources_decl* sources, 
                          requirements_decl* fs, 
                          feature_set* default_build, 
                          requirements_decl* usage_requirements);
          void version_alias_rule(project* p,
-                                 pstring& name,
-                                 pstring& version,
-                                 const pstring* target_path);
+                                 std::string& name,
+                                 std::string& version,
+                                 const std::string* target_path);
          void target_version_alias_rule(project* p,
-                                        pstring& name,
-                                        pstring& version,
-                                        const pstring* target_path);
+                                        std::string& name,
+                                        std::string& version,
+                                        const std::string* target_path);
          void test_suite_rule(project* p,
-                              pstring& name, 
+                              std::string& name,
                               sources_decl& sources, 
                               sources_decl* propagated_sources);
          sources_decl testing_run_rule(project* p, 
                                        sources_decl* sources, 
-                                       std::vector<pstring>* args, 
-                                       std::vector<pstring>* input_files, 
+                                       std::vector<std::string>* args,
+                                       std::vector<std::string>* input_files,
                                        requirements_decl* requirements,
-                                       pstring* target_name);
+                                       std::string* target_name);
          sources_decl testing_compile_fail_rule(project* p,
                                                 const sources_decl& sources,
                                                 requirements_decl* requirements,
                                                 requirements_decl* default_build,
                                                 requirements_decl* usage_requirements);
-         void copy_rule(project* p, pstring& name, sources_decl& sources, requirements_decl* fs,
+         void copy_rule(project* p, std::string& name, sources_decl& sources, requirements_decl* fs,
                         feature_set* default_build, requirements_decl* usage_requirements);
-         void import_rule(project* p, std::vector<pstring>& name);
-         void feature_feature_rule(project* p, std::vector<pstring>& name, std::vector<pstring>* values,
-                                   std::vector<pstring>* attributes);
+         void import_rule(project* p, std::vector<std::string>& name);
+         void feature_feature_rule(project* p, std::vector<std::string>& name, std::vector<std::string>* values,
+                                   std::vector<std::string>* attributes);
          void feature_subfeature_rule(project* p,
-                                      pstring& feature_name,
-                                      pstring& subfeature_name);
-         void feature_local_rule(project* p, std::vector<pstring>& name, std::vector<pstring>* values,
-                                 std::vector<pstring>* attributes);
+                                      std::string& feature_name,
+                                      std::string& subfeature_name);
+         void feature_local_rule(project* p, std::vector<std::string>& name, std::vector<std::string>* values,
+                                 std::vector<std::string>* attributes);
          void feature_compose_rule(project* p, feature& f, feature_set& components);
-         void variant_rule(project* p, pstring& variant_name, pstring* base, feature_set& components);
-         sources_decl glob_rule(project* p, std::vector<pstring>& patterns, 
-                                std::vector<pstring>* exceptions, bool recursive);
-         void explicit_rule(project* p, const pstring& target_name);
-         void use_project_rule(project* p, const pstring& project_id_alias, 
-                               const pstring& project_location, feature_set* props);
+         void variant_rule(project* p, std::string& variant_name, std::string* base, feature_set& components);
+         sources_decl glob_rule(project* p, std::vector<std::string>& patterns,
+                                std::vector<std::string>* exceptions, bool recursive);
+         void explicit_rule(project* p, const std::string& target_name);
+         void use_project_rule(project* p, const std::string& project_id_alias,
+                               const std::string& project_location, feature_set* props);
          void setup_warehouse_rule(project* p,
-                                   const pstring& name,
-                                   const pstring& url,
-                                   const pstring* storage_dir);
+                                   const std::string& name,
+                                   const std::string& url,
+                                   const std::string* storage_dir);
    };
 
    boost::filesystem::path find_root(const boost::filesystem::path& initial_path);
@@ -235,7 +231,7 @@ namespace hammer
             return *this;
          }
          project::selected_targets_t select_best_alternative(const feature_set& build_request) const;
-         project::selected_target select_best_alternative(const pstring& target_name, const feature_set& build_request) const;
+         project::selected_target select_best_alternative(const std::string& target_name, const feature_set& build_request) const;
          feature_set* resolve_undefined_features(const feature_set& s);
          bool empty() const { return projects_.empty(); }
 

@@ -41,10 +41,10 @@ bool generator::is_consumable(const target_type& t) const
    return false;
 }
 
-basic_target* generator::create_target(const main_target* mt, 
+basic_target* generator::create_target(const main_target* mt,
                                        const build_node::sources_t& sources,
-                                       const pstring& n, 
-                                       const target_type* t, 
+                                       const std::string& n,
+                                       const target_type* t,
                                        const feature_set* f) const
 {
    return new generated_target(mt, n, t, f);
@@ -55,7 +55,7 @@ generator::construct(const target_type& type_to_construct,
                      const feature_set& props,
                      const build_nodes_t& sources,
                      const basic_target* source_target,
-                     const pstring* composite_target_name,
+                     const std::string* composite_target_name,
                      const main_target& owner) const
 {
    if (!source_target)
@@ -84,12 +84,11 @@ generator::construct(const target_type& type_to_construct,
       unsigned p = 0;
       for(producable_types_t::const_iterator i = target_types_.begin(), last = target_types_.end(); i != last; ++i, ++p)
       {
-         pstring new_name = make_product_name(engine_->pstring_pool(),
-                                              *composite_target_name,
-                                              *i->type_,
-                                              props,
-                                              i->need_tag_ ? &owner : NULL,
-                                              /*primary_target=*/ p == 0);
+         std::string new_name = make_product_name(*composite_target_name,
+                                                  *i->type_,
+                                                  props,
+                                                  i->need_tag_ ? &owner : NULL,
+                                                  /*primary_target=*/ p == 0);
 
          result->products_.push_back(create_target(&owner, result->sources_, new_name, i->type_, &props));
       }
@@ -99,11 +98,10 @@ generator::construct(const target_type& type_to_construct,
    }
    else
    {
-      pstring new_name = make_product_name(engine_->pstring_pool(),
-                                           *source_target,
-                                           type_to_construct,
-                                           props,
-                                           producable_types().front().need_tag_ ? &owner : NULL);
+      std::string new_name = make_product_name(*source_target,
+                                               type_to_construct,
+                                               props,
+                                               producable_types().front().need_tag_ ? &owner : NULL);
       assert(sources.size() == 1);
 
       boost::intrusive_ptr<build_node> result(new build_node(owner, composite_));

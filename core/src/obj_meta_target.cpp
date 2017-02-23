@@ -9,7 +9,7 @@
 namespace hammer{
 
 obj_meta_target::obj_meta_target(hammer::project* p, 
-                                 const pstring& name, 
+                                 const std::string& name,
                                  const requirements_decl& req, 
                                  const requirements_decl& usage_req)
    : typed_meta_target(p, 
@@ -27,8 +27,7 @@ main_target* obj_meta_target::construct_main_target(const main_target* owner, co
                               *owner,
                               name(), 
                               &type(), 
-                              properties,
-                              get_engine()->targets_pool());
+                              properties);
 
 }
 

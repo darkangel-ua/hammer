@@ -25,7 +25,7 @@ pch_generator::construct(const target_type& type_to_construct,
                          const feature_set& props,
                          const std::vector<boost::intrusive_ptr<build_node> >& sources,
                          const basic_target* t,
-                         const pstring* composite_target_name,
+                         const std::string* composite_target_name,
                          const main_target& owner) const
 {
    // leave only CPP C H targets - discard others

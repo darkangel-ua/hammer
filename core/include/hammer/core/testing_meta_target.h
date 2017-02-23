@@ -9,7 +9,7 @@ namespace hammer
    {
       public:
          testing_meta_target(hammer::project* p, 
-                             const pstring& name, 
+                             const std::string& name,
                              const requirements_decl& req, 
                              const requirements_decl& usage_req,
                              const target_type& t);

@@ -47,7 +47,7 @@ void unix_libraries_argument_writer::write_impl(std::ostream& output,
                 i->source_target_->type().equal_or_derived_from(*shared_lib_type_) ||
                 i->source_target_->type().equal_or_derived_from(*import_lib_type_))
             {
-               location_t source_path = i->source_target_->location() / i->source_target_->name().to_string();
+               location_t source_path = i->source_target_->location() / i->source_target_->name();
                source_path.normalize();
                output << " \"" << source_path.string() << '"';
             }

@@ -5,7 +5,6 @@
 #include <hammer/core/subfeature_def.h>
 #include <hammer/core/subfeature.h>
 #include <hammer/core/feature_registry.h>
-#include <hammer/core/pool.h>
 
 using namespace std;
 using namespace hammer;

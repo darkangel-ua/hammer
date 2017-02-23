@@ -5,7 +5,7 @@
 
 namespace hammer{
 
-generated_target::generated_target(const main_target* mt, const pstring& n, 
+generated_target::generated_target(const main_target* mt, const std::string& n,
                                    const target_type* t, const feature_set* f) : file_target(mt, n, t, f)
 {
 }
@@ -22,7 +22,7 @@ std::vector<boost::intrusive_ptr<build_node> > generated_target::generate() cons
 
 void generated_target::clean(const build_environment& environment) const
 {
-   environment.remove(location() / name().to_string());
+   environment.remove(location() / name());
 }
 
 }

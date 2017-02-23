@@ -2,7 +2,6 @@
 #define h_e7c984c0_a4f6_42e2_89b9_ec70352d581c
 
 #include "basic_target.h"
-#include "pstring.h"
 #include "location.h"
 #include <vector>
 #include <iosfwd>
@@ -21,10 +20,9 @@ namespace hammer
          typedef sources_t dependencies_t;
 
          main_target(const basic_meta_target* mt,
-                     const pstring& name, 
+                     const std::string& name,
                      const target_type* t, 
-                     const feature_set* props,
-                     pool& p);
+                     const feature_set* props);
 
          virtual const location_t& location() const;
          void sources(const sources_t& srcs);

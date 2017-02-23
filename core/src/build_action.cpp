@@ -42,7 +42,7 @@ void build_action::clean_on_fail(const build_node& node, const build_environment
 {
    for(build_node::targets_t::const_iterator i = node.products_.begin(), last = node.products_.end(); i != last; ++i)
    {
-      location_t target_path = (**i).location() / (**i).name().to_string();
+      location_t target_path = (**i).location() / (**i).name();
       environment.remove(target_path);
    }
 }

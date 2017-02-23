@@ -5,7 +5,6 @@
 #include <vector>
 #include <utility>
 #include <hammer/core/feature_set.h>
-#include <hammer/core/pstring.h>
 #include <boost/guid.hpp>
 #include <boost/intrusive_ptr.hpp>
 #include <hammer/core/build_node.h>
@@ -101,7 +100,7 @@ namespace hammer
 
                void write(write_context& ctx, const std::string& path_prefix) const;
                
-               pstring file_name_; 
+               std::string file_name_;
                file_config_t file_config;
             };
 

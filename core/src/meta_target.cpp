@@ -64,7 +64,7 @@ void remove_duplicates(deduplicator_t& deduplicator,
 }
 
    meta_target::meta_target(hammer::project* p,
-                            const pstring& name, 
+                            const std::string& name,
                             const requirements_decl& props, 
                             const requirements_decl& usage_req) 
                            : basic_meta_target(p, name, props, usage_req)

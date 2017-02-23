@@ -9,7 +9,7 @@ class htmpl_meta_target : public typed_meta_target
 {
    public:
       htmpl_meta_target(hammer::project* p,
-                        const pstring& name,
+                        const std::string& name,
                         const source_decl& src);
    protected:
       main_target*

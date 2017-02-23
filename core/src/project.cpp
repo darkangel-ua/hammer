@@ -12,7 +12,7 @@ using namespace std;
 namespace hammer{
 
 project::project(hammer::engine* e,
-                 const pstring& name,
+                 const std::string& name,
                  const location_t& location,
                  const requirements_decl& req,
                  const requirements_decl& usage_req)
@@ -57,12 +57,12 @@ void project::add_targets_as_explicit(bool v)
    add_targets_as_explicit_ = v;
 }
 
-const basic_meta_target* project::find_target(const pstring& name) const
+const basic_meta_target* project::find_target(const std::string& name) const
 {
    return const_cast<project*>(this)->find_target(name);
 }
 
-basic_meta_target* project::find_target(const pstring& name)
+basic_meta_target* project::find_target(const std::string& name)
 {
    targets_t::iterator i = targets_.find(name);
    if (i == targets_.end())
@@ -97,14 +97,14 @@ int compute_alternative_rank(const feature_set& target_properties,
 }
 
 project::selected_target
-project::select_best_alternative(const pstring& target_name,
+project::select_best_alternative(const std::string& target_name,
                                  const feature_set& build_request,
                                  const bool allow_locals) const
 {
 
    selected_target result = try_select_best_alternative(target_name, build_request, allow_locals);
    if (result.target_ == NULL)
-      throw std::runtime_error("Can't select alternative for target '" + target_name.to_string() + "'.");
+      throw std::runtime_error("Can't select alternative for target '" + target_name + "'.");
 
    return result;
 }
@@ -116,7 +116,7 @@ static bool s_great(const project::selected_target& lhs,
 }
 
 void error_cannot_choose_alternative(const project& p,
-                                     const pstring& target_name,
+                                     const std::string& target_name,
                                      const feature_set& build_request_param)
 {
    auto fmt = boost::format("Failed to selecting best alternatives for target '%s' in project '%s'\n"
@@ -129,7 +129,7 @@ void error_cannot_choose_alternative(const project& p,
 }
 
 project::selected_target
-project::try_select_best_alternative(const pstring& target_name,
+project::try_select_best_alternative(const std::string& target_name,
                                      const feature_set& build_request_param,
                                      const bool allow_locals) const
 {
@@ -140,7 +140,7 @@ project::try_select_best_alternative(const pstring& target_name,
    boost::iterator_range<targets_t::const_iterator> r = targets_.equal_range(target_name);
 
    if (r.empty())
-      throw std::runtime_error("Can't find target '" + target_name.to_string() + "'");
+      throw std::runtime_error("Can't find target '" + target_name + "'");
 
    vector<selected_target> selected_targets;
 
@@ -175,7 +175,7 @@ void project::instantiate(const std::string& target_name,
                           const feature_set& build_request,
                           std::vector<basic_target*>* result) const
 {
-   selected_target best_target = select_best_alternative(pstring(engine_->pstring_pool(), target_name), build_request);
+   selected_target best_target = select_best_alternative(target_name, build_request);
    feature_set* usage_requirements = engine_->feature_registry().make_set();
    best_target.target_->instantiate(0, *best_target.resolved_build_request_, result, usage_requirements);
 }
@@ -237,7 +237,7 @@ feature_set* project::try_resolve_local_features(const feature_set& fs) const
    return result;
 }
 
-void project::mark_as_explicit(const pstring& name)
+void project::mark_as_explicit(const std::string& name)
 {
    boost::iterator_range<targets_t::iterator> targets = targets_.equal_range(name);
    for(targets_t::iterator i = targets.begin(); i != targets.end(); ++i)

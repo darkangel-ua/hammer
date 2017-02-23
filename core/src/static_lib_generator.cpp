@@ -26,7 +26,7 @@ static_lib_generator::construct(const target_type& type_to_construct,
                                 const feature_set& props,
                                 const std::vector<boost::intrusive_ptr<build_node> >& sources,
                                 const basic_target* t,
-                                const pstring* name,
+                                const std::string* name,
                                 const main_target& owner) const
 {
    typedef std::vector<boost::intrusive_ptr<build_node> > build_sources_t;

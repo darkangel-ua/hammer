@@ -5,7 +5,6 @@
 #include <boost/noncopyable.hpp>
 #include <memory>
 #include <string>
-#include "pstring.h"
 #include "type_tag.h"
 
 namespace hammer
@@ -20,9 +19,9 @@ namespace hammer
          // FIXME: resolve_from_name should have other name
          const target_type* resolve_from_suffix(const char* first, const char* last) const;
          const target_type* resolve_from_suffix(const std::string& suffix) const;
-         const target_type* resolve_from_target_name(const pstring& name) const;
-         const target_type& hard_resolve_from_target_name(const pstring& name) const;
-         const target_type& soft_resolve_from_target_name(const pstring& name) const;
+         const target_type* resolve_from_target_name(const std::string& name) const;
+         const target_type& hard_resolve_from_target_name(const std::string& name) const;
+         const target_type& soft_resolve_from_target_name(const std::string& name) const;
          const target_type& get(const type_tag& tag) const;
          const target_type* find(const type_tag& tag) const;
          const target_type& insert(const target_type& t);

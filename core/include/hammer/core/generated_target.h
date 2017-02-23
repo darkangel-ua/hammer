@@ -8,7 +8,7 @@ namespace hammer
    class generated_target : public file_target
    {
       public:
-         generated_target(const main_target* mt, const pstring& n, 
+         generated_target(const main_target* mt, const std::string& n,
                           const target_type* t, const feature_set* f);
          virtual const location_t& location() const;
          virtual std::vector<boost::intrusive_ptr<build_node> > generate() const;

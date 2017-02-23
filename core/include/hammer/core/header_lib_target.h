@@ -8,7 +8,7 @@ namespace hammer
    class header_lib_target : public basic_target
    {
       public:
-         header_lib_target(const main_target* mt, const pstring& name,
+         header_lib_target(const main_target* mt, const std::string& name,
                            const target_type* t, const feature_set* f);
          virtual const location_t& location() const { return empty_location_; }
          virtual std::vector<boost::intrusive_ptr<build_node> > generate() const;

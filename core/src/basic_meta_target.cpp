@@ -16,7 +16,7 @@ using namespace std;
 namespace hammer{
 
 basic_meta_target::basic_meta_target(hammer::project* p,
-                                     const pstring& name,
+                                     const std::string& name,
                                      const requirements_decl& req,
                                      const requirements_decl& usage_req)
                                      :
@@ -55,10 +55,10 @@ void basic_meta_target::instantiate_simple_targets(const sources_decl& targets,
    {
       const hammer::target_type* tp = i->type();
       if (tp == 0)
-         throw std::runtime_error("Can't resolve type from source '" + i->target_path().to_string() + "'.");
+         throw std::runtime_error("Can't resolve type from source '" + i->target_path() + "'.");
 
-      location_t source_location = (owner.location() / i->target_path().to_string()).normalize();
-      const pstring source_filename = pstring(get_engine()->pstring_pool(), source_location.filename().string());
+      location_t source_location = (owner.location() / i->target_path()).normalize();
+      const std::string source_filename = source_location.filename().string();
       source_target* st = new source_target(&owner, source_location.branch_path(), source_filename, tp, &owner.properties());
       result->push_back(st);
    }
@@ -116,7 +116,7 @@ void basic_meta_target::resolve_meta_target_source(const source_decl& source,
    }
 
 	// source has target_name_ only when it was explicitly requested (./foo//bar) where target_name_ == "bar"
-   engine::loaded_projects_t suitable_projects = get_engine()->load_project(source.target_path().to_string(), *project_);
+   engine::loaded_projects_t suitable_projects = get_engine()->load_project(source.target_path(), *project_);
    if (source.target_name().empty())
    {
       try
@@ -127,7 +127,7 @@ void basic_meta_target::resolve_meta_target_source(const source_decl& source,
       }
       catch(const std::exception& e)
       {
-         throw std::runtime_error("While resolving meta target '" + source.target_path().to_string() +
+         throw std::runtime_error("While resolving meta target '" + source.target_path() +
                                   "' at '" + location().string() + "\n" + e.what());
       }
    }
@@ -149,7 +149,7 @@ const feature_set& basic_meta_target::resolve_undefined_features(const feature_s
                                              ? get_project()->try_resolve_local_features(fs)
                                              : &fs;
    if (without_undefined->has_undefined_features())
-      throw std::runtime_error("Target '" + name().to_string() + "' at location '" +
+      throw std::runtime_error("Target '" + name() + "' at location '" +
                                location().string() + "' has been instantiated with unknown features");
 
    return *without_undefined;
@@ -198,7 +198,7 @@ engine* basic_meta_target::get_engine() const
 }
 
 static
-bool has_slash(const pstring& s)
+bool has_slash(const std::string& s)
 {
    for (const char c : s)
       if (c == '/')
@@ -220,7 +220,7 @@ void adjust_dependency_features_sources(feature_set& set_to_adjust,
           !has_slash(source.target_path()))
       {
          source_decl adjusted_source = source;
-         adjusted_source.target_path(pstring(relative_to_target.get_engine()->pstring_pool(), "./"), nullptr);
+         adjusted_source.target_path("./", nullptr);
          adjusted_source.target_name(source.target_path());
 
          f->set_dependency_data(adjusted_source, &relative_to_target);

@@ -8,7 +8,7 @@ namespace hammer
    class pch_meta_target : public meta_target
    {
       public:
-         pch_meta_target(hammer::project* p, const pstring& name, 
+         pch_meta_target(hammer::project* p, const std::string& name,
                          const requirements_decl& req, 
                          const requirements_decl& usage_req);
       protected:

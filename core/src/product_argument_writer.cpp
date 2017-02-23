@@ -37,14 +37,14 @@ void product_argument_writer::write_impl(std::ostream& output, const build_node&
          {
             case output_strategy::RELATIVE_TO_MAIN_TARGET:
             {
-               location_t product_path = relative_path((**i).get_main_target()->intermediate_dir(), (**i).get_main_target()->location()) / (**i).name().to_string();
+               location_t product_path = relative_path((**i).get_main_target()->intermediate_dir(), (**i).get_main_target()->location()) / (**i).name();
                output << product_path.string<std::string>();
                break;
             }
 
             case output_strategy::RELATIVE_TO_WORKING_DIR:
             {
-               const location_t full_product_path = (**i).get_main_target()->intermediate_dir() / (**i).name().to_string();
+               const location_t full_product_path = (**i).get_main_target()->intermediate_dir() / (**i).name();
                const location_t product_path = relative_path(full_product_path, environment.working_directory(**i));
 
                output << product_path.string();
@@ -53,7 +53,7 @@ void product_argument_writer::write_impl(std::ostream& output, const build_node&
 
             case output_strategy::FULL_PATH:
             {
-               const location_t full_product_path = (**i).get_main_target()->intermediate_dir() / (**i).name().to_string();
+               const location_t full_product_path = (**i).get_main_target()->intermediate_dir() / (**i).name();
                output << full_product_path.string();
 
                break;
@@ -61,7 +61,7 @@ void product_argument_writer::write_impl(std::ostream& output, const build_node&
 
             case output_strategy::FULL_UNC_PATH:
             {
-               location_t product_path = (**i).get_main_target()->intermediate_dir() / (**i).name().to_string();
+               location_t product_path = (**i).get_main_target()->intermediate_dir() / (**i).name();
                product_path.normalize();
                output << "\\\\?\\" << product_path.string<std::string>();
                break;

@@ -8,7 +8,7 @@
 
 namespace hammer{
 
-copy_meta_target::copy_meta_target(hammer::project* p, const pstring& name, 
+copy_meta_target::copy_meta_target(hammer::project* p, const std::string& name,
                                    const requirements_decl& props,
                                    const requirements_decl& usage_req)
    : meta_target(p, name, props, usage_req)
@@ -20,8 +20,7 @@ main_target* copy_meta_target::construct_main_target(const main_target* owner, c
    main_target* mt = new copy_main_target(this, 
                                           name(), 
                                           &get_engine()->get_type_registry().get(types::COPIED), 
-                                          properties,
-                                          get_engine()->targets_pool());
+                                          properties);
    return mt;
 }
 

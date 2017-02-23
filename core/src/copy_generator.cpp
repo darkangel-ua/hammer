@@ -53,9 +53,9 @@ namespace{
       assert(node.sources_.size() == 1);
 
       location_t destination = node.products_.front()->location() / 
-                               node.products_.front()->name().to_string();
+                               node.products_.front()->name();
       location_t source = node.sources_.front().source_target_->location() / 
-                          node.sources_.front().source_target_->name().to_string();
+                          node.sources_.front().source_target_->name();
       destination.normalize();
       source.normalize();
       
@@ -90,7 +90,7 @@ copy_generator::construct(const target_type& type_to_construct,
                           const feature_set& props,
                           const nodes_t& sources,
                           const basic_target* t,
-                          const pstring* composite_target_name,
+                          const std::string* composite_target_name,
                           const main_target& owner) const
 {
    assert(dynamic_cast<const copy_main_target*>(&owner));

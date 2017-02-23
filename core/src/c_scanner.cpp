@@ -644,7 +644,7 @@ boost::posix_time::ptime c_scanner::process(const basic_target& t,
 {
    c_scanner_context& context = static_cast<c_scanner_context&>(context_outer);
 
-   location_t target_path = t.location() / t.name().to_string();
+   location_t target_path = t.location() / t.name();
    target_path.normalize();
 
    const c_scanner_context::directories_t& include_files_dirs = context.get_include_dirs(t.properties());

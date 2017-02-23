@@ -22,7 +22,7 @@ location_t msvc_output_location_strategy::compute_output_location(const main_tar
    if (i_variant != mt.properties().end())
       variant_name = (**i_variant).name();
 
-   return mt.get_project()->location() / ".hammer/vc80" / mt.get_meta_target()->name().to_string() / (variant_name + '-' + md5.to_string());
+   return mt.get_project()->location() / ".hammer/vc80" / mt.get_meta_target()->name() / (variant_name + '-' + md5.to_string());
 }
 
 }

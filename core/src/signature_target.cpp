@@ -11,7 +11,7 @@ void signature_target::timestamp_info_impl() const
    timestamp_info_.is_unknown_ = false;
 
    std::string signature = dump_for_hash(get_main_target()->properties(), true);
-   location_t l = location() / name().to_string();
+   location_t l = location() / name();
    l.normalize();
    
    std::ifstream f(l.string().c_str());

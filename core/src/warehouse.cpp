@@ -98,7 +98,7 @@ void add_traps(project& p,
 
    for(const auto& v : not_installed_versions) {
       for (const string& target_name : v.targets_) {
-         auto_ptr<basic_meta_target> trap_target(new warehouse_meta_target(p, pstring(p.get_engine()->pstring_pool(), target_name), v.version_));
+         auto_ptr<basic_meta_target> trap_target(new warehouse_meta_target(p, target_name, v.version_));
          p.add_target(trap_target);
       }
    }
@@ -106,19 +106,19 @@ void add_traps(project& p,
 
 static
 void warehouse_trap_rule(project* p,
-                         pstring& public_id)
+                         string& public_id)
 {
    warehouse& wh = p->get_engine()->warehouse();
-   if (!wh.has_project("/" / location_t(public_id.to_string()), warehouse::any_version))
-      throw std::runtime_error("Can't find '" + public_id.to_string() + "' in warehouse");
+   if (!wh.has_project("/" / location_t(public_id), warehouse::any_version))
+      throw std::runtime_error("Can't find '" + public_id + "' in warehouse");
 
-   add_traps(*p, public_id.to_string());
+   add_traps(*p, public_id);
 }
 
 void install_warehouse_rules(call_resolver& resolver,
                              engine& engine)
 {
-   resolver.insert("warehouse-trap", boost::function<void (project*, pstring&)>(boost::bind(warehouse_trap_rule, _1, _2)));
+   resolver.insert("warehouse-trap", boost::function<void (project*, string&)>(boost::bind(warehouse_trap_rule, _1, _2)));
 }
 
 }

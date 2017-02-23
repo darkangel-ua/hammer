@@ -20,7 +20,7 @@ make_requirements(feature_registry& fr,
 }
 
 warehouse_meta_target::warehouse_meta_target(project& p,
-                                             const pstring& name,
+                                             const std::string& name,
                                              const string& version)
    : meta_target(&p, name, make_requirements(p.get_engine()->feature_registry(), version), requirements_decl())
 {

@@ -8,7 +8,7 @@ namespace hammer
    class searched_lib_target : public file_target
    {
       public:
-         searched_lib_target(const main_target* mt, const pstring& name,
+         searched_lib_target(const main_target* mt, const std::string& name,
                              const target_type* t, const feature_set* f) : file_target(mt, name, t, f) 
          {
          }

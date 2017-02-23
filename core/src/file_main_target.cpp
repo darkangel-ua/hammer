@@ -5,13 +5,12 @@
 namespace hammer{
 
 file_main_target::file_main_target(const basic_meta_target* mt,
-                                   const pstring& name, 
-                                   const pstring& filename,
+                                   const std::string& name,
+                                   const std::string& filename,
                                    const feature_set* props,
-                                   const target_type& t,
-                                   pool& p)
+                                   const target_type& t)
    : 
-    main_target(mt, name, &t, props, p),
+    main_target(mt, name, &t, props),
     type_(&t),
     filename_(filename)
 {

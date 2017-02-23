@@ -3,7 +3,7 @@
 namespace hammer {
 
 virtual_target::virtual_target(const main_target* mt,
-                               const pstring& name,
+                               const std::string& name,
                                const target_type* t,
                                const feature_set* f)
    : basic_target(mt, name, t, f)

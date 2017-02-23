@@ -47,11 +47,10 @@ class qt_uic_main_target : public main_target
    public:
       qt_uic_main_target(const meta_target* mt,
                          const main_target& owner,
-                         const pstring& name,
+                         const std::string& name,
                          const target_type* t,
-                         const feature_set* props,
-                         pool& p)
-                         : main_target(mt, name, t, props, p), owner_(owner)
+                         const feature_set* props)
+                         : main_target(mt, name, t, props), owner_(owner)
       {
       }
 
@@ -66,7 +65,7 @@ class qt_uic_meta_target : public typed_meta_target
 {
    public:
       qt_uic_meta_target(hammer::project* p,
-                         const pstring& name,
+                         const std::string& name,
                          const sources_decl& sources,
                          const requirements_decl& req,
                          const requirements_decl& usage_req)
@@ -94,8 +93,7 @@ qt_uic_meta_target::construct_main_target(const main_target* owner,
                              *owner,
                              name(),
                              &type(),
-                             properties,
-                             get_engine()->targets_pool());
+                             properties);
 }
 
 void qt_uic_meta_target::compute_usage_requirements(feature_set& result,
@@ -111,7 +109,7 @@ void qt_uic_meta_target::compute_usage_requirements(feature_set& result,
 
    // making dependency on self :)
    feature* dependency = result.owner().create_feature("dependency", "");
-   dependency->set_dependency_data(source_decl(name(), pstring(), nullptr, nullptr), this);
+   dependency->set_dependency_data(source_decl(name(), std::string(), nullptr, nullptr), this);
 
    result.join(uic_inc)
          .join(dependency);
@@ -122,14 +120,13 @@ static sources_decl qt_uic_rule(project* p,
 
 {
    auto_ptr<basic_meta_target> mt(new qt_uic_meta_target(p,
-                                                         pstring(p->get_engine()->pstring_pool(), "qt.uic"),
+                                                         "qt.uic",
                                                          sources,
                                                          requirements_decl(),
                                                          requirements_decl()));
 
    sources_decl result;
-   result.push_back(source_decl(pstring(p->get_engine()->pstring_pool(), "./"),
-                                mt->name(), NULL, NULL));
+   result.push_back(source_decl("./", mt->name(), NULL, NULL));
 
    p->add_target(mt);
 
@@ -159,7 +156,7 @@ class qt_moc_meta_target : public alias_meta_target
 {
    public:
       qt_moc_meta_target(hammer::project* p,
-                         const pstring& name,
+                         const std::string& name,
                          const sources_decl& sources,
                          const requirements_decl& req,
                          const requirements_decl& usage_req)
@@ -170,7 +167,7 @@ class qt_moc_meta_target : public alias_meta_target
 };
 
 static void qt_moc_rule(project* p,
-                        const pstring& name,
+                        const string& name,
                         const sources_decl& sources,
                         requirements_decl* requirements,
                         requirements_decl* usage_requirements)
@@ -286,16 +283,16 @@ void add_lib(project& qt_project,
 #if defined(_WIN32)
    auto_ptr<prebuilt_lib_meta_target> lib_debug(
          new prebuilt_lib_meta_target(&qt_project,
-                               pstring(e.pstring_pool(), lib_name),
-                               pstring(e.pstring_pool(), "./lib/" + lib_name + "d" + lib_tag + ".lib"), debug_req, requirements_decl()));
+                               lib_name,
+                               "./lib/" + lib_name + "d" + lib_tag + ".lib", debug_req, requirements_decl()));
    auto_ptr<prebuilt_lib_meta_target> lib_release(
          new prebuilt_lib_meta_target(&qt_project,
-                               pstring(e.pstring_pool(), lib_name),
-                               pstring(e.pstring_pool(), "./lib/" + lib_name + lib_tag + ".lib"), release_req, requirements_decl()));
+                               lib_name,
+                               "./lib/" + lib_name + lib_tag + ".lib", release_req, requirements_decl()));
    auto_ptr<prebuilt_lib_meta_target> lib_profile(
          new prebuilt_lib_meta_target(&qt_project,
-                               pstring(e.pstring_pool(), lib_name),
-                               pstring(e.pstring_pool(), "./lib/" + lib_name + lib_tag + ".lib"), profile_req, requirements_decl()));
+                               lib_name,
+                               "./lib/" + lib_name + lib_tag + ".lib", profile_req, requirements_decl()));
 #else
    feature* search_feature = e.feature_registry().create_feature("search", "./lib/");
    search_feature->get_path_data().target_ = &qt_project;
@@ -305,8 +302,8 @@ void add_lib(project& qt_project,
    }
    auto_ptr<searched_lib_meta_target> lib_debug(
          new searched_lib_meta_target(&qt_project,
-                                      pstring(e.pstring_pool(), lib_name),
-                                      pstring(e.pstring_pool(), lib_name),
+                                      lib_name,
+                                      lib_name,
                                       debug_req,
                                       requirements_decl(),
                                       e.get_type_registry().get(types::SEARCHED_SHARED_LIB)));
@@ -317,8 +314,8 @@ void add_lib(project& qt_project,
    }
    auto_ptr<searched_lib_meta_target> lib_release(
          new searched_lib_meta_target(&qt_project,
-                                      pstring(e.pstring_pool(), lib_name),
-                                      pstring(e.pstring_pool(), lib_name),
+                                      lib_name,
+                                      lib_name,
                                       release_req,
                                       requirements_decl(),
                                       e.get_type_registry().get(types::SEARCHED_SHARED_LIB)));
@@ -328,8 +325,8 @@ void add_lib(project& qt_project,
    }
    auto_ptr<searched_lib_meta_target> lib_profile(
          new searched_lib_meta_target(&qt_project,
-                                      pstring(e.pstring_pool(), lib_name),
-                                      pstring(e.pstring_pool(), lib_name),
+                                      lib_name,
+                                      lib_name,
                                       profile_req,
                                       requirements_decl(),
                                       e.get_type_registry().get(types::SEARCHED_SHARED_LIB)));
@@ -340,10 +337,7 @@ void add_lib(project& qt_project,
       requirements_decl usage_req;
       feature* source_feature = e.feature_registry().create_feature("source", dependencies[i]);
       {
-         source_decl sd(pstring(e.pstring_pool(), "/Qt"),
-                        pstring(e.pstring_pool(), dependencies[i]),
-                        NULL,
-                        e.feature_registry().make_set());
+         source_decl sd("/Qt", dependencies[i], NULL, e.feature_registry().make_set());
          source_feature->set_dependency_data(sd, &qt_project);
          auto_ptr<just_feature_requirement> source_req(new just_feature_requirement(source_feature));
          usage_req.add(auto_ptr<requirement_base>(source_req));
@@ -460,11 +454,7 @@ void add_types_and_generators(engine& e,
    }
 
    // register qt libs
-   auto_ptr<project> qt_project(new project(&e,
-                                            pstring(e.pstring_pool(), "Qt"),
-                                            *toolset_home,
-                                            requirements_decl(),
-                                            requirements_decl()));
+   auto_ptr<project> qt_project(new project(&e, "Qt", *toolset_home, requirements_decl(), requirements_decl()));
    if (qt5) {
       add_lib(*qt_project, "Qt5Core", vector<string>(), e, include_tag, "QtCore", lib_tag);
       add_lib(*qt_project, "Qt5Gui", list_of("Qt5Core"), e, include_tag, "QtGui", lib_tag);
@@ -475,10 +465,10 @@ void add_types_and_generators(engine& e,
    }
 
    e.insert(qt_project.get());
-   e.use_project(*qt_project, pstring(e.pstring_pool(), "/Qt"), "");
+   e.use_project(*qt_project, "/Qt", "");
    qt_project.release();
 
-   e.call_resolver().insert("qt.moc", boost::function<void (project*, const pstring&, const sources_decl&, requirements_decl*, requirements_decl*)>(&qt_moc_rule));
+   e.call_resolver().insert("qt.moc", boost::function<void (project*, const string&, const sources_decl&, requirements_decl*, requirements_decl*)>(&qt_moc_rule));
    e.call_resolver().insert("qt.uic", boost::function<sources_decl (project*, const sources_decl&)>(&qt_uic_rule));
 }
 

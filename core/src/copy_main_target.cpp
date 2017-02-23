@@ -12,11 +12,10 @@
 namespace hammer{
 
 copy_main_target::copy_main_target(const basic_meta_target* mt,
-                                   const pstring& name, 
+                                   const std::string& name,
                                    const target_type* t, 
-                                   const feature_set* props,
-                                   pool& p)
-   : main_target(mt, name, t, props, p),
+                                   const feature_set* props)
+   : main_target(mt, name, t, props),
      recursive_(false)
 {
    feature_set::const_iterator d = props->find("destination");

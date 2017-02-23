@@ -89,7 +89,7 @@ compile_fail_generator::construct(const target_type& type_to_construct,
                                   const feature_set& props,
                                   const build_nodes_t& sources,
                                   const basic_target* source_target,
-                                  const pstring* composite_target_name,
+                                  const std::string* composite_target_name,
                                   const main_target& owner) const
 {
    build_nodes_t compile_nodes = compile_generator_->construct(type_to_construct, props, sources, source_target, composite_target_name, owner);
@@ -110,7 +110,7 @@ compile_fail_generator::construct(const target_type& type_to_construct,
 basic_target*
 compile_fail_generator::create_target(const main_target* mt,
                                       const build_node::sources_t& sources,
-                                      const pstring& n,
+                                      const string& n,
                                       const target_type* t,
                                       const feature_set* f) const
 {

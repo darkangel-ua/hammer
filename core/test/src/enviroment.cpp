@@ -44,20 +44,20 @@ setuped_engine::setuped_engine(bool install_toolsets)
 static
 void use_toolset_rule(project*,
                       engine& e,
-                      pstring& toolset_name,
-                      pstring& toolset_version,
-                      pstring* toolset_home_)
+                      string& toolset_name,
+                      string& toolset_version,
+                      string* toolset_home_)
 {
    location_t toolset_home;
    if (toolset_home_ != NULL)
-      toolset_home = toolset_home_->to_string();
+      toolset_home = *toolset_home_;
 
-   e.toolset_manager().init_toolset(e, toolset_name.to_string(), toolset_version.to_string(), toolset_home_ == NULL ? NULL : &toolset_home);
+   e.toolset_manager().init_toolset(e, toolset_name, toolset_version, toolset_home_ == NULL ? NULL : &toolset_home);
 }
 
 complete_build_tests_environment::complete_build_tests_environment()
 {
-   engine_.call_resolver().insert("use-toolset", boost::function<void (project*, pstring&, pstring&, pstring*)>(boost::bind(use_toolset_rule, _1, boost::ref(engine_), _2, _3, _4)));
+   engine_.call_resolver().insert("use-toolset", boost::function<void (project*, string&, string&, string*)>(boost::bind(use_toolset_rule, _1, boost::ref(engine_), _2, _3, _4)));
 
    hammer::types::register_standart_types(engine_.get_type_registry(), engine_.feature_registry());
    install_toolsets();

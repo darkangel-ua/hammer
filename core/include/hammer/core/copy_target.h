@@ -8,7 +8,7 @@ namespace hammer
    class copy_target : public file_target
    {
       public:
-         copy_target(const main_target* mt, const pstring& name,
+         copy_target(const main_target* mt, const std::string& name,
                      const target_type* t, const feature_set* f);
          virtual const location_t& location() const;
    };

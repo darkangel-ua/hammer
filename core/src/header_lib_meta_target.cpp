@@ -13,7 +13,7 @@ using namespace std;
 namespace hammer{
 
 header_lib_meta_target::header_lib_meta_target(hammer::project* p,
-                                               const pstring& name,
+                                               const std::string& name,
                                                const requirements_decl& requirements,
                                                const requirements_decl& usage_requirements)
    : basic_meta_target(p, name, requirements, usage_requirements)
@@ -65,8 +65,7 @@ void header_lib_meta_target::instantiate_impl(const main_target* owner,
    main_target* mt = new header_lib_main_target(this,
                                                 name(),
                                                 &get_engine()->get_type_registry().get(types::HEADER_LIB),
-                                                mt_fs,
-                                                get_engine()->targets_pool());
+                                                mt_fs);
    mt_fs = mt->properties().clone();
 
    vector<basic_target*> instantiated_simple_targets;

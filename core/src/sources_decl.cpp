@@ -79,14 +79,14 @@ void sources_decl::clone_if_needed()
    }
 }
 
-void sources_decl::push_back(const pstring& v, const type_registry& tr)
+void sources_decl::push_back(const std::string& v, const type_registry& tr)
 {
    clone_if_needed();
 
    if (std::find(v.begin(), v.end(), '<') != v.end())
       throw std::runtime_error("Feature signature found in sources");
 
-   impl_->values_.push_back(source_decl(v, pstring(), tr.resolve_from_target_name(v), NULL));
+   impl_->values_.push_back(source_decl(v, std::string(), tr.resolve_from_target_name(v), NULL));
 }
 
 void sources_decl::push_back(const source_decl& v)
@@ -99,11 +99,11 @@ void sources_decl::push_back(const source_decl& v)
    impl_->values_.push_back(v);
 }
 
-void sources_decl::insert(const std::vector<pstring>& v, const type_registry& tr)
+void sources_decl::insert(const std::vector<std::string>& v, const type_registry& tr)
 {
    clone_if_needed();
-   for(std::vector<pstring>::const_iterator i = v.begin(), last = v.end(); i != last; ++i)
-           push_back(*i, tr);
+   for (auto& vv : v)
+      push_back(vv, tr);
 }
 
 void sources_decl::add_to_source_properties(const feature_set& props)

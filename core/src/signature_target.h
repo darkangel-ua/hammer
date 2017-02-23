@@ -9,7 +9,7 @@ namespace hammer
 class signature_target : public generated_target
 {
    public:
-      signature_target(const main_target* mt, const pstring& n, 
+      signature_target(const main_target* mt, const std::string& n,
                        const target_type* t, const feature_set* f)
          : generated_target(mt, n, t, f)
       {}

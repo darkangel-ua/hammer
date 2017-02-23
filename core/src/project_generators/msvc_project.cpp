@@ -311,9 +311,9 @@ const std::string msvc_project::name() const
 {
    string version = variants_.front().target_->version();
    if (version.empty())
-      return variants_.front().target_->get_meta_target()->name().to_string();
+      return variants_.front().target_->get_meta_target()->name();
    else
-      return variants_.front().target_->get_meta_target()->name().to_string() + '-' + version;
+      return variants_.front().target_->get_meta_target()->name() + '-' + version;
 }
 
 void msvc_project::write_header(ostream& s) const
@@ -453,7 +453,7 @@ void msvc_project::file_configuration::write(write_context& ctx, const variant& 
 
 void msvc_project::file_with_cfgs_t::write(write_context& ctx, const std::string& path_prefix) const
 {
-   location_t file_name(location_t(path_prefix) / file_name_.to_string());
+   location_t file_name(location_t(path_prefix) / file_name_);
    file_name.normalize();
    ctx.output_ << "         <File\n"
                   "            RelativePath=\"" << file_name.string() << "\">\n";
@@ -472,8 +472,8 @@ struct less_target
 {
    bool operator ()(const basic_target* lhs, const basic_target* rhs)
    {
-      location_t lhs_id = lhs->location() / lhs->name().to_string();
-      location_t rhs_id = rhs->location() / rhs->name().to_string();
+      location_t lhs_id = lhs->location() / lhs->name();
+      location_t rhs_id = rhs->location() / rhs->name();
       lhs_id.normalize();
       rhs_id.normalize();
 
@@ -597,10 +597,10 @@ void msvc_project::gether_files_impl(const build_node& node, variant& v)
       {
          if (mi->source_target_->get_main_target()->type().equal_or_derived_from(searched_lib_))
          { // this target is searched lib product
-            const pstring& file_name = mi->source_target_->name();
+            const std::string& file_name = mi->source_target_->name();
             location_t searched_file(mi->source_target_->location().empty()
-                                       ? file_name.to_string()
-                                       : relative_path(mi->source_target_->location(), project_output_dir_) / file_name.to_string());
+                                       ? file_name
+                                       : relative_path(mi->source_target_->location(), project_output_dir_) / file_name);
             searched_file.normalize();
          }
          else

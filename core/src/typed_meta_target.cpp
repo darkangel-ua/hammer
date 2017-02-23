@@ -11,8 +11,7 @@ main_target* typed_meta_target::construct_main_target(const main_target* owner, 
    main_target* mt = new main_target(this, 
                                      name(), 
                                      type_, 
-                                     properties,
-                                     get_engine()->targets_pool());
+                                     properties);
    return mt;
 }
 

@@ -3,11 +3,10 @@
 
 namespace hammer{
 header_lib_main_target::header_lib_main_target(const basic_meta_target* mt,
-                                               const pstring& name, 
+                                               const std::string& name,
                                                const target_type* t, 
-                                               const feature_set* props,
-                                               pool& p)
-   : main_target(mt, name, t, props, p)
+                                               const feature_set* props)
+   : main_target(mt, name, t, props)
 {
 
 }

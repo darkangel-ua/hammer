@@ -294,7 +294,7 @@ void builder::generate_graphviz(std::ostream& os, const nodes_t& nodes, const pr
             else
                first = false;
             
-            labels += s.source_target_->name().to_string(); 
+            labels += s.source_target_->name();
          }
 
          labels += "}}";
@@ -311,7 +311,7 @@ void builder::generate_graphviz(std::ostream& os, const nodes_t& nodes, const pr
             else
                first = false;
 
-            labels += p->name().to_string(); 
+            labels += p->name();
          }
 
          labels += "}}";

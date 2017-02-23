@@ -15,13 +15,13 @@ namespace hammer
                                       bool composite,
                                       const feature_set* c = 0);
 
-         virtual build_nodes_t
-         construct(const target_type& type_to_construct, 
+         build_nodes_t
+         construct(const target_type& type_to_construct,
                    const feature_set& props,
                    const std::vector<boost::intrusive_ptr<build_node> >& sources,
                    const basic_target* t,
-                   const pstring* name,
-                   const main_target& owner) const;
+                   const std::string* name,
+                   const main_target& owner) const override;
       private:
          const target_type& searched_lib_;
    };

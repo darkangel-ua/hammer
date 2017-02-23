@@ -21,7 +21,7 @@ void pch_argument_writer::write_impl(std::ostream& output, const build_node& nod
       case part::header:
       {
          const pch_main_target* pch_target = static_cast<const pch_main_target*>((**pch_iter).get_generated_data().target_);
-         location_t pch_header(pch_target->pch_header().name().to_string());
+         location_t pch_header(pch_target->pch_header().name());
          output << prefix_ << pch_header.leaf() << suffix_;
          break;
       }
@@ -29,7 +29,7 @@ void pch_argument_writer::write_impl(std::ostream& output, const build_node& nod
       case part::product:
       {
          const pch_main_target* pch_target = static_cast<const pch_main_target*>((**pch_iter).get_generated_data().target_);
-         location_t pch_product_location(pch_target->pch_product().location() / pch_target->pch_product().name().to_string());
+         location_t pch_product_location(pch_target->pch_product().location() / pch_target->pch_product().name());
 //         location_t output_path = relative_path(pch_product_location, environment.current_directory());
          location_t output_path = relative_path(pch_product_location, pch_target->location());
          output_path.normalize();

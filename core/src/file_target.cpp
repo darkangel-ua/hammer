@@ -14,7 +14,7 @@ std::vector<boost::intrusive_ptr<build_node> > file_target::generate() const
 
 void file_target::timestamp_info_impl() const
 {
-   boost::filesystem::path p(location() / name().to_string());
+   boost::filesystem::path p(location() / name());
    timestamp_info_.is_unknown_ = false;
    if (exists(p))
       timestamp_info_.timestamp_ = boost::posix_time::from_time_t(last_write_time(p));

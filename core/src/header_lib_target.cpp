@@ -3,7 +3,7 @@
 
 namespace hammer{
 
-header_lib_target::header_lib_target(const main_target* mt, const pstring& name,
+header_lib_target::header_lib_target(const main_target* mt, const std::string& name,
                                      const target_type* t, const feature_set* f)
    : basic_target(mt, name, t, f)
 {

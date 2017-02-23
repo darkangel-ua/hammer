@@ -9,8 +9,8 @@ namespace hammer{
    {
       public:
          searched_lib_meta_target(hammer::project* p, 
-                                  const pstring& name, 
-                                  const pstring& lib_name,
+                                  const std::string& name,
+                                  const std::string& lib_name,
                                   const requirements_decl& props,
                                   const requirements_decl& usage_req,
                                   const target_type& t);
@@ -18,7 +18,7 @@ namespace hammer{
          virtual main_target* construct_main_target(const main_target* owner, const feature_set* properties) const;
       
       private:
-         pstring lib_name_;
+         const std::string lib_name_;
    };
 }
 

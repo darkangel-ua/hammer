@@ -8,7 +8,6 @@
 #include <vector>
 #include "basic_meta_target.h"
 #include "feature_registry.h"
-#include "pool.h"
 
 namespace hammer
 {
@@ -40,11 +39,11 @@ namespace hammer
             unsigned resolved_build_request_rank_;
          };
 
-         typedef boost::ptr_multimap<const pstring /* target name */, basic_meta_target> targets_t;
+         typedef boost::ptr_multimap<const std::string /* target name */, basic_meta_target> targets_t;
          typedef std::vector<selected_target> selected_targets_t;
 
          project(engine* e, 
-                 const pstring& name,
+                 const std::string& name,
                  const location_t& location,
                  const requirements_decl& req,
                  const requirements_decl& usage_req
@@ -61,9 +60,9 @@ namespace hammer
          const targets_t& targets() const { return targets_; }
 
          // FIXME: there is can be many metatargets with same name
-         const basic_meta_target* find_target(const pstring& name) const;
+         const basic_meta_target* find_target(const std::string& name) const;
          // FIXME: there is can be many metatargets with same name
-         basic_meta_target* find_target(const pstring& name);
+         basic_meta_target* find_target(const std::string& name);
 
          hammer::engine* get_engine() const { return engine_; }
          const location_t& intermediate_dir() const { return intermediate_dir_; }
@@ -74,7 +73,7 @@ namespace hammer
          void add_targets_as_explicit(bool v);
          void add_targets_as_local(bool v) { add_targets_as_local_ = v; }
 
-         void mark_as_explicit(const pstring& name);
+         void mark_as_explicit(const std::string& name);
 
          void instantiate(const std::string& target_name, 
                           const feature_set& build_request,
@@ -86,8 +85,8 @@ namespace hammer
          selected_targets_t select_best_alternative(const feature_set& build_request) const;
 
          // choose best alternative for target_name satisfied build_request
-         selected_target select_best_alternative(const pstring& target_name, const feature_set& build_request, const bool allow_locals = false) const;
-         selected_target try_select_best_alternative(const pstring& target_name, const feature_set& build_request, const bool allow_locals = false) const;
+         selected_target select_best_alternative(const std::string& target_name, const feature_set& build_request, const bool allow_locals = false) const;
+         selected_target try_select_best_alternative(const std::string& target_name, const feature_set& build_request, const bool allow_locals = false) const;
          feature_set* try_resolve_local_features(const feature_set& fs) const;
 
       private:

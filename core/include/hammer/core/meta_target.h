@@ -14,7 +14,7 @@ namespace hammer
    {
       public:
          meta_target(hammer::project* p, 
-                     const pstring& name, 
+                     const std::string& name,
                      const requirements_decl& props,
                      const requirements_decl& usage_req);
 

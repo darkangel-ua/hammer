@@ -52,7 +52,7 @@ void source_argument_writer::write_impl(std::ostream& output, const build_node& 
             case RELATIVE_TO_MAIN_TARGET:
             {
                location_t source_path = relative_path(i->source_target_->location(), i->source_target_->get_main_target()->location());
-               source_path /= i->source_target_->name().to_string();
+               source_path /= i->source_target_->name();
                source_path.normalize();
                output << quoting_string_ << prefix_ << source_path.string() << quoting_string_;
                break;
@@ -60,7 +60,7 @@ void source_argument_writer::write_impl(std::ostream& output, const build_node& 
 
             case FULL_PATH:
             {
-               location_t source_path = i->source_target_->location() / i->source_target_->name().to_string();
+               location_t source_path = i->source_target_->location() / i->source_target_->name();
                source_path.normalize();
                output << quoting_string_ << prefix_ << source_path.string() << quoting_string_;
                break;
@@ -69,7 +69,7 @@ void source_argument_writer::write_impl(std::ostream& output, const build_node& 
             case RELATIVE_TO_WORKING_DIR:
             {
                location_t source_path = relative_path(i->source_target_->location(), environment.working_directory(*i->source_target_));
-               source_path /= i->source_target_->name().to_string();
+               source_path /= i->source_target_->name();
                source_path.normalize();
                output << quoting_string_ << prefix_ << source_path.string() << quoting_string_;
                break;
@@ -77,7 +77,7 @@ void source_argument_writer::write_impl(std::ostream& output, const build_node& 
 
             case WITHOUT_PATH:
             {
-               location_t source_path(i->source_target_->name().to_string());
+               location_t source_path(i->source_target_->name());
                output << quoting_string_ << prefix_ << source_path.string() << quoting_string_;
                break;
             }

@@ -3,7 +3,6 @@
 #include <hammer/core/feature_registry.h>
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature.h>
-#include <hammer/core/pool.h>
 #include <boost/assign/list_of.hpp>
 
 using namespace hammer;

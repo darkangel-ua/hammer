@@ -12,7 +12,7 @@
 namespace hammer{
 
 directory_target::directory_target(const main_target* mt, const location_t& dir)
-   : basic_target(mt, pstring(mt->get_engine()->pstring_pool(), dir.string()), &mt->get_engine()->get_type_registry().get(types::UNKNOWN), &mt->properties()),
+   : basic_target(mt, dir.string(), &mt->get_engine()->get_type_registry().get(types::UNKNOWN), &mt->properties()),
      dir_to_create_(dir), action_(dir)
 {
 

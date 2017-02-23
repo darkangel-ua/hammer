@@ -20,14 +20,14 @@ mksig_action::target_tag(const build_node& node,
    assert(node.products_.size() == 1);
 
    location_t t = relative_path(node.products_owner().intermediate_dir(), environment.current_directory());
-   t /= node.products_.front()->name().to_string();
+   t /= node.products_.front()->name();
 
    return t.string();
 }
 
 bool mksig_action::execute_impl(const build_node& node, const build_environment& environment) const
 {
-   location_t target_file_name = node.products_.front()->location() / node.products_.front()->name().to_string();
+   location_t target_file_name = node.products_.front()->location() / node.products_.front()->name();
    target_file_name.normalize();
    
    std::unique_ptr<std::ostream> f =

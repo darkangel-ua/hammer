@@ -8,7 +8,7 @@ namespace hammer
    class lib_meta_target : public meta_target
    {
       public:
-         lib_meta_target(hammer::project* p, const pstring& name, 
+         lib_meta_target(hammer::project* p, const std::string& name,
                          const requirements_decl& req,
                          const requirements_decl& usage_req);
       

@@ -55,7 +55,7 @@ void* hammer_make_null_arg()
 
 void* hammer_make_string_list()
 {
-   return new call_resolver_call_arg<std::vector<pstring> >(new std::vector<pstring>(), true);
+   return new call_resolver_call_arg<std::vector<string> >(new std::vector<string>(), true);
 }
 
 void* hammer_make_feature_list(void* context)
@@ -79,8 +79,8 @@ void hammer_add_arg_to_args_list(void* args_list, void* arg)
 void hammer_add_id_to_string_list(void* context, void* string_list, const char* id)
 {
    hammer_walker_context* ctx = static_cast<hammer_walker_context*>(context);
-   call_resolver_call_arg<std::vector<pstring> >* string_list_ = static_cast<call_resolver_call_arg<std::vector<pstring> >*>(string_list);
-   string_list_->value()->push_back(pstring(ctx->engine_->pstring_pool(), id));
+   call_resolver_call_arg<std::vector<string> >* string_list_ = static_cast<call_resolver_call_arg<std::vector<string> >*>(string_list);
+   string_list_->value()->push_back(id);
 }
 
 void hammer_add_feature_to_list(void* context, void* args_list, const char* feature_name, const char* feature_value)
@@ -107,7 +107,7 @@ void hammer_add_feature_argument(void* context, void* args_list, const char* fea
 void hammer_add_string_arg_to_args_list(void* context, void* args_list, const char* id)
 {
    hammer_walker_context* ctx = static_cast<hammer_walker_context*>(context);
-   call_resolver_call_arg<pstring>* arg = new call_resolver_call_arg<pstring>(new pstring(ctx->engine_->pstring_pool(), id), false);
+   call_resolver_call_arg<string>* arg = new call_resolver_call_arg<string>(new string(id), false);
    args_list_t* args_list_ = static_cast<args_list_t*>(args_list);
    args_list_->push_back(arg);
 }
@@ -244,7 +244,7 @@ void hammer_source_decl_set_target_path(void* context, void* sd, void* tp)
    pANTLR3_STRING s = target_path_tokens->first->input->substr(target_path_tokens->first->input, 
                                                                target_path_tokens->first->start, 
                                                                target_path_tokens->second->stop);
-   pstring target_path(ctx->engine_->pstring_pool(), reinterpret_cast<const char*>(s->chars));
+   string target_path(reinterpret_cast<const char*>(s->chars));
    source_decl->target_path(target_path, ctx->engine_->get_type_registry().resolve_from_target_name(target_path));
    
    delete target_path_tokens;
@@ -257,7 +257,7 @@ void hammer_source_decl_set_target_name(void* context, void* sd, const char* id)
    source_decl* source_decl = static_cast<hammer::source_decl*>(sd);
 
    if (id != NULL)
-      source_decl->target_name(pstring(ctx->engine_->pstring_pool(), id));
+      source_decl->target_name(id);
 }
 
 void hammer_source_decl_set_target_properties(void* sd, void* fs)

@@ -2,8 +2,6 @@
 #define h_5c00dc03_f874_4599_a716_cf9f475192d0
 
 #include <boost/noncopyable.hpp>
-#include "pool.h"
-#include "pstring.h"
 #include "build_node.h"
 #include "timestamp_info.h"
 #include "location.h"
@@ -24,7 +22,7 @@ namespace hammer
       public:
          typedef std::vector<boost::intrusive_ptr<build_node> > build_nodes_t;
 
-         basic_target(const main_target* mt, const pstring& name, 
+         basic_target(const main_target* mt, const std::string& name,
                       const target_type* t, const feature_set* f) 
                      : main_target_(mt),  
                        type_(t), 
@@ -32,7 +30,7 @@ namespace hammer
                        features_(f)
          {};
 
-         const pstring& name() const { return name_; }
+         const std::string& name() const { return name_; }
          const target_type& type() const { return *type_; }
          const feature_set& properties() const { return *features_; }
          void properties(const feature_set* p);
@@ -64,7 +62,7 @@ namespace hammer
       private:
          const main_target* main_target_;
          const target_type* type_;
-         pstring name_;
+         const std::string name_;
          const feature_set* features_;
          std::vector<basic_target*> dependencies_;
          mutable boost::optional<std::string> hash_;

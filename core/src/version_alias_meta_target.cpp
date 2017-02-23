@@ -8,34 +8,32 @@
 namespace hammer{
    
 static
-source_decl make_default_source(engine& e,
-                                const pstring& version)
+source_decl make_default_source(const std::string& version)
 {
-   std::string location("./" + version.to_string() + "/build");
-   return source_decl(pstring(e.pstring_pool(), location), pstring(), NULL, NULL);
+   std::string location("./" + version + "/build");
+   return source_decl(location, std::string(), NULL, NULL);
 }
 
 static
-source_decl make_non_default_source(engine& e,
-                                    const pstring& target_path)
+source_decl make_non_default_source(const std::string& target_path)
 {
-   const location_t source_target_path = location_t("./") / target_path.to_string();
-   return source_decl(pstring(e.pstring_pool(), source_target_path.string()), pstring(), NULL, NULL);
+   const location_t source_target_path = location_t("./") / target_path;
+   return source_decl(source_target_path.string(), std::string(), NULL, NULL);
 }
 
 version_alias_meta_target::version_alias_meta_target(hammer::project* p,
-                                                     const pstring& name,
-                                                     const pstring& version,
-                                                     const pstring* target_path)
+                                                     const std::string& name,
+                                                     const std::string& version,
+                                                     const std::string* target_path)
    : alias_meta_target(p, name, sources_decl(), requirements_decl(), requirements_decl())
 {
    requirements_decl reqs;
-   reqs.add(*get_engine()->feature_registry().create_feature("version", version.to_string()));
+   reqs.add(*get_engine()->feature_registry().create_feature("version", version));
    requirements(reqs);
 
    sources_decl src;
-   source_decl s(target_path != NULL ? make_non_default_source(*get_engine(), *target_path)
-                                     : make_default_source(*get_engine(), version));
+   source_decl s(target_path != NULL ? make_non_default_source(*target_path)
+                                     : make_default_source(version));
 
    src.push_back(s);
    this->sources(src);

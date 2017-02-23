@@ -9,9 +9,9 @@ class target_version_alias_meta_target : public version_alias_meta_target
 {
    public:
       target_version_alias_meta_target(hammer::project* p,
-                                       const pstring& name,
-                                       const pstring& version,
-                                       const pstring* target_path);
+                                       const std::string& name,
+                                       const std::string& version,
+                                       const std::string* target_path);
 };
 
 }

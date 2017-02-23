@@ -12,7 +12,7 @@
 namespace hammer{
 
 lib_meta_target::lib_meta_target(hammer::project* p, 
-                                 const pstring& name,
+                                 const std::string& name,
                                  const requirements_decl& req,
                                  const requirements_decl& usage_req) 
                                 : 
@@ -33,8 +33,7 @@ main_target* lib_meta_target::construct_main_target(const main_target* owner, co
    result = new main_target(this, 
                             name(), 
                             target_type, 
-                            properties,
-                            get_engine()->targets_pool());
+                            properties);
 
    return result;
 }

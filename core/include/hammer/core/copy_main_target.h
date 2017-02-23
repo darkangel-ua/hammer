@@ -11,10 +11,9 @@ namespace hammer
          typedef std::vector<const target_type*> types_t;
 
          copy_main_target(const basic_meta_target* mt,
-                          const pstring& name,
+                          const std::string& name,
                           const target_type* t,
-                          const feature_set* props,
-                          pool& p);
+                          const feature_set* props);
          const location_t& destination() const { return destination_; }
          const types_t& types_to_copy() const { return types_to_copy_; }
          bool recursive() const { return recursive_; }

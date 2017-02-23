@@ -49,8 +49,8 @@ static void compare_files(const fs::path& lhs, const fs::path& rhs, const fs::pa
 
 static bool less_target(const basic_target* lhs, const basic_target* rhs)
 {
-   location_t lhs_id = lhs->location() / lhs->name().to_string();
-   location_t rhs_id = rhs->location() / rhs->name().to_string();
+   location_t lhs_id = lhs->location() / lhs->name();
+   location_t rhs_id = rhs->location() / rhs->name();
    lhs_id.normalize();
    rhs_id.normalize();
 
@@ -95,8 +95,8 @@ static int compare_sources(const build_node::sources_t& lhs,
 {
    for(build_node::sources_t::const_iterator i = lhs.begin(), i_r = rhs.begin(), last = lhs.end(); i != last; ++i, ++i_r)
    {
-      location_t lhs_id = i->source_target_->location() / i->source_target_->name().to_string();
-      location_t rhs_id = i_r->source_target_->location() / i_r->source_target_->name().to_string();
+      location_t lhs_id = i->source_target_->location() / i->source_target_->name();
+      location_t rhs_id = i_r->source_target_->location() / i_r->source_target_->name();
       lhs_id.normalize();
       rhs_id.normalize();
       
@@ -112,8 +112,8 @@ static int compare_products(const build_node::targets_t& lhs,
 {
    for(build_node::targets_t::const_iterator i = lhs.begin(), i_r = rhs.begin(), last = lhs.end(); i != last; ++i, ++i_r)
    {
-      location_t lhs_id = (**i).location() / (**i).name().to_string();
-      location_t rhs_id = (**i_r).location() / (**i_r).name().to_string();
+      location_t lhs_id = (**i).location() / (**i).name();
+      location_t rhs_id = (**i_r).location() / (**i_r).name();
       lhs_id.normalize();
       rhs_id.normalize();
 

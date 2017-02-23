@@ -1,7 +1,6 @@
 #if !defined(h_000faec0_e1c4_47aa_911a_31a1d9761f31)
 #define h_000faec0_e1c4_47aa_911a_31a1d9761f31
 
-#include "pstring.h"
 #include "file_target.h"
 
 namespace hammer
@@ -16,7 +15,7 @@ namespace hammer
       public:  
          source_target(const main_target* mt,
                        const location_t& l,
-                       const pstring& name,
+                       const std::string& name,
                        const target_type* t,
                        const feature_set* f);
 

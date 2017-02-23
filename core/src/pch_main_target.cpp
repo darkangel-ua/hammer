@@ -13,12 +13,11 @@ namespace hammer
 
 pch_main_target::pch_main_target(const basic_meta_target* mt,
                                  const main_target& owner,
-                                 const pstring& name, 
+                                 const std::string& name,
                                  const target_type* t, 
-                                 const feature_set* props,
-                                 pool& p)
+                                 const feature_set* props)
                                 : 
-                                 main_target(mt, name, t, props, p),
+                                 main_target(mt, name, t, props),
                                  owner_(owner),
                                  pch_header_(NULL),
                                  pch_source_(NULL),

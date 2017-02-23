@@ -10,7 +10,7 @@ namespace hammer
       public:
          fake_target(const main_target* mt,
                      const build_node::sources_t& sources,
-                     const pstring& name,
+                     const std::string& name,
                      const target_type* t, 
                      const feature_set* f);
          virtual const location_t& location() const;

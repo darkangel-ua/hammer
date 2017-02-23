@@ -8,7 +8,7 @@ namespace hammer
    class copy_meta_target : public meta_target
    {
       public:
-         copy_meta_target(hammer::project* p, const pstring& name, 
+         copy_meta_target(hammer::project* p, const std::string& name,
                           const requirements_decl& props,
                           const requirements_decl& usage_req);
       protected:

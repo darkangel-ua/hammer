@@ -15,8 +15,8 @@ namespace hammer
                    const feature_set& props,
                    const std::vector<boost::intrusive_ptr<build_node> >& sources,
                    const basic_target* t,
-                   const pstring* composite_target_name,
-                   const main_target& owner) const;
+                   const std::string* composite_target_name,
+                   const main_target& owner) const override;
    };
 }
 

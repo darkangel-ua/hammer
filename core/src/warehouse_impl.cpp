@@ -335,8 +335,7 @@ warehouse_impl::load_project(engine& e,
 {
    const string public_id = package_id_from_location(project_path);
 
-   pstring project_name = pstring(e.pstring_pool(), public_id);
-   boost::shared_ptr<project> wproject(new warehouse_project(e, project_name, repository_path_ / "libs" / public_id));
+   boost::shared_ptr<project> wproject(new warehouse_project(e, public_id, repository_path_ / "libs" / public_id));
    add_traps(*wproject, public_id);
 
    return wproject;
@@ -427,7 +426,7 @@ warehouse_impl::get_unresoved_targets_info(engine& e,
       else
          throw std::runtime_error("Unable to get unresolved target info - no version specified");
 
-      p.name_ = (**i).get_project()->name().to_string();
+      p.name_ = (**i).get_project()->name();
 
       const string package_hash = p.name_ + ":" + p.version_;
       // check for duplicates
@@ -694,7 +693,7 @@ warehouse_impl::gather_dependencies(const project& p)
    for(const source_decl& s : source_dependencies) {
       feature_set::const_iterator i = s.properties()->find("version");
       if (i == s.properties()->end())
-         throw std::runtime_error("Dependency '" + s.target_path().to_string() + "' doesn't have version specified");
+         throw std::runtime_error("Dependency '" + s.target_path() + "' doesn't have version specified");
 
       dependency_t d;
       d.public_id_ = string(s.target_path().begin() + 1, s.target_path().end());
@@ -763,9 +762,9 @@ gather_targets(const project& p)
          continue;
 
       if (bt.second->is_explicit())
-         ++targets_info[bt.second->name().to_string()];
+         ++targets_info[bt.second->name()];
       else
-         ++targets_info["@" + bt.second->name().to_string()];
+         ++targets_info["@" + bt.second->name()];
    }
 
    if (targets_info.empty())
@@ -799,7 +798,7 @@ void warehouse_impl::add_to_packages(const project& p,
       throw std::runtime_error("Project doesn't have 'version' feature");
 
    const string version = (**i_version).value();
-   const string public_id = p.name().to_string();
+   const string public_id = p.name();
 
    package_t package;
    package.public_id_ = public_id;

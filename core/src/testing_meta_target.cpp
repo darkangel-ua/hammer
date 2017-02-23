@@ -10,7 +10,7 @@
 namespace hammer{
 
 testing_meta_target::testing_meta_target(hammer::project* p, 
-                                         const pstring& name, 
+                                         const std::string& name,
                                          const requirements_decl& req, 
                                          const requirements_decl& usage_req,
                                          const hammer::target_type& t)
@@ -26,8 +26,7 @@ testing_meta_target::construct_main_target(const main_target* owner,
    main_target* mt = new testing_main_target(this, 
                                              name(), 
                                              &type(), 
-                                             properties,
-                                             get_engine()->targets_pool());
+                                             properties);
    return mt;
 }
 

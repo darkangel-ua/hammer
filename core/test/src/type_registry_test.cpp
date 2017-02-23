@@ -4,7 +4,6 @@
 #include <hammer/core/types.h>
 #include <hammer/core/target_type.h>
 #include <hammer/core/feature_registry.h>
-#include <hammer/core/pool.h>
 
 using namespace hammer;
 using namespace std;

@@ -18,13 +18,13 @@ namespace hammer{
 
    }
 
-   std::string::size_type rfind(const pstring& where, const std::string& what)
+   std::string::size_type rfind(const std::string& where, const std::string& what)
    {
       if (where.empty() || what.empty())
          return std::string::npos;
 
-      const char* where_first = where.begin();
-      const char* where_last = where.end() - 1;
+      const char* where_first = &where[0];
+      const char* where_last = &*(where.end() - 1);
       const char* what_first = what.c_str();
       const char* what_last = what.c_str() + what.size() - 1;
       
@@ -43,7 +43,7 @@ namespace hammer{
    }
 
    // FIXME: need totally rewrite this logic in very efficiently way because it calls many times
-   const target_type* type_registry::resolve_from_target_name(const pstring& name) const
+   const target_type* type_registry::resolve_from_target_name(const std::string& name) const
    {
       for(types_t::const_iterator i = types_.begin(), last = types_.end(); i != last; ++i)
       {
@@ -63,7 +63,7 @@ namespace hammer{
       return 0;
    }
 
-   const target_type& type_registry::soft_resolve_from_target_name(const pstring& name) const
+   const target_type& type_registry::soft_resolve_from_target_name(const std::string& name) const
    {
       const target_type* t = resolve_from_target_name(name);
       if (t == NULL)
@@ -71,11 +71,11 @@ namespace hammer{
       else
          return *t;
    }
-   const target_type& type_registry::hard_resolve_from_target_name(const pstring& name) const
+   const target_type& type_registry::hard_resolve_from_target_name(const std::string& name) const
    {
       const target_type* t = resolve_from_target_name(name);
       if (t == NULL)
-         throw std::runtime_error("Can't resolve type from target name '" + name.to_string() + "'.");
+         throw std::runtime_error("Can't resolve type from target name '" + name + "'.");
       
       return *t;
    }

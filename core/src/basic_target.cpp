@@ -69,7 +69,7 @@ engine* basic_target::get_engine() const
 
 location_t basic_target::full_path() const
 {
-   location_t l = location() / name().to_string();
+   location_t l = location() / name();
    l.normalize();
    return l;
 }

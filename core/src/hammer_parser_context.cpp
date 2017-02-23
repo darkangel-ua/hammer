@@ -91,13 +91,13 @@ void on_string_list_element(pANTLR3_PARSER parser, pANTLR3_UINT8 id_)
 bool argument_is_string(pANTLR3_PARSER parser)
 {
    MAKE_CTX();
-   return ctx.rule_context_.rule_->second->args().at(ctx.rule_context_.arg_).ti() == typeid(pstring);
+   return ctx.rule_context_.rule_->second->args().at(ctx.rule_context_.arg_).ti() == typeid(string);
 }
 
 bool argument_is_string_list(pANTLR3_PARSER parser)
 {
    MAKE_CTX();
-   return ctx.rule_context_.rule_->second->args().at(ctx.rule_context_.arg_).ti() == typeid(vector<pstring>);
+   return ctx.rule_context_.rule_->second->args().at(ctx.rule_context_.arg_).ti() == typeid(vector<string>);
 }
 
 bool argument_is_feature(pANTLR3_PARSER parser)

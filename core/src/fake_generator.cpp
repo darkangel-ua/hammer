@@ -19,7 +19,7 @@ fake_generator::construct(const target_type& type_to_construct,
                           const feature_set& props,
                           const build_nodes_t& sources,
                           const basic_target* source_target,
-                          const pstring* composite_target_name,
+                          const std::string* composite_target_name,
                           const main_target& owner) const
 {
    // Because fake target always exists and up to date we need make it depends on sources
@@ -40,10 +40,10 @@ fake_generator::construct(const target_type& type_to_construct,
    return result;
 }
 
-basic_target* fake_generator::create_target(const main_target* mt, 
+basic_target* fake_generator::create_target(const main_target* mt,
                                             const build_node::sources_t& sources,
-                                            const pstring& n, 
-                                            const target_type* t, 
+                                            const std::string& n,
+                                            const target_type* t,
                                             const feature_set* f) const
 {
    return new fake_target(mt, sources, n, t, f);

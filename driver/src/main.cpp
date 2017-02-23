@@ -215,7 +215,7 @@ namespace
       for(hammer::project::targets_t::const_iterator i = project.targets().begin(), last = project.targets().end(); i != last; ++i)
       {
          if (!i->second->is_explicit())
-            targets.push_back(i->first.to_string());
+            targets.push_back(i->first);
       }
 
       std::sort(targets.begin(), targets.end());
@@ -269,11 +269,9 @@ namespace
             string target_path, target_name;
 
             split_target_path(target_path, target_name, *i);
-            pstring p_target_name(project.get_engine()->pstring_pool(), target_name);
-
             const hammer::engine::loaded_projects_t& p = project.get_engine()->load_project(target_path, project);
             selected_targets_t st = target_name.empty() ? p.select_best_alternative(*build_request_with_defs) :
-                                                          selected_targets_t(1, p.select_best_alternative(p_target_name, *build_request_with_defs));
+                                                          selected_targets_t(1, p.select_best_alternative(target_name, *build_request_with_defs));
             feature_set* usage_requirements = project.get_engine()->feature_registry().make_set();
             for(selected_targets_t::const_iterator t = st.begin(), t_last = st.end(); t != t_last; ++t)
             {
@@ -283,7 +281,7 @@ namespace
          }
          else
          {
-            pstring name(project.get_engine()->pstring_pool(), *i);
+            const string& name = *i;
             if (project_has_multiple_targets(project, *i))
             {
                hammer::project::selected_target target = project.select_best_alternative(name, *build_request_with_defs);
@@ -374,10 +372,17 @@ namespace
       return result;
    }
 
+   bool is_suffix_of(const string& suffix,
+                     const string& s)
+   {
+      const string::size_type pos = s.rfind(suffix);
+      return pos != string::npos && pos + suffix.size() == s.size();
+   }
+
    bool find_node_for_source_name(build_node_ptr& result,
                                   visited_nodes_t& visited_nodes,
                                   const boost::intrusive_ptr<build_node>& node,
-                                  const pstring& source_name,
+                                  const string& source_name,
                                   const project* source_project)
   {
       if (visited_nodes.find(node.get()) != visited_nodes.end())
@@ -389,7 +394,7 @@ namespace
          if (node->sources_.empty() && node->products_.size() == 1)
          {
             // founded some source
-            if (source_name.is_suffix_of(node->products_.front()->name()))
+            if (is_suffix_of(source_name, node->products_.front()->name()))
                return true;
             else
                return false;
@@ -411,7 +416,7 @@ namespace
    }
 
    build_node_ptr find_nodes_for_source_name(const nodes_t& nodes,
-                                             const pstring& source_name,
+                                             const string& source_name,
                                              const project* source_project)
    {
       visited_nodes_t visited_nodes;
@@ -524,7 +529,7 @@ namespace
          if (!opts.just_one_source_project_path_.empty())
             project_for_source = &e.load_project(resolve_symlinks(opts.just_one_source_project_path_));
 
-         build_node_ptr source_node = find_nodes_for_source_name(nodes, pstring(e.pstring_pool(), opts.just_one_source_), project_for_source);
+         build_node_ptr source_node = find_nodes_for_source_name(nodes, opts.just_one_source_, project_for_source);
          if (!source_node)
             throw std::runtime_error("Source file not founded");
 
@@ -567,13 +572,13 @@ namespace
       }
    }
 
-   void use_toolset_rule(project*, engine& e, pstring& toolset_name, pstring& toolset_version, pstring* toolset_home_)
+   void use_toolset_rule(project*, engine& e, string& toolset_name, string& toolset_version, string* toolset_home_)
    {
       location_t toolset_home;
       if (toolset_home_ != NULL)
-         toolset_home = toolset_home_->to_string();
+         toolset_home = *toolset_home_;
 
-      e.toolset_manager().init_toolset(e, toolset_name.to_string(), toolset_version.to_string(), toolset_home_ == NULL ? NULL : &toolset_home);
+      e.toolset_manager().init_toolset(e, toolset_name, toolset_version, toolset_home_ == NULL ? NULL : &toolset_home);
    }
 
    bool has_configured_toolsets(const hammer::engine& e)
@@ -606,7 +611,7 @@ namespace
    {
       public:
          dep_copy_target(const location_t& destination,
-                         const main_target* mt, const pstring& name,
+                         const main_target* mt, const std::string& name,
                          const target_type* t, const feature_set* f)
             : file_target(mt, name, t, f), destination_(destination)
          {}
@@ -792,7 +797,7 @@ int main(int argc, char** argv) {
          if (opts.debug_level_ > 0)
             cout << "Done" << endl;
 
-         engine.call_resolver().insert("use-toolset", boost::function<void (project*, pstring&, pstring&, pstring*)>(boost::bind(use_toolset_rule, _1, boost::ref(engine), _2, _3, _4)));
+         engine.call_resolver().insert("use-toolset", boost::function<void (project*, string&, string&, string*)>(boost::bind(use_toolset_rule, _1, boost::ref(engine), _2, _3, _4)));
 
          location_t user_config_script = get_user_config_location();
          if (user_config_script.empty() || !exists(user_config_script)) {

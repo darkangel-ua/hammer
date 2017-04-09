@@ -570,23 +570,28 @@ void warehouse_impl::download_and_install(engine& e,
 
    const project& repository_project = e.load_project(repository_path_);
 
-   for(std::vector<package_info>::const_iterator i = packages.begin(), last = packages.end(); i != last; ++i) {
+   size_t index = 0;
+   for(std::vector<package_info>::const_iterator i = packages.begin(), last = packages.end(); i != last; ++i, ++index) {
       packages_t::const_iterator pi = find_package(i->name_, i->version_);
       if (pi == packages_.end())
          throw std::runtime_error("Can't find package '" + i->name_ + " v" + i->version_ + "'");
 
       const package_info bpi = to_package_info(pi->second);
-      notifier.on_download_begin(bpi);
-      download_package(pi->second, working_dir);
-      notifier.on_download_end(bpi);
+      if (!notifier.on_download_begin(index, bpi))
+         return;
 
-      notifier.on_install_begin(bpi);
+      download_package(pi->second, working_dir);
+      notifier.on_download_end(index, bpi);
+
+      if (!notifier.on_install_begin(index, bpi))
+         return;
+
       install_package(pi->second, repository_path_);
       if (!resolves_to_real_project(e, pi->second.public_id_, repository_project)) {
          const fs::path repository_hamroot = repository_path_ / "hamroot";
          append_line(repository_hamroot, "use-project /" + pi->second.public_id_ + " : ./libs/" + pi->second.public_id_ + ";");
       }
-      notifier.on_install_end(bpi);
+      notifier.on_install_end(index, bpi);
    }
 }
 

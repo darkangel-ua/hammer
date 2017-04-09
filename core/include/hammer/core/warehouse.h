@@ -74,20 +74,32 @@ namespace hammer {
    class iwarehouse_download_and_install
    {
       public:
-         virtual void on_download_begin(const warehouse::package_info& package) = 0;
-         virtual void on_download_end(const warehouse::package_info& package) = 0;
-         virtual void on_install_begin(const warehouse::package_info& package) = 0;
-         virtual void on_install_end(const warehouse::package_info& package) = 0;
+         /// \brief return false if we want to interrupt
+         virtual bool on_download_begin(const std::size_t index,
+                                        const warehouse::package_info& package) = 0;
+         virtual void on_download_end(const std::size_t index,
+                                      const warehouse::package_info& package) = 0;
+
+         /// \brief return false if we want to interrupt
+         virtual bool on_install_begin(const std::size_t index,
+                                       const warehouse::package_info& package) = 0;
+         virtual void on_install_end(const std::size_t index,
+                                     const warehouse::package_info& package) = 0;
+
          virtual ~iwarehouse_download_and_install() {}
    };
 
    class null_warehouse_download_and_install : public iwarehouse_download_and_install
    {
       public:
-         void on_download_begin(const warehouse::package_info& package) override {}
-         void on_download_end(const warehouse::package_info& package) override {}
-         void on_install_begin(const warehouse::package_info& package) override {}
-         void on_install_end(const warehouse::package_info& package) override {}
+         bool on_download_begin(const std::size_t index,
+                                const warehouse::package_info& package) override { return true; }
+         void on_download_end(const std::size_t index,
+                              const warehouse::package_info& package) override {}
+         bool on_install_begin(const std::size_t index,
+                               const warehouse::package_info& package) override { return true; }
+         void on_install_end(const std::size_t index,
+                             const warehouse::package_info& package) override {}
    };
 
    std::vector<const warehouse_target*>

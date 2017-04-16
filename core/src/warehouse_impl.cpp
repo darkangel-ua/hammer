@@ -319,6 +319,9 @@ bool warehouse_impl::has_project(const location_t& project_path,
    const string name = project_path.relative_path().string();
 
    auto packages = packages_.equal_range(name);
+   if (packages.first == packages_.end())
+      return false;
+
    if (version.empty())
       return packages.first != packages.second;
 

@@ -223,7 +223,7 @@ engine::try_load_project(location_t project_path,
             if (!materialized_warehouse_project) {
                boost::shared_ptr<project> not_yet_materialized_versions = warehouse_->load_project(*this, project_path);
                // we need to check if we already inserted this project before. When we doing warehouse::download_and_install we check
-               // if project knows to engine and that trigger loading project again, but engine may already manadge this project loaded before
+               // if project know to engine and that trigger loading project again, but engine may already manadge this project loaded before
                auto i = projects_.find(not_yet_materialized_versions->location());
                if (i == projects_.end()) {
                   // FIXME: Maybe we shouldn't add warehouse projects into engine, and manages them by warehouse
@@ -232,7 +232,8 @@ engine::try_load_project(location_t project_path,
                } else
                   result.push_back(i->second.get());
             }
-         }
+         } else
+            return result;
 
          if (!result.empty())
             return result;

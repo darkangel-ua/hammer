@@ -697,24 +697,32 @@ namespace
       public:
          warehouse_dl_notifier(const unsigned max_package_name_lenght) : max_package_name_lenght_(max_package_name_lenght) {}
 
-         void on_download_begin(const warehouse::package_info& package) override
+         bool on_download_begin(const std::size_t index,
+                                const warehouse::package_info& package) override
          {
             cout << "Downloading " << setw(max_package_name_lenght_) << left << (package.name_ + " (" + package.version_ +")")
                  << setw(10) << right << human_readable_byte_count(package.package_file_size_) << flush;
+
+            return true;
          }
 
-         void on_download_end(const warehouse::package_info& package) override
+         void on_download_end(const std::size_t index,
+                              const warehouse::package_info& package) override
          {
             cout << " Done" << endl;
          }
 
-         void on_install_begin(const warehouse::package_info& package) override
+         bool on_install_begin(const std::size_t index,
+                               const warehouse::package_info& package) override
          {
             cout << "Installing  " << setw(max_package_name_lenght_) << left << (package.name_ + " (" + package.version_ +")")
                  << setw(10) << ' ' << flush;
+
+            return true;
          }
 
-         void on_install_end(const warehouse::package_info& package) override
+         void on_install_end(const std::size_t index,
+                             const warehouse::package_info& package) override
          {
             cout << " Done" << endl;
          }

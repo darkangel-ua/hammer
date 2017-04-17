@@ -414,8 +414,7 @@ void dump_for_hash(std::ostream& s, const feature_set& fs, bool dump_all)
             (**i).attributes().incidental ||
             (**i).attributes().path || 
             (**i).attributes().dependency ||
-            (**i).attributes().generated ||
-            (**i).attributes().composite))
+            (**i).attributes().generated))
       {
          features.push_back(*i);
       }

@@ -1,92 +1,179 @@
 grammar hammer;
 
 options{ 
-   language = C; 
+   language = Java; 
    output = AST;
-   ASTLabelType = pANTLR3_BASE_TREE;
+//   ASTLabelType = pANTLR3_BASE_TREE;
 }
 
 tokens{
-HAMFILE;
-TARGET_DECL_OR_RULE_CALL;
-TARGET_REF;
-TARGET_NAME;
-EMPTY_TARGET_NAME;
-ARGUMENTS;
-NAMED_EXPRESSION;
-EXPRESSION;
-EMPTY_EXPRESSION;
-LIST_OF;
-PATH_LIKE_SEQ;
-REQUIREMENT_SET;
-REQUIREMENT;
-CONDITION;
-FEATURE;
+Hamfile;
+Rule;
+Local;
+NonLocal;
+Arguments;
+EmptyArgument;
+NamedArgument;
+Structure;
+StructureField;
+List;
+Feature;
+RuleInvocation;
+Path;
+Target;
+Wildcard;
+Public;
 }
 
-@parser::preincludes{
-}
+hamfile 
+	: WS* rule* -> ^(Hamfile rule*)
+	;
+rule 	
+	: rule_prefix rule_impl ';' WS* -> ^(Rule rule_prefix rule_impl)
+	;
+rule_prefix 
+	: 'local' WS+ -> Local
+	| -> NonLocal
+	;	
+arguments 
+	: (';')=> -> Arguments
+	| argument rest_of_arguments* -> ^(Arguments argument rest_of_arguments*)
+	;
+rest_of_arguments 
+	: ':' WS* argument -> argument
+	;
+unnamed_argument
+	: (list)=> list
+	| expression
+	;	
+named_argument
+	: Id WS* '=' named_argument_body -> ^(NamedArgument Id named_argument_body)
+	;	
+named_argument_body
+	: (':' | ';')=> -> EmptyArgument
+	| unnamed_argument
+	;
+argument 
+	: (':' | ';')=> -> EmptyArgument
+        | named_argument
+        | unnamed_argument
+	;
+list 	
+	: list_e -> ^(List list_e)
+	;
+list_e
+	: (list_b WS* list_a) => list_b WS* list_a list_ee? -> list_b list_a list_ee?
+	| (list_b WS+ list_b WS+)=> list_b WS+ list_b WS+ list_ee? -> list_b list_b list_ee?
+	| (list_b WS+ list_b list_a)=> list_b WS+ list_b list_a list_ee? -> list_b list_b list_a list_ee?
+	| list_b WS+ list_b -> list_b list_b
+	;
+list_ee 
+options { backtrack = true; }
+	: list_b WS* list_a list_ee? -> list_b list_a list_ee?
+	| list_b WS+ list_b WS+ list_ee? -> list_b list_b list_ee?
+	| list_b WS+ list_b list_a list_ee? -> list_b list_b list_a list_ee?
+	| list_b WS+ list_b -> list_b list_b
+	| list_a list_ee?
+	| list_b WS* -> list_b
+	;
+list_b 	
+ 	: (target)=> target
+ 	| (path)=> path
+ 	| Id
+	;
+list_a 	
+	: structure
+	| feature
+	| rule_invocation
+	;
+expression
+	: (target)=> target WS* -> target
+	| (path)=> path WS* -> path
+	| structure
+	| some_feature
+	| rule_invocation
+	| simple_id
+	;
+simple_id 
+	: Id WS* -> Id
+	;
+structure 
+	: '{' WS* fields '}' WS* -> ^(Structure fields)
+	;
+fields 	
+	: field (':' WS* field)* -> field field*
+ 	;		
+field 	
+	: Id WS* '=' unnamed_argument -> ^(StructureField Id unnamed_argument)
+ 	;
+some_feature
+	: public_feature
+	| feature	
+	;
+public_feature
+	: '@' WS* feature -> ^(Public feature)	
+	;
+feature 
+	: feature_impl WS* -> feature_impl
+	;	 	
+feature_impl
+	: '<' WS* Id WS* '>' WS* feature_value -> ^(Feature Id feature_value)
+	;
+feature_value
+	: (path)=>path
+	| Id
+	;	
+rule_invocation 
+	: '[' WS* rule_impl ']' WS* -> ^(RuleInvocation rule_impl)
+	;	
+rule_impl 
+	: Id WS+ arguments -> Id arguments
+	;
+path
+	: ('/')=> path_rest+ -> ^(Path Slash path_rest+)
+	| path_element path_rest+ -> ^(Path path_element path_rest+)
+	;
+path_rest 
+	: '/' path_element -> path_element
+	;
+path_element 
+	: wildcard
+	| Id
+	;
+wildcard 
+	: wildcard_s wildcard_a? -> ^(Wildcard wildcard_s? wildcard_a?)
+	| Id wildcard_s wildcard_a? -> ^(Wildcard Id wildcard_s wildcard_a?)
+	;
+wildcard_a 
+	: Id wildcard_s wildcard_a
+	| Id
+	;	
+wildcard_s 
+	: '*'
+	| '?'+
+	;	           
+target 	
+options { backtrack = true; }
+	: '@' WS* target_impl -> ^(Public target_impl)
+	| '@' WS* path -> ^(Public ^(Target path))
+	| '@' WS* Id -> ^(Public ^(Target Id))
+	| target_impl -> target_impl
+	;	
+target_impl 
+	: path '//' target_spec -> ^(Target path target_spec)
+	;
+target_spec
+	: Id target_build_request? -> Id (^(List target_build_request))?
+	;	
+target_build_request
+	: ('/' feature_impl)+ -> feature_impl+
+	;	
+Slash 	:	 '/';
+DoubleSlash :	 '//';
+PublicTag : '@';
 
-hamfile       : WS* target_decl_or_rule_call* -> ^(HAMFILE target_decl_or_rule_call*);
-
-target_decl_or_rule_call : target_decl_or_rule_call_impl WS* EXP_END WS* -> target_decl_or_rule_call_impl EXP_END;
-target_decl_or_rule_call_impl : ID arguments -> ^(TARGET_DECL_OR_RULE_CALL ID arguments);
-
-arguments	: (WS+ ';')=> -> ^(ARGUMENTS)
-              	|  argument args_leaf* -> ^(ARGUMENTS argument args_leaf*)
-		;
-args_leaf : WS+ COLON argument -> COLON argument 
-	  ;
-non_empty_argument 	: expression
- 		        | named_argument
- 			;		
-named_argument 	: argument_name named_argument_expression -> ^(NAMED_EXPRESSION argument_name named_argument_expression)
-		;
-
-named_argument_expression 	: (WS+ ':')=> -> EMPTY_EXPRESSION
-				| (WS+ ';')=> -> EMPTY_EXPRESSION
-				| WS* expression -> expression
-				;		
-				
-argument	: (WS+ ':')=> -> EMPTY_EXPRESSION
-		| (WS+ ';')=> -> EMPTY_EXPRESSION
-	      	| WS+ non_empty_argument -> non_empty_argument
-	      	;
-argument_name : ID WS* '=' -> ID;
-expression    : requirement_set
-              | list_of ;
-feature : '<' ID '>' feature_value -> ^(FEATURE ID feature_value);
-feature_value : path_like_seq
-              | '(' target_ref ')' -> target_ref;
-requirement_set   : requirement (WS+ requirement)* -> ^(REQUIREMENT_SET requirement+);
-requirement : public_tag? requirement_impl -> ^(REQUIREMENT public_tag? requirement_impl);
-requirement_impl : (conditional_requirement)=> conditional_requirement
-		 | feature;
-conditional_requirement : condition feature -> ^(CONDITION condition) feature;
-condition : feature (',' feature)* COLON -> feature* COLON;
-// colon must stay here because if it is not syntactic predicate will not work
-path_like_seq : SLASH path_like_seq_impl -> ^(PATH_LIKE_SEQ SLASH path_like_seq_impl)
-	      |	path_like_seq_impl -> ^(PATH_LIKE_SEQ path_like_seq_impl);
-path_like_seq_impl : ID ('/' ID)* '/'? -> ID+;
-target_ref : path_like_seq target_ref_impl -> ^(TARGET_REF path_like_seq target_ref_impl)
-           | public_tag path_like_seq target_ref_impl? -> ^(TARGET_REF public_tag path_like_seq target_ref_impl?);
-target_ref_impl : target_requirements -> ^(TARGET_NAME EMPTY_TARGET_NAME) target_requirements
-                | target_name_seq target_requirements?; 
-target_name_seq : '//' ID -> ^(TARGET_NAME ID);
-target_requirements : (WS* '/' requirement)+ -> ^(REQUIREMENT_SET requirement+);
-list_of : list_of_impl (WS+ list_of_impl)* -> ^(LIST_OF list_of_impl+);
-list_of_impl : path_like_seq
-             | target_ref
-             | '[' WS* target_decl_or_rule_call_impl WS* ']' -> target_decl_or_rule_call_impl;
-public_tag : PUBLIC_TAG WS* -> PUBLIC_TAG;
-             
-SLASH : '/';
-PUBLIC_TAG : '@';
-ID : ('a'..'z' | 'A'..'Z' | '0'..'9' | '.' | '-' | '_'| '*')+  
+Id : ('a'..'z' | 'A'..'Z' | '0'..'9' | '.' | '-' | '_')+
 	      | STRING ;//{ LEXSTATE->type = _type; {pANTLR3_COMMON_TOKEN t = LEXER->emit(LEXER); ++t->start, --t->stop; t->type = _type;} };
-COLON : ':';
-EXP_END : ';';
-
 fragment 
 STRING : '"' STRING_ID '"';
 fragment

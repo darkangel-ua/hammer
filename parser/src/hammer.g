@@ -10,7 +10,6 @@ tokens{
 Hamfile;
 Rule;
 Local;
-NonLocal;
 Arguments;
 EmptyArgument;
 NamedArgument;
@@ -18,23 +17,22 @@ Structure;
 StructureField;
 List;
 Feature;
+ConditionalFeature;
 RuleInvocation;
 Path;
 Target;
 Wildcard;
 Public;
+FeatureLogicalAnd;
+FeatureLogicalOr;
 }
 
 hamfile 
 	: WS* rule* -> ^(Hamfile rule*)
 	;
 rule 	
-	: rule_prefix rule_impl ';' WS* -> ^(Rule rule_prefix rule_impl)
+	: (Local WS+)? rule_impl ';' WS* -> ^(Rule Local? rule_impl)
 	;
-rule_prefix 
-	: 'local' WS+ -> Local
-	| -> NonLocal
-	;	
 arguments 
 	: (';')=> -> Arguments
 	| argument rest_of_arguments* -> ^(Arguments argument rest_of_arguments*)
@@ -47,7 +45,7 @@ unnamed_argument
 	| expression
 	;	
 named_argument
-	: Id WS* '=' named_argument_body -> ^(NamedArgument Id named_argument_body)
+	: Id WS* '=' WS* named_argument_body -> ^(NamedArgument Id named_argument_body)
 	;	
 named_argument_body
 	: (':' | ';')=> -> EmptyArgument
@@ -66,6 +64,7 @@ list_e
 	| (list_b WS+ list_b WS+)=> list_b WS+ list_b WS+ list_ee? -> list_b list_b list_ee?
 	| (list_b WS+ list_b list_a)=> list_b WS+ list_b list_a list_ee? -> list_b list_b list_a list_ee?
 	| list_b WS+ list_b -> list_b list_b
+	| list_a list_ee
 	;
 list_ee 
 options { backtrack = true; }
@@ -79,16 +78,19 @@ options { backtrack = true; }
 list_b 	
  	: (target)=> target
  	| (path)=> path
+ 	| (conditional_feature_b)=> conditional_feature_b
+ 	| feature_impl
  	| Id
 	;
 list_a 	
 	: structure
-	| feature
 	| rule_invocation
+	| conditional_feature_a
 	;
 expression
 	: (target)=> target WS* -> target
 	| (path)=> path WS* -> path
+	| (conditional_feature)=> conditional_feature WS* -> conditional_feature
 	| structure
 	| some_feature
 	| rule_invocation
@@ -104,7 +106,7 @@ fields
 	: field (':' WS* field)* -> field field*
  	;		
 field 	
-	: Id WS* '=' unnamed_argument -> ^(StructureField Id unnamed_argument)
+	: Id WS* '=' WS* unnamed_argument -> ^(StructureField Id unnamed_argument)
  	;
 some_feature
 	: public_feature
@@ -120,9 +122,39 @@ feature_impl
 	: '<' WS* Id WS* '>' WS* feature_value -> ^(Feature Id feature_value)
 	;
 feature_value
-	: (path)=>path
-	| Id
+	: Id
+	| '(' WS* feature_value_path WS* ')' -> feature_value_path
 	;	
+feature_value_path 
+	: (target)=> target
+	| (path)=> path
+	;	
+conditional_feature
+	: conditional_feature_condition conditional_feature_ab -> ^(ConditionalFeature conditional_feature_condition conditional_feature_ab)
+	;
+conditional_feature_condition
+	: condition_or WS* '->' WS* -> condition_or
+	;
+condition_or
+options { backtrack = true; }
+	: condition_and WS* '||' WS* condition_and -> ^(FeatureLogicalOr condition_and condition_and)
+	| condition_and
+	;	
+condition_and 
+options { backtrack = true; }
+	: feature_impl WS* '&&' WS* condition_and -> ^(FeatureLogicalAnd feature_impl condition_and)
+	| feature_impl
+	;
+conditional_feature_ab 
+	: conditional_feature_a
+	| conditional_feature_b
+	;
+conditional_feature_a
+	: '(' (WS* feature_impl)+ WS* ')' -> ^(List feature_impl+)
+	;
+conditional_feature_b
+	: feature_impl
+	;
 rule_invocation 
 	: '[' WS* rule_impl ']' WS* -> ^(RuleInvocation rule_impl)
 	;	
@@ -160,20 +192,22 @@ options { backtrack = true; }
 	| target_impl -> target_impl
 	;	
 target_impl 
-	: path '//' target_spec -> ^(Target path target_spec)
+	: path target_spec -> ^(Target path target_spec)
 	;
 target_spec
-	: Id target_build_request? -> Id (^(List target_build_request))?
+	: '//' Id target_build_request? -> Id (^(List target_build_request))?
+	| target_build_request -> ^(List target_build_request)
 	;	
 target_build_request
 	: ('/' feature_impl)+ -> feature_impl+
 	;	
-Slash 	:	 '/';
-DoubleSlash :	 '//';
+Slash : '/';
+DoubleSlash : '//';
 PublicTag : '@';
+Local : 'local' ;
 
 Id : ('a'..'z' | 'A'..'Z' | '0'..'9' | '.' | '-' | '_')+
-	      | STRING ;//{ LEXSTATE->type = _type; {pANTLR3_COMMON_TOKEN t = LEXER->emit(LEXER); ++t->start, --t->stop; t->type = _type;} };
+   | STRING ;
 fragment 
 STRING : '"' STRING_ID '"';
 fragment

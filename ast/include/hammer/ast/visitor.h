@@ -12,6 +12,7 @@ class rule_arguments;
 class error_expression;
 class empty_expr;
 class named_expr;
+class public_expr;
 class id_expr;
 class path_like_seq;
 class list_of;
@@ -34,7 +35,8 @@ class visitor
       virtual bool visit(const empty_expr& v) { return true; }
       virtual bool visit(const id_expr& v) { return true; }
       virtual bool visit(const named_expr& v) { return true; }
-      virtual bool visit(const path_like_seq& v) { return true; }
+	  virtual bool visit(const public_expr& v) { return true; }
+	  virtual bool visit(const path_like_seq& v) { return true; }
       virtual bool visit(const simple_requirement& v) { return true; }
       virtual bool visit(const conditional_requirement& v) { return true; }
       virtual bool visit(const target_ref& v) { return true; }

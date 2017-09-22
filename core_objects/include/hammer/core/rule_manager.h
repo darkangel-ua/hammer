@@ -15,6 +15,7 @@ namespace hammer{
    class feature_set;
    class sources_decl;
    class requirements_decl;
+   class usage_requirements;
    class path_like_seq;
 }
 
@@ -23,7 +24,7 @@ namespace hammer{
 class rule_argument_type
 {
    public:
-      enum value {VOID, IDENTIFIER, FEATURE_SET, SOURCES_DECL, REQUIREMENTS_DECL, PATH_LIKE_SEQ};
+	  enum value { VOID, IDENTIFIER, FEATURE_SET, SOURCES_SET, REQUIREMENTS_SET, USAGE_REQUIREMENTS_SET, PATH_LIKE_SEQ };
       
       static rule_argument_type::value 
       type(const hammer::parscore::identifier*) { return IDENTIFIER; }
@@ -32,10 +33,13 @@ class rule_argument_type
       type(const feature_set*) { return FEATURE_SET; }
 
       static rule_argument_type::value 
-      type(const sources_decl*) { return SOURCES_DECL; }
+	  type(const sources_decl*) { return SOURCES_SET; }
 
       static rule_argument_type::value 
-      type(const requirements_decl*) { return REQUIREMENTS_DECL; }
+	  type(const requirements_decl*) { return REQUIREMENTS_SET; }
+
+	  static rule_argument_type::value
+	  type(const usage_requirements*) { return USAGE_REQUIREMENTS_SET; }
 
       static rule_argument_type::value 
       type(const path_like_seq*) { return PATH_LIKE_SEQ; }
@@ -194,4 +198,4 @@ class rule_manager
 
 }
 
-#endif //h_7511b8bd_5dcc_4be4_94ca_7d6c633fa1d2
+#endif

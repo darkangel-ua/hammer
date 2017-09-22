@@ -84,6 +84,26 @@ class named_expr : public expression
       const expression* value_;
 };
 
+class public_expr : public expression
+{
+   public:
+	  public_expr(const parscore::identifier& tag,
+				  const expression* value)
+		 : tag_(tag),
+		   value_(value)
+	  {}
+
+	  const parscore::identifier& tag() const { return tag_; }
+	  const expression* value() const { return value_; }
+
+	  parscore::source_location start_loc() const override { return tag_.start_lok(); }
+	  bool accept(visitor& v) const override;
+
+   private:
+	  parscore::identifier tag_;
+	  const expression* value_;
+};
+
 bool is_error_expr(const expression* e);
 
 }}

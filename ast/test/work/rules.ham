@@ -16,10 +16,10 @@ lib boo
     [ rglob ../include/*.h ]
    ;
 
-lib goo 
-   : 
-     /boost/core/<version>1.36.0
-     /boost/test//utf/<version>1.36.0
-     ../<link>static
-     ..//qwe/<link>shared
-   ;
+#lib goo 
+#   : 
+#     /boost/core/<version>1.36.0
+#     /boost/test//utf/<version>1.36.0
+#     ../<link>static
+#     ..//qwe/<link>shared
+#   ;

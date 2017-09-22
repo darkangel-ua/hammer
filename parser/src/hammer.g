@@ -1,15 +1,16 @@
 grammar hammer;
 
 options{ 
-   language = Java; 
+   language = C; 
    output = AST;
-//   ASTLabelType = pANTLR3_BASE_TREE;
+   ASTLabelType = pANTLR3_BASE_TREE;
 }
 
 tokens{
 Hamfile;
 Rule;
 Local;
+Explicit;
 Arguments;
 EmptyArgument;
 NamedArgument;
@@ -22,7 +23,6 @@ RuleInvocation;
 Path;
 Target;
 Wildcard;
-Public;
 FeatureLogicalAnd;
 FeatureLogicalOr;
 }
@@ -31,7 +31,11 @@ hamfile
 	: WS* rule* -> ^(Hamfile rule*)
 	;
 rule 	
-	: (Local WS+)? rule_impl ';' WS* -> ^(Rule Local? rule_impl)
+	: (rule_prefix WS+)? rule_impl ';' WS* -> ^(Rule rule_prefix? rule_impl)
+	;
+rule_prefix 
+	: Local
+	| Explicit
 	;
 arguments 
 	: (';')=> -> Arguments
@@ -41,8 +45,8 @@ rest_of_arguments
 	: ':' WS* argument -> argument
 	;
 unnamed_argument
-	: (list)=> list
-	| expression
+	: (list)=> list WS* -> list
+	| expression WS* -> expression
 	;	
 named_argument
 	: Id WS* '=' WS* named_argument_body -> ^(NamedArgument Id named_argument_body)
@@ -57,50 +61,26 @@ argument
         | unnamed_argument
 	;
 list 	
-	: list_e -> ^(List list_e)
-	;
-list_e
-	: (list_b WS* list_a) => list_b WS* list_a list_ee? -> list_b list_a list_ee?
-	| (list_b WS+ list_b WS+)=> list_b WS+ list_b WS+ list_ee? -> list_b list_b list_ee?
-	| (list_b WS+ list_b list_a)=> list_b WS+ list_b list_a list_ee? -> list_b list_b list_a list_ee?
-	| list_b WS+ list_b -> list_b list_b
-	| list_a list_ee
-	;
-list_ee 
-options { backtrack = true; }
-	: list_b WS* list_a list_ee? -> list_b list_a list_ee?
-	| list_b WS+ list_b WS+ list_ee? -> list_b list_b list_ee?
-	| list_b WS+ list_b list_a list_ee? -> list_b list_b list_a list_ee?
-	| list_b WS+ list_b -> list_b list_b
-	| list_a list_ee?
-	| list_b WS* -> list_b
-	;
-list_b 	
- 	: (target)=> target
- 	| (path)=> path
- 	| (conditional_feature_b)=> conditional_feature_b
- 	| feature_impl
- 	| Id
-	;
-list_a 	
-	: structure
-	| rule_invocation
-	| conditional_feature_a
+	: expression (WS+ expression)+ -> ^(List expression+)
 	;
 expression
-	: (target)=> target WS* -> target
-	| (path)=> path WS* -> path
-	| (conditional_feature)=> conditional_feature WS* -> conditional_feature
-	| structure
-	| some_feature
+	: (target)=> target
+	| '@' WS* expressions_a -> ^(PublicTag expressions_a)
+	| expressions_a
+	| expressions_b
+	| (path)=> path
+	| Id
+	;
+expressions_a 
+	: conditional_feature
+	| feature
+	; 
+expressions_b
+	: structure
 	| rule_invocation
-	| simple_id
-	;
-simple_id 
-	: Id WS* -> Id
-	;
+	;	
 structure 
-	: '{' WS* fields '}' WS* -> ^(Structure fields)
+	: '{' WS* fields '}' -> ^(Structure fields)
 	;
 fields 	
 	: field (':' WS* field)* -> field field*
@@ -108,29 +88,16 @@ fields
 field 	
 	: Id WS* '=' WS* unnamed_argument -> ^(StructureField Id unnamed_argument)
  	;
-some_feature
-	: public_feature
-	| feature	
-	;
-public_feature
-	: '@' WS* feature -> ^(Public feature)	
-	;
 feature 
-	: feature_impl WS* -> feature_impl
-	;	 	
-feature_impl
 	: '<' WS* Id WS* '>' WS* feature_value -> ^(Feature Id feature_value)
 	;
 feature_value
-	: Id
-	| '(' WS* feature_value_path WS* ')' -> feature_value_path
-	;	
-feature_value_path 
-	: (target)=> target
-	| (path)=> path
+	: (path)=> path
+	| Id
+	| '(' WS* target WS* ')' -> target
 	;	
 conditional_feature
-	: conditional_feature_condition conditional_feature_ab -> ^(ConditionalFeature conditional_feature_condition conditional_feature_ab)
+	: '(' WS* conditional_feature_condition conditional_feature_value WS* ')' -> ^(ConditionalFeature conditional_feature_condition conditional_feature_value)
 	;
 conditional_feature_condition
 	: condition_or WS* '->' WS* -> condition_or
@@ -142,21 +109,15 @@ options { backtrack = true; }
 	;	
 condition_and 
 options { backtrack = true; }
-	: feature_impl WS* '&&' WS* condition_and -> ^(FeatureLogicalAnd feature_impl condition_and)
-	| feature_impl
+	: feature WS* '&&' WS* condition_and -> ^(FeatureLogicalAnd feature condition_and)
+	| feature
 	;
-conditional_feature_ab 
-	: conditional_feature_a
-	| conditional_feature_b
-	;
-conditional_feature_a
-	: '(' (WS* feature_impl)+ WS* ')' -> ^(List feature_impl+)
-	;
-conditional_feature_b
-	: feature_impl
+conditional_feature_value 
+	: (feature WS+ feature)=> feature (WS+ feature)+ -> ^(List feature+)
+	| feature
 	;
 rule_invocation 
-	: '[' WS* rule_impl ']' WS* -> ^(RuleInvocation rule_impl)
+	: '[' WS* rule_impl ']' -> ^(RuleInvocation rule_impl)
 	;	
 rule_impl 
 	: Id WS+ arguments -> Id arguments
@@ -173,7 +134,7 @@ path_element
 	| Id
 	;
 wildcard 
-	: wildcard_s wildcard_a? -> ^(Wildcard wildcard_s? wildcard_a?)
+	: wildcard_s wildcard_a? -> ^(Wildcard wildcard_s wildcard_a?)
 	| Id wildcard_s wildcard_a? -> ^(Wildcard Id wildcard_s wildcard_a?)
 	;
 wildcard_a 
@@ -186,33 +147,42 @@ wildcard_s
 	;	           
 target 	
 options { backtrack = true; }
-	: '@' WS* target_impl -> ^(Public target_impl)
-	| '@' WS* path -> ^(Public ^(Target path))
-	| '@' WS* Id -> ^(Public ^(Target Id))
+	: '@' WS* target_impl -> ^(PublicTag target_impl)
+	| '@' WS* path -> ^(PublicTag ^(Target path))
+	| '@' WS* Id -> ^(PublicTag ^(Target Id))
 	| target_impl -> target_impl
 	;	
 target_impl 
 	: path target_spec -> ^(Target path target_spec)
+	| Id target_spec -> ^(Target ^(Path Id) target_spec)
 	;
 target_spec
 	: '//' Id target_build_request? -> Id (^(List target_build_request))?
 	| target_build_request -> ^(List target_build_request)
 	;	
 target_build_request
-	: ('/' feature_impl)+ -> feature_impl+
+	: ('/' feature)+ -> feature+
 	;	
 Slash : '/';
 DoubleSlash : '//';
 PublicTag : '@';
 Local : 'local' ;
+Explicit : 'explicit' ;
+QuestionMark : '?';
+Asterix : '*';
 
 Id : ('a'..'z' | 'A'..'Z' | '0'..'9' | '.' | '-' | '_')+
-   | STRING ;
+   | STRING | STRING_1
+   ;
 fragment 
 STRING : '"' STRING_ID '"';
 fragment
 STRING_ID : ('\\"' | ~('"' | '\n' | '\r'))* ;
+fragment
+STRING_1: '\'' STRING_ID1 '\'';
+fragment
+STRING_ID1 : ('\\\'' | ~('\'' | '\n' | '\r'))* ;
 
 COMMENT : '#' (~('\n' | '\r'))* ('\n' | '\r')?  { $channel = HIDDEN; };
 
-WS : (' ' |'\n' |'\r' ); //{ $channel = HIDDEN; };
+WS : (' ' |'\n' |'\r' | '\t'); //{ $channel = HIDDEN; };

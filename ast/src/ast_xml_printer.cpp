@@ -99,6 +99,19 @@ bool ast_xml_printer::visit(const named_expr& v)
    return true;   
 }
 
+bool ast_xml_printer::visit(const public_expr& v)
+{
+   os_ << std::setw(indent_) << ' ' << "<public_expr>\n";
+
+   indent_ += 3;
+   v.value()->accept(*this);
+   indent_ -= 3;
+
+   os_ << std::setw(indent_) << ' ' << "</public_expr>\n";
+
+   return true;
+}
+
 bool ast_xml_printer::visit(const path_like_seq& v)
 {
    os_ << std::setw(indent_) << ' ' << "<path_like_seq value=\"" << v.to_identifier() << "\"/>\n";
@@ -111,8 +124,7 @@ bool ast_xml_printer::visit(const requirement_set& v)
    os_ << std::setw(indent_) << ' ' << "<requirement_set>\n";
 
    indent_ += 3;
-   for(const expression* e : v.requirements())
-      e->accept(*this);
+      v.requirements()->accept(*this);
    indent_ -= 3;
 
    os_ << std::setw(indent_) << ' ' << "</requirement_set>\n";
@@ -204,7 +216,7 @@ bool ast_xml_printer::visit(const feature& v)
 
 bool ast_xml_printer::visit(const sources_decl& v)
 {
-   os_ << std::setw(indent_) << ' ' << "<sourses>\n";
+   os_ << std::setw(indent_) << ' ' << "<sources>\n";
 
    indent_ += 3;
       v.sources()->accept(*this);

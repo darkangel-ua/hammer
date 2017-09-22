@@ -58,6 +58,13 @@ actions_impl::on_named_expr(const parscore::identifier& name,
    return new(ctx_) ast::named_expr(name, value);
 }
 
+const ast::expression*
+actions_impl::on_public_expr(const parscore::identifier& tag,
+                             const ast::expression* value) const
+{
+   return new(ctx_) ast::public_expr(tag, value);
+}
+
 const ast::expression* 
 actions_impl::on_list_of(const ast::expressions_t& e) const
 {
@@ -69,6 +76,12 @@ actions_impl::on_path_like_seq(const parscore::identifier& first,
                                const parscore::identifier& last) const
 {
    return new (ctx_) ast::path_like_seq(first, last);
+}
+
+const ast::expression*
+actions_impl::on_id(const parscore::identifier& id) const
+{
+   return new (ctx_) ast::id_expr(id);
 }
 
 static int required_argument_count(const rule_declaration& rule_decl)
@@ -84,12 +97,9 @@ static int required_argument_count(const rule_declaration& rule_decl)
 static const expression*
 process_identifier_arg(const rule_argument& ra, const expression* arg, context& ctx)
 {
-   if (const list_of* list = as<list_of>(arg))
-      if(list->values().size() == 1)
-         if (const ast::path_like_seq* pls = as<ast::path_like_seq>(list->values().front()))
-            if (pls->is_simple())
-               return new (ctx) id_expr(pls->to_identifier());
-   
+   if (const id_expr* expr = as<id_expr>(arg))
+      return expr;
+
    ctx.diag_.error(arg->start_loc(), "Argument '%s': must be simple identifier") << ra.name();
    return new (ctx) error_expression(arg);
 }
@@ -103,27 +113,42 @@ process_feature_set_arg(const rule_argument& ra, const expression* arg, context&
 static const expression*
 process_sources_decl_arg(const rule_argument& ra, const expression* arg, context& ctx)
 {
+   // FIXME: semantic checks
    return new (ctx) hammer::ast::sources_decl(arg);
 }
 
 static const expression*
 process_requirements_decl_arg(const rule_argument& ra, const expression* arg, context& ctx)
 {
-   requirements_t requirements(requirements_t::allocator_type{ctx});
-   if (!is_a<requirement_set>(arg)) {
-      return new (ctx) error_expression(arg->start_loc());
-   }
+   if (is_a<feature>(arg) ||
+       (is_a<public_expr>(arg) && is_a<feature>(as<public_expr>(arg)->value())))
+   {
+      expressions_t list_elements{expressions_t::allocator_type{ctx}};
+      list_elements.push_back(arg);
+      list_of* list = new (ctx) list_of(list_elements);
+      return new (ctx) requirement_set(list);
+   } else if (is_a<list_of>(arg)) {
+      for (const expression* e : as<list_of>(arg)->values()) {
+         if (!(is_a<feature>(e) ||
+              (is_a<public_expr>(e) && is_a<feature>(as<public_expr>(e)->value()))))
+         {
+            ctx.diag_.error(e->start_loc(), "Argument '%s': unexpected list element type") << ra.name();
+            return new (ctx) error_expression(arg);
+         }
+      }
 
-   return arg;
+      return new (ctx) requirement_set(arg);
+   } else {
+      ctx.diag_.error(arg->start_loc(), "Argument '%s': must be list or feature") << ra.name();
+      return new (ctx) error_expression(arg);
+   }
 }
 
 static const expression*
 process_path_like_seq_arg(const rule_argument& ra, const expression* arg, context& ctx)
 {
-   if (const list_of* list = as<list_of>(arg))
-      if(list->values().size() == 1)
-         if (as<ast::path_like_seq>(list->values().front()))
-            return arg;
+   if (as<ast::path_like_seq>(arg))
+      return arg;
 
    ctx.diag_.error(arg->start_loc(), "Argument '%s': must be path like sequence") << ra.name();
    return new (ctx) error_expression(arg);
@@ -152,10 +177,10 @@ process_one_arg(const rule_argument& ra, const expression* arg, ast::context& ct
       case rule_argument_type::FEATURE_SET:
          return process_feature_set_arg(ra, arg, ctx);
 
-      case rule_argument_type::SOURCES_DECL:
+      case rule_argument_type::SOURCES_SET:
          return process_sources_decl_arg(ra, arg, ctx);
 
-      case rule_argument_type::REQUIREMENTS_DECL:
+      case rule_argument_type::REQUIREMENTS_SET:
          return process_requirements_decl_arg(ra, arg, ctx);
 
       case rule_argument_type::PATH_LIKE_SEQ:
@@ -292,32 +317,11 @@ actions_impl::on_target_or_rule_call(const parscore::identifier& rule_name,
    return new (ctx_) ast::rule_invocation(rule_name, arguments);
 }
 
-const ast::requirement_set* 
-actions_impl::on_requirement_set(const ast::requirements_t& requirements) const
-{
-   return new (ctx_) ast::requirement_set(requirements);
-}
-
 const ast::feature*
 actions_impl::on_feature(parscore::identifier name,
                          const ast::expression* value) const
 {
    return new (ctx_) ast::feature(name, value);
-}
-
-const ast::requirement*
-actions_impl::on_simple_requirement(parscore::source_location public_tag_loc,
-                                    const ast::feature* value) const
-{
-   return new (ctx_) ast::simple_requirement(public_tag_loc, value);
-}
-
-const ast::requirement* 
-actions_impl::on_conditional_requirement(parscore::source_location public_tag_loc,
-                                         const ast::features_t& features,
-                                         const ast::feature* value) const
-{
-   return new (ctx_) ast::conditional_requirement(public_tag_loc, features, value);
 }
 
 const ast::expression*

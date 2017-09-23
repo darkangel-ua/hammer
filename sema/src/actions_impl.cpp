@@ -123,10 +123,7 @@ process_requirements_decl_arg(const rule_argument& ra, const expression* arg, co
    if (is_a<feature>(arg) ||
        (is_a<public_expr>(arg) && is_a<feature>(as<public_expr>(arg)->value())))
    {
-      expressions_t list_elements{expressions_t::allocator_type{ctx}};
-      list_elements.push_back(arg);
-      list_of* list = new (ctx) list_of(list_elements);
-      return new (ctx) requirement_set(list);
+      return new (ctx) requirement_set(arg);
    } else if (is_a<list_of>(arg)) {
       for (const expression* e : as<list_of>(arg)->values()) {
          if (!(is_a<feature>(e) ||

@@ -22,6 +22,8 @@ ConditionalFeature;
 RuleInvocation;
 Path;
 Target;
+TargetSpec;
+TargetBuildRequest;
 Wildcard;
 FeatureLogicalAnd;
 FeatureLogicalOr;
@@ -94,7 +96,11 @@ feature
 feature_value
 	: (path)=> path
 	| Id
-	| '(' WS* target WS* ')' -> target
+	| '(' WS* feature_value_target WS* ')' -> feature_value_target
+	;	
+feature_value_target 
+	: (target) => target
+	| path -> ^(Target path) 
 	;	
 conditional_feature
 	: '(' WS* conditional_feature_condition conditional_feature_value WS* ')' -> ^(ConditionalFeature conditional_feature_condition conditional_feature_value)
@@ -145,23 +151,21 @@ wildcard_s
 	: '*'
 	| '?'+
 	;	           
-target 	
-options { backtrack = true; }
+target
 	: '@' WS* target_impl -> ^(PublicTag target_impl)
-	| '@' WS* path -> ^(PublicTag ^(Target path))
-	| '@' WS* Id -> ^(PublicTag ^(Target Id))
-	| target_impl -> target_impl
+	| path target_spec -> ^(Target path target_spec)
+	| Id target_spec -> ^(Target Id target_spec)
 	;	
 target_impl 
-	: path target_spec -> ^(Target path target_spec)
-	| Id target_spec -> ^(Target ^(Path Id) target_spec)
+	: path target_spec? -> ^(Target path target_spec?)
+	| Id target_spec? -> ^(Target Id target_spec?)
 	;
 target_spec
-	: '//' Id target_build_request? -> Id (^(List target_build_request))?
-	| target_build_request -> ^(List target_build_request)
+	: '//' Id target_build_request? -> ^(TargetSpec Id target_build_request?)
+	| target_build_request -> ^(TargetSpec target_build_request)
 	;	
 target_build_request
-	: ('/' feature)+ -> feature+
+	: ('/' feature)+ -> ^(TargetBuildRequest feature+)
 	;	
 Slash : '/';
 DoubleSlash : '//';

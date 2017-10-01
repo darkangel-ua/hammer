@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include <hammer/parscore/identifier.h>
 #include <cstring>
+#include <cassert>
 #include <antlr3.h>
 
 namespace hammer{ namespace parscore{
@@ -29,13 +30,16 @@ identifier::identifier()
 
 bool identifier::operator < (const identifier& rhs) const
 {
-   const char* lhs_v = no_lok_ ? v_ : lok_.begin();
-   const char* rhs_v = rhs.no_lok_ ? rhs.v_ : rhs.lok_.begin();
+   if (!valid() && rhs.valid())
+      return  true;
 
-   if (length_ != rhs.length_)
-      return length_ < rhs.length_;
+   if (valid() && !rhs.valid())
+      return false;
 
-   return std::strncmp(lhs_v, rhs_v, length_) < 0;
+   if (!valid() && !rhs.valid())
+      return false;
+
+   return to_string() < rhs.to_string();
 }
 
 bool identifier::operator == (const identifier& rhs) const
@@ -43,32 +47,21 @@ bool identifier::operator == (const identifier& rhs) const
    if (this == &rhs)
       return true;
 
-   const char* lhs_v = no_lok_ ? v_ : lok_.begin();
-   const char* rhs_v = rhs.no_lok_ ? rhs.v_ : rhs.lok_.begin();
-
-   if (length_ != rhs.length_)
+   if (valid() && rhs.valid())
+      return to_string() == rhs.to_string();
+   else
       return false;
-
-   return std::strncmp(lhs_v, rhs_v, length_) == 0;
 }
 
 std::string identifier::to_string() const
 {
    if (no_lok_)
       return std::string(v_, v_ + length_);
-   else
-      return std::string(lok_.begin(), lok_.begin() + length_);
+   else {
+      const pANTLR3_STRING s = lok_.antlr_token_->getText(const_cast<pANTLR3_COMMON_TOKEN>(lok_.antlr_token_));
+      return std::string(s->chars, s->chars + s->len);
+   }
 };
-
-const char* identifier::begin() const
-{
-   return no_lok_ ? v_ : lok_.begin();
-}
-
-const char* identifier::end() const
-{
-   return no_lok_ ? v_ + length_: lok_.begin() + length_;
-}
 
 std::ostream& operator << (std::ostream& os, const identifier& v)
 {

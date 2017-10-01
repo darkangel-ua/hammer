@@ -6,13 +6,6 @@
 
 namespace hammer{namespace parscore{
 
-const char* source_location::begin() const
-{
-   assert(antlr_token_);
-   // FIXME: possible x64 malfunction
-   return reinterpret_cast<const char*>(antlr_token_->start);
-}
-
 std::string source_location::full_source_name() const
 {
    assert(antlr_token_);

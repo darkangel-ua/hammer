@@ -42,8 +42,8 @@ class actions
          on_list_of(const ast::expressions_t& e) const = 0;
 
       virtual const ast::path_like_seq*
-         on_path_like_seq(const parscore::identifier& first,
-                          const parscore::identifier& last) const = 0;
+		 on_path_like_seq(const parscore::source_location root,
+						  const ast::expressions_t& elements) const = 0;
 
 	  virtual const ast::expression*
 		 on_id(const parscore::identifier& id) const = 0;
@@ -58,9 +58,9 @@ class actions
 
 	  virtual const ast::expression*
          on_target_ref(parscore::source_location public_tag,
-                       const ast::path_like_seq* head,
+					   const ast::path_like_seq* target_path,
                        const parscore::identifier& target_name,
-                       const ast::requirement_set* requirements) const = 0;
+					   const ast::features_t& build_request) const = 0;
       ast::context& get_context() const { return ctx_; }
 
    protected:

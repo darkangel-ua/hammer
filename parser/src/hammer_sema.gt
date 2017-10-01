@@ -50,7 +50,7 @@ named_expression returns[const hammer::ast::expression* result]
 expression returns[const hammer::ast::expression* result]
 @init { DECLARE_TYPE(hammer::ast::expressions_t, args); }
 	: list_of[&args] { result = SEMA->on_list_of(args); }
-//        | target
+        | target { result = $target.result; }
 //        | public_expression
 //        | expression_a
 	| rule_invocation { result = $rule_invocation.result; }
@@ -73,7 +73,7 @@ list_of[hammer::ast::expressions_t* args]
 	: ^(List (list_element { args->push_back($list_element.result); })+ )
 	;           
 list_element returns[const hammer::ast::expression* result]
-	: //target
+	: target { result = $target.result; }
 //	| public_expression
 //	| expression_a
 	  rule_invocation { result = $rule_invocation.result; }
@@ -83,33 +83,35 @@ list_element returns[const hammer::ast::expression* result]
 	| Id { result = SEMA->on_id($Id->getToken($Id)); }
 	;
 
-path returns[const hammer::ast::expression* result]
-@init { std::pair<pANTLR3_COMMON_TOKEN, pANTLR3_COMMON_TOKEN> bounds; }
-	: ^(Path path_impl[&bounds]) { result = SEMA->on_path_like_seq(bounds.first, bounds.second); }
+path returns[const hammer::ast::path_like_seq* result]
+@init { DECLARE_TYPE(hammer::ast::expressions_t, elements); 
+        hammer::parscore::source_location root; }
+	: ^(Path path_impl[&root, &elements]) { result = SEMA->on_path_like_seq(root, elements); }
 	;	
 
-path_impl[std::pair<pANTLR3_COMMON_TOKEN, pANTLR3_COMMON_TOKEN>* bounds]
-	: Slash path_element+ last=path_element { bounds->first = $Slash->getToken($Slash); bounds->second = $last.result; }
-	| first=path_element path_element* last=path_element { bounds->first = $first.result; bounds->second = $last.result; }
+path_impl[hammer::parscore::source_location* root, hammer::ast::expressions_t* elements]
+	: Slash { *root = $Slash->getToken($Slash); } (path_element { elements->push_back($path_element.result); })+
+	| (path_element { elements->push_back($path_element.result); })+
 	;
 
-path_element returns[pANTLR3_COMMON_TOKEN result]
-	: Id { result = $Id->getToken($Id); }
+path_element returns[const hammer::ast::expression* result]
+	: Id { result = SEMA->on_id($Id->getToken($Id)); }
 	| wildcard { result = $wildcard.result; }
 	;
 
-wildcard returns[pANTLR3_COMMON_TOKEN result]
-	: ^(Wildcard wildcard_elem* last=wildcard_elem { result = $last.result; } )
+wildcard returns[const hammer::ast::expression* result]
+@init { DECLARE_TYPE(hammer::ast::expressions_t, elements); }
+	: ^(Wildcard (wildcard_elem { elements.push_back($wildcard_elem.result); })+ { result = SEMA->on_list_of(elements); } )
 	;
 
-wildcard_elem returns[pANTLR3_COMMON_TOKEN result]
-	: Id { result = $Id->getToken($Id); }
-	| QuestionMark { result = $QuestionMark->getToken($QuestionMark); }
-	| Asterix { result = $Asterix->getToken($Asterix); }
+wildcard_elem returns[const hammer::ast::expression* result]
+	: Id { result = SEMA->on_id($Id->getToken($Id)); }
+	| QuestionMark { result = SEMA->on_id($QuestionMark->getToken($QuestionMark)); }
+	| Asterix { result = SEMA->on_id($Asterix->getToken($Asterix)); }
 	;
 
 public_tag[hammer::parscore::source_location* tag_loc] 
-	: Public { *tag_loc = hammer::parscore::source_location($Public->getToken($Public)); } 
+	: PublicTag { *tag_loc = hammer::parscore::source_location($PublicTag->getToken($PublicTag)); } 
 	;
 
 rule_invocation returns[const hammer::ast::expression* result]
@@ -117,12 +119,35 @@ rule_invocation returns[const hammer::ast::expression* result]
 	: ^(RuleInvocation name=Id arguments[&args]) { result = SEMA->on_target_or_rule_call($name->getToken($name), args); }
 	;
 
-feature returns[const hammer::ast::expression* result]
+feature returns[const hammer::ast::feature* result]
 	: ^(Feature Id feature_value) { result = SEMA->on_feature($Id->getToken($Id), $feature_value.result); }
 	;
 	
 feature_value returns[const hammer::ast::expression* result]
 	: Id { result = SEMA->on_id($Id->getToken($Id)); }
 	| path { result = $path.result; }
-	 // target
+	| target { result = $target.result; }
 	;
+target returns[const hammer::ast::expression* result]
+@init { DECLARE_TYPE(hammer::ast::features_t, build_request); 
+        hammer::parscore::identifier target_name; }
+	: ^(PublicTag target_impl[&target_name, &build_request]) { result = SEMA->on_target_ref($PublicTag->getToken($PublicTag), $target_impl.result, target_name, build_request); }
+	| target_impl[&target_name, &build_request] { result = SEMA->on_target_ref(hammer::parscore::source_location(), $target_impl.result, target_name, build_request); }
+	;
+
+target_impl[hammer::parscore::identifier* target_name, 
+	    hammer::ast::features_t* build_request]
+returns[const hammer::ast::path_like_seq* result]
+	: ^(Target path target_spec[target_name, build_request]?) { result = $path.result; }
+	| ^(Target Id target_spec[target_name, build_request]?) { DECLARE_TYPE(hammer::ast::expressions_t, elements); elements.push_back(SEMA->on_id($Id->getToken($Id))); result = SEMA->on_path_like_seq({}, elements); }
+	;
+	
+target_spec[hammer::parscore::identifier* target_name, 
+	    hammer::ast::features_t* build_request]
+	: ^(TargetSpec Id target_build_request[build_request]?) { *target_name = hammer::parscore::identifier($Id->getToken($Id)); }
+	| ^(TargetSpec target_build_request[build_request])
+	;	
+target_build_request[hammer::ast::features_t* build_request]
+	: ^(TargetBuildRequest (feature { build_request->push_back($feature.result); })+)
+	;	
+	

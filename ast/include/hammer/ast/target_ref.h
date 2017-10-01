@@ -3,6 +3,7 @@
 
 #include <hammer/ast/expression.h>
 #include <hammer/parscore/identifier.h>
+#include <hammer/ast/types.h>
 
 namespace hammer{ namespace ast{
 
@@ -13,13 +14,13 @@ class target_ref : public expression
 {
    public:
       target_ref(parscore::source_location public_tag, 
-                 const path_like_seq* head,
+				 const path_like_seq* target_path,
                  const parscore::identifier& target_name,
-                 const requirement_set* requirements);
+				 const features_t& build_request);
 
-      const path_like_seq* head() const { return head_; }
+	  const path_like_seq* target_path() const { return target_path_; }
       const parscore::identifier& target_name() const { return target_name_; }
-      const requirement_set* requirements() const { return requirements_; }
+	  const features_t& build_request() const { return build_request_; }
       parscore::source_location public_tag() const { return public_tag_; }
 
       bool has_target_name() const;
@@ -30,9 +31,9 @@ class target_ref : public expression
 
    private:
       parscore::source_location public_tag_;
-      const path_like_seq* head_;
+	  const path_like_seq* target_path_;
       parscore::identifier target_name_;
-      const requirement_set* requirements_;
+	  const features_t build_request_;
 };
 
 }}

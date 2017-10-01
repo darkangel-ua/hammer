@@ -114,7 +114,7 @@ bool ast_xml_printer::visit(const public_expr& v)
 
 bool ast_xml_printer::visit(const path_like_seq& v)
 {
-   os_ << std::setw(indent_) << ' ' << "<path_like_seq value=\"" << v.to_identifier() << "\"/>\n";
+   os_ << std::setw(indent_) << ' ' << "<path_like_seq value=\"" << v.to_string() << "\"/>\n";
 
    return true;
 }
@@ -179,7 +179,7 @@ bool ast_xml_printer::visit(const conditional_requirement& v)
 bool ast_xml_printer::visit(const target_ref& v)
 {
    os_ << std::setw(indent_) << ' ' << "<target_ref public=\"" << v.is_public() << "\"\n";
-   os_ << std::setw(indent_) << ' ' << "            head=\"" << v.head()->to_identifier() << "\"\n";
+   os_ << std::setw(indent_) << ' ' << "            target_path=\"" << v.target_path()->to_string() << "\"\n";
    os_ << std::setw(indent_) << ' ' << "            target_name=\"";
    if (v.has_target_name())
       os_ << v.target_name();
@@ -187,8 +187,14 @@ bool ast_xml_printer::visit(const target_ref& v)
 
    indent_ += 3;
 
-      if (v.requirements())
-         v.requirements()->accept(*this);
+      if (!v.build_request().empty()) {
+         os_ << std::setw(indent_) << ' ' << "<build_request>\n";
+         indent_ += 3;
+            for (const feature* f : v.build_request())
+               f->accept(*this);
+         indent_ -= 3;
+         os_ << std::setw(indent_) << ' ' << "</build_request>\n";
+      }
 
    indent_ -= 3;
 

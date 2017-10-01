@@ -72,10 +72,10 @@ actions_impl::on_list_of(const ast::expressions_t& e) const
 }
 
 const ast::path_like_seq* 
-actions_impl::on_path_like_seq(const parscore::identifier& first, 
-                               const parscore::identifier& last) const
+actions_impl::on_path_like_seq(const source_location root,
+                               const expressions_t& elements) const
 {
-   return new (ctx_) ast::path_like_seq(first, last);
+   return new (ctx_) ast::path_like_seq(root, elements);
 }
 
 const ast::expression*
@@ -323,11 +323,11 @@ actions_impl::on_feature(parscore::identifier name,
 
 const ast::expression*
 actions_impl::on_target_ref(parscore::source_location public_tag,
-                            const ast::path_like_seq* head,
+                            const ast::path_like_seq* target_path,
                             const parscore::identifier& target_name,
-                            const ast::requirement_set* requirements) const
+                            const features_t& build_request) const
 {
-   return new (ctx_) ast::target_ref(public_tag, head, target_name, requirements);
+   return new (ctx_) ast::target_ref(public_tag, target_path, target_name, build_request);
 }
 
 }}

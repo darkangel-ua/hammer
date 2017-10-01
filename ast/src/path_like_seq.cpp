@@ -2,6 +2,8 @@
 #include <hammer/ast/path_like_seq.h>
 #include <hammer/ast/visitor.h>
 #include <hammer/ast/casts.h>
+#include <hammer/ast/list_of.h>
+#include <sstream>
 
 namespace hammer{ namespace ast{
 
@@ -10,14 +12,29 @@ bool path_like_seq::accept(visitor& v) const
    return v.visit(*this);
 }
 
-parscore::identifier path_like_seq::to_identifier() const
+std::string path_like_seq::to_string() const
 {
-   return parscore::identifier(first_.start_lok(), last_.end() - first_.begin());
-}
+   std::stringstream s;
+   if (root_.valid())
+      s << '/';
 
-bool path_like_seq::is_simple() const
-{
-   return first_ == last_;
+   bool first = true;
+   for (auto e : elements_) {
+      if (first)
+         first = false;
+      else
+         s << '/';
+
+      if (is_a<id_expr>(e))
+         s << as<id_expr>(e)->id().to_string();
+      else {
+         assert(as<list_of>(e));
+         for (auto we : as<list_of>(e)->values())
+            s << as<id_expr>(we)->id().to_string();
+      }
+   }
+
+   return s.str();
 }
 
 template<>

@@ -9,21 +9,25 @@ namespace hammer{ namespace ast{
 class path_like_seq : public expression
 {
    public:
-      path_like_seq(const parscore::identifier& first,
-                    const parscore::identifier& last)
-         : first_(first),
-           last_(last)
+	  path_like_seq(const parscore::source_location root,
+					const expressions_t& elements)
+		 : root_(root),
+		   elements_(elements)
       {
-      }
+		  assert(!elements_.empty());
+	  }
 
-      parscore::identifier to_identifier() const;
-      bool is_simple() const;
-      parscore::source_location start_loc() const override { return first_.start_lok(); }
+	  const parscore::source_location& root() const { return root_; }
+	  const expressions_t& elements() const { return elements_; }
+	  parscore::source_location start_loc() const override { return elements_.front()->start_loc(); }
       bool accept(visitor& v) const override;
+	  std::string to_string() const;
 
    private:
-      parscore::identifier first_;
-      parscore::identifier last_;
+	  const parscore::source_location root_;
+	  // id_expr or list_of id_expr in case of wildcard element
+	  // TODO: make wildcard node
+	  const expressions_t elements_;
 };
 
 }}

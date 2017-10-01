@@ -2,3 +2,5 @@ exe main : main.cpp : <link>static ;
 exe main : main.cpp : <link>static <define>foo ;
 exe main : main.cpp : @<link>static ;
 exe main : main.cpp : @<link>static <define>foo ;
+
+exe main : main.cpp : <library>(/boost/test) ;

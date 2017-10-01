@@ -29,8 +29,8 @@ class actions_impl : public actions
          on_list_of(const ast::expressions_t& e) const;
 
       virtual const ast::path_like_seq* 
-         on_path_like_seq(const parscore::identifier& first, 
-                          const parscore::identifier& last) const;
+		 on_path_like_seq(const parscore::source_location root,
+						  const ast::expressions_t& elements) const;
 
 	  virtual const ast::expression*
 		 on_id(const parscore::identifier& id) const;
@@ -44,10 +44,10 @@ class actions_impl : public actions
                     const ast::expression* value) const;
 
       virtual const ast::expression*
-         on_target_ref(parscore::source_location public_tag,
-                       const ast::path_like_seq* head,
-                       const parscore::identifier& target_name,
-                       const ast::requirement_set* requirements) const;
+		 on_target_ref(parscore::source_location public_tag,
+					   const ast::path_like_seq* target_path,
+					   const parscore::identifier& target_name,
+					   const ast::features_t& build_request) const;
    private:
       mutable bool first_rule_in_file_ = true;
 };

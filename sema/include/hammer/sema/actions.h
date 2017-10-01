@@ -56,12 +56,12 @@ class actions
          on_feature(parscore::identifier name,
                     const ast::expression* value) const = 0;
 
-	  virtual const ast::expression*
-         on_target_ref(parscore::source_location public_tag,
-					   const ast::path_like_seq* target_path,
-                       const parscore::identifier& target_name,
-					   const ast::features_t& build_request) const = 0;
-      ast::context& get_context() const { return ctx_; }
+		virtual const ast::expression*
+			on_target(parscore::source_location public_tag,
+						 const ast::path_like_seq* target_path,
+						 const parscore::identifier& target_name,
+						 const ast::features_t& build_request) const = 0;
+		ast::context& get_context() const { return ctx_; }
 
    protected:
       ast::context& ctx_;

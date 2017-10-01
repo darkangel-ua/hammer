@@ -10,18 +10,18 @@ namespace hammer{ namespace ast{
 class path_like_seq;
 class requirement_set;
 
-class target_ref : public expression
+class target : public expression
 {
    public:
-      target_ref(parscore::source_location public_tag, 
+		target(parscore::source_location public_tag,
 				 const path_like_seq* target_path,
-                 const parscore::identifier& target_name,
+				 const parscore::identifier& target_name,
 				 const features_t& build_request);
 
-	  const path_like_seq* target_path() const { return target_path_; }
-      const parscore::identifier& target_name() const { return target_name_; }
-	  const features_t& build_request() const { return build_request_; }
-      parscore::source_location public_tag() const { return public_tag_; }
+		const path_like_seq* target_path() const { return target_path_; }
+		const parscore::identifier& target_name() const { return target_name_; }
+		const features_t& build_request() const { return build_request_; }
+		parscore::source_location public_tag() const { return public_tag_; }
 
       bool has_target_name() const;
       bool is_public() const { return public_tag_.valid(); }

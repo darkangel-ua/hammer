@@ -8,7 +8,7 @@
 #include <hammer/ast/requirement_set.h>
 #include <hammer/ast/requirement.h>
 #include <hammer/ast/rule_invocation.h>
-#include <hammer/ast/target_ref.h>
+#include <hammer/ast/target.h>
 #include <hammer/ast/feature.h>
 #include <hammer/ast/casts.h>
 #include <hammer/core/rule_manager.h>
@@ -322,12 +322,12 @@ actions_impl::on_feature(parscore::identifier name,
 }
 
 const ast::expression*
-actions_impl::on_target_ref(parscore::source_location public_tag,
-                            const ast::path_like_seq* target_path,
-                            const parscore::identifier& target_name,
-                            const features_t& build_request) const
+actions_impl::on_target(parscore::source_location public_tag,
+                        const ast::path_like_seq* target_path,
+                        const parscore::identifier& target_name,
+                        const features_t& build_request) const
 {
-   return new (ctx_) ast::target_ref(public_tag, target_path, target_name, build_request);
+   return new (ctx_) ast::target(public_tag, target_path, target_name, build_request);
 }
 
 }}

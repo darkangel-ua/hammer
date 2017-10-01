@@ -19,11 +19,11 @@ class ast_xml_printer : public visitor
       bool visit(const empty_expr& v) override;
       bool visit(const id_expr& v) override;
       bool visit(const named_expr& v) override;
-	  bool visit(const public_expr& v) override;
-	  bool visit(const path_like_seq& v) override;
+		bool visit(const public_expr& v) override;
+		bool visit(const path_like_seq& v) override;
       bool visit(const simple_requirement& v) override;
       bool visit(const conditional_requirement& v) override;
-      bool visit(const target_ref& v) override;
+		bool visit(const target& v) override;
       bool visit(const feature& v) override;
       bool visit(const sources_decl& v);
 

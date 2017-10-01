@@ -44,7 +44,7 @@ class actions_impl : public actions
                     const ast::expression* value) const;
 
       virtual const ast::expression*
-		 on_target_ref(parscore::source_location public_tag,
+		  on_target(parscore::source_location public_tag,
 					   const ast::path_like_seq* target_path,
 					   const parscore::identifier& target_name,
 					   const ast::features_t& build_request) const;

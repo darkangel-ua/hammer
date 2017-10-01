@@ -3,7 +3,7 @@
 #include <hammer/ast/path_like_seq.h>
 #include <hammer/ast/requirement.h>
 #include <hammer/ast/requirement_set.h>
-#include <hammer/ast/target_ref.h>
+#include <hammer/ast/target.h>
 #include <hammer/ast/feature.h>
 #include <hammer/ast/sources_decl.h>
 #include <hammer/ast/list_of.h>
@@ -176,11 +176,11 @@ bool ast_xml_printer::visit(const conditional_requirement& v)
    return true;
 }
 
-bool ast_xml_printer::visit(const target_ref& v)
+bool ast_xml_printer::visit(const target& v)
 {
-   os_ << std::setw(indent_) << ' ' << "<target_ref public=\"" << v.is_public() << "\"\n";
-   os_ << std::setw(indent_) << ' ' << "            target_path=\"" << v.target_path()->to_string() << "\"\n";
-   os_ << std::setw(indent_) << ' ' << "            target_name=\"";
+   os_ << std::setw(indent_) << ' ' << "<target public=\"" << v.is_public() << "\"\n";
+   os_ << std::setw(indent_) << ' ' << "        target_path=\"" << v.target_path()->to_string() << "\"\n";
+   os_ << std::setw(indent_) << ' ' << "        target_name=\"";
    if (v.has_target_name())
       os_ << v.target_name();
    os_ << "\">\n";

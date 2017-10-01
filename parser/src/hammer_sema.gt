@@ -131,8 +131,8 @@ feature_value returns[const hammer::ast::expression* result]
 target returns[const hammer::ast::expression* result]
 @init { DECLARE_TYPE(hammer::ast::features_t, build_request); 
         hammer::parscore::identifier target_name; }
-	: ^(PublicTag target_impl[&target_name, &build_request]) { result = SEMA->on_target_ref($PublicTag->getToken($PublicTag), $target_impl.result, target_name, build_request); }
-	| target_impl[&target_name, &build_request] { result = SEMA->on_target_ref(hammer::parscore::source_location(), $target_impl.result, target_name, build_request); }
+	: ^(PublicTag target_impl[&target_name, &build_request]) { result = SEMA->on_target($PublicTag->getToken($PublicTag), $target_impl.result, target_name, build_request); }
+	| target_impl[&target_name, &build_request] { result = SEMA->on_target(hammer::parscore::source_location(), $target_impl.result, target_name, build_request); }
 	;
 
 target_impl[hammer::parscore::identifier* target_name, 

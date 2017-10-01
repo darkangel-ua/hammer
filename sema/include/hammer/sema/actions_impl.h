@@ -11,44 +11,44 @@ class actions_impl : public actions
    public:
       actions_impl(ast::context& ctx);
       
-      virtual const ast::hamfile* 
-         on_hamfile(const ast::statements_t& statements) const;
+		const ast::hamfile*
+		on_hamfile(const ast::statements_t& statements) const override;
       
-      virtual const ast::expression* 
-         on_empty_expr(const parscore::identifier& next_token) const;
+		const ast::expression*
+		on_empty_expr(const parscore::identifier& next_token) const override;
 
-      virtual const ast::expression* 
-         on_named_expr(const parscore::identifier& name,
-                       const ast::expression* value) const;
+		const ast::expression*
+		on_named_expr(const parscore::identifier& name,
+						  const ast::expression* value) const override;
 
-	  const ast::expression*
-	  on_public_expr(const parscore::identifier& tag,
-					 const ast::expression* value) const override;
+		const ast::expression*
+		on_public_expr(const parscore::identifier& tag,
+							const ast::expression* value) const override;
 
-	  virtual const ast::expression*
-         on_list_of(const ast::expressions_t& e) const;
+		const ast::expression*
+		on_list_of(const ast::expressions_t& e) const override;
 
-      virtual const ast::path_like_seq* 
-		 on_path_like_seq(const parscore::source_location root,
-						  const ast::expressions_t& elements) const;
+		const ast::path_like_seq*
+		on_path_like_seq(const parscore::source_location root,
+							  const ast::expressions_t& elements) const override;
 
-	  virtual const ast::expression*
-		 on_id(const parscore::identifier& id) const;
+		const ast::expression*
+		on_id(const parscore::identifier& id) const override;
 
-	  virtual const ast::expression*
-         on_target_or_rule_call(const parscore::identifier& rule_name, 
-                                const ast::expressions_t& arguments) const;
+		const ast::expression*
+		on_target_or_rule_call(const parscore::identifier& rule_name,
+									  const ast::expressions_t& arguments) const override;
 
-      virtual const ast::feature*
-         on_feature(parscore::identifier name,
-                    const ast::expression* value) const;
+		const ast::feature*
+		on_feature(parscore::identifier name,
+					  const ast::expression* value) const override;
 
-      virtual const ast::expression*
-		  on_target(parscore::source_location public_tag,
-					   const ast::path_like_seq* target_path,
-					   const parscore::identifier& target_name,
-					   const ast::features_t& build_request) const;
-   private:
+		const ast::expression*
+		on_target(parscore::source_location public_tag,
+					 const ast::path_like_seq* target_path,
+					 const parscore::identifier& target_name,
+					 const ast::features_t& build_request) const override;
+	private:
       mutable bool first_rule_in_file_ = true;
 };
 

@@ -1,12 +1,12 @@
 #include "stdafx.h"
 #include <hammer/ast/target.h>
 #include <hammer/ast/visitor.h>
-#include <hammer/ast/path_like_seq.h>
+#include <hammer/ast/path.h>
 
 namespace hammer{namespace ast{
 
 target::target(parscore::source_location public_tag,
-               const path_like_seq* head,
+               const path* head,
                const parscore::identifier& target_name,
                const features_t& build_request)
    : public_tag_(public_tag),

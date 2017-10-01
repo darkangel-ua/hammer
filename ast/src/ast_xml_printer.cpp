@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include <hammer/ast/ast_xml_printer.h>
-#include <hammer/ast/path_like_seq.h>
+#include <hammer/ast/path.h>
 #include <hammer/ast/requirement.h>
 #include <hammer/ast/requirement_set.h>
 #include <hammer/ast/target.h>
@@ -112,9 +112,9 @@ bool ast_xml_printer::visit(const public_expr& v)
    return true;
 }
 
-bool ast_xml_printer::visit(const path_like_seq& v)
+bool ast_xml_printer::visit(const path& v)
 {
-   os_ << std::setw(indent_) << ' ' << "<path_like_seq value=\"" << v.to_string() << "\"/>\n";
+   os_ << std::setw(indent_) << ' ' << "<path value=\"" << v.to_string() << "\"/>\n";
 
    return true;
 }

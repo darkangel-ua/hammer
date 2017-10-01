@@ -12,7 +12,7 @@ options {
 #include <hammer/parscore/identifier.h>
 #include <hammer/ast/requirement_set.h>
 #include <hammer/ast/requirement.h>
-#include <hammer/ast/path_like_seq.h>
+#include <hammer/ast/path.h>
 #include <hammer/ast/feature.h>
 
 #define SEMA static_cast<const hammer::sema::actions*>(PARSER->super)
@@ -83,10 +83,10 @@ list_element returns[const hammer::ast::expression* result]
 	| Id { result = SEMA->on_id($Id->getToken($Id)); }
 	;
 
-path returns[const hammer::ast::path_like_seq* result]
+path returns[const hammer::ast::path* result]
 @init { DECLARE_TYPE(hammer::ast::expressions_t, elements); 
         hammer::parscore::source_location root; }
-	: ^(Path path_impl[&root, &elements]) { result = SEMA->on_path_like_seq(root, elements); }
+	: ^(Path path_impl[&root, &elements]) { result = SEMA->on_path(root, elements); }
 	;	
 
 path_impl[hammer::parscore::source_location* root, hammer::ast::expressions_t* elements]
@@ -137,9 +137,9 @@ target returns[const hammer::ast::expression* result]
 
 target_impl[hammer::parscore::identifier* target_name, 
 	    hammer::ast::features_t* build_request]
-returns[const hammer::ast::path_like_seq* result]
+returns[const hammer::ast::path* result]
 	: ^(Target path target_spec[target_name, build_request]?) { result = $path.result; }
-	| ^(Target Id target_spec[target_name, build_request]?) { DECLARE_TYPE(hammer::ast::expressions_t, elements); elements.push_back(SEMA->on_id($Id->getToken($Id))); result = SEMA->on_path_like_seq({}, elements); }
+	| ^(Target Id target_spec[target_name, build_request]?) { DECLARE_TYPE(hammer::ast::expressions_t, elements); elements.push_back(SEMA->on_id($Id->getToken($Id))); result = SEMA->on_path({}, elements); }
 	;
 	
 target_spec[hammer::parscore::identifier* target_name, 

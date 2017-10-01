@@ -14,7 +14,7 @@ class empty_expr;
 class named_expr;
 class public_expr;
 class id_expr;
-class path_like_seq;
+class path;
 class list_of;
 class requirement_set;
 class simple_requirement;
@@ -36,7 +36,7 @@ class visitor
       virtual bool visit(const id_expr& v) { return true; }
       virtual bool visit(const named_expr& v) { return true; }
 		virtual bool visit(const public_expr& v) { return true; }
-		virtual bool visit(const path_like_seq& v) { return true; }
+		virtual bool visit(const path& v) { return true; }
       virtual bool visit(const simple_requirement& v) { return true; }
       virtual bool visit(const conditional_requirement& v) { return true; }
       virtual bool visit(const target& v) { return true; }

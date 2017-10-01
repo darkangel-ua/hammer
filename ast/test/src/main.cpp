@@ -51,12 +51,12 @@ static void exe_rule(const parscore::identifier& id,
 
 }
 
-static void glob_rule(const hammer::path_like_seq& pattern)
+static void glob_rule(const hammer::path& pattern)
 {
 
 }
 
-static void rglob_rule(const hammer::path_like_seq& pattern)
+static void rglob_rule(const hammer::path& pattern)
 {
 
 }
@@ -186,7 +186,7 @@ void test_function(const fs::path& hamfile)
       vector<parscore::identifier> arg_names;
       arg_names += "pattern";
       rule_manager.add_target("glob", 
-                              boost::function<void(const hammer::path_like_seq&)>(&glob_rule),
+                              boost::function<void(const hammer::path&)>(&glob_rule),
                               arg_names);
    }
 
@@ -194,7 +194,7 @@ void test_function(const fs::path& hamfile)
       vector<parscore::identifier> arg_names;
       arg_names += "pattern";
       rule_manager.add_target("rglob", 
-                              boost::function<void(const hammer::path_like_seq&)>(&rglob_rule),
+                              boost::function<void(const hammer::path&)>(&rglob_rule),
                               arg_names);
    }
 

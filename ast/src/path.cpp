@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include <hammer/ast/path_like_seq.h>
+#include <hammer/ast/path.h>
 #include <hammer/ast/visitor.h>
 #include <hammer/ast/casts.h>
 #include <hammer/ast/list_of.h>
@@ -7,12 +7,12 @@
 
 namespace hammer{ namespace ast{
 
-bool path_like_seq::accept(visitor& v) const
+bool path::accept(visitor& v) const
 {
    return v.visit(*this);
 }
 
-std::string path_like_seq::to_string() const
+std::string path::to_string() const
 {
    std::stringstream s;
    if (root_.valid())
@@ -38,6 +38,6 @@ std::string path_like_seq::to_string() const
 }
 
 template<>
-const path_like_seq* as<path_like_seq>(const node* v) { return dynamic_cast<const path_like_seq*>(v); }
+const path* as<path>(const node* v) { return dynamic_cast<const path*>(v); }
 
 }}

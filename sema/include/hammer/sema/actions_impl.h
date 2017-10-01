@@ -28,9 +28,9 @@ class actions_impl : public actions
 		const ast::expression*
 		on_list_of(const ast::expressions_t& e) const override;
 
-		const ast::path_like_seq*
-		on_path_like_seq(const parscore::source_location root,
-							  const ast::expressions_t& elements) const override;
+		const ast::path*
+		on_path(const parscore::source_location root,
+				  const ast::expressions_t& elements) const override;
 
 		const ast::expression*
 		on_id(const parscore::identifier& id) const override;
@@ -45,7 +45,7 @@ class actions_impl : public actions
 
 		const ast::expression*
 		on_target(parscore::source_location public_tag,
-					 const ast::path_like_seq* target_path,
+					 const ast::path* target_path,
 					 const parscore::identifier& target_name,
 					 const ast::features_t& build_request) const override;
 	private:

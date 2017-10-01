@@ -4,7 +4,7 @@
 #include <hammer/ast/expression.h>
 #include <hammer/ast/list_of.h>
 #include <hammer/ast/sources_decl.h>
-#include <hammer/ast/path_like_seq.h>
+#include <hammer/ast/path.h>
 #include <hammer/ast/requirement_set.h>
 #include <hammer/ast/requirement.h>
 #include <hammer/ast/rule_invocation.h>
@@ -71,11 +71,11 @@ actions_impl::on_list_of(const ast::expressions_t& e) const
    return new (ctx_) ast::list_of(e);
 }
 
-const ast::path_like_seq* 
-actions_impl::on_path_like_seq(const source_location root,
-                               const expressions_t& elements) const
+const ast::path*
+actions_impl::on_path(const source_location root,
+                      const expressions_t& elements) const
 {
-   return new (ctx_) ast::path_like_seq(root, elements);
+   return new (ctx_) ast::path(root, elements);
 }
 
 const ast::expression*
@@ -144,7 +144,7 @@ process_requirements_decl_arg(const rule_argument& ra, const expression* arg, co
 static const expression*
 process_path_like_seq_arg(const rule_argument& ra, const expression* arg, context& ctx)
 {
-   if (as<ast::path_like_seq>(arg))
+   if (as<ast::path>(arg))
       return arg;
 
    ctx.diag_.error(arg->start_loc(), "Argument '%s': must be path like sequence") << ra.name();
@@ -180,7 +180,7 @@ process_one_arg(const rule_argument& ra, const expression* arg, ast::context& ct
       case rule_argument_type::REQUIREMENTS_SET:
          return process_requirements_decl_arg(ra, arg, ctx);
 
-      case rule_argument_type::PATH_LIKE_SEQ:
+      case rule_argument_type::PATH:
          return process_path_like_seq_arg(ra, arg, ctx);
 
       default:
@@ -323,7 +323,7 @@ actions_impl::on_feature(parscore::identifier name,
 
 const ast::expression*
 actions_impl::on_target(parscore::source_location public_tag,
-                        const ast::path_like_seq* target_path,
+                        const ast::path* target_path,
                         const parscore::identifier& target_name,
                         const features_t& build_request) const
 {

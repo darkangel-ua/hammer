@@ -94,7 +94,7 @@ feature
 	: '<' WS* Id WS* '>' WS* feature_value -> ^(Feature Id feature_value)
 	;
 feature_value
-	: (path)=> path
+	: path
 	| Id
 	| '(' WS* feature_value_target WS* ')' -> feature_value_target
 	;	
@@ -129,8 +129,17 @@ rule_impl
 	: Id WS+ arguments -> Id arguments
 	;
 path
-	: ('/')=> path_rest+ -> ^(Path Slash path_rest+)
-	| path_element path_rest+ -> ^(Path path_element path_rest+)
+	: path_non_uri
+	| path_uri
+	;
+path_non_uri 
+	: path_element path_rest+ -> ^(Path path_element path_rest+) 
+	;	
+path_uri
+	: 'file:///' path_root -> path_root
+	;	
+path_root 
+	: path_element path_rest* -> ^(Path Slash path_element path_rest?)
 	;
 path_rest 
 	: '/' path_element -> path_element
@@ -153,12 +162,17 @@ wildcard_s
 	;	           
 target
 	: '@' WS* target_impl -> ^(PublicTag target_impl)
-	| path target_spec -> ^(Target path target_spec)
+	| target_root_path
+	| path_non_uri target_spec -> ^(Target path_non_uri target_spec)
 	| Id target_spec -> ^(Target Id target_spec)
 	;	
 target_impl 
-	: path target_spec? -> ^(Target path target_spec?)
+	: target_root_path
+	| path_non_uri target_spec? -> ^(Target path_non_uri target_spec?)
 	| Id target_spec? -> ^(Target Id target_spec?)
+	;
+target_root_path
+	: '/' path_root target_spec? -> ^(Target path_root target_spec?)
 	;
 target_spec
 	: '//' Id target_build_request? -> ^(TargetSpec Id target_build_request?)

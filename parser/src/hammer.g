@@ -100,7 +100,8 @@ feature_value
 	;	
 feature_value_target 
 	: (target) => target
-	| path -> ^(Target path) 
+	| (path) => path -> ^(Target path)
+	| Id -> ^(Target Id)
 	;	
 conditional_feature
 	: '(' WS* conditional_feature_condition conditional_feature_value WS* ')' -> ^(ConditionalFeature conditional_feature_condition conditional_feature_value)

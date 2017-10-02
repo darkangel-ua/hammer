@@ -2,3 +2,6 @@ exe test : /boost/config ;
 exe test : /boost/config//foo ;
 exe test : /boost/config/<define>FOO ;
 exe test : /boost/config//bar/<define>FOO ;
+exe test : ./foo//bar ;
+exe test : ./foo/<define>FOO ;
+exe test : ./foo//bar/<define>FOO ;

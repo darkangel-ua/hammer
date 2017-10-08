@@ -61,6 +61,12 @@ static void rglob_rule(const hammer::path& pattern)
 
 }
 
+static
+void requirements_test_rule(const hammer::requirements_decl& requirements)
+{
+
+}
+
 typedef map<int, pair<string, diagnostic::type::value> > expected_diags_t;
 
 class checked_diagnostic : public diagnostic
@@ -195,6 +201,14 @@ void test_function(const fs::path& hamfile)
       arg_names += "pattern";
       rule_manager.add_target("rglob", 
                               boost::function<void(const hammer::path&)>(&rglob_rule),
+                              arg_names);
+   }
+
+   {
+      vector<parscore::identifier> arg_names;
+      arg_names += "requirements";
+      rule_manager.add_target("requirements_test",
+                              boost::function<void(const hammer::requirements_decl&)>(&requirements_test_rule),
                               arg_names);
    }
 

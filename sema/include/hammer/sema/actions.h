@@ -10,6 +10,9 @@ namespace hammer{ namespace ast{
    class parser_context;
 	class path;
    class requirement_set;
+	class logical_or;
+	class logical_and;
+	class condition_expr;
 }}
 
 namespace hammer{ namespace parscore{
@@ -55,6 +58,18 @@ class actions
 		virtual const ast::feature*
 		on_feature(parscore::identifier name,
 					  const ast::expression* value) const = 0;
+
+		virtual const ast::logical_or*
+		on_logical_or(const ast::expression* left,
+						  const ast::expression* right) const = 0;
+
+		virtual const ast::logical_and*
+		on_logical_and(const ast::expression* left,
+							const ast::expression* right) const = 0;
+
+		virtual const ast::condition_expr*
+		on_condition(const ast::expression* condition,
+						 const ast::expression* result) const = 0;
 
 		virtual const ast::expression*
 		on_target(parscore::source_location public_tag,

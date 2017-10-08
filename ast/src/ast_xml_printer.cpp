@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include <hammer/ast/ast_xml_printer.h>
 #include <hammer/ast/path.h>
-#include <hammer/ast/requirement.h>
 #include <hammer/ast/requirement_set.h>
 #include <hammer/ast/target.h>
 #include <hammer/ast/feature.h>
@@ -9,6 +8,7 @@
 #include <hammer/ast/list_of.h>
 #include <hammer/ast/rule_invocation.h>
 #include <hammer/ast/hamfile.h>
+#include <hammer/ast/condition.h>
 #include <iostream>
 #include <iomanip>
 
@@ -139,43 +139,6 @@ bool ast_xml_printer::visit(const error_expression& v)
    return true;
 }
 
-bool ast_xml_printer::visit(const simple_requirement& v)
-{
-   os_ << std::setw(indent_) << ' ' << "<simple_requirement public=\"" << v.is_public() << "\">\n";
-
-   indent_ += 3;
-      v.value()->accept(*this);
-   indent_ -= 3;
-
-   os_ << std::setw(indent_) << ' ' << "</simple_requirement>\n";
-
-   return true;
-}
-
-bool ast_xml_printer::visit(const conditional_requirement& v)
-{
-   os_ << std::setw(indent_) << ' ' << "<conditional_requirement public=\"" << v.is_public() << "\">\n";
-
-   indent_ += 3;
-      os_ << std::setw(indent_) << ' ' << "<condition>\n";
-      indent_ += 3;
-         for(const feature* f : v.condition())
-            f->accept(*this);
-      indent_ -= 3;
-      os_ << std::setw(indent_) << ' ' << "</condition>\n";
-
-      os_ << std::setw(indent_) << ' ' << "<value>\n";
-      indent_ += 3;
-         v.value()->accept(*this);
-      indent_ -= 3;
-      os_ << std::setw(indent_) << ' ' << "</value>\n";
-   indent_ -= 3;
-
-   os_ << std::setw(indent_) << ' ' << "</conditional_requirement>\n";
-
-   return true;
-}
-
 bool ast_xml_printer::visit(const target& v)
 {
    os_ << std::setw(indent_) << ' ' << "<target public=\"" << v.is_public() << "\"\n";
@@ -229,6 +192,75 @@ bool ast_xml_printer::visit(const sources_decl& v)
    indent_ -= 3;
 
    os_ << std::setw(indent_) << ' ' << "</sources>\n";
+
+   return true;
+}
+
+bool ast_xml_printer::visit(const condition_expr& v)
+{
+   os_ << std::setw(indent_) << ' ' << "<condition_expr>\n";
+
+   indent_ += 3;
+      os_ << std::setw(indent_) << ' ' << "<condition>\n";
+      indent_ += 3;
+         v.condition()->accept(*this);
+      indent_ -= 3;
+      os_ << std::setw(indent_) << ' ' << "</condition>\n";
+
+      os_ << std::setw(indent_) << ' ' << "<result>\n";
+      indent_ += 3;
+         v.result()->accept(*this);
+      indent_ -= 3;
+      os_ << std::setw(indent_) << ' ' << "</result>\n";
+   indent_ -= 3;
+
+   os_ << std::setw(indent_) << ' ' << "</condition_expr>\n";
+
+   return true;
+}
+
+bool ast_xml_printer::visit(const logical_or& v)
+{
+   os_ << std::setw(indent_) << ' ' << "<logical_or>\n";
+
+   indent_ += 3;
+      os_ << std::setw(indent_) << ' ' << "<left>\n";
+      indent_ += 3;
+         v.left()->accept(*this);
+      indent_ -= 3;
+      os_ << std::setw(indent_) << ' ' << "</left>\n";
+
+      os_ << std::setw(indent_) << ' ' << "<right>\n";
+      indent_ += 3;
+         v.right()->accept(*this);
+      indent_ -= 3;
+      os_ << std::setw(indent_) << ' ' << "</right>\n";
+   indent_ -= 3;
+
+   os_ << std::setw(indent_) << ' ' << "</logical_or>\n";
+
+   return true;
+}
+
+bool ast_xml_printer::visit(const logical_and& v)
+{
+   os_ << std::setw(indent_) << ' ' << "<logical_and>\n";
+
+   indent_ += 3;
+      os_ << std::setw(indent_) << ' ' << "<left>\n";
+      indent_ += 3;
+         v.left()->accept(*this);
+      indent_ -= 3;
+      os_ << std::setw(indent_) << ' ' << "</left>\n";
+
+      os_ << std::setw(indent_) << ' ' << "<right>\n";
+      indent_ += 3;
+         v.right()->accept(*this);
+      indent_ -= 3;
+      os_ << std::setw(indent_) << ' ' << "</right>\n";
+   indent_ -= 3;
+
+   os_ << std::setw(indent_) << ' ' << "</logical_and>\n";
 
    return true;
 }

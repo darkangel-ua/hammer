@@ -43,6 +43,18 @@ class actions_impl : public actions
 		on_feature(parscore::identifier name,
 					  const ast::expression* value) const override;
 
+		const ast::logical_or*
+		on_logical_or(const ast::expression* left,
+						  const ast::expression* right) const override;
+
+		const ast::logical_and*
+		on_logical_and(const ast::expression* left,
+							const ast::expression* right) const override;
+
+		const ast::condition_expr*
+		on_condition(const ast::expression* condition,
+						 const ast::expression* result) const override;
+
 		const ast::expression*
 		on_target(parscore::source_location public_tag,
 					 const ast::path* target_path,

@@ -11,9 +11,9 @@ options {
 #include <hammer/sema/actions.h>
 #include <hammer/parscore/identifier.h>
 #include <hammer/ast/requirement_set.h>
-#include <hammer/ast/requirement.h>
 #include <hammer/ast/path.h>
 #include <hammer/ast/feature.h>
+#include <hammer/ast/condition.h>
 
 #define SEMA static_cast<const hammer::sema::actions*>(PARSER->super)
 #define DECLARE_TYPE(Type, name) Type name ( Type ::allocator_type{SEMA->get_context()});
@@ -51,38 +51,32 @@ expression returns[const hammer::ast::expression* result]
 @init { DECLARE_TYPE(hammer::ast::expressions_t, args); }
 	: list_of[&args] { result = SEMA->on_list_of(args); }
         | target { result = $target.result; }
-//        | public_expression
-//        | expression_a
-	| rule_invocation { result = $rule_invocation.result; }
-	| feature { result = $feature.result; }
-	| ^(PublicTag feature) { result = SEMA->on_public_expr($PublicTag->getToken($PublicTag), $feature.result); }
-	| target_def_or_rule_call { result = $target_def_or_rule_call.result; }
 	| path { result = $path.result; }
 	| Id { result = SEMA->on_id($Id->getToken($Id)); }
+        | public_expression { result = $public_expression.result; }
+        | expression_a { result = $expression_a.result; }
+	| rule_invocation { result = $rule_invocation.result; }
+//	| target_def_or_rule_call { result = $target_def_or_rule_call.result; }
 	;
-//public_expression returns[const hammer::ast::expression* result]
-//	: ^(public_tag expression_a) { result = SEMA->on_public_expression($public_tag.result, $expression_a.result); } 
-//	;
-	
-expression_a returns[const hammer::ast::expression* result]
-//	: feature
-//	| conditional_feature
-: ;
-	
+
 list_of[hammer::ast::expressions_t* args]
 	: ^(List (list_element { args->push_back($list_element.result); })+ )
 	;           
 list_element returns[const hammer::ast::expression* result]
 	: target { result = $target.result; }
-//	| public_expression
-//	| expression_a
-	  rule_invocation { result = $rule_invocation.result; }
 	| path { result = $path.result; }
-	| feature { result = $feature.result; }
-	| ^(PublicTag feature) { result = SEMA->on_public_expr($PublicTag->getToken($PublicTag), $feature.result); }
 	| Id { result = SEMA->on_id($Id->getToken($Id)); }
+        | public_expression { result = $public_expression.result; }
+        | expression_a { result = $expression_a.result; }
+	| rule_invocation { result = $rule_invocation.result; }
 	;
-
+public_expression returns[const hammer::ast::expression* result]
+	: ^(PublicTag expression_a) { result = SEMA->on_public_expr($PublicTag->getToken($PublicTag), $expression_a.result); }
+	;
+expression_a returns[const hammer::ast::expression* result]
+	: feature { result = $feature.result; }
+	| condition { result = $condition.result; }
+	;	
 path returns[const hammer::ast::path* result]
 @init { DECLARE_TYPE(hammer::ast::expressions_t, elements); 
         hammer::parscore::source_location root; }
@@ -150,4 +144,23 @@ target_spec[hammer::parscore::identifier* target_name,
 target_build_request[hammer::ast::features_t* build_request]
 	: ^(TargetBuildRequest (feature { build_request->push_back($feature.result); })+)
 	;	
-	
+condition returns[const hammer::ast::expression* result]
+	: ^(Condition condition_condition condition_result) { result = SEMA->on_condition($condition_condition.result, $condition_result.result); }
+	;	
+condition_condition returns[const hammer::ast::expression* result]
+	: feature { result = $feature.result; }
+	| logical_or { result = $logical_or.result; }
+	| logical_and { result = $logical_and.result; }
+	;
+condition_result returns[const hammer::ast::expression* result]
+@init { DECLARE_TYPE(hammer::ast::expressions_t, elements); }
+	: public_expression { result = $public_expression.result; } // can be only public feature
+	| feature { result = $feature.result; }
+	| list_of[&elements] { result = SEMA->on_list_of(elements); } // list will contains only features
+	;
+logical_or returns[const hammer::ast::expression* result]
+	: ^(LogicalOr left=condition_condition right=condition_condition) { result = SEMA->on_logical_or($left.result, $right.result); }
+	;	
+logical_and returns[const hammer::ast::expression* result]
+	: ^(LogicalAnd left=condition_condition right=condition_condition)	{ result = SEMA->on_logical_and($left.result, $right.result); }
+	;		

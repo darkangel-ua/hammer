@@ -18,15 +18,15 @@ Structure;
 StructureField;
 List;
 Feature;
-ConditionalFeature;
+Condition;
 RuleInvocation;
 Path;
 Target;
 TargetSpec;
 TargetBuildRequest;
 Wildcard;
-FeatureLogicalAnd;
-FeatureLogicalOr;
+LogicalAnd;
+LogicalOr;
 }
 
 hamfile 
@@ -74,7 +74,7 @@ expression
 	| Id
 	;
 expressions_a 
-	: conditional_feature
+	: condition
 	| feature
 	; 
 expressions_b
@@ -103,26 +103,30 @@ feature_value_target
 	| (path) => path -> ^(Target path)
 	| Id -> ^(Target Id)
 	;	
-conditional_feature
-	: '(' WS* conditional_feature_condition conditional_feature_value WS* ')' -> ^(ConditionalFeature conditional_feature_condition conditional_feature_value)
+condition
+	: '(' WS* condition_condition condition_result WS* ')' -> ^(Condition condition_condition condition_result)
 	;
-conditional_feature_condition
-	: condition_or WS* '->' WS* -> condition_or
+condition_condition
+	: logical_or WS* '->' WS* -> logical_or
 	;
-condition_or
+logical_or
 options { backtrack = true; }
-	: condition_and WS* '||' WS* condition_and -> ^(FeatureLogicalOr condition_and condition_and)
-	| condition_and
+	: logical_and WS* '||' WS* logical_and -> ^(LogicalOr logical_and logical_and)
+	| logical_and
 	;	
-condition_and 
+logical_and 
 options { backtrack = true; }
-	: feature WS* '&&' WS* condition_and -> ^(FeatureLogicalAnd feature condition_and)
+	: feature WS* '&&' WS* logical_and -> ^(LogicalAnd feature logical_and)
 	| feature
 	;
-conditional_feature_value 
-	: (feature WS+ feature)=> feature (WS+ feature)+ -> ^(List feature+)
-	| feature
+condition_result 
+	: (condition_result_elem WS+ condition_result_elem)=> condition_result_elem (WS+ condition_result_elem)+ -> ^(List condition_result_elem+)
+	| condition_result_elem
 	;
+condition_result_elem
+	: '@' WS* feature -> ^(PublicTag feature)
+	| feature
+	;	
 rule_invocation 
 	: '[' WS* rule_impl ']' -> ^(RuleInvocation rule_impl)
 	;	

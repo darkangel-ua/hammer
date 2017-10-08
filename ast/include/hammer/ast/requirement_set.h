@@ -8,15 +8,15 @@ namespace hammer{ namespace ast{
 
 class requirement_set : public expression
 {
-   public:
-	  requirement_set(const expression* requirements);
-      
-	  const expression* requirements() const { return requirements_; }
-      parscore::source_location start_loc() const override;
-      bool accept(visitor& v) const override;
+	public:
+		requirement_set(const expression* requirements);
 
-   private:
-	  const expression* requirements_;
+		const expression* requirements() const { return requirements_; }
+		parscore::source_location start_loc() const override;
+		bool accept(visitor& v) const override;
+
+	private:
+		const expression* requirements_;
 };
 
 }}

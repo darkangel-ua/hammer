@@ -21,11 +21,12 @@ class ast_xml_printer : public visitor
       bool visit(const named_expr& v) override;
 		bool visit(const public_expr& v) override;
 		bool visit(const path& v) override;
-      bool visit(const simple_requirement& v) override;
-      bool visit(const conditional_requirement& v) override;
 		bool visit(const target& v) override;
       bool visit(const feature& v) override;
       bool visit(const sources_decl& v);
+		bool visit(const condition_expr& v) override;
+		bool visit(const logical_or& v) override;
+		bool visit(const logical_and& v) override;
 
    private:
       std::ostream& os_;

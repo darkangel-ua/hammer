@@ -6,11 +6,11 @@
 #include <hammer/ast/sources_decl.h>
 #include <hammer/ast/path.h>
 #include <hammer/ast/requirement_set.h>
-#include <hammer/ast/requirement.h>
 #include <hammer/ast/rule_invocation.h>
 #include <hammer/ast/target.h>
 #include <hammer/ast/feature.h>
 #include <hammer/ast/casts.h>
+#include <hammer/ast/condition.h>
 #include <hammer/core/rule_manager.h>
 #include <hammer/core/diagnostic.h>
 #include <set>
@@ -120,23 +120,24 @@ process_sources_decl_arg(const rule_argument& ra, const expression* arg, context
 static const expression*
 process_requirements_decl_arg(const rule_argument& ra, const expression* arg, context& ctx)
 {
-   if (is_a<feature>(arg) ||
-       (is_a<public_expr>(arg) && is_a<feature>(as<public_expr>(arg)->value())))
-   {
-      return new (ctx) requirement_set(arg);
-   } else if (is_a<list_of>(arg)) {
+   auto good_req = [] (const expression* e) {
+      auto check = [] (const expression* e) { return is_a<feature>(e) || is_a<condition_expr>(e); };
+      return check(e) || (is_a<public_expr>(e) && check(as<public_expr>(e)->value()));
+   };
+
+   if (is_a<list_of>(arg)) {
       for (const expression* e : as<list_of>(arg)->values()) {
-         if (!(is_a<feature>(e) ||
-              (is_a<public_expr>(e) && is_a<feature>(as<public_expr>(e)->value()))))
-         {
-            ctx.diag_.error(e->start_loc(), "Argument '%s': unexpected list element type") << ra.name();
+         if (!good_req(e)) {
+            ctx.diag_.error(e->start_loc(), "Requirement should be feature or condition");
             return new (ctx) error_expression(arg);
          }
       }
 
       return new (ctx) requirement_set(arg);
-   } else {
-      ctx.diag_.error(arg->start_loc(), "Argument '%s': must be list or feature") << ra.name();
+   } else if (good_req(arg))
+      return new (ctx) requirement_set(arg);
+   else {
+      ctx.diag_.error(arg->start_loc(), "Requirement should be feature or condition");
       return new (ctx) error_expression(arg);
    }
 }
@@ -330,4 +331,26 @@ actions_impl::on_target(parscore::source_location public_tag,
    return new (ctx_) ast::target(public_tag, target_path, target_name, build_request);
 }
 
+const ast::logical_or*
+actions_impl::on_logical_or(const ast::expression* left,
+                            const ast::expression* right) const
+{
+   return new (ctx_) ast::logical_or(left, right);
+}
+
+const ast::logical_and*
+actions_impl::on_logical_and(const expression* left,
+                             const expression* right) const
+{
+   return new (ctx_) ast::logical_and(left, right);
+}
+
+const ast::condition_expr*
+actions_impl::on_condition(const expression* condition,
+                           const expression* result) const
+{
+   return new (ctx_) ast::condition_expr(condition, result);
+}
+
 }}
+

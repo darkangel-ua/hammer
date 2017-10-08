@@ -1,0 +1,11 @@
+requirements_test <define>FOO;
+requirements_test @<define>FOO;
+requirements_test <define>FOO <define>BAR;
+requirements_test (<define>FOO -> <define>BAR);
+requirements_test @(<define>FOO -> <define>BAR);
+requirements_test (<define>FOO -> @<define>BAR);
+requirements_test (<define>FOO -> <define>BAR <define>TTT);
+requirements_test (<define>FOO || <define>TTT -> <define>BAR);
+requirements_test (<define>FOO && <define>TTT -> <define>BAR);
+requirements_test (<define>TEST || <define>FOO && <define>TTT -> <define>BAR);
+requirements_test (<define>FOO && <define>TTT || <define>TEST -> <define>BAR);

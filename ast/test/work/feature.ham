@@ -1,0 +1,10 @@
+feature_test <link>static ;
+
+# local target
+feature_test <library>(foo) ;
+
+# foo/bar treated as ./foo/bar path in filesystem
+feature_test <library>(foo/bar) ;
+
+# global target
+feature_test <library>(/boost/test) ;

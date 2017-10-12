@@ -23,7 +23,8 @@ class ast_xml_printer : public visitor
 		bool visit(const path& v) override;
 		bool visit(const target& v) override;
       bool visit(const feature& v) override;
-      bool visit(const sources_decl& v);
+		bool visit(const feature_set& v) override;
+		bool visit(const sources_decl& v);
 		bool visit(const condition_expr& v) override;
 		bool visit(const logical_or& v) override;
 		bool visit(const logical_and& v) override;

@@ -12,7 +12,8 @@
 #include <map>
 
 namespace hammer{
-   class feature_set;
+	class feature;
+	class feature_set;
    class sources_decl;
    class requirements_decl;
    class usage_requirements;
@@ -23,25 +24,28 @@ namespace hammer{
 
 class rule_argument_type
 {
-   public:
-	  enum value { VOID, IDENTIFIER, FEATURE_SET, SOURCES_SET, REQUIREMENTS_SET, USAGE_REQUIREMENTS_SET, PATH };
-      
-      static rule_argument_type::value 
-      type(const hammer::parscore::identifier*) { return IDENTIFIER; }
+	public:
+		enum value { VOID, IDENTIFIER, FEATURE, FEATURE_SET, SOURCES_SET, REQUIREMENTS_SET, USAGE_REQUIREMENTS_SET, PATH };
 
-      static rule_argument_type::value 
-      type(const feature_set*) { return FEATURE_SET; }
+		static rule_argument_type::value
+		type(const hammer::parscore::identifier*) { return IDENTIFIER; }
 
-      static rule_argument_type::value 
-	  type(const sources_decl*) { return SOURCES_SET; }
+		static rule_argument_type::value
+		type(const feature*) { return FEATURE; }
 
-      static rule_argument_type::value 
-	  type(const requirements_decl*) { return REQUIREMENTS_SET; }
+		static rule_argument_type::value
+		type(const feature_set*) { return FEATURE_SET; }
 
-	  static rule_argument_type::value
-	  type(const usage_requirements*) { return USAGE_REQUIREMENTS_SET; }
+		static rule_argument_type::value
+		type(const sources_decl*) { return SOURCES_SET; }
 
-      static rule_argument_type::value 
+		static rule_argument_type::value
+		type(const requirements_decl*) { return REQUIREMENTS_SET; }
+
+		static rule_argument_type::value
+		type(const usage_requirements*) { return USAGE_REQUIREMENTS_SET; }
+
+		static rule_argument_type::value
 		type(const path*) { return PATH; }
 };
 

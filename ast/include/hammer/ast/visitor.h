@@ -19,6 +19,7 @@ class list_of;
 class requirement_set;
 class target;
 class feature;
+class feature_set;
 class sources_decl;
 class condition_expr;
 class logical_or;
@@ -40,7 +41,8 @@ class visitor
 		virtual bool visit(const path& v) { return true; }
       virtual bool visit(const target& v) { return true; }
       virtual bool visit(const feature& v) { return true; }
-      virtual bool visit(const sources_decl& v) { return true; }
+		virtual bool visit(const feature_set& v) { return true; }
+		virtual bool visit(const sources_decl& v) { return true; }
 		virtual bool visit(const condition_expr& v) { return true; }
 		virtual bool visit(const logical_or& v) { return true; }
 		virtual bool visit(const logical_and& v) { return true; }

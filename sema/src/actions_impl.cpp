@@ -9,6 +9,7 @@
 #include <hammer/ast/rule_invocation.h>
 #include <hammer/ast/target.h>
 #include <hammer/ast/feature.h>
+#include <hammer/ast/feature_set.h>
 #include <hammer/ast/casts.h>
 #include <hammer/ast/condition.h>
 #include <hammer/core/rule_manager.h>
@@ -107,6 +108,33 @@ process_identifier_arg(const rule_argument& ra, const expression* arg, context& 
 static const expression*
 process_feature_set_arg(const rule_argument& ra, const expression* arg, context& ctx)
 {
+   if (is_a<ast::feature>(arg))
+      return new (ctx) ast::feature_set(arg);
+
+   if (is_a<ast::list_of>(arg)) {
+      for (const expression* e : as<list_of>(arg)->values()) {
+         if (!is_a<ast::feature>(e)) {
+            ctx.diag_.error(e->start_loc(), "Element of feature set should be simple feature");
+            return new (ctx) error_expression(arg);
+         }
+      }
+
+      return new (ctx) ast::feature_set(arg);
+   } else {
+      ctx.diag_.error(arg->start_loc(), "Argument '%s': must be a feature set") << ra.name();
+      return new (ctx) error_expression(arg);
+   }
+}
+
+static const expression*
+process_feature_arg(const rule_argument& ra,
+                    const expression* arg,
+                    context& ctx)
+{
+   if (is_a<ast::feature>(arg))
+      return arg;
+
+   ctx.diag_.error(arg->start_loc(), "Argument '%s': must be a feature") << ra.name();
    return new (ctx) error_expression(arg);
 }
 
@@ -121,7 +149,7 @@ static const expression*
 process_requirements_decl_arg(const rule_argument& ra, const expression* arg, context& ctx)
 {
    auto good_req = [] (const expression* e) {
-      auto check = [] (const expression* e) { return is_a<feature>(e) || is_a<condition_expr>(e); };
+      auto check = [] (const expression* e) { return is_a<ast::feature>(e) || is_a<condition_expr>(e); };
       return check(e) || (is_a<public_expr>(e) && check(as<public_expr>(e)->value()));
    };
 
@@ -171,6 +199,9 @@ process_one_arg(const rule_argument& ra, const expression* arg, ast::context& ct
    {
       case rule_argument_type::IDENTIFIER:
          return process_identifier_arg(ra, arg, ctx);
+
+      case rule_argument_type::FEATURE:
+         return process_feature_arg(ra, arg, ctx);
 
       case rule_argument_type::FEATURE_SET:
          return process_feature_set_arg(ra, arg, ctx);

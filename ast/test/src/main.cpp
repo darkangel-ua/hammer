@@ -67,6 +67,18 @@ void requirements_test_rule(const hammer::requirements_decl& requirements)
 
 }
 
+static
+void feature_test_rule(const hammer::feature& f)
+{
+
+}
+
+static
+void feature_set_test_rule(const hammer::feature_set& f)
+{
+
+}
+
 typedef map<int, pair<string, diagnostic::type::value> > expected_diags_t;
 
 class checked_diagnostic : public diagnostic
@@ -209,6 +221,22 @@ void test_function(const fs::path& hamfile)
       arg_names += "requirements";
       rule_manager.add_target("requirements_test",
                               boost::function<void(const hammer::requirements_decl&)>(&requirements_test_rule),
+                              arg_names);
+   }
+
+   {
+      vector<parscore::identifier> arg_names;
+      arg_names += "feature";
+      rule_manager.add_target("feature_test",
+                              boost::function<void(const hammer::feature&)>(&feature_test_rule),
+                              arg_names);
+   }
+
+   {
+      vector<parscore::identifier> arg_names;
+      arg_names += "feature_set";
+      rule_manager.add_target("feature_set_test",
+                              boost::function<void(const hammer::feature_set&)>(&feature_set_test_rule),
                               arg_names);
    }
 

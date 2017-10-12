@@ -1,0 +1,2 @@
+feature_set_test <link>static ;
+feature_set_test <link>static <define>foo ;

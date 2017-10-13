@@ -68,6 +68,12 @@ void requirements_test_rule(const hammer::requirements_decl& requirements)
 }
 
 static
+void usage_requirements_test_rule(const hammer::usage_requirements& requirements)
+{
+
+}
+
+static
 void feature_test_rule(const hammer::feature& f)
 {
 
@@ -223,6 +229,14 @@ void test_function(const fs::path& hamfile)
       arg_names += "requirements";
       rule_manager.add_target("requirements_test",
                               boost::function<void(const hammer::requirements_decl&)>(&requirements_test_rule),
+                              arg_names);
+   }
+
+   {
+      vector<parscore::identifier> arg_names;
+      arg_names += "usage-requirements";
+      rule_manager.add_target("usage_requirements_test",
+                              boost::function<void(const hammer::usage_requirements&)>(&usage_requirements_test_rule),
                               arg_names);
    }
 

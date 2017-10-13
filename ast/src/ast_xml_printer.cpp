@@ -2,6 +2,7 @@
 #include <hammer/ast/ast_xml_printer.h>
 #include <hammer/ast/path.h>
 #include <hammer/ast/requirement_set.h>
+#include <hammer/ast/usage_requirements.h>
 #include <hammer/ast/target.h>
 #include <hammer/ast/feature.h>
 #include <hammer/ast/feature_set.h>
@@ -130,7 +131,20 @@ bool ast_xml_printer::visit(const requirement_set& v)
 
    os_ << std::setw(indent_) << ' ' << "</requirement_set>\n";
 
-   return true; 
+   return true;
+}
+
+bool ast_xml_printer::visit(const usage_requirements& v)
+{
+   os_ << std::setw(indent_) << ' ' << "<usage_requirements>\n";
+
+   indent_ += 3;
+      v.requirements()->accept(*this);
+   indent_ -= 3;
+
+   os_ << std::setw(indent_) << ' ' << "</usage_requirements>\n";
+
+   return true;
 }
 
 bool ast_xml_printer::visit(const error_expression& v)

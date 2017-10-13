@@ -15,7 +15,8 @@ class ast_xml_printer : public visitor
       bool visit(const rule_invocation& v) override;
       bool visit(const list_of& v) override;
       bool visit(const requirement_set& v) override;
-      bool visit(const error_expression& v) override;
+		bool visit(const usage_requirements& v) override;
+		bool visit(const error_expression& v) override;
       bool visit(const empty_expr& v) override;
       bool visit(const id_expr& v) override;
       bool visit(const named_expr& v) override;

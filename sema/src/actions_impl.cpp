@@ -6,6 +6,7 @@
 #include <hammer/ast/sources_decl.h>
 #include <hammer/ast/path.h>
 #include <hammer/ast/requirement_set.h>
+#include <hammer/ast/usage_requirements.h>
 #include <hammer/ast/rule_invocation.h>
 #include <hammer/ast/target.h>
 #include <hammer/ast/feature.h>
@@ -171,6 +172,32 @@ process_requirements_decl_arg(const rule_argument& ra, const expression* arg, co
 }
 
 static const expression*
+process_usage_requirements_arg(const rule_argument& ra,
+                               const expression* arg,
+                               context& ctx)
+{
+   auto good_req = [] (const expression* e) {
+      return is_a<ast::feature>(e) || is_a<condition_expr>(e);
+   };
+
+   if (is_a<list_of>(arg)) {
+      for (const expression* e : as<list_of>(arg)->values()) {
+         if (!good_req(e)) {
+            ctx.diag_.error(e->start_loc(), "Usage requirement should be feature or condition");
+            return new (ctx) error_expression(arg);
+         }
+      }
+
+      return new (ctx) ast::usage_requirements(arg);
+   } else if (good_req(arg))
+      return new (ctx) ast::usage_requirements(arg);
+   else {
+      ctx.diag_.error(arg->start_loc(), "Usage requirement should be feature or condition");
+      return new (ctx) error_expression(arg);
+   }
+}
+
+static const expression*
 process_path_like_seq_arg(const rule_argument& ra, const expression* arg, context& ctx)
 {
    if (as<ast::path>(arg))
@@ -211,6 +238,9 @@ process_one_arg(const rule_argument& ra, const expression* arg, ast::context& ct
 
       case rule_argument_type::REQUIREMENTS_SET:
          return process_requirements_decl_arg(ra, arg, ctx);
+
+      case rule_argument_type::USAGE_REQUIREMENTS_SET:
+         return process_usage_requirements_arg(ra, arg, ctx);
 
       case rule_argument_type::PATH:
          return process_path_like_seq_arg(ra, arg, ctx);

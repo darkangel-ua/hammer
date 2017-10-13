@@ -1,0 +1,8 @@
+usage_requirements_test <define>FOO;
+usage_requirements_test <define>FOO <define>BAR;
+usage_requirements_test (<define>FOO -> <define>BAR);
+usage_requirements_test (<define>FOO -> <define>BAR <define>TTT);
+usage_requirements_test (<define>FOO || <define>TTT -> <define>BAR);
+usage_requirements_test (<define>FOO && <define>TTT -> <define>BAR);
+usage_requirements_test (<define>TEST || <define>FOO && <define>TTT -> <define>BAR);
+usage_requirements_test (<define>FOO && <define>TTT || <define>TEST -> <define>BAR);

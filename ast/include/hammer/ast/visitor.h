@@ -17,6 +17,7 @@ class id_expr;
 class path;
 class list_of;
 class requirement_set;
+class usage_requirements;
 class target;
 class feature;
 class feature_set;
@@ -33,7 +34,8 @@ class visitor
       virtual bool visit(const rule_invocation& v) { return true; }
       virtual bool visit(const list_of& v) { return true; }
       virtual bool visit(const requirement_set& v) { return true; }
-      virtual bool visit(const error_expression& v) { return true; }
+		virtual bool visit(const usage_requirements& v) { return true; }
+		virtual bool visit(const error_expression& v) { return true; }
       virtual bool visit(const empty_expr& v) { return true; }
       virtual bool visit(const id_expr& v) { return true; }
       virtual bool visit(const named_expr& v) { return true; }

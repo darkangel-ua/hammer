@@ -84,8 +84,10 @@ typedef map<int, pair<string, diagnostic::type::value> > expected_diags_t;
 class checked_diagnostic : public diagnostic
 {
    public:               
-      checked_diagnostic(const expected_diags_t& expected_diags)
-         : expected_diags_(expected_diags)
+      checked_diagnostic(const std::string& source_name,
+                         const expected_diags_t& expected_diags)
+         : diagnostic(source_name),
+           expected_diags_(expected_diags)
       {
       }
       void report_unreported_diagnostics() const;     
@@ -164,7 +166,7 @@ static expected_diags_t extract_expected_diags(const fs::path& hamfile)
 void test_function(const fs::path& hamfile)
 {
    rule_manager rule_manager;
-   checked_diagnostic diag(extract_expected_diags(hamfile));
+   checked_diagnostic diag(hamfile.string(), extract_expected_diags(hamfile));
 
    {
       vector<parscore::identifier> arg_names;

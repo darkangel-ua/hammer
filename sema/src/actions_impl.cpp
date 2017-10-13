@@ -185,7 +185,7 @@ process_one_arg(const rule_argument& ra, const expression* arg, ast::context& ct
 {
    if (!ra.is_optional() && is_a<empty_expr>(arg))
    {
-      ctx.diag_.error(arg->start_loc(), "Required argument '%s' expected before '%s'")
+      ctx.diag_.error(as<empty_expr>(arg)->next_token().start_lok(), "Required argument '%s' expected before '%s'")
          << ra.name() 
          << as<empty_expr>(arg)->next_token();
 

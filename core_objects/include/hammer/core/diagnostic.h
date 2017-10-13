@@ -17,7 +17,7 @@ class diagnostic
       struct type { enum value {error}; };
       struct arg_type { enum value{integer, chars, identifier}; };
 
-      diagnostic();
+		diagnostic(const std::string& source_name);
 
       diagnostic_builder error(parscore::source_location loc, 
                                const char* message);
@@ -37,6 +37,8 @@ class diagnostic
    
    private:
       void format_location();
+
+		const std::string source_name_;
 };
 
 class diagnostic_builder
@@ -73,7 +75,11 @@ class diagnostic_builder
 class streamed_diagnostic : public diagnostic
 {
    public:
-      streamed_diagnostic(std::ostream& os) : os_(os) {}
+		streamed_diagnostic(const std::string& source_name,
+								  std::ostream& os)
+			: diagnostic(source_name),
+			  os_(os)
+		{}
    
    protected:
       virtual void report(const char* formated_message);

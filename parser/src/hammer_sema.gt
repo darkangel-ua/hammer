@@ -40,11 +40,12 @@ arguments[hammer::ast::expressions_t* args]
 argument returns[const hammer::ast::expression* result]
 	: EmptyArgument { result = SEMA->on_empty_expr($EmptyArgument->getToken($EmptyArgument)); }
 	| expression { result = $expression.result; }
-	| named_expression { result = $named_expression.result; }
+	| named_argument { result = $named_argument.result; }
 	;
 
-named_expression returns[const hammer::ast::expression* result]
+named_argument returns[const hammer::ast::expression* result]
 	: ^(NamedArgument Id expression { result = SEMA->on_named_expr($Id->getToken($Id), $expression.result); } )
+	| ^(NamedArgument Id EmptyArgument { result = SEMA->on_named_expr($Id->getToken($Id), SEMA->on_empty_expr($EmptyArgument->getToken($EmptyArgument))); } )
 	;	
 	
 expression returns[const hammer::ast::expression* result]

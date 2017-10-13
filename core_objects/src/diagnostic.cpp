@@ -7,7 +7,9 @@ using namespace std;
 
 namespace hammer{ 
 
-diagnostic::diagnostic() : error_count_(0) 
+diagnostic::diagnostic(const std::string& source_name)
+	: error_count_(0),
+	  source_name_(source_name)
 {}
 
 diagnostic_builder diagnostic::error(parscore::source_location loc, 
@@ -26,7 +28,7 @@ diagnostic_builder diagnostic::error(parscore::source_location loc,
 
 void diagnostic::format_location()
 {
-   stream_ << loc_.full_source_name() << '(' << loc_.line() << ") : ";
+	stream_ << source_name_ << '(' << loc_.line() << ") : ";
 }
 
 void diagnostic::format_message()

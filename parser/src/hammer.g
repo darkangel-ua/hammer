@@ -39,6 +39,12 @@ rule_prefix
 	: Local
 	| Explicit
 	;
+rule_invocation 
+	: '[' WS* rule_impl ']' -> ^(RuleInvocation rule_impl)
+	;	
+rule_impl 
+	: Id WS+ arguments -> Id arguments
+	;
 arguments 
 	: (';')=> -> Arguments
 	| argument rest_of_arguments* -> ^(Arguments argument rest_of_arguments*)
@@ -54,13 +60,16 @@ named_argument
 	: Id WS* '=' WS* named_argument_body -> ^(NamedArgument Id named_argument_body)
 	;	
 named_argument_body
-	: (':' | ';')=> -> EmptyArgument
+	: empty_argument
 	| unnamed_argument
 	;
 argument 
-	: (':' | ';')=> -> EmptyArgument
+	: empty_argument
         | named_argument
         | unnamed_argument
+	;
+empty_argument
+	: (':' | ';') => -> EmptyArgument[LT(1), LT(1)->getText(LT(1))->chars]
 	;
 list 	
 	: expression (WS+ expression)+ -> ^(List expression+)
@@ -127,12 +136,6 @@ condition_result_elem
 	: '@' WS* feature -> ^(PublicTag feature)
 	| feature
 	;	
-rule_invocation 
-	: '[' WS* rule_impl ']' -> ^(RuleInvocation rule_impl)
-	;	
-rule_impl 
-	: Id WS+ arguments -> Id arguments
-	;
 path
 	: path_non_uri
 	| path_uri

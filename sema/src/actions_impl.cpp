@@ -3,7 +3,7 @@
 #include <hammer/ast/hamfile.h>
 #include <hammer/ast/expression.h>
 #include <hammer/ast/list_of.h>
-#include <hammer/ast/sources_decl.h>
+#include <hammer/ast/sources.h>
 #include <hammer/ast/path.h>
 #include <hammer/ast/requirement_set.h>
 #include <hammer/ast/usage_requirements.h>
@@ -24,10 +24,11 @@ using namespace hammer::parscore;
 namespace hammer{namespace sema{
 
 static
-expressions_t process_arguments(const parscore::identifier& rule_name,
-                                const rule_declaration& rule_decl,
-                                const ast::expressions_t& arguments,
-                                ast::context& ctx);
+expressions_t
+process_arguments(const parscore::identifier& rule_name,
+                  const rule_declaration& rule_decl,
+                  const ast::expressions_t& arguments,
+                  ast::context& ctx);
 
 actions_impl::actions_impl(ast::context& ctx)
    : actions(ctx)
@@ -140,10 +141,58 @@ process_feature_arg(const rule_argument& ra,
 }
 
 static const expression*
-process_sources_decl_arg(const rule_argument& ra, const expression* arg, context& ctx)
+process_sources_arg(const rule_argument& ra,
+                    const expression* arg,
+                    context& ctx)
 {
-   // FIXME: semantic checks
-   return new (ctx) hammer::ast::sources_decl(arg);
+   auto good_source = [](const expression* e) {
+      return is_a<ast::id_expr>(e) || is_a<ast::target>(e) || is_a<ast::path>(e) || is_a<ast::rule_invocation>(e);
+   };
+
+   auto process_rule_inv = [&](const ast::rule_invocation* ri) -> const expression* {
+      // cannot fail because rule has been checked previously
+      const rule_declaration& rd = ctx.rule_manager_.find(ri->name())->second;
+      const rule_argument& rdr = rd.result();
+      // we can deal only with return types that can be converted to sources
+      if (rdr.type() == rule_argument_type::IDENTIFIER ||
+          rdr.type() == rule_argument_type::SOURCES ||
+          rdr.type() == rule_argument_type::PATH ||
+          rdr.type() == rule_argument_type::TARGET)
+      {
+         return ri;
+      }
+
+      ctx.diag_.error(ri->start_loc(), "Can't use result of rule '%s' in sources") << rd.name();
+      return new (ctx) error_expression(ri);
+   };
+
+   if (good_source(arg)) {
+      if (auto ri = as<ast::rule_invocation>(arg))
+         return new (ctx) hammer::ast::sources(process_rule_inv(ri));
+       else
+         return new (ctx) hammer::ast::sources(arg);
+   }
+
+   if (is_a<ast::public_expr>(arg) && good_source(as<ast::public_expr>(arg)->value()))
+      return new (ctx) hammer::ast::sources(arg);
+
+   if (is_a<ast::list_of>(arg)) {
+      expressions_t elements(expressions_t::allocator_type{ctx});
+      for (const expression* e : as<list_of>(arg)->values()) {
+         if (!good_source(e)) {
+            ctx.diag_.error(e->start_loc(), "Bad source element");
+            elements.push_back(new (ctx) error_expression(arg));
+         } else if (auto ri = as<ast::rule_invocation>(e))
+            elements.push_back(process_rule_inv(ri));
+         else
+            elements.push_back(e);
+      }
+
+      return new (ctx) hammer::ast::sources(new (ctx) ast::list_of(elements));
+   }
+
+   ctx.diag_.error(arg->start_loc(), "Argument '%s': must meet sources specs") << ra.name();
+   return new (ctx) error_expression(arg);
 }
 
 static const expression*
@@ -183,7 +232,7 @@ process_usage_requirements_arg(const rule_argument& ra,
    if (is_a<list_of>(arg)) {
       for (const expression* e : as<list_of>(arg)->values()) {
          if (!good_req(e)) {
-            ctx.diag_.error(e->start_loc(), "Usage requirement should be feature or condition");
+            ctx.diag_.error(arg->start_loc(), "Usage requirement should be feature or condition");
             return new (ctx) error_expression(arg);
          }
       }
@@ -233,8 +282,8 @@ process_one_arg(const rule_argument& ra, const expression* arg, ast::context& ct
       case rule_argument_type::FEATURE_SET:
          return process_feature_set_arg(ra, arg, ctx);
 
-      case rule_argument_type::SOURCES_SET:
-         return process_sources_decl_arg(ra, arg, ctx);
+      case rule_argument_type::SOURCES:
+         return process_sources_arg(ra, arg, ctx);
 
       case rule_argument_type::REQUIREMENTS_SET:
          return process_requirements_decl_arg(ra, arg, ctx);
@@ -253,10 +302,11 @@ process_one_arg(const rule_argument& ra, const expression* arg, ast::context& ct
 }
 
 static
-expressions_t process_arguments(const parscore::identifier& rule_name,
-                                const rule_declaration& rule_decl, 
-                                const ast::expressions_t& arguments,
-                                ast::context& ctx)
+expressions_t
+process_arguments(const parscore::identifier& rule_name,
+                  const rule_declaration& rule_decl,
+                  const ast::expressions_t& arguments,
+                  ast::context& ctx)
 {
    typedef std::set<const rule_argument*> used_named_args_t;
    expressions_t result(expressions_t::allocator_type{ctx});

@@ -25,6 +25,13 @@ using namespace boost::unit_test;
 using namespace boost::assign;
 namespace fs = boost::filesystem;
 
+namespace hammer {
+
+// FIXME: just to fool glob and rglob
+class sources_decl {};
+
+}
+
 static
 void project_rule(const parscore::identifier& id,
                   const hammer::requirements_decl* requirements,
@@ -51,14 +58,18 @@ static void exe_rule(const parscore::identifier& id,
 
 }
 
-static void glob_rule(const hammer::path& pattern)
+static
+hammer::sources_decl
+glob_rule(const hammer::path& pattern)
 {
-
+   return {};
 }
 
-static void rglob_rule(const hammer::path& pattern)
+static
+hammer::sources_decl
+rglob_rule(const hammer::path& pattern)
 {
-
+   return {};
 }
 
 static
@@ -81,6 +92,12 @@ void feature_test_rule(const hammer::feature& f)
 
 static
 void feature_set_test_rule(const hammer::feature_set& f)
+{
+
+}
+
+static
+void sources_test_rule(const hammer::sources_decl&)
 {
 
 }
@@ -125,7 +142,7 @@ void checked_diagnostic::report(const char* formated_message)
       
       expected_diags_t::const_iterator i = expected_diags_.find(line_number);
       if (i == expected_diags_.end())
-         BOOST_CHECK_MESSAGE(false, "Unexpected diagnostic: " + m[3]);
+         BOOST_CHECK_MESSAGE(false, "Unexpected diagnostic at line " + to_string(line_number) + " : " + m[3]);
       else {
          reported_lines_.insert({line_number, formated_message});
          BOOST_CHECK_EQUAL(i->second.second, type);
@@ -212,7 +229,7 @@ void test_function(const fs::path& hamfile)
       vector<parscore::identifier> arg_names;
       arg_names += "pattern";
       rule_manager.add_target("glob", 
-                              boost::function<void(const hammer::path&)>(&glob_rule),
+                              boost::function<hammer::sources_decl (const hammer::path&)>(&glob_rule),
                               arg_names);
    }
 
@@ -220,7 +237,7 @@ void test_function(const fs::path& hamfile)
       vector<parscore::identifier> arg_names;
       arg_names += "pattern";
       rule_manager.add_target("rglob", 
-                              boost::function<void(const hammer::path&)>(&rglob_rule),
+                              boost::function<hammer::sources_decl (const hammer::path&)>(&rglob_rule),
                               arg_names);
    }
 
@@ -253,6 +270,14 @@ void test_function(const fs::path& hamfile)
       arg_names += "feature_set";
       rule_manager.add_target("feature_set_test",
                               boost::function<void(const hammer::feature_set&)>(&feature_set_test_rule),
+                              arg_names);
+   }
+
+   {
+      vector<parscore::identifier> arg_names;
+      arg_names += "sources";
+      rule_manager.add_target("sources_test",
+                              boost::function<void(const hammer::sources_decl&)>(&sources_test_rule),
                               arg_names);
    }
 

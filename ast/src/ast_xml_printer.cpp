@@ -6,7 +6,7 @@
 #include <hammer/ast/target.h>
 #include <hammer/ast/feature.h>
 #include <hammer/ast/feature_set.h>
-#include <hammer/ast/sources_decl.h>
+#include <hammer/ast/sources.h>
 #include <hammer/ast/list_of.h>
 #include <hammer/ast/rule_invocation.h>
 #include <hammer/ast/hamfile.h>
@@ -211,12 +211,12 @@ bool ast_xml_printer::visit(const feature_set& v)
    return true;
 }
 
-bool ast_xml_printer::visit(const sources_decl& v)
+bool ast_xml_printer::visit(const sources& v)
 {
    os_ << std::setw(indent_) << ' ' << "<sources>\n";
 
    indent_ += 3;
-      v.sources()->accept(*this);
+      v.content()->accept(*this);
    indent_ -= 3;
 
    os_ << std::setw(indent_) << ' ' << "</sources>\n";

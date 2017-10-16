@@ -40,4 +40,7 @@ std::string path::to_string() const
 template<>
 const path* as<path>(const node* v) { return dynamic_cast<const path*>(v); }
 
+template<>
+bool is_a<path>(const node& v) { return dynamic_cast<const path*>(&v); }
+
 }}

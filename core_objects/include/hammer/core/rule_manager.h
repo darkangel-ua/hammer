@@ -18,6 +18,7 @@ namespace hammer{
    class requirements_decl;
    class usage_requirements;
 	class path;
+	class target;
 }
 
 namespace hammer{
@@ -25,7 +26,7 @@ namespace hammer{
 class rule_argument_type
 {
 	public:
-		enum value { VOID, IDENTIFIER, FEATURE, FEATURE_SET, SOURCES_SET, REQUIREMENTS_SET, USAGE_REQUIREMENTS_SET, PATH };
+		enum value { VOID, IDENTIFIER, FEATURE, FEATURE_SET, SOURCES, REQUIREMENTS_SET, USAGE_REQUIREMENTS_SET, PATH, TARGET };
 
 		static rule_argument_type::value
 		type(const hammer::parscore::identifier*) { return IDENTIFIER; }
@@ -37,7 +38,7 @@ class rule_argument_type
 		type(const feature_set*) { return FEATURE_SET; }
 
 		static rule_argument_type::value
-		type(const sources_decl*) { return SOURCES_SET; }
+		type(const sources_decl*) { return SOURCES; }
 
 		static rule_argument_type::value
 		type(const requirements_decl*) { return REQUIREMENTS_SET; }
@@ -47,6 +48,9 @@ class rule_argument_type
 
 		static rule_argument_type::value
 		type(const path*) { return PATH; }
+
+		static rule_argument_type::value
+		type(const target*) { return TARGET; }
 };
 
 class rule_argument

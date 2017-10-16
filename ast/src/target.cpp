@@ -2,6 +2,7 @@
 #include <hammer/ast/target.h>
 #include <hammer/ast/visitor.h>
 #include <hammer/ast/path.h>
+#include <hammer/ast/casts.h>
 
 namespace hammer{namespace ast{
 
@@ -29,6 +30,12 @@ bool target::has_target_name() const
 {
    return target_name_.valid();
 }
+
+template<>
+bool is_a<target>(const node& v) { return dynamic_cast<const target*>(&v); }
+
+template<>
+const target* as<target>(const node* v) { return dynamic_cast<const target*>(v); }
 
 }}
 

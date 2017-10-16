@@ -1,0 +1,16 @@
+exe test : main.cpp ;
+
+local 
+exe test : main.cpp ;
+
+explicit 
+exe test : main.cpp ;
+
+# should be ok
+glob ./*.cpp ;
+
+local              #error: Only target definition can be local
+glob ./*.cpp ; 
+
+explicit           #error: Only target definition can be explicit
+glob ./*.cpp ;

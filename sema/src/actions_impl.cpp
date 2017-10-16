@@ -8,11 +8,13 @@
 #include <hammer/ast/requirement_set.h>
 #include <hammer/ast/usage_requirements.h>
 #include <hammer/ast/rule_invocation.h>
-#include <hammer/ast/target.h>
+#include <hammer/ast/target_ref.h>
+#include <hammer/ast/target_def.h>
 #include <hammer/ast/feature.h>
 #include <hammer/ast/feature_set.h>
 #include <hammer/ast/casts.h>
 #include <hammer/ast/condition.h>
+#include <hammer/ast/target_def.h>
 #include <hammer/core/rule_manager.h>
 #include <hammer/core/diagnostic.h>
 #include <set>
@@ -87,6 +89,42 @@ actions_impl::on_id(const parscore::identifier& id) const
    return new (ctx_) ast::id_expr(id);
 }
 
+const statement*
+actions_impl::on_top_level_rule_invocation(const source_location explicit_tag,
+                                           const source_location local_tag,
+                                           const identifier& rule_name,
+                                           const expressions_t& arguments) const
+{
+   rule_manager::const_iterator i = ctx_.rule_manager_.find(rule_name);
+   if (i != ctx_.rule_manager_.end()) {
+      if (!first_rule_in_file_) {
+         if (rule_name == "project") {
+            ctx_.diag_.error(rule_name.start_lok(), "Rule 'project' MUST be the first statement in the file");
+            return new (ctx_) expression_statement(new (ctx_) ast::error_expression(rule_name.start_lok()));
+         }
+      } else
+         first_rule_in_file_ = false;
+
+      const rule_declaration& rd = i->second;
+      const ast::rule_invocation* ri = new (ctx_) ast::rule_invocation(rule_name, process_arguments(rule_name, i->second, arguments, ctx_));
+      if (rd.is_target())
+         return new (ctx_) target_def(local_tag, explicit_tag, ri);
+      else {
+         if (explicit_tag.valid()) {
+            ctx_.diag_.error(explicit_tag, "Only target definition can be explicit");
+            return new (ctx_) expression_statement(new (ctx_) ast::error_expression(explicit_tag));
+         } else if (local_tag.valid()) {
+            ctx_.diag_.error(local_tag, "Only target definition can be local");
+            return new (ctx_) expression_statement(new (ctx_) ast::error_expression(local_tag));
+         } else
+            return new (ctx_) expression_statement(ri);
+      }
+   } else {
+      ctx_.diag_.error(rule_name.start_lok(), "Target or rule '%s' was not defined") << rule_name;
+      return new (ctx_) expression_statement(new (ctx_) ast::error_expression(rule_name.start_lok()));
+   }
+}
+
 static int required_argument_count(const rule_declaration& rule_decl)
 {
    int result = 0;
@@ -146,7 +184,7 @@ process_sources_arg(const rule_argument& ra,
                     context& ctx)
 {
    auto good_source = [](const expression* e) {
-      return is_a<ast::id_expr>(e) || is_a<ast::target>(e) || is_a<ast::path>(e) || is_a<ast::rule_invocation>(e);
+      return is_a<ast::id_expr>(e) || is_a<ast::target_ref>(e) || is_a<ast::path>(e) || is_a<ast::rule_invocation>(e);
    };
 
    auto process_rule_inv = [&](const ast::rule_invocation* ri) -> const expression* {
@@ -157,7 +195,7 @@ process_sources_arg(const rule_argument& ra,
       if (rdr.type() == rule_argument_type::IDENTIFIER ||
           rdr.type() == rule_argument_type::SOURCES ||
           rdr.type() == rule_argument_type::PATH ||
-          rdr.type() == rule_argument_type::TARGET)
+          rdr.type() == rule_argument_type::TARGET_REF)
       {
          return ri;
       }
@@ -405,9 +443,9 @@ process_arguments(const parscore::identifier& rule_name,
    return result;
 }
 
-const ast::expression* 
-actions_impl::on_target_or_rule_call(const parscore::identifier& rule_name, 
-                                     const ast::expressions_t& arguments) const
+const ast::expression*
+actions_impl::on_rule_invocation(const parscore::identifier& rule_name,
+                                 const ast::expressions_t& arguments) const
 {
    rule_manager::const_iterator i = ctx_.rule_manager_.find(rule_name);
    if (i != ctx_.rule_manager_.end()) {
@@ -434,12 +472,12 @@ actions_impl::on_feature(parscore::identifier name,
 }
 
 const ast::expression*
-actions_impl::on_target(parscore::source_location public_tag,
-                        const ast::path* target_path,
-                        const parscore::identifier& target_name,
-                        const features_t& build_request) const
+actions_impl::on_target_ref(parscore::source_location public_tag,
+                            const ast::path* target_path,
+                            const parscore::identifier& target_name,
+                            const features_t& build_request) const
 {
-   return new (ctx_) ast::target(public_tag, target_path, target_name, build_request);
+   return new (ctx_) ast::target_ref(public_tag, target_path, target_name, build_request);
 }
 
 const ast::logical_or*

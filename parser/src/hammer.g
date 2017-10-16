@@ -21,9 +21,9 @@ Feature;
 Condition;
 RuleInvocation;
 Path;
-Target;
-TargetSpec;
-TargetBuildRequest;
+TargetRef;
+TargetRefSpec;
+TargetRefBuildRequest;
 Wildcard;
 LogicalAnd;
 LogicalOr;
@@ -75,7 +75,7 @@ list
 	: expression (WS+ expression)+ -> ^(List expression+)
 	;
 expression
-	: (target)=> target
+	: (target_ref)=> target_ref
 	| '@' WS* expressions_a -> ^(PublicTag expressions_a)
 	| expressions_a
 	| expressions_b
@@ -108,9 +108,9 @@ feature_value
 	| '(' WS* feature_value_target WS* ')' -> feature_value_target
 	;	
 feature_value_target 
-	: (target) => target
-	| (path) => path -> ^(Target path)
-	| Id -> ^(Target Id)
+	: (target_ref) => target_ref
+	| (path) => path -> ^(TargetRef path)
+	| Id -> ^(TargetRef Id)
 	;	
 condition
 	: '(' WS* condition_condition condition_result WS* ')' -> ^(Condition condition_condition condition_result)
@@ -168,26 +168,26 @@ wildcard_s
 	: '*'
 	| '?'+
 	;	           
-target
-	: '@' WS* target_impl -> ^(PublicTag target_impl)
-	| target_root_path
-	| path_non_uri target_spec -> ^(Target path_non_uri target_spec)
-	| Id target_spec -> ^(Target Id target_spec)
+target_ref
+	: '@' WS* target_ref_impl -> ^(PublicTag target_ref_impl)
+	| target_ref_root_path
+	| path_non_uri target_ref_spec -> ^(TargetRef path_non_uri target_ref_spec)
+	| Id target_ref_spec -> ^(TargetRef Id target_ref_spec)
 	;	
-target_impl 
-	: target_root_path
-	| path_non_uri target_spec? -> ^(Target path_non_uri target_spec?)
-	| Id target_spec? -> ^(Target Id target_spec?)
+target_ref_impl 
+	: target_ref_root_path
+	| path_non_uri target_ref_spec? -> ^(TargetRef path_non_uri target_ref_spec?)
+	| Id target_ref_spec? -> ^(TargetRef Id target_ref_spec?)
 	;
-target_root_path
-	: '/' path_root target_spec? -> ^(Target path_root target_spec?)
+target_ref_root_path
+	: '/' path_root target_ref_spec? -> ^(TargetRef path_root target_ref_spec?)
 	;
-target_spec
-	: '//' Id target_build_request? -> ^(TargetSpec Id target_build_request?)
-	| target_build_request -> ^(TargetSpec target_build_request)
+target_ref_spec
+	: '//' Id target_ref_build_request? -> ^(TargetRefSpec Id target_ref_build_request?)
+	| target_ref_build_request -> ^(TargetRefSpec target_ref_build_request)
 	;	
-target_build_request
-	: ('/' feature)+ -> ^(TargetBuildRequest feature+)
+target_ref_build_request
+	: ('/' feature)+ -> ^(TargetRefBuildRequest feature+)
 	;	
 Slash : '/';
 DoubleSlash : '//';

@@ -25,14 +25,22 @@ hamfile returns [const hammer::ast::hamfile* result]
         ;
         
 statement[hammer::ast::statements_t* statements]
-	: target_def_or_rule_call { statements->push_back($target_def_or_rule_call.result); }
+	: top_level_rule_invocation { statements->push_back($top_level_rule_invocation.result); }
 	;
 
-target_def_or_rule_call returns[const hammer::ast::expression* result] 
-@init { DECLARE_TYPE(hammer::ast::expressions_t, args); }
-	: ^(Rule name=Id arguments[&args]) { result = SEMA->on_target_or_rule_call($name->getToken($name), args); }
+top_level_rule_invocation returns[const hammer::ast::statement* result] 
+@init { DECLARE_TYPE(hammer::ast::expressions_t, args); 
+        hammer::parscore::source_location explicit_tag, local_tag;
+}
+	: ^(Rule target_def_prefix[&explicit_tag, &local_tag]? name=Id arguments[&args]) { result = SEMA->on_top_level_rule_invocation(explicit_tag, local_tag, $name->getToken($name), args); }
 	; 
 
+target_def_prefix [hammer::parscore::source_location* explicit_tag,
+		   hammer::parscore::source_location* local_tag]
+	: Local { *local_tag = hammer::parscore::source_location($Local->getToken($Local)); }
+	| Explicit { *explicit_tag = hammer::parscore::source_location($Explicit->getToken($Explicit)); }
+	;
+	
 arguments[hammer::ast::expressions_t* args]
 	: ^(Arguments (argument { args->push_back($argument.result); })* )
         ;
@@ -51,7 +59,7 @@ named_argument returns[const hammer::ast::expression* result]
 expression returns[const hammer::ast::expression* result]
 @init { DECLARE_TYPE(hammer::ast::expressions_t, args); }
 	: list_of[&args] { result = SEMA->on_list_of(args); }
-        | target { result = $target.result; }
+        | target_ref { result = $target_ref.result; }
 	| path { result = $path.result; }
 	| Id { result = SEMA->on_id($Id->getToken($Id)); }
         | public_expression { result = $public_expression.result; }
@@ -64,7 +72,7 @@ list_of[hammer::ast::expressions_t* args]
 	: ^(List (list_element { args->push_back($list_element.result); })+ )
 	;           
 list_element returns[const hammer::ast::expression* result]
-	: target { result = $target.result; }
+	: target_ref { result = $target_ref.result; }
 	| path { result = $path.result; }
 	| Id { result = SEMA->on_id($Id->getToken($Id)); }
         | public_expression { result = $public_expression.result; }
@@ -111,7 +119,7 @@ public_tag[hammer::parscore::source_location* tag_loc]
 
 rule_invocation returns[const hammer::ast::expression* result]
 @init { DECLARE_TYPE(hammer::ast::expressions_t, args); }
-	: ^(RuleInvocation name=Id arguments[&args]) { result = SEMA->on_target_or_rule_call($name->getToken($name), args); }
+	: ^(RuleInvocation name=Id arguments[&args]) { result = SEMA->on_rule_invocation($name->getToken($name), args); }
 	;
 
 feature returns[const hammer::ast::feature* result]
@@ -121,29 +129,29 @@ feature returns[const hammer::ast::feature* result]
 feature_value returns[const hammer::ast::expression* result]
 	: Id { result = SEMA->on_id($Id->getToken($Id)); }
 	| path { result = $path.result; }
-	| target { result = $target.result; }
+	| target_ref { result = $target_ref.result; }
 	;
-target returns[const hammer::ast::expression* result]
+target_ref returns[const hammer::ast::expression* result]
 @init { DECLARE_TYPE(hammer::ast::features_t, build_request); 
         hammer::parscore::identifier target_name; }
-	: ^(PublicTag target_impl[&target_name, &build_request]) { result = SEMA->on_target($PublicTag->getToken($PublicTag), $target_impl.result, target_name, build_request); }
-	| target_impl[&target_name, &build_request] { result = SEMA->on_target(hammer::parscore::source_location(), $target_impl.result, target_name, build_request); }
+	: ^(PublicTag target_ref_impl[&target_name, &build_request]) { result = SEMA->on_target_ref($PublicTag->getToken($PublicTag), $target_ref_impl.result, target_name, build_request); }
+	| target_ref_impl[&target_name, &build_request] { result = SEMA->on_target_ref(hammer::parscore::source_location(), $target_ref_impl.result, target_name, build_request); }
 	;
 
-target_impl[hammer::parscore::identifier* target_name, 
+target_ref_impl[hammer::parscore::identifier* target_name, 
 	    hammer::ast::features_t* build_request]
 returns[const hammer::ast::path* result]
-	: ^(Target path target_spec[target_name, build_request]?) { result = $path.result; }
-	| ^(Target Id target_spec[target_name, build_request]?) { DECLARE_TYPE(hammer::ast::expressions_t, elements); elements.push_back(SEMA->on_id($Id->getToken($Id))); result = SEMA->on_path({}, elements); }
+	: ^(TargetRef path target_ref_spec[target_name, build_request]?) { result = $path.result; }
+	| ^(TargetRef Id target_ref_spec[target_name, build_request]?) { DECLARE_TYPE(hammer::ast::expressions_t, elements); elements.push_back(SEMA->on_id($Id->getToken($Id))); result = SEMA->on_path({}, elements); }
 	;
 	
-target_spec[hammer::parscore::identifier* target_name, 
+target_ref_spec[hammer::parscore::identifier* target_name, 
 	    hammer::ast::features_t* build_request]
-	: ^(TargetSpec Id target_build_request[build_request]?) { *target_name = hammer::parscore::identifier($Id->getToken($Id)); }
-	| ^(TargetSpec target_build_request[build_request])
+	: ^(TargetRefSpec Id target_ref_build_request[build_request]?) { *target_name = hammer::parscore::identifier($Id->getToken($Id)); }
+	| ^(TargetRefSpec target_ref_build_request[build_request])
 	;	
-target_build_request[hammer::ast::features_t* build_request]
-	: ^(TargetBuildRequest (feature { build_request->push_back($feature.result); })+)
+target_ref_build_request[hammer::ast::features_t* build_request]
+	: ^(TargetRefBuildRequest (feature { build_request->push_back($feature.result); })+)
 	;	
 condition returns[const hammer::ast::expression* result]
 	: ^(Condition condition_condition condition_result) { result = SEMA->on_condition($condition_condition.result, $condition_result.result); }

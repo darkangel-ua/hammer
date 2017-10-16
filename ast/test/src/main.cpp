@@ -194,11 +194,11 @@ void test_function(const fs::path& hamfile)
    {
       vector<parscore::identifier> arg_names;
       arg_names += "project-name", "requirements", "usage-requirements";
-      rule_manager.add_target("project",
-                              boost::function<void(const parscore::identifier&,
-                                                   const hammer::requirements_decl*,
-                                                   const hammer::requirements_decl*)>(&project_rule),
-                              arg_names);
+      rule_manager.add_rule("project",
+                            boost::function<void(const parscore::identifier&,
+                                                 const hammer::requirements_decl*,
+                                                 const hammer::requirements_decl*)>(&project_rule),
+                            arg_names);
    }
 
    {
@@ -228,57 +228,57 @@ void test_function(const fs::path& hamfile)
    {
       vector<parscore::identifier> arg_names;
       arg_names += "pattern";
-      rule_manager.add_target("glob", 
-                              boost::function<hammer::sources_decl (const hammer::path&)>(&glob_rule),
-                              arg_names);
+      rule_manager.add_rule("glob",
+                            boost::function<hammer::sources_decl (const hammer::path&)>(&glob_rule),
+                            arg_names);
    }
 
    {
       vector<parscore::identifier> arg_names;
       arg_names += "pattern";
-      rule_manager.add_target("rglob", 
-                              boost::function<hammer::sources_decl (const hammer::path&)>(&rglob_rule),
-                              arg_names);
+      rule_manager.add_rule("rglob",
+                            boost::function<hammer::sources_decl (const hammer::path&)>(&rglob_rule),
+                            arg_names);
    }
 
    {
       vector<parscore::identifier> arg_names;
       arg_names += "requirements";
-      rule_manager.add_target("requirements_test",
-                              boost::function<void(const hammer::requirements_decl&)>(&requirements_test_rule),
-                              arg_names);
+      rule_manager.add_rule("requirements_test",
+                            boost::function<void(const hammer::requirements_decl&)>(&requirements_test_rule),
+                            arg_names);
    }
 
    {
       vector<parscore::identifier> arg_names;
       arg_names += "usage-requirements";
-      rule_manager.add_target("usage_requirements_test",
-                              boost::function<void(const hammer::usage_requirements&)>(&usage_requirements_test_rule),
-                              arg_names);
+      rule_manager.add_rule("usage_requirements_test",
+                            boost::function<void(const hammer::usage_requirements&)>(&usage_requirements_test_rule),
+                            arg_names);
    }
 
    {
       vector<parscore::identifier> arg_names;
       arg_names += "feature";
-      rule_manager.add_target("feature_test",
-                              boost::function<void(const hammer::feature&)>(&feature_test_rule),
-                              arg_names);
+      rule_manager.add_rule("feature_test",
+                            boost::function<void(const hammer::feature&)>(&feature_test_rule),
+                            arg_names);
    }
 
    {
       vector<parscore::identifier> arg_names;
       arg_names += "feature_set";
-      rule_manager.add_target("feature_set_test",
-                              boost::function<void(const hammer::feature_set&)>(&feature_set_test_rule),
-                              arg_names);
+      rule_manager.add_rule("feature_set_test",
+                            boost::function<void(const hammer::feature_set&)>(&feature_set_test_rule),
+                            arg_names);
    }
 
    {
       vector<parscore::identifier> arg_names;
       arg_names += "sources";
-      rule_manager.add_target("sources_test",
-                              boost::function<void(const hammer::sources_decl&)>(&sources_test_rule),
-                              arg_names);
+      rule_manager.add_rule("sources_test",
+                            boost::function<void(const hammer::sources_decl&)>(&sources_test_rule),
+                            arg_names);
    }
 
    ast::context ctx(rule_manager, diag);

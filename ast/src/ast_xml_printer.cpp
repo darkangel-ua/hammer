@@ -3,7 +3,7 @@
 #include <hammer/ast/path.h>
 #include <hammer/ast/requirement_set.h>
 #include <hammer/ast/usage_requirements.h>
-#include <hammer/ast/target.h>
+#include <hammer/ast/target_ref.h>
 #include <hammer/ast/feature.h>
 #include <hammer/ast/feature_set.h>
 #include <hammer/ast/sources.h>
@@ -11,6 +11,7 @@
 #include <hammer/ast/rule_invocation.h>
 #include <hammer/ast/hamfile.h>
 #include <hammer/ast/condition.h>
+#include <hammer/ast/target_def.h>
 #include <iostream>
 #include <iomanip>
 
@@ -154,11 +155,11 @@ bool ast_xml_printer::visit(const error_expression& v)
    return true;
 }
 
-bool ast_xml_printer::visit(const target& v)
+bool ast_xml_printer::visit(const target_ref& v)
 {
-   os_ << std::setw(indent_) << ' ' << "<target public=\"" << v.is_public() << "\"\n";
-   os_ << std::setw(indent_) << ' ' << "        target_path=\"" << v.target_path()->to_string() << "\"\n";
-   os_ << std::setw(indent_) << ' ' << "        target_name=\"";
+   os_ << std::setw(indent_) << ' ' << "<target_ref public=\"" << v.is_public() << "\"\n";
+   os_ << std::setw(indent_) << ' ' << "            target_path=\"" << v.target_path()->to_string() << "\"\n";
+   os_ << std::setw(indent_) << ' ' << "            target_name=\"";
    if (v.has_target_name())
       os_ << v.target_name();
    os_ << "\">\n";
@@ -177,6 +178,20 @@ bool ast_xml_printer::visit(const target& v)
    indent_ -= 3;
 
    os_ << std::setw(indent_) << ' ' << "</target_ref>\n";
+
+   return true;
+}
+
+bool ast_xml_printer::visit(const target_def& v)
+{
+   os_ << std::setw(indent_) << ' ' << "<target_def local=\"" << v.local_tag().valid() << "\"\n"
+       << std::setw(indent_) << ' ' << "            explicit=\"" << v.explicit_tag().valid() << "\">\n";
+
+   indent_ += 3;
+      v.body()->accept(*this);
+   indent_ -= 3;
+
+   os_ << std::setw(indent_) << ' ' << "</target_def>\n";
 
    return true;
 }
@@ -289,6 +304,19 @@ bool ast_xml_printer::visit(const logical_and& v)
    indent_ -= 3;
 
    os_ << std::setw(indent_) << ' ' << "</logical_and>\n";
+
+   return true;
+}
+
+bool ast_xml_printer::visit(const expression_statement& v)
+{
+   os_ << std::setw(indent_) << ' ' << "<expression_statement>\n";
+
+   indent_ += 3;
+      v.content()->accept(*this);
+   indent_ -= 3;
+
+   os_ << std::setw(indent_) << ' ' << "</expression_statement>\n";
 
    return true;
 }

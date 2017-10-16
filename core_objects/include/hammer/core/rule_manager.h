@@ -26,7 +26,7 @@ namespace hammer{
 class rule_argument_type
 {
 	public:
-		enum value { VOID, IDENTIFIER, FEATURE, FEATURE_SET, SOURCES, REQUIREMENTS_SET, USAGE_REQUIREMENTS_SET, PATH, TARGET };
+		enum value { VOID, IDENTIFIER, FEATURE, FEATURE_SET, SOURCES, REQUIREMENTS_SET, USAGE_REQUIREMENTS_SET, PATH, TARGET_REF };
 
 		static rule_argument_type::value
 		type(const hammer::parscore::identifier*) { return IDENTIFIER; }
@@ -50,7 +50,7 @@ class rule_argument_type
 		type(const path*) { return PATH; }
 
 		static rule_argument_type::value
-		type(const target*) { return TARGET; }
+		type(const target*) { return TARGET_REF; }
 };
 
 class rule_argument

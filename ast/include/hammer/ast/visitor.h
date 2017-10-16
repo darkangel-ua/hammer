@@ -18,13 +18,15 @@ class path;
 class list_of;
 class requirement_set;
 class usage_requirements;
-class target;
+class target_ref;
+class target_def;
 class feature;
 class feature_set;
 class sources;
 class condition_expr;
 class logical_or;
 class logical_and;
+class expression_statement;
 
 class visitor
 {
@@ -41,13 +43,15 @@ class visitor
       virtual bool visit(const named_expr& v) { return true; }
 		virtual bool visit(const public_expr& v) { return true; }
 		virtual bool visit(const path& v) { return true; }
-      virtual bool visit(const target& v) { return true; }
-      virtual bool visit(const feature& v) { return true; }
+		virtual bool visit(const target_ref& v) { return true; }
+		virtual bool visit(const target_def& v) { return true; }
+		virtual bool visit(const feature& v) { return true; }
 		virtual bool visit(const feature_set& v) { return true; }
 		virtual bool visit(const sources& v) { return true; }
 		virtual bool visit(const condition_expr& v) { return true; }
 		virtual bool visit(const logical_or& v) { return true; }
 		virtual bool visit(const logical_and& v) { return true; }
+		virtual bool visit(const expression_statement& v) { return true; }
 };
 
 }}

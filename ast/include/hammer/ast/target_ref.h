@@ -10,13 +10,13 @@ namespace hammer{ namespace ast{
 class path;
 class requirement_set;
 
-class target : public expression
+class target_ref : public expression
 {
    public:
-		target(parscore::source_location public_tag,
-				 const path* target_path,
-				 const parscore::identifier& target_name,
-				 const features_t& build_request);
+		target_ref(parscore::source_location public_tag,
+					  const path* target_path,
+					  const parscore::identifier& target_name,
+					  const features_t& build_request);
 
 		const path* target_path() const { return target_path_; }
 		const parscore::identifier& target_name() const { return target_name_; }

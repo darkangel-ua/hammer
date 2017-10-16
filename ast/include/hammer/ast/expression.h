@@ -1,12 +1,12 @@
 #if !defined(h_8babae10_1ba8_479f_ae25_e20b77eb41dc)
 #define h_8babae10_1ba8_479f_ae25_e20b77eb41dc
 
-#include <hammer/ast/statement.h>
+#include <hammer/ast/node.h>
 #include <hammer/parscore/identifier.h>
 
 namespace hammer{ namespace ast{
 
-class expression : public statement
+class expression : public node
 {
    public:
       virtual parscore::source_location start_loc() const = 0;

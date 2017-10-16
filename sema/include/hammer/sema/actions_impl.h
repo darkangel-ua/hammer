@@ -36,8 +36,14 @@ class actions_impl : public actions
 		on_id(const parscore::identifier& id) const override;
 
 		const ast::expression*
-		on_target_or_rule_call(const parscore::identifier& rule_name,
-									  const ast::expressions_t& arguments) const override;
+		on_rule_invocation(const parscore::identifier& rule_name,
+								 const ast::expressions_t& arguments) const override;
+
+		virtual const ast::statement*
+		on_top_level_rule_invocation(const parscore::source_location explicit_tag,
+											  const parscore::source_location local_tag,
+											  const parscore::identifier& rule_name,
+											  const ast::expressions_t& arguments) const override;
 
 		const ast::feature*
 		on_feature(parscore::identifier name,
@@ -56,10 +62,10 @@ class actions_impl : public actions
 						 const ast::expression* result) const override;
 
 		const ast::expression*
-		on_target(parscore::source_location public_tag,
-					 const ast::path* target_path,
-					 const parscore::identifier& target_name,
-					 const ast::features_t& build_request) const override;
+		on_target_ref(parscore::source_location public_tag,
+						  const ast::path* target_path,
+						  const parscore::identifier& target_name,
+						  const ast::features_t& build_request) const override;
 	private:
       mutable bool first_rule_in_file_ = true;
 };

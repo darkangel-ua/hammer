@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include <hammer/core/diagnostic.h>
 #include <cassert>
 #include <string>

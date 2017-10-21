@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include <hammer/ast/context.h>
 
 namespace hammer{ namespace ast{

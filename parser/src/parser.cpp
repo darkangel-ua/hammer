@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include <hammer/parser/parser.h>
 #include <boost/filesystem/operations.hpp>
 #include "hammerLexer.h"

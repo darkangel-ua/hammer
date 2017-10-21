@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include <hammer/parscore/source_location.h>
 #include <antlr3commontoken.h>
 #include <antlr3input.h>

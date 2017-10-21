@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include <hammer/ast/ast_xml_printer.h>
 #include <hammer/ast/path.h>
 #include <hammer/ast/requirement_set.h>

@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include <hammer/ast/target_ref.h>
 #include <hammer/ast/visitor.h>
 #include <hammer/ast/path.h>

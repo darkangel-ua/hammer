@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include <hammer/ast/expression.h>
 #include <hammer/ast/visitor.h>
 #include <hammer/ast/casts.h>

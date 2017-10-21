@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include <hammer/parscore/identifier.h>
 #include <cstring>
 #include <cassert>

@@ -281,8 +281,8 @@ void test_function(const fs::path& hamfile)
                             arg_names);
    }
 
-   ast::context ctx(rule_manager, diag);
-   sema::actions_impl actions(ctx);
+   ast::context ctx;
+   sema::actions_impl actions(ctx, rule_manager, diag);
    parser::parser::hamfile_ptr ast_top = parser::parser::parse(hamfile, actions);
    
    BOOST_REQUIRE(ast_top);

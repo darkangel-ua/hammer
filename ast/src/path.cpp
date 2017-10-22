@@ -3,6 +3,7 @@
 #include <hammer/ast/casts.h>
 #include <hammer/ast/list_of.h>
 #include <sstream>
+#include <cassert>
 
 namespace hammer{ namespace ast{
 

@@ -1,6 +1,7 @@
 #if !defined(h_bfff9dfc_78a7_4dd6_94c5_9033e1fd6b33)
 #define h_bfff9dfc_78a7_4dd6_94c5_9033e1fd6b33
 
+#include <cassert>
 #include <hammer/ast/expression.h>
 #include <hammer/ast/types.h>
 

@@ -10,7 +10,7 @@ namespace hammer{ namespace parser{
 
 namespace {
 
-struct parser_context : public ast::parser_context
+struct parser_context
 {
    parser_context() : input_(NULL) {}
    ~parser_context()

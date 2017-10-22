@@ -15,7 +15,7 @@ options {
 #include <hammer/ast/feature.h>
 #include <hammer/ast/condition.h>
 
-#define SEMA static_cast<const hammer::sema::actions*>(PARSER->super)
+#define SEMA static_cast<hammer::sema::actions*>(PARSER->super)
 #define DECLARE_TYPE(Type, name) Type name ( Type ::allocator_type{SEMA->get_context()});
 }
 

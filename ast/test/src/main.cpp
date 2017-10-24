@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include <boost/test/auto_unit_test.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/convenience.hpp>
@@ -25,79 +24,94 @@ using namespace boost::unit_test;
 using namespace boost::assign;
 namespace fs = boost::filesystem;
 
+class test_requirements;
+class test_sources{};
+class test_feature_set;
+class test_path;
+class test_usage_requirements;
+class test_feature;
+
 namespace hammer {
-
-// FIXME: just to fool glob and rglob
-class sources_decl {};
-
+   template<>
+   struct rule_argument_type_info<test_requirements> { static const rule_argument_type ast_type = rule_argument_type::requirement_set; };
+   template<>
+   struct rule_argument_type_info<test_sources> { static const rule_argument_type ast_type = rule_argument_type::sources; };
+   template<>
+   struct rule_argument_type_info<test_feature_set> { static const rule_argument_type ast_type = rule_argument_type::feature_set; };
+   template<>
+   struct rule_argument_type_info<test_feature> { static const rule_argument_type ast_type = rule_argument_type::feature; };
+   template<>
+   struct rule_argument_type_info<test_path> { static const rule_argument_type ast_type = rule_argument_type::path; };
+   template<>
+   struct rule_argument_type_info<test_usage_requirements> { static const rule_argument_type ast_type = rule_argument_type::usage_requirements; };
 }
 
 static
 void project_rule(const parscore::identifier& id,
-                  const hammer::requirements_decl* requirements,
-                  const hammer::requirements_decl* usage_requirements)
+                  const test_requirements* requirements,
+                  const test_requirements* usage_requirements)
 {
 
 }
 
 static void lib_rule(const parscore::identifier& id, 
-                     const hammer::sources_decl* sources,
-                     const hammer::requirements_decl* requirements,
-                     const hammer::feature_set* default_build,
-                     const hammer::requirements_decl* usage_requirements)
+                     const test_sources* sources,
+                     const test_requirements* requirements,
+                     const test_feature_set* default_build,
+                     const test_requirements* usage_requirements)
 {
 
 }
 
 static void exe_rule(const parscore::identifier& id, 
-                     const hammer::sources_decl* sources,
-                     const hammer::requirements_decl* requirements,
-                     const hammer::feature_set* default_build,
-                     const hammer::requirements_decl* usage_requirements)
+                     const test_sources* sources,
+                     const test_requirements* requirements,
+                     const test_feature_set* default_build,
+                     const test_requirements* usage_requirements)
 {
 
 }
 
 static
-hammer::sources_decl
-glob_rule(const hammer::path& pattern)
-{
-   return {};
-}
-
-static
-hammer::sources_decl
-rglob_rule(const hammer::path& pattern)
+test_sources
+glob_rule(const test_path& pattern)
 {
    return {};
 }
 
 static
-void requirements_test_rule(const hammer::requirements_decl& requirements)
+test_sources
+rglob_rule(const test_path& pattern)
+{
+   return {};
+}
+
+static
+void requirements_test_rule(const test_requirements& requirements)
 {
 
 }
 
 static
-void usage_requirements_test_rule(const hammer::usage_requirements& requirements)
+void usage_requirements_test_rule(const test_usage_requirements& requirements)
 {
 
 }
 
 static
-void feature_test_rule(const hammer::feature& f)
+void feature_test_rule(const test_feature& f)
 {
 
 }
 
 static
-void feature_set_test_rule(const hammer::feature_set& f)
+void feature_set_test_rule(const test_feature_set& f)
 {
 
 }
 
 static
-void sources_test_rule(const hammer::sources_decl&)
+void sources_test_rule(const test_sources&)
 {
 
 }
@@ -196,8 +210,8 @@ void test_function(const fs::path& hamfile)
       arg_names += "project-name", "requirements", "usage-requirements";
       rule_manager.add_rule("project",
                             boost::function<void(const parscore::identifier&,
-                                                 const hammer::requirements_decl*,
-                                                 const hammer::requirements_decl*)>(&project_rule),
+                                                 const test_requirements*,
+                                                 const test_requirements*)>(&project_rule),
                             arg_names);
    }
 
@@ -206,10 +220,10 @@ void test_function(const fs::path& hamfile)
       arg_names += "target-name", "sources", "requirements", "default-build", "usage-requirements";
       rule_manager.add_target("lib", 
                               boost::function<void(const parscore::identifier&,
-                                                   const hammer::sources_decl*,
-                                                   const hammer::requirements_decl*,
-                                                   const hammer::feature_set*,
-                                                   const hammer::requirements_decl*)>(&lib_rule),
+                                                   const test_sources*,
+                                                   const test_requirements*,
+                                                   const test_feature_set*,
+                                                   const test_requirements*)>(&lib_rule),
                               arg_names);
    }
 
@@ -218,10 +232,10 @@ void test_function(const fs::path& hamfile)
       arg_names += "target-name", "sources", "requirements", "default-build", "usage-requirements";
       rule_manager.add_target("exe", 
                               boost::function<void(const parscore::identifier&,
-                                                   const hammer::sources_decl*,
-                                                   const hammer::requirements_decl*,
-                                                   const hammer::feature_set*,
-                                                   const hammer::requirements_decl*)>(&exe_rule),
+                                                   const test_sources*,
+                                                   const test_requirements*,
+                                                   const test_feature_set*,
+                                                   const test_requirements*)>(&exe_rule),
                               arg_names);
    }
 
@@ -229,7 +243,7 @@ void test_function(const fs::path& hamfile)
       vector<parscore::identifier> arg_names;
       arg_names += "pattern";
       rule_manager.add_rule("glob",
-                            boost::function<hammer::sources_decl (const hammer::path&)>(&glob_rule),
+                            boost::function<test_sources (const test_path&)>(&glob_rule),
                             arg_names);
    }
 
@@ -237,7 +251,7 @@ void test_function(const fs::path& hamfile)
       vector<parscore::identifier> arg_names;
       arg_names += "pattern";
       rule_manager.add_rule("rglob",
-                            boost::function<hammer::sources_decl (const hammer::path&)>(&rglob_rule),
+                            boost::function<test_sources (const test_path&)>(&rglob_rule),
                             arg_names);
    }
 
@@ -245,7 +259,7 @@ void test_function(const fs::path& hamfile)
       vector<parscore::identifier> arg_names;
       arg_names += "requirements";
       rule_manager.add_rule("requirements_test",
-                            boost::function<void(const hammer::requirements_decl&)>(&requirements_test_rule),
+                            boost::function<void(const test_requirements&)>(&requirements_test_rule),
                             arg_names);
    }
 
@@ -253,7 +267,7 @@ void test_function(const fs::path& hamfile)
       vector<parscore::identifier> arg_names;
       arg_names += "usage-requirements";
       rule_manager.add_rule("usage_requirements_test",
-                            boost::function<void(const hammer::usage_requirements&)>(&usage_requirements_test_rule),
+                            boost::function<void(const test_usage_requirements&)>(&usage_requirements_test_rule),
                             arg_names);
    }
 
@@ -261,7 +275,7 @@ void test_function(const fs::path& hamfile)
       vector<parscore::identifier> arg_names;
       arg_names += "feature";
       rule_manager.add_rule("feature_test",
-                            boost::function<void(const hammer::feature&)>(&feature_test_rule),
+                            boost::function<void(const test_feature&)>(&feature_test_rule),
                             arg_names);
    }
 
@@ -269,7 +283,7 @@ void test_function(const fs::path& hamfile)
       vector<parscore::identifier> arg_names;
       arg_names += "feature_set";
       rule_manager.add_rule("feature_set_test",
-                            boost::function<void(const hammer::feature_set&)>(&feature_set_test_rule),
+                            boost::function<void(const test_feature_set&)>(&feature_set_test_rule),
                             arg_names);
    }
 
@@ -277,7 +291,7 @@ void test_function(const fs::path& hamfile)
       vector<parscore::identifier> arg_names;
       arg_names += "sources";
       rule_manager.add_rule("sources_test",
-                            boost::function<void(const hammer::sources_decl&)>(&sources_test_rule),
+                            boost::function<void(const test_sources&)>(&sources_test_rule),
                             arg_names);
    }
 

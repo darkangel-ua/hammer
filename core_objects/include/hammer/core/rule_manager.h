@@ -12,51 +12,31 @@
 #include <map>
 
 namespace hammer{
-	class feature;
-	class feature_set;
-   class sources_decl;
-   class requirements_decl;
-   class usage_requirements;
-	class path;
-	class target;
-}
 
-namespace hammer{
-
-class rule_argument_type
-{
-	public:
-		enum value { VOID, IDENTIFIER, FEATURE, FEATURE_SET, SOURCES, REQUIREMENTS_SET, USAGE_REQUIREMENTS_SET, PATH, TARGET_REF };
-
-		static rule_argument_type::value
-		type(const hammer::parscore::identifier*) { return IDENTIFIER; }
-
-		static rule_argument_type::value
-		type(const feature*) { return FEATURE; }
-
-		static rule_argument_type::value
-		type(const feature_set*) { return FEATURE_SET; }
-
-		static rule_argument_type::value
-		type(const sources_decl*) { return SOURCES; }
-
-		static rule_argument_type::value
-		type(const requirements_decl*) { return REQUIREMENTS_SET; }
-
-		static rule_argument_type::value
-		type(const usage_requirements*) { return USAGE_REQUIREMENTS_SET; }
-
-		static rule_argument_type::value
-		type(const path*) { return PATH; }
-
-		static rule_argument_type::value
-		type(const target*) { return TARGET_REF; }
+enum class rule_argument_type {
+	void_,
+	identifier,
+	feature,
+	feature_set,
+	sources,
+	requirement_set,
+	usage_requirements,
+	path,
+	target_ref,
+	list_of
 };
+
+template<typename T>
+struct rule_argument_type_info {
+};
+
+template<>
+struct rule_argument_type_info<parscore::identifier> { static const rule_argument_type ast_type = rule_argument_type::identifier; };
 
 class rule_argument
 {
    public:   
-      rule_argument(rule_argument_type::value type,
+		rule_argument(rule_argument_type type,
                     const parscore::identifier& name,
                     bool optional) 
          : type_(type), 
@@ -64,12 +44,12 @@ class rule_argument
            optional_(optional)
       {}
       
-      rule_argument_type::value type() const { return type_; }
+		rule_argument_type type() const { return type_; }
       const parscore::identifier& name() const { return name_; }
       bool is_optional() const { return optional_; }
 
    private:
-      rule_argument_type::value type_;
+		rule_argument_type type_;
       parscore::identifier name_;
       bool optional_;
 };
@@ -111,10 +91,13 @@ namespace details{
    template<typename T>
    rule_argument make_one_arg(const parscore::identifier& arg_name)
    {
-      typedef typename boost::remove_pointer<T>::type not_a_pointer_arg_t;
-      typedef typename boost::remove_reference<not_a_pointer_arg_t>::type pure_arg_t;
+		typedef typename std::remove_cv<
+			typename std::remove_pointer<
+				typename std::remove_reference<T>::type
+			>::type
+		>::type pure_arg_t;
       
-      return rule_argument(rule_argument_type::type(static_cast<const pure_arg_t*>(NULL)), 
+		return rule_argument(rule_argument_type_info<pure_arg_t>::ast_type,
                            arg_name,
                            boost::mpl::bool_<boost::is_pointer<T>::value>());
    }
@@ -122,7 +105,7 @@ namespace details{
     template<>
     inline rule_argument make_one_arg<void>(const parscore::identifier& arg_name)
     {
-       return rule_argument(rule_argument_type::VOID, arg_name, false);
+		 return rule_argument(rule_argument_type::void_, arg_name, false);
     }
    
    template<typename T>

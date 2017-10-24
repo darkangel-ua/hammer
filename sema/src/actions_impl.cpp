@@ -187,10 +187,10 @@ actions_impl::process_sources_arg(const rule_argument& ra,
       const rule_declaration& rd = rule_manager_.find(ri->name())->second;
       const rule_argument& rdr = rd.result();
       // we can deal only with return types that can be converted to sources
-      if (rdr.type() == rule_argument_type::IDENTIFIER ||
-          rdr.type() == rule_argument_type::SOURCES ||
-          rdr.type() == rule_argument_type::PATH ||
-          rdr.type() == rule_argument_type::TARGET_REF)
+      if (rdr.type() == rule_argument_type::identifier ||
+          rdr.type() == rule_argument_type::sources ||
+          rdr.type() == rule_argument_type::path ||
+          rdr.type() == rule_argument_type::target_ref)
       {
          return ri;
       }
@@ -307,25 +307,25 @@ actions_impl::process_one_arg(const rule_argument& ra,
 
    switch(ra.type())
    {
-      case rule_argument_type::IDENTIFIER:
+      case rule_argument_type::identifier:
          return process_identifier_arg(ra, arg);
 
-      case rule_argument_type::FEATURE:
+      case rule_argument_type::feature:
          return process_feature_arg(ra, arg);
 
-      case rule_argument_type::FEATURE_SET:
+      case rule_argument_type::feature_set:
          return process_feature_set_arg(ra, arg);
 
-      case rule_argument_type::SOURCES:
+      case rule_argument_type::sources:
          return process_sources_arg(ra, arg);
 
-      case rule_argument_type::REQUIREMENTS_SET:
+      case rule_argument_type::requirement_set:
          return process_requirements_decl_arg(ra, arg);
 
-      case rule_argument_type::USAGE_REQUIREMENTS_SET:
+      case rule_argument_type::usage_requirements:
          return process_usage_requirements_arg(ra, arg);
 
-      case rule_argument_type::PATH:
+      case rule_argument_type::path:
          return process_path_like_seq_arg(ra, arg);
 
       default:

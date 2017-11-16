@@ -1,4 +1,0 @@
-project test1 ;
-
-lib a : a.cpp a.h ;
-exe test1 : test.cpp a ;

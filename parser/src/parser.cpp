@@ -6,17 +6,15 @@
 #include <hammer/ast/context.h>
 #include <hammer/ast/hamfile.h>
 
-namespace hammer{ namespace parser{
+namespace hammer{
 
 namespace {
 
 struct parser_context
 {
-   parser_context() : input_(NULL) {}
    ~parser_context()
    {
-      if (input_)
-      {
+      if (input_) {
          parser_->free(parser_);
          tstream_->free(tstream_);
          lexer_->free(lexer_);
@@ -24,7 +22,7 @@ struct parser_context
       }
    }
 
-   pANTLR3_INPUT_STREAM input_;
+   pANTLR3_INPUT_STREAM input_ = nullptr;
    phammerLexer lexer_;
    pANTLR3_COMMON_TOKEN_STREAM tstream_;
    phammerParser parser_;
@@ -33,31 +31,11 @@ struct parser_context
 
 }
 
-parser::parser(const boost::filesystem::path& hamfile,
-               const sema::actions& actions)
-   : hamfile_(hamfile),
-     actions_(actions)
+static
+ast_hamfile_ptr
+parse(std::unique_ptr<parser_context> ctx,
+      sema::actions& actions)
 {
-
-}
-
-parser::hamfile_ptr
-parser::parse(const boost::filesystem::path& hamfile,
-              const sema::actions& actions)
-{
-   parser p(hamfile, actions);
-   return p.parse_impl();
-}
-
-parser::hamfile_ptr
-parser::parse_impl()
-{
-   if (!exists(hamfile_))
-      throw std::runtime_error("Path does not exists '" + hamfile_.string() + "'");
-
-   parser_context* ctx = new parser_context;
-
-   ctx->input_ = antlr3AsciiFileStreamNew((pANTLR3_UINT8)hamfile_.string().c_str());
    ctx->lexer_ = hammerLexerNew(ctx->input_);
    ctx->tstream_ = antlr3CommonTokenStreamSourceNew(ANTLR3_SIZE_HINT, TOKENSOURCE(ctx->lexer_));
    ctx->parser_ = hammerParserNew(ctx->tstream_);
@@ -69,13 +47,38 @@ parser::parse_impl()
 
    nodes	= antlr3CommonTreeNodeStreamNewTree(ctx->langAST_.tree, ANTLR3_SIZE_HINT);
    hammer_sema = hammer_semaNew(nodes);
-   hammer_sema->pTreeParser->super = const_cast<sema::actions*>(&actions_);
+   hammer_sema->pTreeParser->super = &actions;
    const ast::hamfile* result = hammer_sema->hamfile(hammer_sema);
 
    nodes->free(nodes);
    hammer_sema->free(hammer_sema);
 
-   return { result, [=](const ast::hamfile*) { delete ctx; } };
+   parser_context* p_ctx = ctx.release();
+   return { result, [=](const ast::hamfile*) { delete p_ctx; } };
 }
 
-}}
+ast_hamfile_ptr
+parse_hammer_script(const boost::filesystem::path& hamfile,
+                    sema::actions& actions)
+{
+   if (!exists(hamfile))
+      throw std::runtime_error("Path does not exists '" + hamfile.string() + "'");
+
+   std::unique_ptr<parser_context> ctx(new parser_context);
+   ctx->input_ = antlr3AsciiFileStreamNew((pANTLR3_UINT8)hamfile.string().c_str());
+
+   return parse(std::move(ctx), actions);
+}
+
+ast_hamfile_ptr
+parse_hammer_script(const std::string content,
+                    const std::string content_name,
+                    sema::actions& actions)
+{
+   std::unique_ptr<parser_context> ctx(new parser_context);
+   ctx->input_ = antlr3NewAsciiStringInPlaceStream((pANTLR3_UINT8)content.c_str(), content.size(), (pANTLR3_UINT8)content_name.c_str());
+
+   return parse(std::move(ctx), actions);
+}
+
+}

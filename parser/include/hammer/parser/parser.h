@@ -5,29 +5,19 @@
 #include <hammer/sema/actions.h>
 #include <functional>
 
-namespace hammer{ namespace parser{
+namespace hammer{
 
-class parser
-{
-   public:
-      typedef std::unique_ptr<const ast::hamfile, std::function<void (const ast::hamfile*)>> hamfile_ptr;
+typedef std::unique_ptr<const ast::hamfile, std::function<void (const ast::hamfile*)>> ast_hamfile_ptr;
 
-      static
-      hamfile_ptr
-      parse(const boost::filesystem::path& hamfile,
-            const sema::actions& actions);
+ast_hamfile_ptr
+parse_hammer_script(const boost::filesystem::path& hamfile,
+                    sema::actions& actions);
 
-   private:
-      parser(const boost::filesystem::path& hamfile,
-             const sema::actions& actions);
+ast_hamfile_ptr
+parse_hammer_script(const std::string content,
+                    const std::string content_name,
+                    sema::actions& actions);
 
-      hamfile_ptr
-      parse_impl();
-
-      boost::filesystem::path hamfile_;
-      const sema::actions& actions_;
-};
-
-}}
+}
 
 #endif

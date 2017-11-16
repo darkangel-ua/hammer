@@ -12,4 +12,10 @@ rule_declaration::find(const parscore::identifier& arg_name) const
    return end();
 }
 
+rule_manager_arg_ptr
+rule_declaration::invoke(rule_manager_arguments_t& arguments) const
+{
+   return invoker_->invoke(arguments);
+}
+
 }

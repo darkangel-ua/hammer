@@ -1,6 +1,7 @@
 #define BOOST_AUTO_TEST_MAIN
 #include <boost/test/auto_unit_test.hpp>
 #include <hammer/core/rule_manager.h>
+#include <hammer/core/diagnostic.h>
 
 using namespace std; 
 using namespace hammer;
@@ -86,4 +87,82 @@ BOOST_AUTO_TEST_CASE(exe_rule_test)
    BOOST_CHECK(rd.arguments()[2].type() == rule_argument_type::feature_set);
    BOOST_CHECK_EQUAL(rd.arguments()[2].name(), rule_arg_names[2]);
    BOOST_CHECK_EQUAL(rd.arguments()[2].is_optional(), true);
+}
+
+static bool invoke_function_1_invoked = false;
+
+static
+void invoke_function_1(const identifier& id_1,
+                       const identifier* id_2,
+                       const identifier* id_3)
+{
+   invoke_function_1_invoked = true;
+   BOOST_CHECK_EQUAL(id_1.to_string(), "foo");
+   BOOST_REQUIRE(id_2 == nullptr);
+   BOOST_REQUIRE(id_3 != nullptr);
+   BOOST_CHECK_EQUAL(id_3->to_string(), "bar");
+}
+
+BOOST_AUTO_TEST_CASE(invoke_test_1)
+{
+   typedef boost::function<void(const identifier&, const identifier*, const identifier*)> func_type;
+
+   const identifier rule_id("invoke_function_1");
+   vector<identifier> rule_arg_names = { "id_1", "id_2", "id_3" };
+
+   rule_manager m;
+   m.add_target(rule_id, func_type(invoke_function_1), rule_arg_names);
+   const rule_declaration& rd = m.find(rule_id)->second;
+
+   identifier id_1("foo");
+   identifier* id_2 = nullptr;
+   identifier id_3("bar");
+
+   rule_manager_arg_ptr arg_1(new rule_manager_arg<identifier>(id_1));
+   rule_manager_arg_ptr arg_2(new rule_manager_arg<identifier>(id_2));
+   rule_manager_arg_ptr arg_3(new rule_manager_arg<identifier>(id_3));
+
+   rule_manager_arguments_t args;
+   args.push_back(move(arg_1));
+   args.push_back(move(arg_2));
+   args.push_back(move(arg_3));
+
+   BOOST_REQUIRE_NO_THROW(rd.invoke(args));
+
+   BOOST_CHECK_EQUAL(invoke_function_1_invoked, true);
+}
+
+static bool invoke_function_2_invoked = false;
+
+static
+std::unique_ptr<identifier>
+invoke_function_2(const identifier& id_1)
+{
+   invoke_function_2_invoked = true;
+   return std::unique_ptr<identifier>(new identifier("123qwe"));
+}
+
+BOOST_AUTO_TEST_CASE(invoke_test_2)
+{
+   typedef boost::function<std::unique_ptr<identifier>(const identifier&)> func_type;
+
+   const identifier rule_id("invoke_function_2");
+   vector<identifier> rule_arg_names = { "id_1" };
+
+   rule_manager m;
+   m.add_target(rule_id, func_type(invoke_function_2), rule_arg_names);
+   const rule_declaration& rd = m.find(rule_id)->second;
+
+   identifier id_1("foo");
+
+   rule_manager_arg_ptr arg_1(new rule_manager_arg<identifier>(id_1));
+
+   rule_manager_arguments_t args;
+   args.push_back(move(arg_1));
+
+   rule_manager_arg_ptr result;
+   BOOST_REQUIRE_NO_THROW(result = rd.invoke(args));
+
+   BOOST_CHECK_EQUAL(invoke_function_2_invoked, true);
+   BOOST_CHECK_EQUAL(*static_cast<identifier*>(result->v_), identifier("123qwe"));
 }

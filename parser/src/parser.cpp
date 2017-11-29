@@ -1,8 +1,8 @@
 #include <hammer/parser/parser.h>
 #include <boost/filesystem/operations.hpp>
-#include "hammerLexer.h"
-#include "hammerParser.h"
-#include "hammer_sema.h"
+#include "hammer_v2Lexer.h"
+#include "hammer_v2Parser.h"
+#include "hammer_sema_v2.h"
 #include <hammer/ast/context.h>
 #include <hammer/ast/hamfile.h>
 
@@ -23,10 +23,10 @@ struct parser_context
    }
 
    pANTLR3_INPUT_STREAM input_ = nullptr;
-   phammerLexer lexer_;
+   phammer_v2Lexer lexer_;
    pANTLR3_COMMON_TOKEN_STREAM tstream_;
-   phammerParser parser_;
-   hammerParser_hamfile_return langAST_;
+   phammer_v2Parser parser_;
+   hammer_v2Parser_hamfile_return langAST_;
 };
 
 }
@@ -36,17 +36,17 @@ ast_hamfile_ptr
 parse(std::unique_ptr<parser_context> ctx,
       sema::actions& actions)
 {
-   ctx->lexer_ = hammerLexerNew(ctx->input_);
+   ctx->lexer_ = hammer_v2LexerNew(ctx->input_);
    ctx->tstream_ = antlr3CommonTokenStreamSourceNew(ANTLR3_SIZE_HINT, TOKENSOURCE(ctx->lexer_));
-   ctx->parser_ = hammerParserNew(ctx->tstream_);
+   ctx->parser_ = hammer_v2ParserNew(ctx->tstream_);
    ctx->langAST_ = ctx->parser_->hamfile(ctx->parser_);
 //   pANTLR3_STRING s = langAST_.tree->toStringTree(langAST_.tree);
 
    pANTLR3_COMMON_TREE_NODE_STREAM nodes;
-   phammer_sema          hammer_sema;
+   phammer_sema_v2          hammer_sema;
 
    nodes	= antlr3CommonTreeNodeStreamNewTree(ctx->langAST_.tree, ANTLR3_SIZE_HINT);
-   hammer_sema = hammer_semaNew(nodes);
+   hammer_sema = hammer_sema_v2New(nodes);
    hammer_sema->pTreeParser->super = &actions;
    const ast::hamfile* result = hammer_sema->hamfile(hammer_sema);
 

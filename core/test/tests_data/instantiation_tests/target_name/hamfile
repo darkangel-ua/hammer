@@ -1,3 +1,4 @@
+#pragma parser v2
 # test that we do not include path into target names
 # so 'src' should not be presented in target.name() - only 'main.cpp'
 

@@ -4,9 +4,8 @@ testing.run
     /hammer/ast
     /hammer/parser
     /hammer/sema
-    /boost/filesystem/<version>1.58.0+1/<link>static 
+    /boost/filesystem/<version>1.58.0+1
     /boost/test//utf/<version>1.58.0+1/<link>static 
-    /boost/assign/<version>1.58.0+1
     /boost/regex/<version>1.58.0+1
     /boost/conversion/<version>1.58.0+1
    :

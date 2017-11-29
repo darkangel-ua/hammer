@@ -52,6 +52,14 @@ bool identifier::operator == (const identifier& rhs) const
       return false;
 }
 
+bool identifier::operator == (const char* rhs) const
+{
+   if (valid() && rhs)
+      return to_string() == std::string(rhs);
+   else
+      return false;
+}
+
 std::string identifier::to_string() const
 {
    if (no_lok_)

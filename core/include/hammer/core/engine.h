@@ -22,6 +22,7 @@ namespace hammer
    class scanner_manager;
    class output_location_strategy;
    class warehouse;
+	class rule_manager;
 
    class engine : boost::noncopyable
    {
@@ -42,6 +43,8 @@ namespace hammer
          hammer::feature_registry& feature_registry() { return *feature_registry_; }
          const hammer::feature_registry& feature_registry() const { return *feature_registry_; }
          hammer::call_resolver& call_resolver() { return resolver_; }
+			rule_manager& get_rule_manager() { return *rule_manager_; }
+			const rule_manager& get_rule_manager() const { return *rule_manager_; }
          hammer::toolset_manager& toolset_manager() { return *toolset_manager_; }
          hammer::scanner_manager& scanner_manager() { return *scanner_manager_; }
          const hammer::scanner_manager& scanner_manager() const { return *scanner_manager_; }
@@ -114,6 +117,8 @@ namespace hammer
          boost::shared_ptr<type_registry> type_registry_;
          hammer::feature_registry* feature_registry_;
          hammer::call_resolver resolver_;
+			std::unique_ptr<rule_manager> rule_manager_;
+
          boost::shared_ptr<generator_registry> generators_;
          boost::shared_ptr<hammer::toolset_manager> toolset_manager_;
          boost::shared_ptr<hammer::scanner_manager> scanner_manager_;
@@ -122,7 +127,10 @@ namespace hammer
          use_project_data_t use_project_data_;
          boost::shared_ptr<hammer::warehouse> warehouse_;
 
-         loaded_projects_t try_load_project(const location_t& tail_path, const project_alias_data& symlink);
+         std::unique_ptr<project>
+			load_project_v2(const location_t& project_path);
+
+			loaded_projects_t try_load_project(const location_t& tail_path, const project_alias_data& symlink);
          loaded_projects_t try_load_project(location_t project_path);
          project* get_upper_project(const location_t& project_path);
          void resolve_project_alias(resolved_project_symlinks_t& symlinks,

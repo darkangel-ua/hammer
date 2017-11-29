@@ -78,7 +78,9 @@ namespace hammer
       private:
          struct impl_t;
          impl_t* impl_;
-};
+	};
+
+	class usage_requirements_decl : public requirements_decl {};
 }
 
 #endif //h_bd7a680f_5464_4a47_b274_185a105a6da0

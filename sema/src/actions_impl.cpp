@@ -120,10 +120,11 @@ actions_impl::on_top_level_rule_invocation(const source_location explicit_tag,
    }
 }
 
-static int required_argument_count(const rule_declaration& rule_decl)
+static
+int required_argument_count(const rule_declaration& rule_decl)
 {
    int result = 0;
-   for(rule_declaration::const_iterator i = rule_decl.begin(), last = rule_decl.end(); i != last; ++i)
+   for(rule_declaration::const_iterator i = rule_decl.begin() + 1, last = rule_decl.end(); i != last; ++i)
       if (!i->is_optional())
          ++result;
 
@@ -345,9 +346,10 @@ actions_impl::process_arguments(const parscore::identifier& rule_name,
    used_named_args_t used_named_args;
 
    bool only_named = false;
-   rule_declaration::const_iterator ra = rule_decl.begin();
+   // skip first argument because it always will be invocation_context
+   rule_declaration::const_iterator ra = rule_decl.begin() + 1;
    int required_argument_used = 0;
-   for(expressions_t::const_iterator i = arguments.begin(), last = arguments.end(); i != last; ++i) {
+   for (expressions_t::const_iterator i = arguments.begin(), last = arguments.end(); i != last; ++i) {
       if (is_a<named_expr>(**i)) {
          const identifier& arg_name = as<named_expr>(**i).name();
          rule_declaration::const_iterator r = rule_decl.find(arg_name);

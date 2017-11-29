@@ -19,6 +19,9 @@ bool requirement_set::accept(visitor& v) const
 }
 
 template<>
+const requirement_set* as<requirement_set>(const node* v) { return dynamic_cast<const requirement_set*>(v); }
+
+template<>
 bool is_a<requirement_set>(const node& v) { return dynamic_cast<const requirement_set*>(&v); }
 
 }}

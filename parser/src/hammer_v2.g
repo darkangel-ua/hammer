@@ -1,4 +1,4 @@
-grammar hammer;
+grammar hammer_v2;
 
 options{ 
    language = C; 

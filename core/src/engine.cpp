@@ -24,6 +24,8 @@
 #include "wildcard.hpp"
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
+#include <boost/filesystem/fstream.hpp>
+#include <boost/regex.hpp>
 #include <hammer/core/fs_helpers.h>
 #include <hammer/core/header_lib_meta_target.h>
 #include <hammer/core/pch_meta_target.h>
@@ -39,6 +41,15 @@
 #include <hammer/core/warehouse_impl.h>
 #include "builtin_features.h"
 
+// v2
+#include <hammer/parser/parser.h>
+#include <hammer/sema/actions_impl.h>
+#include <hammer/core/diagnostic.h>
+#include <hammer/ast/context.h>
+#include <hammer/core/rule_manager.h>
+#include <hammer/core/ast2objects.h>
+#include "builtin_rules.h"
+
 using namespace std;
 namespace fs = boost::filesystem;
 using namespace boost::assign;
@@ -46,7 +57,9 @@ using namespace boost::assign;
 namespace hammer{
 
 engine::engine()
-   :  feature_registry_(0)
+   :  feature_registry_(0),
+      rule_manager_(new rule_manager)
+
 {
    auto_ptr<hammer::feature_registry> fr(new hammer::feature_registry());
 
@@ -78,6 +91,8 @@ engine::engine()
    resolver_.insert("explicit", boost::function<void (project*, const string&)>(boost::bind(&engine::explicit_rule, this, _1, _2)));
    resolver_.insert("use-project", boost::function<void (project*, const string&, const string&, feature_set*)>(boost::bind(&engine::use_project_rule, this, _1, _2, _3, _4)));
    resolver_.insert("setup-warehouse", boost::function<void (project*, const string&, const string&, const string*)>(boost::bind(&engine::setup_warehouse_rule, this, _1, _2, _3, _4)));
+
+   details::install_builtin_rules(*rule_manager_);
 
    {
       feature_attributes ft = {0}; ft.free = 1;
@@ -370,6 +385,36 @@ void engine::load_hammer_script(const string& script_body,
    }
 }
 
+std::unique_ptr<project>
+engine::load_project_v2(const location_t& project_path)
+{
+   ostringstream s;
+   streamed_diagnostic diag(project_path.native(), s);
+   ast::context ast_ctx;
+   sema::actions_impl actions(ast_ctx, *rule_manager_, diag);
+   ast_hamfile_ptr ast = parse_hammer_script(project_path, actions);
+
+   if (diag.error_count())
+      throw std::runtime_error("Parse errors: " + s.str());
+
+   std::unique_ptr<project> loaded_project(new project(this));
+   invocation_context invc_ctx = { *loaded_project, diag, *rule_manager_ };
+
+   ast2objects(invc_ctx, *ast);
+
+   return loaded_project;
+}
+
+static
+bool is_hamfile_v2(const location_t& filepath)
+{
+   boost::filesystem::ifstream f(filepath);
+   string first_line;
+   getline(f, first_line);
+
+   return boost::regex_match(first_line, boost::regex("^#pragma\\s+parser\\s+v2\\s*$"));
+}
+
 engine::loaded_projects_t engine::try_load_project(location_t project_path)
 {
    location_t path_with_dot(project_path);
@@ -391,7 +436,6 @@ engine::loaded_projects_t engine::try_load_project(location_t project_path)
       ctx.call_resolver_ = &resolver_;
       project* upper_project = NULL;
 
-      parser p(this);
       if (!exists(project_path))
       {
          upper_project = get_upper_project(project_path);
@@ -413,27 +457,41 @@ engine::loaded_projects_t engine::try_load_project(location_t project_path)
       if (!exists(project_file))
          return loaded_projects_t();
 
-      if (!p.parse(project_file.string().c_str()))
-         throw  runtime_error("Can't load project at '"  + project_path.string() + ": parser errors");
+      if (is_hamfile_v2(project_file)) {
+         std::unique_ptr<project> loaded_project = load_project_v2(project_file);
+         if (!is_top_level) {
+            if (upper_project) {
+               loaded_project->requirements().insert_infront(upper_project->requirements());
+               loaded_project->usage_requirements().insert_infront(upper_project->usage_requirements());
+            }
+         } else
+            loaded_project->set_root(true);
 
-      // �� ���� ��� �� ������ ������� ��� ������ ����� ��� ����� ��� ��������� �����������
-      // � ��������� �� ��� ����� �������
-      if (!is_top_level)
-      {
-         if (upper_project)
-         {
-            ctx.project_->requirements().insert_infront(upper_project->requirements());
-            ctx.project_->usage_requirements().insert_infront(upper_project->usage_requirements());
-         }
+         insert(loaded_project.get());
+         project* p = loaded_project.release();
+
+         return loaded_projects_t(p);
+      } else {
+         parser p(this);
+         if (!p.parse(project_file.string().c_str()))
+            throw  runtime_error("Can't load project at '"  + project_path.string() + ": parser errors");
+
+         // �� ���� ��� �� ������ ������� ��� ������ ����� ��� ����� ��� ��������� �����������
+         // � ��������� �� ��� ����� �������
+         if (!is_top_level) {
+            if (upper_project) {
+               ctx.project_->requirements().insert_infront(upper_project->requirements());
+               ctx.project_->usage_requirements().insert_infront(upper_project->usage_requirements());
+            }
+         } else
+            ctx.project_->set_root(true);
+
+         p.walk(&ctx);
+         assert(ctx.project_);
+         insert(ctx.project_);
+
+         return loaded_projects_t(ctx.project_);
       }
-      else
-         ctx.project_->set_root(true);
-
-      p.walk(&ctx);
-      assert(ctx.project_);
-      insert(ctx.project_);
-
-      return loaded_projects_t(ctx.project_);
    }
    catch(...)
    {

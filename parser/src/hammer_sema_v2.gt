@@ -1,8 +1,8 @@
-tree grammar hammer_sema;
+tree grammar hammer_sema_v2;
 
 options { 
         language = C; 
-        tokenVocab = hammer;
+        tokenVocab = hammer_v2;
         ASTLabelType = pANTLR3_BASE_TREE;
 }
 

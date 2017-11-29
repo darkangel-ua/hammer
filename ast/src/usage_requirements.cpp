@@ -20,6 +20,9 @@ bool usage_requirements::accept(visitor& v) const
 }
 
 template<>
+const usage_requirements* as<usage_requirements>(const node* v) { return dynamic_cast<const usage_requirements*>(v); }
+
+template<>
 bool is_a<usage_requirements>(const node& v) { return dynamic_cast<const usage_requirements*>(&v); }
 
 }}

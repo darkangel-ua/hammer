@@ -3,7 +3,6 @@
 #include <boost/filesystem/convenience.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/bind.hpp>
-#include <boost/assign/std/vector.hpp>
 #include <iostream>
 #include <hammer/parser/parser.h>
 #include <hammer/sema/actions_impl.h>
@@ -21,7 +20,6 @@ boost::filesystem::path test_data_path;
 using namespace std; 
 using namespace hammer;
 using namespace boost::unit_test;
-using namespace boost::assign;
 namespace fs = boost::filesystem;
 
 class test_requirements;
@@ -47,73 +45,77 @@ namespace hammer {
 }
 
 static
-void project_rule(const parscore::identifier& id,
+void project_rule(invocation_context& ctx,
+                  const parscore::identifier& id,
                   const test_requirements* requirements,
                   const test_requirements* usage_requirements)
 {
-
-}
-
-static void lib_rule(const parscore::identifier& id, 
-                     const test_sources* sources,
-                     const test_requirements* requirements,
-                     const test_feature_set* default_build,
-                     const test_requirements* usage_requirements)
-{
-
-}
-
-static void exe_rule(const parscore::identifier& id, 
-                     const test_sources* sources,
-                     const test_requirements* requirements,
-                     const test_feature_set* default_build,
-                     const test_requirements* usage_requirements)
-{
-
 }
 
 static
-test_sources
-glob_rule(const test_path& pattern)
+void lib_rule(invocation_context& ctx,
+              const parscore::identifier& id,
+              const test_sources* sources,
+              const test_requirements* requirements,
+              const test_feature_set* default_build,
+              const test_requirements* usage_requirements)
+{
+}
+
+static
+void exe_rule(invocation_context& ctx,
+              const parscore::identifier& id,
+              const test_sources* sources,
+              const test_requirements* requirements,
+              const test_feature_set* default_build,
+              const test_requirements* usage_requirements)
+{
+}
+
+static
+std::unique_ptr<test_sources>
+glob_rule(invocation_context& ctx,
+          const test_path& pattern)
 {
    return {};
 }
 
 static
-test_sources
-rglob_rule(const test_path& pattern)
+std::unique_ptr<test_sources>
+rglob_rule(invocation_context& ctx,
+           const test_path& pattern)
 {
    return {};
 }
 
 static
-void requirements_test_rule(const test_requirements& requirements)
+void requirements_test_rule(invocation_context& ctx,
+                            const test_requirements& requirements)
 {
-
 }
 
 static
-void usage_requirements_test_rule(const test_usage_requirements& requirements)
+void usage_requirements_test_rule(invocation_context& ctx,
+                                  const test_usage_requirements& requirements)
 {
-
 }
 
 static
-void feature_test_rule(const test_feature& f)
+void feature_test_rule(invocation_context& ctx,
+                       const test_feature& f)
 {
-
 }
 
 static
-void feature_set_test_rule(const test_feature_set& f)
+void feature_set_test_rule(invocation_context& ctx,
+                           const test_feature_set& f)
 {
-
 }
 
 static
-void sources_test_rule(const test_sources&)
+void sources_test_rule(invocation_context& ctx,
+                       const test_sources&)
 {
-
 }
 
 typedef map<int, pair<string, diagnostic::type::value> > expected_diags_t;
@@ -205,95 +207,17 @@ void test_function(const fs::path& hamfile)
    rule_manager rule_manager;
    checked_diagnostic diag(hamfile.string(), extract_expected_diags(hamfile));
 
-   {
-      vector<parscore::identifier> arg_names;
-      arg_names += "project-name", "requirements", "usage-requirements";
-      rule_manager.add_rule("project",
-                            boost::function<void(const parscore::identifier&,
-                                                 const test_requirements*,
-                                                 const test_requirements*)>(&project_rule),
-                            arg_names);
-   }
+   rule_manager.add_rule("project", project_rule, {"project-name", "requirements", "usage-requirements"});
+   rule_manager.add_target("lib", lib_rule, {"target-name", "sources", "requirements", "default-build", "usage-requirements"});
+   rule_manager.add_target("exe", exe_rule, {"target-name", "sources", "requirements", "default-build", "usage-requirements"});
 
-   {
-      vector<parscore::identifier> arg_names;
-      arg_names += "target-name", "sources", "requirements", "default-build", "usage-requirements";
-      rule_manager.add_target("lib", 
-                              boost::function<void(const parscore::identifier&,
-                                                   const test_sources*,
-                                                   const test_requirements*,
-                                                   const test_feature_set*,
-                                                   const test_requirements*)>(&lib_rule),
-                              arg_names);
-   }
-
-   {
-      vector<parscore::identifier> arg_names;
-      arg_names += "target-name", "sources", "requirements", "default-build", "usage-requirements";
-      rule_manager.add_target("exe", 
-                              boost::function<void(const parscore::identifier&,
-                                                   const test_sources*,
-                                                   const test_requirements*,
-                                                   const test_feature_set*,
-                                                   const test_requirements*)>(&exe_rule),
-                              arg_names);
-   }
-
-   {
-      vector<parscore::identifier> arg_names;
-      arg_names += "pattern";
-      rule_manager.add_rule("glob",
-                            boost::function<test_sources (const test_path&)>(&glob_rule),
-                            arg_names);
-   }
-
-   {
-      vector<parscore::identifier> arg_names;
-      arg_names += "pattern";
-      rule_manager.add_rule("rglob",
-                            boost::function<test_sources (const test_path&)>(&rglob_rule),
-                            arg_names);
-   }
-
-   {
-      vector<parscore::identifier> arg_names;
-      arg_names += "requirements";
-      rule_manager.add_rule("requirements_test",
-                            boost::function<void(const test_requirements&)>(&requirements_test_rule),
-                            arg_names);
-   }
-
-   {
-      vector<parscore::identifier> arg_names;
-      arg_names += "usage-requirements";
-      rule_manager.add_rule("usage_requirements_test",
-                            boost::function<void(const test_usage_requirements&)>(&usage_requirements_test_rule),
-                            arg_names);
-   }
-
-   {
-      vector<parscore::identifier> arg_names;
-      arg_names += "feature";
-      rule_manager.add_rule("feature_test",
-                            boost::function<void(const test_feature&)>(&feature_test_rule),
-                            arg_names);
-   }
-
-   {
-      vector<parscore::identifier> arg_names;
-      arg_names += "feature_set";
-      rule_manager.add_rule("feature_set_test",
-                            boost::function<void(const test_feature_set&)>(&feature_set_test_rule),
-                            arg_names);
-   }
-
-   {
-      vector<parscore::identifier> arg_names;
-      arg_names += "sources";
-      rule_manager.add_rule("sources_test",
-                            boost::function<void(const test_sources&)>(&sources_test_rule),
-                            arg_names);
-   }
+   rule_manager.add_rule("glob", glob_rule, {"pattern"});
+   rule_manager.add_rule("rglob", rglob_rule, {"pattern"});
+   rule_manager.add_rule("requirements_test", requirements_test_rule, {"requirements"});
+   rule_manager.add_rule("usage_requirements_test",usage_requirements_test_rule, {"usage-requirements"});
+   rule_manager.add_rule("feature_test", feature_test_rule, {"feature"});
+   rule_manager.add_rule("feature_set_test", feature_set_test_rule, {"feature_set"});
+   rule_manager.add_rule("sources_test", sources_test_rule, {"sources"});
 
    ast::context ctx;
    sema::actions_impl actions(ctx, rule_manager, diag);

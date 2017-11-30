@@ -6,6 +6,7 @@
 #include <hammer/core/types.h>
 #include <hammer/core/project.h>
 #include <hammer/core/engine.h>
+#include <hammer/core/alias_meta_target.h>
 
 using namespace std;
 
@@ -53,10 +54,26 @@ void exe_rule(invocation_context& ctx,
    ctx.current_project_.add_target(mt);
 }
 
+static
+void alias_rule(invocation_context& ctx,
+                const parscore::identifier& name,
+                const sources_decl& sources,
+                const requirements_decl* requirements,
+                const usage_requirements_decl* usage_requirements)
+{
+   auto_ptr<basic_meta_target> mt(new alias_meta_target(&ctx.current_project_, name.to_string(),
+                                                        sources,
+                                                        requirements ? *requirements : requirements_decl(),
+                                                        usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl()));
+   ctx.current_project_.add_target(mt);
+}
+
+
 void install_builtin_rules(rule_manager& rm)
 {
    rm.add_rule("project", project_rule, {"id", "requirements", "usage-requirements"});
    rm.add_rule("exe", exe_rule, {"id", "sources", "requirements", "default-build", "usage-requirements"});
+   rm.add_rule("alias", alias_rule, {"id", "sources", "requirements", "usage-requirements"});
 }
 
 }}

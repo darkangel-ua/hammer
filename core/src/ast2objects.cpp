@@ -12,6 +12,7 @@
 #include <hammer/ast/requirement_set.h>
 #include <hammer/ast/usage_requirements.h>
 #include <hammer/ast/feature_set.h>
+#include <hammer/ast/list_of.h>
 
 using std::move;
 
@@ -23,13 +24,21 @@ ast2sources_decl(invocation_context& ctx,
                  const ast::sources& sources)
 {
    std::unique_ptr<sources_decl> result(new sources_decl);
+   const type_registry& tr = ctx.current_project_.get_engine()->get_type_registry();
 
-   if (const ast::id_expr* v = ast::as<ast::id_expr>(sources.content())) {
-      const type_registry& tr = ctx.current_project_.get_engine()->get_type_registry();
+   if (const ast::id_expr* v = ast::as<ast::id_expr>(sources.content()))
       result->push_back(v->id().to_string(), tr);
-   } else if (const ast::path* v = ast::as<ast::path>(sources.content())) {
-      const type_registry& tr = ctx.current_project_.get_engine()->get_type_registry();
+   else if (const ast::path* v = ast::as<ast::path>(sources.content()))
       result->push_back(v->to_string(), tr);
+   else if (const ast::list_of* v = ast::as<ast::list_of>(sources.content())) {
+      for (const ast::expression* e : v->values()) {
+         if (const ast::id_expr* v = ast::as<ast::id_expr>(e)) {
+            result->push_back(v->id().to_string(), tr);
+         } else if (const ast::path* v = ast::as<ast::path>(e)) {
+            result->push_back(v->to_string(), tr);
+         } else
+            throw std::runtime_error("Not implemented");
+      }
    } else
       throw std::runtime_error("Not implemented");
 

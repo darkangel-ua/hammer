@@ -398,6 +398,7 @@ engine::load_project_v2(const location_t& project_path)
       throw std::runtime_error("Parse errors: " + s.str());
 
    std::unique_ptr<project> loaded_project(new project(this));
+   loaded_project->location(project_path.branch_path());
    invocation_context invc_ctx = { *loaded_project, diag, *rule_manager_ };
 
    ast2objects(invc_ctx, *ast);

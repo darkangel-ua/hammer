@@ -73,7 +73,7 @@ namespace hammer
          void setup_path_data(const basic_meta_target* t);
          void insert_infront(const requirements_decl& v);
          void insert(const requirements_decl& v); // insert in the end
-         ~requirements_decl();
+         virtual ~requirements_decl();
 
       private:
          struct impl_t;

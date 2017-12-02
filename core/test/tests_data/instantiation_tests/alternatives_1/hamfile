@@ -1,7 +1,7 @@
+#pragma parser v2
 # options: should-fail=1
 
-alias src : multi.cpp  ;
+alias src : multi.cpp ;
 alias src : single.cpp : <threading>single ;
-explicit src ;
 
 lib test : src ;

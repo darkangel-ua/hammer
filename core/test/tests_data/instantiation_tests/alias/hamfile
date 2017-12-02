@@ -1,6 +1,8 @@
-lib lib1 : lib1.cpp : ; 
+#pragma parser v2
+
+lib lib1 : lib1.cpp ; 
 lib lib2 : lib2.cpp : : : <define>lib2 ;
 lib lib3 : lib3.cpp ;
-alias foo : lib1 foo.cpp : <define>alias_foo : : <define>alias_foo_usage ;
+alias foo : lib1 foo.cpp : <define>alias_foo : <define>alias_foo_usage ;
 alias bar : lib3 ;
 exe test : foo bar/<link>static lib2 main.cpp ;

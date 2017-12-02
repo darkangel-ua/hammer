@@ -7,16 +7,67 @@
 #include <hammer/core/sources_decl.h>
 #include <hammer/core/project.h>
 #include <hammer/core/engine.h>
+#include <hammer/core/feature_set.h>
 #include <hammer/ast/sources.h>
 #include <hammer/ast/path.h>
 #include <hammer/ast/requirement_set.h>
 #include <hammer/ast/usage_requirements.h>
 #include <hammer/ast/feature_set.h>
+#include <hammer/ast/feature.h>
 #include <hammer/ast/list_of.h>
+#include <hammer/ast/target_ref.h>
+#include <hammer/ast/target_def.h>
 
 using std::move;
 
 namespace hammer {
+
+static
+feature*
+ast2feature(invocation_context& ctx,
+            const ast::feature& f)
+{
+   if (const ast::id_expr* id = ast::as<ast::id_expr>(f.value()))
+      return ctx.current_project_.get_engine()->feature_registry().create_feature(f.name().to_string(), id->id().to_string());
+   else
+      throw std::runtime_error("Not implemented");
+}
+
+static
+feature_set*
+ast2feature_set(invocation_context& ctx,
+                const ast::features_t& features)
+{
+   feature_set* result = ctx.current_project_.get_engine()->feature_registry().make_set();
+
+   for (auto f : features)
+      result->join(ast2feature(ctx, *f));
+
+   return result;
+}
+
+static
+source_decl
+handle_one_source(invocation_context& ctx,
+                  const type_registry& tr,
+                  const ast::expression* e)
+{
+   if (const ast::id_expr* v = ast::as<ast::id_expr>(e))
+      return source_decl(v->id().to_string(), std::string(), tr.resolve_from_target_name(v->id().to_string()), nullptr);
+   else if (const ast::path* v = ast::as<ast::path>(e))
+      return source_decl(v->to_string(), std::string(), tr.resolve_from_target_name(v->to_string()), nullptr);
+   else if (const ast::public_expr* pe = ast::as<ast::public_expr>(e)) {
+      source_decl result = handle_one_source(ctx, tr, pe->value());
+      result.set_public(true);
+      return result;
+   } else if (const ast::target_ref* v = ast::as<ast::target_ref>(e)) {
+      feature_set* build_request = v->build_request().empty() ? nullptr : ast2feature_set(ctx, v->build_request());
+      source_decl sd(v->target_path()->to_string(), v->target_name().valid() ? v->target_name().to_string() : std::string(), nullptr, build_request);
+      sd.set_public(v->is_public());
+      return sd;
+   } else
+      throw std::runtime_error("ast2sources_decl: Unexpected AST node");
+}
 
 static
 std::unique_ptr<sources_decl>
@@ -26,23 +77,52 @@ ast2sources_decl(invocation_context& ctx,
    std::unique_ptr<sources_decl> result(new sources_decl);
    const type_registry& tr = ctx.current_project_.get_engine()->get_type_registry();
 
-   if (const ast::id_expr* v = ast::as<ast::id_expr>(sources.content()))
-      result->push_back(v->id().to_string(), tr);
-   else if (const ast::path* v = ast::as<ast::path>(sources.content()))
-      result->push_back(v->to_string(), tr);
-   else if (const ast::list_of* v = ast::as<ast::list_of>(sources.content())) {
-      for (const ast::expression* e : v->values()) {
-         if (const ast::id_expr* v = ast::as<ast::id_expr>(e)) {
-            result->push_back(v->id().to_string(), tr);
-         } else if (const ast::path* v = ast::as<ast::path>(e)) {
-            result->push_back(v->to_string(), tr);
-         } else
-            throw std::runtime_error("Not implemented");
-      }
+   if (const ast::list_of* v = ast::as<ast::list_of>(sources.content())) {
+      for (const ast::expression* e : v->values())
+         result->push_back(handle_one_source(ctx, tr, e));
+   } else
+      result->push_back(handle_one_source(ctx, tr, sources.content()));
+
+   return result;
+}
+
+static
+std::unique_ptr<usage_requirements_decl>
+ast2usage_requirements_decl_impl(invocation_context& ctx,
+                                 const ast::expression* requirements)
+{
+   std::unique_ptr<usage_requirements_decl> result(new usage_requirements_decl);
+
+   if (const ast::feature* v = ast::as<ast::feature>(requirements)) {
+      std::auto_ptr<requirement_base> re(new just_feature_requirement(ast2feature(ctx, *v)));
+      result->add(re);
+   } else if (const ast::public_expr* pe = ast::as<ast::public_expr>(requirements)) {
+      if (const ast::feature* f = ast::as<ast::feature>(pe->value())) {
+         std::auto_ptr<requirement_base> re(new just_feature_requirement(ast2feature(ctx, *f)));
+         re->set_public(true);
+         result->add(re);
+      } else
+         throw std::runtime_error("Not implemented");
    } else
       throw std::runtime_error("Not implemented");
 
    return result;
+}
+
+static
+std::unique_ptr<requirements_decl>
+ast2requirements_decl(invocation_context& ctx,
+                      const ast::requirement_set& requirements)
+{
+   return ast2usage_requirements_decl_impl(ctx, requirements.requirements());
+}
+
+static
+std::unique_ptr<usage_requirements_decl>
+ast2usage_requirements_decl(invocation_context& ctx,
+                            const ast::usage_requirements& usage_requirements)
+{
+   return ast2usage_requirements_decl_impl(ctx, usage_requirements.requirements());
 }
 
 static
@@ -93,16 +173,16 @@ void ast2objects(invocation_context& ctx,
             case rule_argument_type::requirement_set: {
                const ast::requirement_set* requirements = ast::as<ast::requirement_set>(*i_ri);
                assert(requirements);
-               throw std::runtime_error("not implemented");
-
+               rule_manager_arg_ptr ctx_arg(new rule_manager_arg<requirements_decl>(ast2requirements_decl(ctx, *requirements)));
+               args.push_back(move(ctx_arg));
                break;
             }
 
             case rule_argument_type::usage_requirements: {
                const ast::usage_requirements* usage_requirements = ast::as<ast::usage_requirements>(*i_ri);
                assert(usage_requirements);
-               throw std::runtime_error("not implemented");
-
+               rule_manager_arg_ptr ctx_arg(new rule_manager_arg<usage_requirements_decl>(ast2usage_requirements_decl(ctx, *usage_requirements)));
+               args.push_back(move(ctx_arg));
                break;
             }
 
@@ -115,6 +195,13 @@ void ast2objects(invocation_context& ctx,
    }
 
    rd.invoke(args);
+}
+
+static
+void ast2objects(invocation_context& ctx,
+                 const ast::target_def& td)
+{
+   ast2objects(ctx, *td.body());
 }
 
 void ast2objects(invocation_context& ctx,
@@ -139,12 +226,14 @@ void ast2objects(invocation_context& ctx,
    }
 
    for (const ast::statement* stmt : node.get_statements()) {
-      const ast::expression_statement* estmt = ast::as<ast::expression_statement>(stmt);
-      assert(estmt);
-
-      if (const ast::rule_invocation* ri = ast::as<ast::rule_invocation>(estmt->content()))
-         ast2objects(ctx, *ri);
-      else
+      if (const ast::expression_statement* estmt = ast::as<ast::expression_statement>(stmt)) {
+         if (const ast::rule_invocation* ri = ast::as<ast::rule_invocation>(estmt->content()))
+            ast2objects(ctx, *ri);
+         else
+            throw std::runtime_error("ast2objects: Unexpected top level AST expression statement node");
+      } else if (const ast::target_def* td = ast::as<ast::target_def>(stmt))
+         ast2objects(ctx, *td);
+       else
          throw std::runtime_error("not implemented");
    }
 }

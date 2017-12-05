@@ -1,0 +1,12 @@
+#pragma parser v2
+#testing complex condition
+
+lib a : a.cpp : (<toolset>foo && <link>static || <toolset>bar && <link>shared -> <define>YES) ;
+lib b : b.cpp : (<toolset>foo && <link>static || <toolset>bar && <link>shared -> <define>YES) ;
+lib c : c.cpp : (<toolset>foo && <link>static || <toolset>bar && <link>shared -> <define>YES) ;
+
+exe test : a/<toolset>foo/<link>static 
+           b/<toolset>bar/<link>shared
+           c/<toolset>foo/<link>shared
+           main.cpp 
+         ;

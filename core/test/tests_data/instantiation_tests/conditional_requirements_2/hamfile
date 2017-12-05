@@ -1,0 +1,7 @@
+#pragma parser v2
+#testing condition or operator
+
+lib a : a.cpp : (<toolset>foo || <toolset>bar -> <define>FOO_BAR) ;
+lib b : b.cpp : (<toolset>foo || <toolset>bar -> <define>FOO_BAR) ;
+lib c : c.cpp : (<toolset>foo || <toolset>bar -> <define>FOO_BAR) ;
+exe test : a/<toolset>foo b/<toolset>bar c/<toolset>foobar main.cpp ;

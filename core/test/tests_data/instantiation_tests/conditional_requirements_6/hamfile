@@ -1,0 +1,9 @@
+#pragma parser v2
+#testing requirements evaluation order
+
+lib a : a.cpp 
+      : (<toolset>foo -> <version>1.0)
+        (<version>1.0 -> <define>YES)
+        (<version>2.0 -> <define>NO) ;
+
+exe test : a/<toolset>foo main.cpp ;

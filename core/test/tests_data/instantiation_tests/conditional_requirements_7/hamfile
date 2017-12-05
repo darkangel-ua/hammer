@@ -1,0 +1,11 @@
+#pragma parser v2
+#testing public condition
+
+lib a : a.cpp : @(<toolset>foo -> <define>A) ;
+lib b : b.cpp : (<toolset>foo -> <define>B) ;
+lib c : c.cpp : (<toolset>foo -> @<define>C) ;
+
+#testing condition result as list of features
+lib d : d.cpp : (<toolset>foo -> <define>D_INTERNAL @<define>D_EXTERNAL) ;
+
+exe test : a/<toolset>foo b/<toolset>foo c/<toolset>foo d/<toolset>foo main.cpp ;

@@ -1,0 +1,7 @@
+test [ features = <define>A !<define>B <define>C <define>D_EXTERNAL; ] {
+   main.cpp {}
+   a { a.cpp [ features = <define>A; ] {} }
+   b { b.cpp [ features = <define>B; ] {} }
+   c { c.cpp [ features = <define>C; ] {} }
+   d { d.cpp [ features = <define>D_INTERNAL <define>D_EXTERNAL; ] {} }
+}

@@ -1,0 +1,4 @@
+test {
+   main.cpp {}
+   a { a.cpp [ features = <define>FOO_STATIC <define>YES; ] {} }
+}

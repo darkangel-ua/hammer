@@ -161,4 +161,56 @@ void requirements_decl::insert(const requirements_decl& v)
       impl_->requirements_.insert(impl_->requirements_.end(), i->clone());
 }
 
+requirement_condition::requirement_condition(std::unique_ptr<requirement_condition_op_base> cond,
+                                             const result_t& result,
+                                             const bool public_)
+   : requirement_base(public_),
+     cond_(std::move(cond)),
+     result_(result)
+{}
+
+void requirement_condition::eval(const feature_set& build_request,
+                                 feature_set* result,
+                                 feature_set* public_result) const
+{
+   if (cond_->eval(build_request, result)) {
+      for(const result_element& re : result_) {
+         result->join(re.f_);
+
+         if ((is_public() || re.public_) && public_result != NULL)
+            public_result->join(re.f_);
+      }
+   }
+}
+
+requirement_base*
+requirement_condition::clone() const
+{
+   return new requirement_condition( std::unique_ptr<requirement_condition_op_base>(cond_->clone()), result_, is_public());
+}
+
+void requirement_condition::setup_path_data(const basic_meta_target* t)
+{
+   for (result_element& re : result_) {
+      if (re.f_->attributes().path || re.f_->attributes().dependency)
+         re.f_->get_path_data().target_ = t;
+   }
+}
+
+bool requirement_condition_op_feature::eval(const feature_set& build_request,
+                                            feature_set* result) const
+{
+   if (build_request.contains(*f_) != build_request.end() || result->contains(*f_) != result->end())
+      return true;
+   else {
+      if (build_request.find(f_->name()) != build_request.end() ||
+          result->find(f_->name()) != result->end() ||
+          f_->definition().get_default() != f_->value())
+      {
+         return false;
+      } else
+         return true;
+   }
+}
+
 }

@@ -1,0 +1,6 @@
+test {
+   main.cpp {}
+   a { a.cpp [ features = <define>FOO_STATIC; ] {} }
+   b { b.cpp [ features = !<define>FOO_STATIC; ] {} }
+   c { c.cpp [ features = !<define>FOO_STATIC; ] {} }
+}

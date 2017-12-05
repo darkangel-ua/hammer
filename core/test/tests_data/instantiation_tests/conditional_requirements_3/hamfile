@@ -1,0 +1,7 @@
+#pragma parser v2
+#testing condition and operator
+
+lib a : a.cpp : (<toolset>foo && <link>static -> <define>FOO_STATIC) ;
+lib b : b.cpp : (<toolset>foo && <link>static -> <define>FOO_STATIC) ;
+lib c : c.cpp : (<toolset>foo && <link>static -> <define>FOO_STATIC) ;
+exe test : a/<toolset>foo/<link>static b/<toolset>foo/<link>shared c/<toolset>bar/<link>shared main.cpp ;

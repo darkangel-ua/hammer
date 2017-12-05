@@ -1,0 +1,4 @@
+test {
+   main.cpp {}
+   a { a.cpp [ features = <define>YES !<define>NO; ] {} }
+}

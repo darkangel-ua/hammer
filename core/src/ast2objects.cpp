@@ -17,8 +17,7 @@
 #include <hammer/ast/list_of.h>
 #include <hammer/ast/target_ref.h>
 #include <hammer/ast/target_def.h>
-
-using std::move;
+#include <hammer/ast/condition.h>
 
 namespace hammer {
 
@@ -42,6 +41,23 @@ ast2feature_set(invocation_context& ctx,
 
    for (auto f : features)
       result->join(ast2feature(ctx, *f));
+
+   return result;
+}
+
+static
+feature_set*
+ast2feature_set(invocation_context& ctx,
+                const ast::list_of& features)
+{
+   feature_set* result = ctx.current_project_.get_engine()->feature_registry().make_set();
+
+   for (auto le : features.values()) {
+      if (const ast::feature* f = ast::as<ast::feature>(le))
+         result->join(ast2feature(ctx, *f));
+      else
+         throw std::runtime_error("ast2feature_set: Unexpected AST node");
+   }
 
    return result;
 }
@@ -87,24 +103,80 @@ ast2sources_decl(invocation_context& ctx,
 }
 
 static
+std::unique_ptr<requirement_condition_op_base>
+ast2requirement_condition_op(invocation_context& ctx,
+                             const ast::expression* e)
+{
+   if (const ast::logical_or* lor = ast::as<ast::logical_or>(e)) {
+      auto left = ast2requirement_condition_op(ctx, lor->left());
+      auto right = ast2requirement_condition_op(ctx, lor->right());
+      return std::unique_ptr<requirement_condition_op_base>(new requirement_condition_op_or(std::move(left), std::move(right)));
+   } else if (const ast::logical_and* land = ast::as<ast::logical_and>(e)) {
+      auto left = ast2requirement_condition_op(ctx, land->left());
+      auto right = ast2requirement_condition_op(ctx, land->right());
+      return std::unique_ptr<requirement_condition_op_base>(new requirement_condition_op_and(std::move(left), std::move(right)));
+   } else if (const ast::feature* f = ast::as<ast::feature>(e))
+     return std::unique_ptr<requirement_condition_op_base>(new requirement_condition_op_feature(ast2feature(ctx, *f)));
+   else
+      throw std::runtime_error("ast2requirement_condition_op: Unexpected AST node");
+}
+
+static
+requirement_condition::result_t
+ast2requirement_condition_result(invocation_context& ctx,
+                                 const ast::expression* e)
+{
+   requirement_condition::result_t result;
+   auto handle_one_feature = [&](const ast::expression* e) {
+      if (const ast::feature* f = ast::as<ast::feature>(e))
+         result.push_back({ast2feature(ctx, *f), false});
+      else if (const ast::public_expr* pe = ast::as<ast::public_expr>(e)) {
+         assert(ast::as<ast::feature>(pe->value()));
+         const ast::feature* f = ast::as<ast::feature>(pe->value());
+         result.push_back({ast2feature(ctx, *f), true});
+      } else
+         throw std::runtime_error("ast2requirement_condition_result: Unexpected AST node");
+   };
+
+   if (const ast::list_of* l = ast::as<ast::list_of>(e)) {
+      for (auto le : l->values())
+         handle_one_feature(le);
+   } else
+      handle_one_feature(e);
+
+   return result;
+}
+
+static
+std::auto_ptr<requirement_base>
+ast2requirement_base(invocation_context& ctx,
+                     const ast::expression* e,
+                     const bool public_)
+{
+   if (const ast::feature* v = ast::as<ast::feature>(e))
+      return std::auto_ptr<requirement_base>(new just_feature_requirement(ast2feature(ctx, *v)));
+   else if (const ast::public_expr* pe = ast::as<ast::public_expr>(e)) {
+      std::auto_ptr<requirement_base> rb = ast2requirement_base(ctx, pe->value(), true);
+      rb->set_public(true);
+      return rb;
+   } else if (const ast::condition_expr* c = ast::as<ast::condition_expr>(e))
+      return std::auto_ptr<requirement_base>(new requirement_condition(ast2requirement_condition_op(ctx, c->condition()), ast2requirement_condition_result(ctx, c->result()), public_));
+   else
+      throw std::runtime_error("ast2requirement_base: Unexpected AST node");
+}
+
+static
 std::unique_ptr<usage_requirements_decl>
 ast2usage_requirements_decl_impl(invocation_context& ctx,
                                  const ast::expression* requirements)
 {
    std::unique_ptr<usage_requirements_decl> result(new usage_requirements_decl);
 
-   if (const ast::feature* v = ast::as<ast::feature>(requirements)) {
-      std::auto_ptr<requirement_base> re(new just_feature_requirement(ast2feature(ctx, *v)));
-      result->add(re);
-   } else if (const ast::public_expr* pe = ast::as<ast::public_expr>(requirements)) {
-      if (const ast::feature* f = ast::as<ast::feature>(pe->value())) {
-         std::auto_ptr<requirement_base> re(new just_feature_requirement(ast2feature(ctx, *f)));
-         re->set_public(true);
-         result->add(re);
-      } else
-         throw std::runtime_error("Not implemented");
+   if (const ast::list_of* l = ast::as<ast::list_of>(requirements)) {
+      for (const ast::expression* e : l->values())
+         result->add(ast2requirement_base(ctx, e, false));
    } else
-      throw std::runtime_error("Not implemented");
+      result->add(ast2requirement_base(ctx, requirements, false));
 
    return result;
 }

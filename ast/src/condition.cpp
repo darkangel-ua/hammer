@@ -25,4 +25,10 @@ bool condition_expr::accept(visitor& v) const
    return v.visit(*this);
 }
 
+template<>
+const logical_or* as<logical_or>(const node* v) { return dynamic_cast<const logical_or*>(v); }
+
+template<>
+const logical_and* as<logical_and>(const node* v) { return dynamic_cast<const logical_and*>(v); }
+
 }}

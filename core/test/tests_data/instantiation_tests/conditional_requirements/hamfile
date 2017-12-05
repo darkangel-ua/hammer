@@ -1,3 +1,0 @@
-lib a : a.cpp : <link>static <link>static:<define>STATIC_HERE : : <link>static:<define>STATIC_UP ;
-lib b : b.cpp : <link>shared:<define>B_SHARED : : <link>shared:<define>B_SHARED ;
-exe test : a main.cpp b/<link>static : <variant>debug:<define>WIN32 ;

@@ -1,0 +1,6 @@
+test {
+   main.cpp {}
+   a { a.cpp [ features = <define>YES; ] {} }
+   b { b.cpp [ features = <define>YES; ] {} }
+   c { c.cpp [ features = !<define>YES; ] {} }
+}

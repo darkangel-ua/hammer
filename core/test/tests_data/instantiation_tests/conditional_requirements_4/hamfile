@@ -1,0 +1,5 @@
+#pragma parser v2
+#testing condition result with multiple features
+
+lib a : a.cpp : (<toolset>foo && <link>static -> <define>FOO_STATIC <define>YES) ;
+exe test : a/<toolset>foo/<link>static main.cpp ;

@@ -1,0 +1,6 @@
+test {
+   main.cpp {}
+   a { a.cpp [ features = <define>FOO_BAR; ] {} }
+   b { b.cpp [ features = <define>FOO_BAR; ] {} }
+   c { c.cpp [ features = !<define>FOO_BAR; ] {} }
+}

@@ -1,3 +1,6 @@
-lib sockets : : <name>Ws_2.lib : : <define>sockets ;
-explicit sockets ;
+#pragma parser v2
+
+explicit
+lib sockets : sockets.cpp : : : <define>sockets ;
+
 lib lib1 : lib1.cpp ;

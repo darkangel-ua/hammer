@@ -19,6 +19,8 @@
 
 namespace hammer{
 
+namespace ast{ class expression; }
+
 class project;
 class diagnostic;
 class rule_manager;
@@ -26,6 +28,7 @@ class rule_manager;
 enum class rule_argument_type {
 	void_,
 	invocation_context,
+	target_invocation_context,
 	identifier,
 	feature,
 	feature_set,
@@ -34,7 +37,7 @@ enum class rule_argument_type {
 	usage_requirements,
 	path,
 	target_ref,
-	list_of
+	ast_expression
 };
 
 template<typename T>
@@ -42,9 +45,32 @@ struct rule_argument_type_info {
 };
 
 struct invocation_context {
+	invocation_context(project& current_project,
+							 diagnostic& diag,
+	                   rule_manager& rule_manager)
+	   : current_project_(current_project),
+	     diag_(diag),
+	     rule_manager_(rule_manager)
+	{}
+
 	project& current_project_;
 	diagnostic& diag_;
 	rule_manager& rule_manager_;
+};
+
+struct target_invocation_context : invocation_context {
+	target_invocation_context(project& current_project,
+									  diagnostic& diag,
+									  rule_manager& rule_manager,
+	                          bool local_tag,
+	                          bool explicit_tag)
+	   : invocation_context(current_project, diag, rule_manager),
+	     local_(local_tag),
+	     explicit_(explicit_tag)
+	{}
+
+	bool local_;
+	bool explicit_;
 };
 
 template<>
@@ -52,6 +78,12 @@ struct rule_argument_type_info<parscore::identifier> { static const rule_argumen
 
 template<>
 struct rule_argument_type_info<invocation_context> { static const rule_argument_type ast_type = rule_argument_type::invocation_context; };
+
+template<>
+struct rule_argument_type_info<target_invocation_context> { static const rule_argument_type ast_type = rule_argument_type::target_invocation_context; };
+
+template<>
+struct rule_argument_type_info<ast::expression> { static const rule_argument_type ast_type = rule_argument_type::ast_expression; };
 
 class rule_argument
 {
@@ -89,6 +121,7 @@ class rule_manager_arg : public rule_manager_arg_base
       rule_manager_arg(T* v) : rule_manager_arg_base(v), owned_(true) {}
 		rule_manager_arg(std::unique_ptr<T> v) : rule_manager_arg_base(v.release()), owned_(true) {}
       rule_manager_arg(T& v) : rule_manager_arg_base(&v), owned_(false) {}
+		rule_manager_arg(const T& v) : rule_manager_arg_base(&const_cast<T&>(v)), owned_(false) {}
       ~rule_manager_arg() { if (owned_) delete static_cast<T*>(v_); }
 
    private:
@@ -302,6 +335,7 @@ make_args(const std::vector<parscore::identifier>& arg_names)
 
 }
 
+// FIXME: ast_expression can't be optional
 class rule_manager
 {
    public:
@@ -317,7 +351,12 @@ class rule_manager
                       FunctionPointer f,
                       const std::vector<parscore::identifier>& arg_names)
       {
-         add_impl(id, boost::function<typename boost::remove_pointer<FunctionPointer>::type>(f), arg_names, /*is_target =*/true);
+         typedef typename boost::remove_pointer<FunctionPointer>::type f_type;
+			typedef typename boost::mpl::at_c<typename boost::function_types::parameter_types<f_type>::type, 0>::type arg_0_type;
+
+			static_assert(boost::is_same<target_invocation_context&, arg_0_type>::value, "First argument for target definition MUST be target_invocation_context");
+
+			add_impl(id, boost::function<f_type>(f), arg_names, /*is_target =*/true);
       }
 
       template<typename FunctionPointer>
@@ -325,7 +364,11 @@ class rule_manager
                     FunctionPointer f,
                     const std::vector<parscore::identifier>& arg_names)
       {
-         add_impl(id, boost::function<typename boost::remove_pointer<FunctionPointer>::type>(f), arg_names, /*is_target =*/false);
+			typedef typename boost::remove_pointer<FunctionPointer>::type f_type;
+			typedef typename boost::mpl::at_c<typename boost::function_types::parameter_types<f_type>::type, 0>::type arg_0_type;
+
+			static_assert(boost::is_same<invocation_context&, arg_0_type>::value, "First argument for rule MUST be invocation_context");
+         add_impl(id, boost::function<f_type>(f), arg_names, /*is_target =*/false);
       }
 
    private:
@@ -343,7 +386,7 @@ class rule_manager
             throw std::runtime_error("[hammer.rule_manager] Not enought argument names");
 
 			arg_names.insert(arg_names.begin(), "$!@ctx$!@");
-         rule_declaration decl(id, 
+			rule_declaration decl(id,
                                details::make_args<T>(arg_names), 
                                details::make_one_arg(parscore::identifier(), boost::mpl::tag<result_type>()),
                                is_target,

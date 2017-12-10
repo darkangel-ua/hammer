@@ -21,7 +21,7 @@ namespace hammer {
 }
 
 static
-void lib_rule(invocation_context& ctx,
+void lib_rule(target_invocation_context& ctx,
               const identifier& id)
 {
 
@@ -64,11 +64,11 @@ BOOST_AUTO_TEST_CASE(exe_rule_test)
    vector<identifier> rule_arg_names = { "id", "sources", "requirements" };
 
    rule_manager m;
-   m.add_target(rule_id, exe_rule, rule_arg_names);
+   m.add_rule(rule_id, exe_rule, rule_arg_names);
 
    rule_manager::const_iterator i = m.find(rule_id);
    BOOST_REQUIRE(i != m.end());
-   BOOST_REQUIRE_THROW(m.add_target(rule_id, exe_rule, rule_arg_names), std::exception);
+   BOOST_REQUIRE_THROW(m.add_rule(rule_id, exe_rule, rule_arg_names), std::exception);
 
    const rule_declaration& rd = i->second;
    BOOST_CHECK_EQUAL(rd.name(), rule_id);
@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE(invoke_test_1)
    vector<identifier> rule_arg_names = { "id_1", "id_2", "id_3" };
 
    rule_manager m;
-   m.add_target(rule_id, invoke_function_1, rule_arg_names);
+   m.add_rule(rule_id, invoke_function_1, rule_arg_names);
    const rule_declaration& rd = m.find(rule_id)->second;
 
    hammer::project p;
@@ -142,10 +142,12 @@ static bool invoke_function_2_invoked = false;
 
 static
 std::unique_ptr<identifier>
-invoke_function_2(invocation_context& ctx,
+invoke_function_2(target_invocation_context& ctx,
                   const identifier& id_1)
 {
    invoke_function_2_invoked = true;
+   BOOST_CHECK_EQUAL(ctx.local_, true);
+   BOOST_CHECK_EQUAL(ctx.explicit_, false);
    return std::unique_ptr<identifier>(new identifier("123qwe"));
 }
 
@@ -161,10 +163,10 @@ BOOST_AUTO_TEST_CASE(invoke_test_2)
    hammer::project p;
    ostringstream s;
    streamed_diagnostic diag("invoke_test_1", s);
-   invocation_context ctx = { p, diag, m };
+   target_invocation_context ctx = {p, diag, m, true, false};
    identifier id_1("foo");
 
-   rule_manager_arg_ptr arg_0(new rule_manager_arg<invocation_context>(ctx));
+   rule_manager_arg_ptr arg_0(new rule_manager_arg<target_invocation_context>(ctx));
    rule_manager_arg_ptr arg_1(new rule_manager_arg<identifier>(id_1));
 
    rule_manager_arguments_t args;

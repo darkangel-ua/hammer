@@ -53,7 +53,7 @@ void project_rule(invocation_context& ctx,
 }
 
 static
-void lib_rule(invocation_context& ctx,
+void lib_rule(target_invocation_context& ctx,
               const parscore::identifier& id,
               const test_sources* sources,
               const test_requirements* requirements,
@@ -63,7 +63,7 @@ void lib_rule(invocation_context& ctx,
 }
 
 static
-void exe_rule(invocation_context& ctx,
+void exe_rule(target_invocation_context& ctx,
               const parscore::identifier& id,
               const test_sources* sources,
               const test_requirements* requirements,

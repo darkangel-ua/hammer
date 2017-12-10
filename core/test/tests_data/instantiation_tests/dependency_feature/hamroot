@@ -1,6 +1,7 @@
+#pragma parser v2
 # we testing the fact that we correctly instantiate with all <dependency> feature path adjustments
 
-lib lib1 : lib1.cpp ;
-explicit lib1; 
+use-project /bar : lib4/bar ;
 
+lib lib1 : lib1.cpp ;
 exe test : main.cpp lib2 lib4 : <dependency>lib1 ;

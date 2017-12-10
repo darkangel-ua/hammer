@@ -55,6 +55,11 @@ namespace hammer
          void use_project(const project& p, const std::string& project_id_alias, const location_t& project_location);
          ~engine();
 
+			void add_project_alias(project* p,
+			                       const std::string& project_id_alias,
+                                const std::string& project_location,
+			                       feature_set* props);
+
       private:
          typedef boost::unordered_map<const location_t, 
                                       boost::shared_ptr<project>,
@@ -209,9 +214,11 @@ namespace hammer
          sources_decl glob_rule(project* p, std::vector<std::string>& patterns,
                                 std::vector<std::string>* exceptions, bool recursive);
          void explicit_rule(project* p, const std::string& target_name);
-         void use_project_rule(project* p, const std::string& project_id_alias,
-                               const std::string& project_location, feature_set* props);
-         void setup_warehouse_rule(project* p,
+			void use_project_rule(project* p,
+			                      const std::string& project_id_alias,
+			                      const std::string& project_location,
+			                      feature_set* props);
+			void setup_warehouse_rule(project* p,
                                    const std::string& name,
                                    const std::string& url,
                                    const std::string* storage_dir);

@@ -1031,8 +1031,10 @@ void engine::use_project(const project& p, const std::string& project_id_alias, 
    use_project_rule(const_cast<project*>(&p), project_id_alias, project_location.string(), feature_registry().make_set());
 }
 
-void engine::use_project_rule(project* p, const std::string& project_id_alias,
-                              const std::string& project_location, feature_set* props)
+void engine::add_project_alias(project* p,
+                               const std::string& project_id_alias,
+                               const std::string& project_location,
+                               feature_set* props)
 {
    location_t l(project_id_alias);
    if (!l.has_root_path())
@@ -1076,6 +1078,14 @@ void engine::use_project_rule(project* p, const std::string& project_id_alias,
 
       reversed_global_project_links_.insert(make_pair(alias_data.location_, alias_data));
    }
+}
+
+void engine::use_project_rule(project* p,
+                              const std::string& project_id_alias,
+                              const std::string& project_location,
+                              feature_set* props)
+{
+   add_project_alias(p, project_id_alias, project_location, props);
 }
 
 void engine::setup_warehouse_rule(project* p,

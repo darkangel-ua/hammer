@@ -1,5 +1,7 @@
+#pragma parser v2
+
+explicit 
 lib foo : foo.cpp ;
-explicit foo;
 
 lib lib2 : lib2.cpp : @<dependency>foo ;
 

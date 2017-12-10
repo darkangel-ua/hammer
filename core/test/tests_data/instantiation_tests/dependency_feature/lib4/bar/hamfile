@@ -1,1 +1,3 @@
+#pragma parser v2
+
 lib bar : bar.cpp : @<define>BAR ;

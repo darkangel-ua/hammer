@@ -8,3 +8,6 @@ feature_test <library>(foo/bar) ;
 
 # global target
 feature_test <library>(/boost/test) ;
+
+#bad feature value
+feature_test <library>(@foo) ; #error: Feature target value cannot be public

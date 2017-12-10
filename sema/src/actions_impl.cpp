@@ -103,7 +103,7 @@ actions_impl::on_top_level_rule_invocation(const source_location explicit_tag,
       const rule_declaration& rd = i->second;
       const ast::rule_invocation* ri = new (ctx_) ast::rule_invocation(rule_name, process_arguments(rule_name, i->second, arguments));
       if (rd.is_target())
-         return new (ctx_) target_def(local_tag, explicit_tag, ri);
+         return new (ctx_) target_def(explicit_tag, local_tag, ri);
       else {
          if (explicit_tag.valid()) {
             diag_.error(explicit_tag, "Only target definition can be explicit");
@@ -168,8 +168,16 @@ const expression*
 actions_impl::process_feature_arg(const rule_argument& ra,
                                   const expression* arg)
 {
-   if (is_a<ast::feature>(arg))
+   if (const ast::feature* f = as<ast::feature>(arg)) {
+      if (const ast::target_ref* tr = as<ast::target_ref>(f->value())) {
+         if (tr->is_public()) {
+            diag_.error(tr->start_loc(), "Feature target value cannot be public") << ra.name();
+            return new (ctx_) error_expression(arg);
+         }
+      }
+
       return arg;
+   }
 
    diag_.error(arg->start_loc(), "Argument '%s': must be a feature") << ra.name();
    return new (ctx_) error_expression(arg);
@@ -329,10 +337,12 @@ actions_impl::process_one_arg(const rule_argument& ra,
       case rule_argument_type::path:
          return process_path_like_seq_arg(ra, arg);
 
+      case rule_argument_type::ast_expression:
+         return arg;
+
       default:
          assert(false && "Unknown argument type");
          abort();
-         throw;
    }
 }
 
@@ -347,6 +357,7 @@ actions_impl::process_arguments(const parscore::identifier& rule_name,
 
    bool only_named = false;
    // skip first argument because it always will be invocation_context
+   // and second for targets because there always will be rule_target_attributes
    rule_declaration::const_iterator ra = rule_decl.begin() + 1;
    int required_argument_used = 0;
    for (expressions_t::const_iterator i = arguments.begin(), last = arguments.end(); i != last; ++i) {

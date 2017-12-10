@@ -169,7 +169,7 @@ wildcard_s
 	| '?'+
 	;	           
 target_ref
-	: '@' WS* target_ref_impl -> ^(PublicTag target_ref_impl)
+	: PublicTag WS* target_ref_impl -> ^(PublicTag target_ref_impl)
 	| target_ref_root_path
 	| path_non_uri target_ref_spec -> ^(TargetRef path_non_uri target_ref_spec)
 	| Id target_ref_spec -> ^(TargetRef Id target_ref_spec)

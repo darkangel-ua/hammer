@@ -8,6 +8,7 @@
 #include <hammer/core/project.h>
 #include <hammer/core/engine.h>
 #include <hammer/core/feature_set.h>
+#include <hammer/core/feature.h>
 #include <hammer/ast/sources.h>
 #include <hammer/ast/path.h>
 #include <hammer/ast/requirement_set.h>
@@ -22,13 +23,28 @@
 namespace hammer {
 
 static
+source_decl
+handle_one_source(invocation_context& ctx,
+                  const type_registry& tr,
+                  const ast::expression* e);
+
+static
 feature*
 ast2feature(invocation_context& ctx,
             const ast::feature& f)
 {
-   if (const ast::id_expr* id = ast::as<ast::id_expr>(f.value()))
+   const feature_def* fdef = ctx.current_project_.get_engine()->feature_registry().find_def(f.name().to_string().c_str());
+   if (fdef && fdef->attributes().dependency) {
+      feature* result = ctx.current_project_.get_engine()->feature_registry().create_feature(f.name().to_string(), {});
+      result->set_dependency_data(handle_one_source(ctx, ctx.current_project_.get_engine()->get_type_registry(), f.value()), nullptr);
+      return result;
+   } else if (const ast::id_expr* id = ast::as<ast::id_expr>(f.value()))
       return ctx.current_project_.get_engine()->feature_registry().create_feature(f.name().to_string(), id->id().to_string());
-   else
+   else if (ast::is_a<ast::target_ref>(f.value())) {
+      feature* result = ctx.current_project_.get_engine()->feature_registry().create_feature(f.name().to_string(), {});
+      result->set_dependency_data(handle_one_source(ctx, ctx.current_project_.get_engine()->get_type_registry(), f.value()), nullptr);
+      return result;
+   } else
       throw std::runtime_error("Not implemented");
 }
 
@@ -198,14 +214,23 @@ ast2usage_requirements_decl(invocation_context& ctx,
 }
 
 static
-void ast2objects(invocation_context& ctx,
-                 const ast::rule_invocation& ri)
+std::unique_ptr<location_t>
+ast2path(invocation_context& ctx,
+         const ast::path& path)
+{
+   return std::unique_ptr<location_t>(new location_t(path.to_string()));
+}
+
+static
+void rule_invocation_impl(invocation_context& ctx,
+                          rule_manager_arguments_t& args,
+                          const ast::rule_invocation& ri)
 {
    const rule_declaration& rd = ctx.rule_manager_.find(ri.name())->second;
    auto i_ri = ri.arguments().begin();
-   rule_manager_arguments_t args;
-
-   for (const rule_argument& ra : rd.arguments()) {
+   // skipping first argument because it will always be context
+   for ( auto first = rd.begin() + 1, last = rd.end(); first != last; ++first) {
+      const rule_argument& ra = *first;
       if (i_ri == ri.arguments().end()) {
          args.push_back(rule_manager_arg_ptr());
          continue;
@@ -220,41 +245,49 @@ void ast2objects(invocation_context& ctx,
          args.push_back(move(arg));
       } else {
          switch (ra.type()) {
-            case rule_argument_type::invocation_context: {
-               rule_manager_arg_ptr ctx_arg(new rule_manager_arg<invocation_context>(ctx));
-               args.push_back(move(ctx_arg));
-               continue;
-            }
-
             case rule_argument_type::identifier: {
                const ast::id_expr* id = ast::as<ast::id_expr>(*i_ri);
                assert(id);
-               rule_manager_arg_ptr id_arg(new rule_manager_arg<parscore::identifier>(new parscore::identifier(id->id())));
-               args.push_back(move(id_arg));
+               rule_manager_arg_ptr arg(new rule_manager_arg<parscore::identifier>(new parscore::identifier(id->id())));
+               args.push_back(move(arg));
                break;
             }
 
             case rule_argument_type::sources: {
                const ast::sources* sources = ast::as<ast::sources>(*i_ri);
                assert(sources);
-               rule_manager_arg_ptr ctx_arg(new rule_manager_arg<sources_decl>(ast2sources_decl(ctx, *sources)));
-               args.push_back(move(ctx_arg));
+               rule_manager_arg_ptr arg(new rule_manager_arg<sources_decl>(ast2sources_decl(ctx, *sources)));
+               args.push_back(move(arg));
                break;
             }
 
             case rule_argument_type::requirement_set: {
                const ast::requirement_set* requirements = ast::as<ast::requirement_set>(*i_ri);
                assert(requirements);
-               rule_manager_arg_ptr ctx_arg(new rule_manager_arg<requirements_decl>(ast2requirements_decl(ctx, *requirements)));
-               args.push_back(move(ctx_arg));
+               rule_manager_arg_ptr arg(new rule_manager_arg<requirements_decl>(ast2requirements_decl(ctx, *requirements)));
+               args.push_back(move(arg));
                break;
             }
 
             case rule_argument_type::usage_requirements: {
                const ast::usage_requirements* usage_requirements = ast::as<ast::usage_requirements>(*i_ri);
                assert(usage_requirements);
-               rule_manager_arg_ptr ctx_arg(new rule_manager_arg<usage_requirements_decl>(ast2usage_requirements_decl(ctx, *usage_requirements)));
-               args.push_back(move(ctx_arg));
+               rule_manager_arg_ptr arg(new rule_manager_arg<usage_requirements_decl>(ast2usage_requirements_decl(ctx, *usage_requirements)));
+               args.push_back(move(arg));
+               break;
+            }
+
+            case rule_argument_type::ast_expression: {
+               rule_manager_arg_ptr arg(new rule_manager_arg<ast::expression>(**i_ri));
+               args.push_back(move(arg));
+               break;
+            }
+
+            case rule_argument_type::path: {
+               const ast::path* path = ast::as<ast::path>(*i_ri);
+               assert(path);
+               rule_manager_arg_ptr arg(new rule_manager_arg<location_t>(ast2path(ctx, *path)));
+               args.push_back(move(arg));
                break;
             }
 
@@ -270,10 +303,26 @@ void ast2objects(invocation_context& ctx,
 }
 
 static
-void ast2objects(invocation_context& ctx,
-                 const ast::target_def& td)
+void process_rule_invocation(invocation_context& ctx,
+                             const ast::rule_invocation& ri)
 {
-   ast2objects(ctx, *td.body());
+   rule_manager_arguments_t args;
+   rule_manager_arg_ptr ctx_arg(new rule_manager_arg<invocation_context>(ctx));
+   args.push_back(move(ctx_arg));
+
+   rule_invocation_impl(ctx, args, ri);
+}
+
+static
+void process_target_rule_invocation(invocation_context& ctx,
+                                    const ast::target_def& td)
+{
+   rule_manager_arguments_t args;
+   target_invocation_context tctx = { ctx.current_project_, ctx.diag_, ctx.rule_manager_, td.local_tag().valid(), td.explicit_tag().valid() };
+   rule_manager_arg_ptr ctx_arg(new rule_manager_arg<target_invocation_context>(tctx));
+   args.push_back(move(ctx_arg));
+
+   rule_invocation_impl(ctx, args, *td.body());
 }
 
 void ast2objects(invocation_context& ctx,
@@ -300,11 +349,11 @@ void ast2objects(invocation_context& ctx,
    for (const ast::statement* stmt : node.get_statements()) {
       if (const ast::expression_statement* estmt = ast::as<ast::expression_statement>(stmt)) {
          if (const ast::rule_invocation* ri = ast::as<ast::rule_invocation>(estmt->content()))
-            ast2objects(ctx, *ri);
+            process_rule_invocation(ctx, *ri);
          else
             throw std::runtime_error("ast2objects: Unexpected top level AST expression statement node");
       } else if (const ast::target_def* td = ast::as<ast::target_def>(stmt))
-         ast2objects(ctx, *td);
+         process_target_rule_invocation(ctx, *td);
        else
          throw std::runtime_error("not implemented");
    }

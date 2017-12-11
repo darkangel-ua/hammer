@@ -1,3 +1,4 @@
+#pragma parser v2
 #testing correct behavious of usage requirements calculation when
 #passing target build requirements
 
@@ -8,16 +9,16 @@ lib lib5
     : lib5.cpp 
     :
     :
-    : <link>shared:<define>LIB5_SHARED
-      <link>static:<define>LIB5_STATIC
+    : (<link>shared -> <define>LIB5_SHARED)
+      (<link>static -> <define>LIB5_STATIC)
     ;
 
 lib lib4 
     : lib4.cpp 
     :
     :
-    : <link>shared:<define>LIB4_SHARED
-      <link>static:<define>LIB4_STATIC
+    : (<link>shared -> <define>LIB4_SHARED)
+      (<link>static -> <define>LIB4_STATIC)
     ;
 
 lib lib3 : lib3.cpp : : : <use>lib5 ;

@@ -9,6 +9,7 @@
 #include <hammer/core/engine.h>
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature.h>
+#include <hammer/core/diagnostic.h>
 #include <hammer/ast/sources.h>
 #include <hammer/ast/path.h>
 #include <hammer/ast/requirement_set.h>
@@ -19,6 +20,7 @@
 #include <hammer/ast/target_ref.h>
 #include <hammer/ast/target_def.h>
 #include <hammer/ast/condition.h>
+#include <boost/make_unique.hpp>
 
 namespace hammer {
 
@@ -291,6 +293,28 @@ void rule_invocation_impl(invocation_context& ctx,
                break;
             }
 
+            case rule_argument_type::feature: {
+               const ast::feature* f = ast::as<ast::feature>(*i_ri);
+               assert(f);
+               rule_manager_arg_ptr arg(new rule_manager_arg<feature>(*ast2feature(ctx, *f)));
+               args.push_back(move(arg));
+               break;
+            }
+
+            case rule_argument_type::feature_set: {
+               const ast::list_of* fs = ast::as<ast::list_of>(*i_ri);
+               assert(fs);
+               rule_manager_arg_ptr arg(new rule_manager_arg<feature_set>(*ast2feature_set(ctx, *fs)));
+               args.push_back(move(arg));
+               break;
+            }
+
+            case rule_argument_type::feature_or_feature_set: {
+               rule_manager_arg_ptr arg(new rule_manager_arg<feature_or_feature_set_t>(ast2feature_or_feature_set(ctx, **i_ri)));
+               args.push_back(move(arg));
+               break;
+            }
+
             default:
                throw std::runtime_error("not implemented");
          }
@@ -357,6 +381,18 @@ void ast2objects(invocation_context& ctx,
        else
          throw std::runtime_error("not implemented");
    }
+}
+
+std::unique_ptr<feature_or_feature_set_t>
+ast2feature_or_feature_set(invocation_context& ctx,
+                           const ast::expression& e)
+{
+   if (const ast::feature* f = ast::as<ast::feature>(&e))
+      return boost::make_unique<feature_or_feature_set_t>(ast2feature(ctx, *f));
+   else if (const ast::list_of* l = ast::as<ast::list_of>(&e))
+      return boost::make_unique<feature_or_feature_set_t>(ast2feature_set(ctx, *l));
+   else
+      throw std::runtime_error("ast2feature_or_feature_set: Unexpected AST node");
 }
 
 }

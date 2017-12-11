@@ -152,7 +152,7 @@ actions_impl::process_feature_set_arg(const rule_argument& ra,
    if (is_a<ast::list_of>(arg)) {
       for (const expression* e : as<list_of>(arg)->values()) {
          if (!is_a<ast::feature>(e)) {
-            diag_.error(e->start_loc(), "Element of feature set should be simple feature");
+            diag_.error(e->start_loc(), "Element of feature set should be simple features");
             return new (ctx_) error_expression(arg);
          }
       }
@@ -300,6 +300,19 @@ actions_impl::process_path_like_seq_arg(const rule_argument& ra,
 }
 
 const expression*
+actions_impl::process_feature_of_feature_set_arg(const rule_argument& ra,
+                                                 const expression* arg)
+{
+   if (as<ast::feature>(arg))
+      return process_feature_arg(ra, arg);
+   else if (as<ast::list_of>(arg))
+      return process_feature_set_arg(ra, arg);
+
+   diag_.error(arg->start_loc(), "Argument '%s': expected feature or feature list") << ra.name();
+   return new (ctx_) error_expression(arg);
+}
+
+const expression*
 actions_impl::process_one_arg(const rule_argument& ra,
                               const expression* arg)
 {
@@ -339,6 +352,9 @@ actions_impl::process_one_arg(const rule_argument& ra,
 
       case rule_argument_type::ast_expression:
          return arg;
+
+      case rule_argument_type::feature_or_feature_set:
+         return process_feature_of_feature_set_arg(ra, arg);
 
       default:
          assert(false && "Unknown argument type");

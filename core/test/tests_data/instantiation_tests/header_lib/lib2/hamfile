@@ -1,1 +1,2 @@
+#pragma parser v2
 lib lib2 : lib2.cpp : @<define>USE_LIB2 ;

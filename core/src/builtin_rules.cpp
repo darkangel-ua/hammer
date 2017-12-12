@@ -8,6 +8,8 @@
 #include <hammer/core/engine.h>
 #include <hammer/core/alias_meta_target.h>
 #include <hammer/core/lib_meta_target.h>
+#include <hammer/core/header_lib_meta_target.h>
+#include <hammer/core/version_alias_meta_target.h>
 #include <hammer/ast/target_ref.h>
 #include <hammer/ast/path.h>
 #include <hammer/ast/list_of.h>
@@ -88,7 +90,8 @@ void alias_rule(target_invocation_context& ctx,
                 const requirements_decl* requirements,
                 const usage_requirements_decl* usage_requirements)
 {
-   auto_ptr<basic_meta_target> mt(new alias_meta_target(&ctx.current_project_, name.to_string(),
+   auto_ptr<basic_meta_target> mt(new alias_meta_target(&ctx.current_project_,
+                                                        name.to_string(),
                                                         sources,
                                                         requirements ? *requirements : requirements_decl(),
                                                         usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl()));
@@ -116,6 +119,42 @@ void lib_rule(target_invocation_context& ctx,
 
    ctx.current_project_.add_target(mt);
 }
+
+static
+void header_lib_rule(target_invocation_context& ctx,
+                     const parscore::identifier& id,
+                     const sources_decl& sources,
+                     const requirements_decl* requirements,
+                     const feature_set* default_build,
+                     const usage_requirements_decl* usage_requirements)
+{
+   auto_ptr<basic_meta_target> mt(new header_lib_meta_target(&ctx.current_project_,
+                                                             id.to_string(),
+                                                             requirements ? *requirements : requirements_decl(),
+                                                             usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl()));
+   mt->sources(sources);
+   mt->set_local(ctx.local_);
+   mt->set_explicit(ctx.explicit_);
+
+   ctx.current_project_.add_target(mt);
+}
+
+static
+void version_alias_rule(target_invocation_context& ctx,
+                        const parscore::identifier& name,
+                        const parscore::identifier& version,
+                        const location_t* target_path)
+{
+   auto_ptr<basic_meta_target> mt(new version_alias_meta_target(&ctx.current_project_,
+                                                                name.to_string(),
+                                                                version.to_string(),
+                                                                target_path ? &target_path->string() : nullptr));
+   mt->set_local(ctx.local_);
+   mt->set_explicit(ctx.explicit_);
+
+   ctx.current_project_.add_target(mt);
+}
+
 
 static
 bool has_dots(const location_t& l) {
@@ -296,6 +335,8 @@ void install_builtin_rules(rule_manager& rm)
    rm.add_target("exe", exe_rule, {"id", "sources", "requirements", "default-build", "usage-requirements"});
    rm.add_target("lib", lib_rule, {"id", "sources", "requirements", "default-build", "usage-requirements"});
    rm.add_target("alias", alias_rule, {"id", "sources", "requirements", "usage-requirements"});
+   rm.add_target("version-alias", version_alias_rule, {"id", "version", "target-path"});
+   rm.add_target("header-lib", header_lib_rule, {"id", "sources", "requirements", "default-build", "usage-requirements"});
 }
 
 }}

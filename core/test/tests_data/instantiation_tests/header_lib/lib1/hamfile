@@ -1,1 +1,2 @@
+#pragma parser v2
 header-lib lib1 : ../lib2 lib1.h : @<define>USE_LIB1 ;

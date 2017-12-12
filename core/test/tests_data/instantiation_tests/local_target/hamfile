@@ -1,3 +1,4 @@
+#pragma parser v2
 
 local 
 lib lib1 : lib1.cpp ;

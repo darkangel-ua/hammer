@@ -35,15 +35,22 @@ feature*
 ast2feature(invocation_context& ctx,
             const ast::feature& f)
 {
-   const feature_def* fdef = ctx.current_project_.get_engine()->feature_registry().find_def(f.name().to_string().c_str());
+
+   feature_registry* fr = &ctx.current_project_.local_feature_registry();
+   const feature_def* fdef = fr->find_def(f.name().to_string().c_str());
+   if (!fdef) {
+      fr = &ctx.current_project_.get_engine()->feature_registry();
+      fdef = fr->find_def(f.name().to_string().c_str());
+   }
+
    if (fdef && fdef->attributes().dependency) {
-      feature* result = ctx.current_project_.get_engine()->feature_registry().create_feature(f.name().to_string(), {});
+      feature* result = fr->create_feature(f.name().to_string(), {});
       result->set_dependency_data(handle_one_source(ctx, ctx.current_project_.get_engine()->get_type_registry(), f.value()), nullptr);
       return result;
    } else if (const ast::id_expr* id = ast::as<ast::id_expr>(f.value()))
-      return ctx.current_project_.get_engine()->feature_registry().create_feature(f.name().to_string(), id->id().to_string());
+      return fr->create_feature(f.name().to_string(), id->id().to_string());
    else if (ast::is_a<ast::target_ref>(f.value())) {
-      feature* result = ctx.current_project_.get_engine()->feature_registry().create_feature(f.name().to_string(), {});
+      feature* result = fr->create_feature(f.name().to_string(), {});
       result->set_dependency_data(handle_one_source(ctx, ctx.current_project_.get_engine()->get_type_registry(), f.value()), nullptr);
       return result;
    } else

@@ -66,7 +66,11 @@ std::string identifier::to_string() const
       return std::string(v_, v_ + length_);
    else {
       const pANTLR3_STRING s = lok_.antlr_token_->getText(const_cast<pANTLR3_COMMON_TOKEN>(lok_.antlr_token_));
-      return std::string(s->chars, s->chars + s->len);
+      // because identifier stores quotes in case it was constructed from string we remove them on this conversion
+      if (*s->chars == '"' || *s->chars == '\'')
+         return std::string(s->chars + 1, s->chars + s->len - 1);
+      else
+         return std::string(s->chars, s->chars + s->len);
    }
 };
 

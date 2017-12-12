@@ -1,2 +1,4 @@
+#pragma parser v2
+
 lib a : a.cpp ; 
 exe test : a main.cpp : <instruction-set>i386 ;

@@ -1,3 +1,4 @@
+#pragma parser v2
 feature.local debug_build : off on ;
 
 lib lib1 : lib1.cpp : <debug_build>off ;

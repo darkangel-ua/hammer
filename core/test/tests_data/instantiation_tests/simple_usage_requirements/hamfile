@@ -1,2 +1,4 @@
-lib a : a.cpp : : : <define>NDEBUG=1 ;
+#pragma parser v2
+
+lib a : a.cpp : : : <define>"NDEBUG=1" ;
 exe test : a main.cpp ;

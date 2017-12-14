@@ -1,1 +1,3 @@
-use-project lib4 : lib4 ;
+#pragma parser v2
+
+use-project lib4 : ./lib4 ;

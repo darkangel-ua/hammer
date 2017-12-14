@@ -1,2 +1,4 @@
+#pragma parser v2
+
 lib lib2_1 : a.cpp : <define>lib2_1 : : <define>use_lib2_1 ;
 lib lib2_2 : b.cpp : <define>lib2_2 : : <define>use_lib2_2 ;

@@ -1,7 +1,9 @@
-use-project /foo : foo ;
-use-project /foo/lib3 : foo.lib3 ;
-use-project /foo/lib1 : foo.lib1_new ;
-use-project /foo : foo_extension ;
+#pragma parser v2
+
+use-project /foo : ./foo ;
+use-project /foo/lib3 : ./foo.lib3 ;
+use-project /foo/lib1 : ./foo.lib1_new ;
+use-project /foo : ./foo_extension ;
 
 exe test : main.cpp 
            /foo/lib1/<version>new  # choose between old and new version placed in differen paths

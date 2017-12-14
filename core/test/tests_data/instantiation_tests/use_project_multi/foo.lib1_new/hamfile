@@ -1,1 +1,3 @@
+#pragma parser v2
+
 lib foo.lib1 : lib1_new.cpp : <version>new : : <define>LIB1_NEW ;

@@ -1,2 +1,4 @@
+#pragma parser v2
+
 version-alias lib1 : 1.0 ;
-version-alias lib1 : 2.0 : 2_0 ;
+version-alias lib1 : 2.0 : ./2_0 ;

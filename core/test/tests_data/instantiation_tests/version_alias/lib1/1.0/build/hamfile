@@ -1,1 +1,3 @@
+#pragma parser v2
+
 lib lib1 : lib1.cpp : <version>1.0 : : <define>USE_1_0 ;

@@ -1,5 +1,6 @@
+#pragma parser v2
 
+explicit 
 lib lib3 : lib3.cpp : <version>1.0 ;
-explicit lib3;
 
 alias lib4 : lib3/<version>1.0 ;

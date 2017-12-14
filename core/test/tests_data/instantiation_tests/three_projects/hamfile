@@ -1,2 +1,4 @@
+#pragma parser v2
+
 exe test : lib1 ./lib2//lib2_2 main.cpp ;
 

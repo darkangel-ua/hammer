@@ -168,16 +168,8 @@ const expression*
 actions_impl::process_feature_arg(const rule_argument& ra,
                                   const expression* arg)
 {
-   if (const ast::feature* f = as<ast::feature>(arg)) {
-      if (const ast::target_ref* tr = as<ast::target_ref>(f->value())) {
-         if (tr->is_public()) {
-            diag_.error(tr->start_loc(), "Feature target value cannot be public") << ra.name();
-            return new (ctx_) error_expression(arg);
-         }
-      }
-
+   if (is_a<ast::feature>(arg))
       return arg;
-   }
 
    diag_.error(arg->start_loc(), "Argument '%s': must be a feature") << ra.name();
    return new (ctx_) error_expression(arg);
@@ -246,18 +238,70 @@ actions_impl::process_requirements_decl_arg(const rule_argument& ra,
       return check(e) || (is_a<public_expr>(e) && check(as<public_expr>(e)->value()));
    };
 
+   auto check_public = [this](const expression* e) {
+      auto check_feature = [this] (const feature* f, bool is_public, bool in_condition) {
+         if (const target_ref* tr = as<target_ref>(f->value())) {
+            if (is_public && tr->public_tag().valid()) {
+               if (in_condition)
+                  diag_.error(tr->public_tag(), "Public conditional requirement result cannot contains feature with public target value");
+               else
+                  diag_.error(tr->public_tag(), "Public requirement feature cannot contains feature with public target value");
+               return false;
+            }
+         }
+
+         return true;
+      };
+
+      auto check = [this, &check_feature] (const expression* e, bool is_public) {
+         if (const feature* f = as<feature>(e))
+            return check_feature(f, is_public, false);
+         else { // condition
+            auto check_result_element = [this, &check_feature] (const expression* e, bool is_public) {
+               if (const public_expr* p = as<public_expr>(e)) {
+                  if (is_public) {
+                     diag_.error(p->start_loc(), "Public conditional requirement result cannot contains public feature");
+                     return false;
+                  } else
+                     return check_feature(as<feature>(p->value()), true, true);
+               } else
+                  return check_feature(as<feature>(e), is_public, true);
+            };
+
+            const condition_expr* c = as<condition_expr>(e);
+            if (const list_of* l = as<list_of>(c->result())) {
+               for (auto le : l->values()) {
+                  if (!check_result_element(le, is_public))
+                     return false;
+               }
+               return true;
+            } else
+               return check_result_element(c->result(), is_public);
+         }
+      };
+
+      if (const public_expr* p = as<public_expr>(e))
+         return check(p->value(), true);
+      else
+         return check(e, false);
+   };
+
    if (is_a<list_of>(arg)) {
       for (const expression* e : as<list_of>(arg)->values()) {
          if (!good_req(e)) {
             diag_.error(e->start_loc(), "Requirement should be feature or condition");
             return new (ctx_) error_expression(arg);
-         }
+         } else if (!check_public(e))
+            return new (ctx_) error_expression(arg);
       }
 
       return new (ctx_) requirement_set(arg);
-   } else if (good_req(arg))
-      return new (ctx_) requirement_set(arg);
-   else {
+   } else if (good_req(arg)) {
+      if (check_public(arg))
+         return new (ctx_) requirement_set(arg);
+      else
+         return new (ctx_) error_expression(arg);
+   } else {
       diag_.error(arg->start_loc(), "Requirement should be feature or condition");
       return new (ctx_) error_expression(arg);
    }

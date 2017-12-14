@@ -133,7 +133,7 @@ condition_result
 	| condition_result_elem
 	;
 condition_result_elem
-	: '@' WS* feature -> ^(PublicTag feature)
+	: PublicTag WS* feature -> ^(PublicTag feature)
 	| feature
 	;	
 path

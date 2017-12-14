@@ -9,3 +9,12 @@ requirements_test (<define>FOO || <define>TTT -> <define>BAR);
 requirements_test (<define>FOO && <define>TTT -> <define>BAR);
 requirements_test (<define>TEST || <define>FOO && <define>TTT -> <define>BAR);
 requirements_test (<define>FOO && <define>TTT || <define>TEST -> <define>BAR);
+
+#public results can't be in public conditions
+requirements_test @(<define>FOO -> @<define>BAR); #error: Public conditional requirement result cannot contains public feature
+
+#public targets can't be in public conditions
+requirements_test @(<define>FOO -> <define>(@BAR)); #error: Public conditional requirement result cannot contains feature with public target value
+
+#public requirements with public target can't co-exists
+requirements_test @<define>(@FOO); #error: Public requirement feature cannot contains feature with public target value

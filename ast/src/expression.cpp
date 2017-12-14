@@ -53,6 +53,9 @@ template<>
 const named_expr& as<named_expr>(const node& v) { return dynamic_cast<const named_expr&>(v); }
 
 template<>
+const named_expr* as<named_expr>(const node* v) { return dynamic_cast<const named_expr*>(v); }
+
+template<>
 const public_expr& as<public_expr>(const node& v) { return dynamic_cast<const public_expr&>(v); }
 
 template<>

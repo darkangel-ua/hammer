@@ -421,7 +421,7 @@ actions_impl::process_arguments(const parscore::identifier& rule_name,
    rule_declaration::const_iterator ra = rule_decl.begin() + 1;
    int required_argument_used = 0;
    for (expressions_t::const_iterator i = arguments.begin(), last = arguments.end(); i != last; ++i) {
-      if (is_a<named_expr>(**i)) {
+      if (const named_expr* ne = as<named_expr>(*i)) {
          const identifier& arg_name = as<named_expr>(**i).name();
          rule_declaration::const_iterator r = rule_decl.find(arg_name);
          if (r == rule_decl.end()) {
@@ -433,7 +433,7 @@ actions_impl::process_arguments(const parscore::identifier& rule_name,
             result.push_back(new (ctx_) error_expression((**i).start_loc()));
          } else { // named argument founded
             if (used_named_args.find(&*r) != used_named_args.end()) {
-               diag_.error(arg_name.start_lok(), "%s '%s': named argument '%s' used more than once")
+               diag_.error(arg_name.start_lok(), "%s '%s': argument '%s' used more than once")
                   << (rule_decl.is_target() ? "Target" : "Rule") 
                   << rule_name 
                   << arg_name;
@@ -444,7 +444,7 @@ actions_impl::process_arguments(const parscore::identifier& rule_name,
                if (!r->is_optional())
                   ++required_argument_used;
 
-               result.push_back(*i);
+               result.push_back(process_one_arg(*r, ne->value()));
             }
          }
 

@@ -231,6 +231,123 @@ ast2path(invocation_context& ctx,
 }
 
 static
+const ast::expression*
+find_named_argument(ast::expressions_t::const_iterator arg_first,
+                    ast::expressions_t::const_iterator arg_last,
+                    const parscore::identifier& name)
+{
+   for (; arg_first != arg_last; ++arg_first) {
+      const ast::named_expr* ne = ast::as<ast::named_expr>(*arg_first);
+      if (ne->name() == name)
+         return ne->value();
+   }
+
+   return nullptr;
+}
+
+static
+void handle_one_arg(invocation_context& ctx,
+                    rule_manager_arguments_t& args,
+                    const rule_argument& ra,
+                    const ast::expression* e)
+{
+   if (ra.is_optional() && ast::as<ast::empty_expr>(e)) {
+      rule_manager_arg_ptr arg;
+      args.push_back(move(arg));
+   } else {
+      switch (ra.type()) {
+         case rule_argument_type::identifier: {
+            const ast::id_expr* id = ast::as<ast::id_expr>(e);
+            assert(id);
+            rule_manager_arg_ptr arg(new rule_manager_arg<parscore::identifier>(new parscore::identifier(id->id())));
+            args.push_back(move(arg));
+            break;
+         }
+
+         case rule_argument_type::sources: {
+            const ast::sources* sources = ast::as<ast::sources>(e);
+            assert(sources);
+            rule_manager_arg_ptr arg(new rule_manager_arg<sources_decl>(ast2sources_decl(ctx, *sources)));
+            args.push_back(move(arg));
+            break;
+         }
+
+         case rule_argument_type::requirement_set: {
+            const ast::requirement_set* requirements = ast::as<ast::requirement_set>(e);
+            assert(requirements);
+            rule_manager_arg_ptr arg(new rule_manager_arg<requirements_decl>(ast2requirements_decl(ctx, *requirements)));
+            args.push_back(move(arg));
+            break;
+         }
+
+         case rule_argument_type::usage_requirements: {
+            const ast::usage_requirements* usage_requirements = ast::as<ast::usage_requirements>(e);
+            assert(usage_requirements);
+            rule_manager_arg_ptr arg(new rule_manager_arg<usage_requirements_decl>(ast2usage_requirements_decl(ctx, *usage_requirements)));
+            args.push_back(move(arg));
+            break;
+         }
+
+         case rule_argument_type::ast_expression: {
+            rule_manager_arg_ptr arg(new rule_manager_arg<ast::expression>(*e));
+            args.push_back(move(arg));
+            break;
+         }
+
+         case rule_argument_type::path: {
+            const ast::path* path = ast::as<ast::path>(e);
+            assert(path);
+            rule_manager_arg_ptr arg(new rule_manager_arg<location_t>(ast2path(ctx, *path)));
+            args.push_back(move(arg));
+            break;
+         }
+
+         case rule_argument_type::feature: {
+            const ast::feature* f = ast::as<ast::feature>(e);
+            assert(f);
+            rule_manager_arg_ptr arg(new rule_manager_arg<feature>(*ast2feature(ctx, *f)));
+            args.push_back(move(arg));
+            break;
+         }
+
+         case rule_argument_type::feature_set: {
+            const ast::list_of* fs = ast::as<ast::list_of>(e);
+            assert(fs);
+            rule_manager_arg_ptr arg(new rule_manager_arg<feature_set>(*ast2feature_set(ctx, *fs)));
+            args.push_back(move(arg));
+            break;
+         }
+
+         case rule_argument_type::feature_or_feature_set: {
+            rule_manager_arg_ptr arg(new rule_manager_arg<feature_or_feature_set_t>(ast2feature_or_feature_set(ctx, *e)));
+            args.push_back(move(arg));
+            break;
+         }
+
+         default:
+            throw std::runtime_error("not implemented");
+      }
+   }
+}
+
+static
+void rule_invocation_handle_named_args(invocation_context& ctx,
+                                       rule_manager_arguments_t& args,
+                                       rule_declaration::const_iterator rd_first,
+                                       rule_declaration::const_iterator rd_last,
+                                       ast::expressions_t::const_iterator arg_first,
+                                       ast::expressions_t::const_iterator arg_last)
+{
+   for (; rd_first != rd_last; ++rd_first) {
+      const ast::expression* e = find_named_argument(arg_first, arg_last, rd_first->name());
+      if (e)
+         handle_one_arg(ctx, args, *rd_first, e);
+      else
+         args.push_back(rule_manager_arg_ptr());
+   }
+}
+
+static
 void rule_invocation_impl(invocation_context& ctx,
                           rule_manager_arguments_t& args,
                           const ast::rule_invocation& ri)
@@ -239,94 +356,17 @@ void rule_invocation_impl(invocation_context& ctx,
    auto i_ri = ri.arguments().begin();
    // skipping first argument because it will always be context
    for ( auto first = rd.begin() + 1, last = rd.end(); first != last; ++first) {
-      const rule_argument& ra = *first;
       if (i_ri == ri.arguments().end()) {
          args.push_back(rule_manager_arg_ptr());
          continue;
       }
 
-      // named argument handling not implemented yet
-      if (ast::is_a<ast::named_expr>(*i_ri))
-         throw std::runtime_error("not implemented");
-
-      if (ra.is_optional() && ast::as<ast::empty_expr>(*i_ri)) {
-         rule_manager_arg_ptr arg;
-         args.push_back(move(arg));
-      } else {
-         switch (ra.type()) {
-            case rule_argument_type::identifier: {
-               const ast::id_expr* id = ast::as<ast::id_expr>(*i_ri);
-               assert(id);
-               rule_manager_arg_ptr arg(new rule_manager_arg<parscore::identifier>(new parscore::identifier(id->id())));
-               args.push_back(move(arg));
-               break;
-            }
-
-            case rule_argument_type::sources: {
-               const ast::sources* sources = ast::as<ast::sources>(*i_ri);
-               assert(sources);
-               rule_manager_arg_ptr arg(new rule_manager_arg<sources_decl>(ast2sources_decl(ctx, *sources)));
-               args.push_back(move(arg));
-               break;
-            }
-
-            case rule_argument_type::requirement_set: {
-               const ast::requirement_set* requirements = ast::as<ast::requirement_set>(*i_ri);
-               assert(requirements);
-               rule_manager_arg_ptr arg(new rule_manager_arg<requirements_decl>(ast2requirements_decl(ctx, *requirements)));
-               args.push_back(move(arg));
-               break;
-            }
-
-            case rule_argument_type::usage_requirements: {
-               const ast::usage_requirements* usage_requirements = ast::as<ast::usage_requirements>(*i_ri);
-               assert(usage_requirements);
-               rule_manager_arg_ptr arg(new rule_manager_arg<usage_requirements_decl>(ast2usage_requirements_decl(ctx, *usage_requirements)));
-               args.push_back(move(arg));
-               break;
-            }
-
-            case rule_argument_type::ast_expression: {
-               rule_manager_arg_ptr arg(new rule_manager_arg<ast::expression>(**i_ri));
-               args.push_back(move(arg));
-               break;
-            }
-
-            case rule_argument_type::path: {
-               const ast::path* path = ast::as<ast::path>(*i_ri);
-               assert(path);
-               rule_manager_arg_ptr arg(new rule_manager_arg<location_t>(ast2path(ctx, *path)));
-               args.push_back(move(arg));
-               break;
-            }
-
-            case rule_argument_type::feature: {
-               const ast::feature* f = ast::as<ast::feature>(*i_ri);
-               assert(f);
-               rule_manager_arg_ptr arg(new rule_manager_arg<feature>(*ast2feature(ctx, *f)));
-               args.push_back(move(arg));
-               break;
-            }
-
-            case rule_argument_type::feature_set: {
-               const ast::list_of* fs = ast::as<ast::list_of>(*i_ri);
-               assert(fs);
-               rule_manager_arg_ptr arg(new rule_manager_arg<feature_set>(*ast2feature_set(ctx, *fs)));
-               args.push_back(move(arg));
-               break;
-            }
-
-            case rule_argument_type::feature_or_feature_set: {
-               rule_manager_arg_ptr arg(new rule_manager_arg<feature_or_feature_set_t>(ast2feature_or_feature_set(ctx, **i_ri)));
-               args.push_back(move(arg));
-               break;
-            }
-
-            default:
-               throw std::runtime_error("not implemented");
-         }
+      if (ast::is_a<ast::named_expr>(*i_ri)) {
+         rule_invocation_handle_named_args(ctx, args, first, last, i_ri, ri.arguments().end());
+         break;
       }
 
+      handle_one_arg(ctx, args, *first, *i_ri);
       ++i_ri;
    }
 

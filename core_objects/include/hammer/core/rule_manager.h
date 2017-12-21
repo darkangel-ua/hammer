@@ -38,6 +38,7 @@ enum class rule_argument_type {
 	requirement_set,
 	usage_requirements,
 	path,
+	path_or_list_of_paths,
 	target_ref,
 	ast_expression
 };
@@ -110,10 +111,14 @@ class rule_argument
 
 typedef std::vector<rule_argument> rule_arguments;
 
-struct rule_manager_arg_base {
-   rule_manager_arg_base(void* v) : v_(v) {}
-   virtual ~rule_manager_arg_base() {}
-   void* v_;
+class rule_manager_arg_base {
+	public:
+		rule_manager_arg_base(void* v) : v_(v) {}
+		virtual ~rule_manager_arg_base() {}
+		void* value() { return v_; }
+
+	protected:
+		void* v_;
 };
 
 template<typename T>
@@ -167,7 +172,7 @@ class rule_manager_invoker : public rule_manager_invoker_base
 		T get_arg_impl(rule_manager_arg_ptr& arg,
 		               boost::mpl::bool_<true>) const
 		{
-			return arg ? static_cast<T>(arg->v_) : nullptr;
+			return arg ? static_cast<T>(arg->value()) : nullptr;
 		}
 
 		template<typename T>
@@ -175,7 +180,7 @@ class rule_manager_invoker : public rule_manager_invoker_base
 		               boost::mpl::bool_<false>) const
 		{
 			typedef typename boost::remove_reference<T>::type non_reference_T;
-			return *static_cast<non_reference_T*>(arg->v_);
+			return *static_cast<non_reference_T*>(arg->value());
 		}
 
 		template<int Idx>

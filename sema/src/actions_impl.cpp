@@ -357,6 +357,27 @@ actions_impl::process_feature_of_feature_set_arg(const rule_argument& ra,
 }
 
 const expression*
+actions_impl::process_path_or_list_of_paths(const rule_argument& ra,
+                                            const expression* arg)
+{
+   if (as<ast::path>(arg))
+      return arg;
+   else if (const ast::list_of* l = ast::as<ast::list_of>(arg)) {
+      for (auto le : l->values()) {
+         if (!ast::as<path>(le)) {
+            diag_.error(le->start_loc(), "Expected path") << ra.name();
+            return new (ctx_) error_expression(arg);
+         }
+      }
+
+      return arg;
+   }
+
+   diag_.error(arg->start_loc(), "Argument '%s': expected path or list of paths") << ra.name();
+   return new (ctx_) error_expression(arg);
+}
+
+const expression*
 actions_impl::process_one_arg(const rule_argument& ra,
                               const expression* arg)
 {
@@ -399,6 +420,9 @@ actions_impl::process_one_arg(const rule_argument& ra,
 
       case rule_argument_type::feature_or_feature_set:
          return process_feature_of_feature_set_arg(ra, arg);
+
+      case rule_argument_type::path_or_list_of_paths:
+         return process_path_or_list_of_paths(ra, arg);
 
       default:
          assert(false && "Unknown argument type");

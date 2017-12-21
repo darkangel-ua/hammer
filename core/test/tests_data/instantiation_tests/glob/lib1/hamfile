@@ -1,1 +1,3 @@
+#pragma parser v2
+
 lib lib1 : [ glob ../lib1_src/*.cpp ] [ glob ../lib1_src/*.h ] ;

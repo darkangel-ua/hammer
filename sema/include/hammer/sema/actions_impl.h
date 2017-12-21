@@ -111,6 +111,9 @@ class actions_impl : public actions
 		const ast::expression*
 		process_feature_of_feature_set_arg(const rule_argument& ra,
 													  const ast::expression* arg);
+		const ast::expression*
+		process_path_or_list_of_paths(const rule_argument& ra,
+ 										      const ast::expression* arg);
 
 };
 

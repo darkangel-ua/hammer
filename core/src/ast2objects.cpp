@@ -29,6 +29,10 @@ source_decl
 handle_one_source(invocation_context& ctx,
                   const type_registry& tr,
                   const ast::expression* e);
+static
+rule_manager_arg_ptr
+process_rule_invocation(invocation_context& ctx,
+                        const ast::rule_invocation& ri);
 
 static
 feature*
@@ -111,6 +115,49 @@ handle_one_source(invocation_context& ctx,
 }
 
 static
+void handle_one_source(invocation_context& ctx,
+                       const type_registry& tr,
+                       const ast::expression* e,
+                       sources_decl& result)
+{
+   if (const ast::rule_invocation* ri = ast::as<ast::rule_invocation>(e)) {
+      auto invocation_result = process_rule_invocation(ctx, *ri);
+      assert(invocation_result);
+      const rule_declaration& rd = ctx.rule_manager_.find(ri->name())->second;
+      if (rd.result().type() == rule_argument_type::sources);
+      switch (rd.result().type()) {
+         case rule_argument_type::sources: {
+            const sources_decl& sources = *static_cast<const sources_decl*>(invocation_result->value());
+            result.insert(sources);
+            break;
+         }
+
+         case rule_argument_type::identifier: {
+            const parscore::identifier& id = *static_cast<const parscore::identifier*>(invocation_result->value());
+            result.push_back(source_decl(id.to_string(), std::string(), tr.resolve_from_target_name(id.to_string()), nullptr));
+            break;
+         }
+
+         case rule_argument_type::path: {
+            const location_t& p = *static_cast<const location_t*>(invocation_result->value());
+            result.push_back(source_decl(p.string(), std::string(), tr.resolve_from_target_name(p.string()), nullptr));
+            break;
+         }
+
+         case rule_argument_type::target_ref: {
+            const source_decl& source = *static_cast<const source_decl*>(invocation_result->value());
+            result.push_back(source);
+            break;
+         }
+
+         default:
+            throw std::runtime_error("ast2sources_decl: Unexpected rule invocation result");
+      }
+   } else
+      result.push_back(handle_one_source(ctx, tr, e));
+}
+
+static
 std::unique_ptr<sources_decl>
 ast2sources_decl(invocation_context& ctx,
                  const ast::sources& sources)
@@ -120,9 +167,9 @@ ast2sources_decl(invocation_context& ctx,
 
    if (const ast::list_of* v = ast::as<ast::list_of>(sources.content())) {
       for (const ast::expression* e : v->values())
-         result->push_back(handle_one_source(ctx, tr, e));
+         handle_one_source(ctx, tr, e, *result);
    } else
-      result->push_back(handle_one_source(ctx, tr, sources.content()));
+      handle_one_source(ctx, tr, sources.content(), *result);
 
    return result;
 }
@@ -231,6 +278,23 @@ ast2path(invocation_context& ctx,
 }
 
 static
+std::unique_ptr<path_or_list_of_paths_t>
+ast2path_or_list_of_paths(invocation_context& ctx,
+                          const ast::expression& e)
+{
+   if (const ast::path* p = ast::as<ast::path>(&e))
+      return boost::make_unique<path_or_list_of_paths_t>(*ast2path(ctx, *p));
+   else if (const ast::list_of* l = ast::as<ast::list_of>(&e)) {
+      std::vector<location_t> paths;
+      for (const ast::expression* le : l->values())
+         paths.push_back(*ast2path(ctx, *ast::as<ast::path>(le)));
+
+      return boost::make_unique<path_or_list_of_paths_t>(std::move(paths));
+   } else
+      throw std::runtime_error("ast2feature_or_feature_set: Unexpected AST node");
+}
+
+static
 const ast::expression*
 find_named_argument(ast::expressions_t::const_iterator arg_first,
                     ast::expressions_t::const_iterator arg_last,
@@ -302,6 +366,12 @@ void handle_one_arg(invocation_context& ctx,
             break;
          }
 
+         case rule_argument_type::path_or_list_of_paths: {
+            rule_manager_arg_ptr arg(new rule_manager_arg<path_or_list_of_paths_t>(ast2path_or_list_of_paths(ctx, *e)));
+            args.push_back(move(arg));
+            break;
+         }
+
          case rule_argument_type::feature: {
             const ast::feature* f = ast::as<ast::feature>(e);
             assert(f);
@@ -348,9 +418,10 @@ void rule_invocation_handle_named_args(invocation_context& ctx,
 }
 
 static
-void rule_invocation_impl(invocation_context& ctx,
-                          rule_manager_arguments_t& args,
-                          const ast::rule_invocation& ri)
+rule_manager_arg_ptr
+rule_invocation_impl(invocation_context& ctx,
+                     rule_manager_arguments_t& args,
+                     const ast::rule_invocation& ri)
 {
    const rule_declaration& rd = ctx.rule_manager_.find(ri.name())->second;
    auto i_ri = ri.arguments().begin();
@@ -370,30 +441,32 @@ void rule_invocation_impl(invocation_context& ctx,
       ++i_ri;
    }
 
-   rd.invoke(args);
+   return rd.invoke(args);
 }
 
 static
-void process_rule_invocation(invocation_context& ctx,
-                             const ast::rule_invocation& ri)
+rule_manager_arg_ptr
+process_rule_invocation(invocation_context& ctx,
+                        const ast::rule_invocation& ri)
 {
    rule_manager_arguments_t args;
    rule_manager_arg_ptr ctx_arg(new rule_manager_arg<invocation_context>(ctx));
    args.push_back(move(ctx_arg));
 
-   rule_invocation_impl(ctx, args, ri);
+   return rule_invocation_impl(ctx, args, ri);
 }
 
 static
-void process_target_rule_invocation(invocation_context& ctx,
-                                    const ast::target_def& td)
+rule_manager_arg_ptr
+process_target_rule_invocation(invocation_context& ctx,
+                               const ast::target_def& td)
 {
    rule_manager_arguments_t args;
    target_invocation_context tctx = { ctx.current_project_, ctx.diag_, ctx.rule_manager_, td.local_tag().valid(), td.explicit_tag().valid() };
    rule_manager_arg_ptr ctx_arg(new rule_manager_arg<target_invocation_context>(tctx));
    args.push_back(move(ctx_arg));
 
-   rule_invocation_impl(ctx, args, *td.body());
+   return rule_invocation_impl(ctx, args, *td.body());
 }
 
 void ast2objects(invocation_context& ctx,

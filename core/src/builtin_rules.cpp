@@ -19,8 +19,12 @@
 #include <hammer/core/feature.h>
 #include <hammer/core/ast2objects.h>
 #include <boost/variant/get.hpp>
+#include <boost/filesystem/operations.hpp>
+#include <boost/make_unique.hpp>
+#include "wildcard.hpp"
 
 using namespace std;
+namespace fs = boost::filesystem;
 
 namespace hammer {
 
@@ -46,7 +50,10 @@ template<>
 struct rule_argument_type_info<feature_or_feature_set_t> { static const rule_argument_type ast_type = rule_argument_type::feature_or_feature_set; };
 
 template<>
-struct rule_argument_type_info<id_or_list_of_ids_t> { static const rule_argument_type ast_type = rule_argument_type::feature_or_feature_set; };
+struct rule_argument_type_info<id_or_list_of_ids_t> { static const rule_argument_type ast_type = rule_argument_type::identifier_of_list_of_identifiers; };
+
+template<>
+struct rule_argument_type_info<path_or_list_of_paths_t> { static const rule_argument_type ast_type = rule_argument_type::path_or_list_of_paths; };
 
 }
 
@@ -325,6 +332,113 @@ void feature_compose_rule(invocation_context& ctx,
    fr.get_def(f.definition().name()).compose(f.value(), cc);
 }
 
+static
+void glob_impl(sources_decl& result,
+               const fs::path& searching_path,
+               const fs::path& relative_path,
+               const boost::dos_wildcard& wildcard,
+               const std::vector<std::string>* exceptions,
+               const type_registry& tr)
+{
+   for (fs::directory_iterator i(searching_path), last = fs::directory_iterator(); i != last; ++i) {
+      if (!is_directory(*i) && wildcard.match(i->path().filename()) &&
+          !(exceptions != 0 && find(exceptions->begin(), exceptions->end(), i->path().filename().string()) != exceptions->end()))
+      {
+         result.push_back((relative_path / i->path().filename()).string(), tr);
+      }
+   }
+}
+
+static
+void rglob_impl(sources_decl& result,
+                const fs::path& searching_path,
+                fs::path relative_path,
+                const boost::dos_wildcard& wildcard,
+                const std::vector<std::string>* exceptions,
+                const type_registry& tr)
+{
+   int level = 0;
+   for (fs::recursive_directory_iterator i(searching_path), last = fs::recursive_directory_iterator(); i != last; ++i) {
+      while(level > i.level()) {
+         --level;
+         relative_path = relative_path.branch_path();
+      }
+
+      if (is_directory(i.status())) {
+         relative_path /= i->path().filename();
+         ++level;
+      } else if (wildcard.match(i->path().filename()) &&
+                 !(exceptions != 0 && find(exceptions->begin(), exceptions->end(), i->path().filename().string()) != exceptions->end()))
+      {
+         result.push_back((relative_path / i->path().filename()).string(), tr);
+      }
+   }
+}
+
+static
+std::unique_ptr<sources_decl>
+glob_rule_impl(invocation_context& ctx,
+               const path_or_list_of_paths_t& patterns,
+               const path_or_list_of_paths_t* exceptions,
+               const bool recursive)
+{
+   auto result = boost::make_unique<sources_decl>();
+   std::vector<std::string> s_exceptions;
+   if (exceptions) {
+      if (auto p = boost::get<location_t>(exceptions))
+         s_exceptions.push_back(p->string());
+      else {
+         const std::vector<location_t>& paths = *boost::get<std::vector<location_t>>(exceptions);
+         transform(paths.begin(), paths.end(), back_inserter(s_exceptions), [](const location_t& l) { return l.string(); });
+      }
+   }
+
+   std::vector<location_t> s_patterns;
+   if (auto p = boost::get<location_t>(&patterns))
+      s_patterns.push_back(p->string());
+   else {
+      const std::vector<location_t>& paths = boost::get<std::vector<location_t>>(patterns);
+      transform(paths.begin(), paths.end(), back_inserter(s_patterns), [](const location_t& l) { return l.string(); });
+   }
+
+   for (auto& l_pattern : s_patterns ) {
+      const string pattern = l_pattern.string();
+      string::size_type mask_pos = pattern.find_first_of("*?");
+      if (mask_pos == string::npos)
+         throw runtime_error("[glob] You must specify patterns to match");
+      string::size_type separator_pos = pattern.find_last_of("/\\", mask_pos);
+      fs::path relative_path(separator_pos == string::npos ? fs::path() : fs::path(pattern.begin(),
+                                                                          pattern.begin() + separator_pos));
+      fs::path searching_path(ctx.current_project_.location() / relative_path);
+      boost::dos_wildcard wildcard(string(pattern.begin() + mask_pos, pattern.end()));
+      if (recursive)
+         rglob_impl(*result, searching_path, relative_path, wildcard, &s_exceptions, ctx.current_project_.get_engine()->get_type_registry());
+      else
+         glob_impl(*result, searching_path, relative_path, wildcard, &s_exceptions, ctx.current_project_.get_engine()->get_type_registry());
+   }
+
+   result->unique();
+   return result;
+}
+
+static
+std::unique_ptr<sources_decl>
+glob_rule(invocation_context& ctx,
+          const path_or_list_of_paths_t& patterns,
+          const path_or_list_of_paths_t* exceptions)
+{
+   return glob_rule_impl(ctx, patterns, exceptions, false);
+}
+
+static
+std::unique_ptr<sources_decl>
+rglob_rule(invocation_context& ctx,
+           const path_or_list_of_paths_t& patterns,
+           const path_or_list_of_paths_t* exceptions)
+{
+   return glob_rule_impl(ctx, patterns, exceptions, true);
+}
+
 void install_builtin_rules(rule_manager& rm)
 {
    rm.add_rule("project", project_rule, {"id", "requirements", "usage-requirements"});
@@ -332,6 +446,8 @@ void install_builtin_rules(rule_manager& rm)
    rm.add_rule("feature.feature", feature_feature_rule, {"name", "values", "attributes"});
    rm.add_rule("feature.local", feature_local_rule, {"name", "values", "attributes"});
    rm.add_rule("feature.compose", feature_compose_rule, {"feature", "components"});
+   rm.add_rule("glob", glob_rule, {"patterns", "exceptions"});
+   rm.add_rule("rglob", rglob_rule, {"patterns", "exceptions"});
    rm.add_target("exe", exe_rule, {"id", "sources", "requirements", "default-build", "usage-requirements"});
    rm.add_target("lib", lib_rule, {"id", "sources", "requirements", "default-build", "usage-requirements"});
    rm.add_target("alias", alias_rule, {"id", "sources", "requirements", "usage-requirements"});

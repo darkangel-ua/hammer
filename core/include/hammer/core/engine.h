@@ -133,7 +133,8 @@ namespace hammer
          boost::shared_ptr<hammer::warehouse> warehouse_;
 
          std::unique_ptr<project>
-			load_project_v2(const location_t& project_path);
+			load_project_v2(const location_t& project_path,
+			                const project* upper_project);
 
 			loaded_projects_t try_load_project(const location_t& tail_path, const project_alias_data& symlink);
          loaded_projects_t try_load_project(location_t project_path);

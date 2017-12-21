@@ -76,7 +76,7 @@ class actions_impl : public actions
 	private:
 		const hammer::rule_manager& rule_manager_;
 		hammer::diagnostic& diag_;
-		mutable bool first_rule_in_file_ = true;
+		bool first_rule_in_file_ = true;
 
 		ast::expressions_t
 		process_arguments(const parscore::identifier& rule_name,

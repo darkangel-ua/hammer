@@ -386,7 +386,8 @@ void engine::load_hammer_script(const string& script_body,
 }
 
 std::unique_ptr<project>
-engine::load_project_v2(const location_t& project_path)
+engine::load_project_v2(const location_t& project_path,
+                        const project* upper_project)
 {
    ostringstream s;
    streamed_diagnostic diag(project_path.native(), s);
@@ -399,6 +400,11 @@ engine::load_project_v2(const location_t& project_path)
 
    std::unique_ptr<project> loaded_project(new project(this));
    loaded_project->location(project_path.branch_path());
+   if (upper_project) {
+      loaded_project->requirements().insert_infront(upper_project->requirements());
+      loaded_project->usage_requirements().insert_infront(upper_project->usage_requirements());
+   }
+
    invocation_context invc_ctx = { *loaded_project, diag, *rule_manager_ };
 
    ast2objects(invc_ctx, *ast);
@@ -459,13 +465,8 @@ engine::loaded_projects_t engine::try_load_project(location_t project_path)
          return loaded_projects_t();
 
       if (is_hamfile_v2(project_file)) {
-         std::unique_ptr<project> loaded_project = load_project_v2(project_file);
-         if (!is_top_level) {
-            if (upper_project) {
-               loaded_project->requirements().insert_infront(upper_project->requirements());
-               loaded_project->usage_requirements().insert_infront(upper_project->usage_requirements());
-            }
-         } else
+         std::unique_ptr<project> loaded_project = load_project_v2(project_file, is_top_level ? nullptr : upper_project);
+         if (is_top_level)
             loaded_project->set_root(true);
 
          insert(loaded_project.get());

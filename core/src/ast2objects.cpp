@@ -478,9 +478,9 @@ void ast2objects(invocation_context& ctx,
    rule_manager_arg_ptr ctx_arg(new rule_manager_arg<invocation_context>(ctx));
    args.push_back(move(ctx_arg));
 
-   if (const ast::rule_invocation* p = node.get_project_def()) {
-      throw std::runtime_error("not implemented");
-   } else {
+   if (const ast::rule_invocation* p = node.get_project_def())
+      process_rule_invocation(ctx, *p);
+   else {
       parscore::identifier id("<unnamed>");
       rule_manager_arg_ptr id_arg(new rule_manager_arg<parscore::identifier>(id));
       rule_manager_arg_ptr requirements_arg, usage_requirements_arg;

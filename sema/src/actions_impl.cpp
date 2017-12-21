@@ -36,11 +36,12 @@ const ast::hamfile*
 actions_impl::on_hamfile(const ast::statements_t& statements)
 {
    if (!statements.empty() &&
-       is_a<rule_invocation>(statements.front()) &&
-       as<rule_invocation>(statements.front())->name() == "project")
+       is_a<expression_statement>(statements.front()) &&
+       is_a<rule_invocation>(as<expression_statement>(statements.front())->content()) &&
+       as<rule_invocation>(as<expression_statement>(statements.front())->content())->name() == "project")
    {
       const ast::statements_t st_without_project_def(statements.begin() + 1, statements.end(), statements.get_allocator());
-      return new (ctx_) ast::hamfile(as<rule_invocation>(statements.front()), st_without_project_def);
+      return new (ctx_) ast::hamfile(as<rule_invocation>(as<expression_statement>(statements.front())->content()), st_without_project_def);
    } else
       return new (ctx_) ast::hamfile(nullptr, statements);
 }
@@ -468,7 +469,8 @@ actions_impl::process_arguments(const parscore::identifier& rule_name,
                if (!r->is_optional())
                   ++required_argument_used;
 
-               result.push_back(process_one_arg(*r, ne->value()));
+               const named_expr* new_ne = new (ctx_) named_expr(ne->name(), process_one_arg(*r, ne->value()));
+               result.push_back(new_ne);
             }
          }
 

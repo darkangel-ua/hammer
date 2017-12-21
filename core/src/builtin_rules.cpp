@@ -66,8 +66,9 @@ void project_rule(invocation_context& ctx,
                   const usage_requirements_decl* usage_requirements)
 {
    ctx.current_project_.name(id.to_string());
-   ctx.current_project_.requirements(requirements ? *requirements : requirements_decl());
-   ctx.current_project_.usage_requirements(usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl());
+   // we use insert because we already put there requirements/usage requirements from upper project
+   ctx.current_project_.requirements().insert(requirements ? *requirements : requirements_decl());
+   ctx.current_project_.usage_requirements().insert(usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl());
 }
 
 static

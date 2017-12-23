@@ -4,7 +4,6 @@
 #include <hammer/core/sources_decl.h>
 #include <hammer/core/feature_set.h>
 
-
 namespace hammer{
 
 struct sources_decl::impl_t
@@ -151,6 +150,19 @@ bool sources_decl::empty() const
 std::size_t sources_decl::size() const
 {
    return impl_->values_.size();
+}
+
+void sources_decl::dump_for_hash(std::ostream& s) const
+{
+   for (auto& src : impl_->values_) {
+      if (src.is_public())
+         s << "@";
+      s << src.target_path() << "|" << src.target_name();
+      if (src.properties()) {
+         s << "|";
+         hammer::dump_for_hash(s, *src.properties());
+      }
+   }
 }
 
 }

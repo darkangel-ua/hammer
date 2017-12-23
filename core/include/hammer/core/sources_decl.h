@@ -37,6 +37,8 @@ namespace hammer
          bool empty() const;
          std::size_t size() const;
 
+			void dump_for_hash(std::ostream& s) const;
+
       private:
          struct impl_t;
          impl_t* impl_;

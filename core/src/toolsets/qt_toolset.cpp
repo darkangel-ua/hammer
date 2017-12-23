@@ -12,6 +12,8 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/regex.hpp>
 #include <boost/assign/list_of.hpp>
+#include <boost/make_unique.hpp>
+#include <boost/crypto/md5.hpp>
 #include <hammer/core/cmdline_action.h>
 #include <hammer/core/source_argument_writer.h>
 #include <hammer/core/product_argument_writer.h>
@@ -24,6 +26,7 @@
 #include <hammer/core/fs_helpers.h>
 #include <hammer/core/feature_set.h>
 #include <hammer/core/output_location_strategy.h>
+#include <hammer/core/rule_argument_types.h>
 
 using std::string;
 using std::unique_ptr;
@@ -133,6 +136,28 @@ static sources_decl qt_uic_rule(project* p,
    return result;
 }
 
+static
+unique_ptr<sources_decl>
+qt_uic_rule_v2(invocation_context& ctx,
+               const sources_decl& sources)
+{
+   std::stringstream s;
+   sources.dump_for_hash(s);
+
+   auto_ptr<basic_meta_target> mt(new qt_uic_meta_target(&ctx.current_project_,
+                                                         "qt.uic." + boost::crypto::md5(s.str()).to_string(),
+                                                         sources,
+                                                         requirements_decl(),
+                                                         requirements_decl()));
+
+   auto result = boost::make_unique<sources_decl>();
+   result->push_back(source_decl("./", mt->name(), NULL, NULL));
+
+   ctx.current_project_.add_target(mt);
+
+   return result;
+}
+
 static sources_decl convert_H_to_MOCABLE(const sources_decl& src, hammer::project& p)
 {
    sources_decl result;
@@ -180,6 +205,25 @@ static void qt_moc_rule(project* p,
                                                          usage_requirements ? *usage_requirements : requirements_decl()));
 
    p->add_target(mt);
+}
+
+void qt_moc_rule_v2(target_invocation_context& ctx,
+                    const parscore::identifier& id,
+                    const sources_decl& sources,
+                    requirements_decl* requirements,
+                    const feature_set* default_build,
+                    requirements_decl* usage_requirements)
+
+{
+   auto_ptr<basic_meta_target> mt(new qt_moc_meta_target(&ctx.current_project_,
+                                                         id.to_string(),
+                                                         sources,
+                                                         requirements ? *requirements : requirements_decl(),
+                                                         usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl()));
+
+   mt->set_local(ctx.local_);
+   mt->set_explicit(ctx.explicit_);
+   ctx.current_project_.add_target(mt);
 }
 
 qt_toolset::qt_toolset()
@@ -470,6 +514,9 @@ void add_types_and_generators(engine& e,
 
    e.call_resolver().insert("qt.moc", boost::function<void (project*, const string&, const sources_decl&, requirements_decl*, requirements_decl*)>(&qt_moc_rule));
    e.call_resolver().insert("qt.uic", boost::function<sources_decl (project*, const sources_decl&)>(&qt_uic_rule));
+
+   e.get_rule_manager().add_target("qt.moc", qt_moc_rule_v2, { "id", "sources", "requirements", "default-build", "usage-requirements" });
+   e.get_rule_manager().add_rule("qt.uic", qt_uic_rule_v2, { "sources" });
 }
 
 void qt_toolset::init_impl(engine& e, const std::string& version_id,

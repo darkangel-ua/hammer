@@ -26,37 +26,6 @@
 using namespace std;
 namespace fs = boost::filesystem;
 
-namespace hammer {
-
-template<>
-struct rule_argument_type_info<sources_decl> { static const rule_argument_type ast_type = rule_argument_type::sources; };
-
-template<>
-struct rule_argument_type_info<requirements_decl> { static const rule_argument_type ast_type = rule_argument_type::requirement_set; };
-
-template<>
-struct rule_argument_type_info<usage_requirements_decl> { static const rule_argument_type ast_type = rule_argument_type::usage_requirements; };
-
-template<>
-struct rule_argument_type_info<feature_set> { static const rule_argument_type ast_type = rule_argument_type::feature_set; };
-
-template<>
-struct rule_argument_type_info<location_t> { static const rule_argument_type ast_type = rule_argument_type::path; };
-
-template<>
-struct rule_argument_type_info<feature> { static const rule_argument_type ast_type = rule_argument_type::feature; };
-
-template<>
-struct rule_argument_type_info<feature_or_feature_set_t> { static const rule_argument_type ast_type = rule_argument_type::feature_or_feature_set; };
-
-template<>
-struct rule_argument_type_info<id_or_list_of_ids_t> { static const rule_argument_type ast_type = rule_argument_type::identifier_of_list_of_identifiers; };
-
-template<>
-struct rule_argument_type_info<path_or_list_of_paths_t> { static const rule_argument_type ast_type = rule_argument_type::path_or_list_of_paths; };
-
-}
-
 namespace hammer { namespace details {
 
 static

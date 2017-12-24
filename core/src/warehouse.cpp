@@ -7,6 +7,7 @@
 #include <hammer/core/engine.h>
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature.h>
+#include <hammer/core/rule_argument_types.h>
 #include <boost/unordered_set.hpp>
 #include <boost/bind.hpp>
 #include <algorithm>
@@ -115,10 +116,22 @@ void warehouse_trap_rule(project* p,
    add_traps(*p, public_id);
 }
 
+static
+void warehouse_trap_rule_v2(invocation_context& ctx,
+                            const parscore::identifier& public_id)
+{
+   warehouse& wh = ctx.current_project_.get_engine()->warehouse();
+   if (!wh.has_project("/" / location_t(public_id.to_string()), warehouse::any_version))
+      throw std::runtime_error("Can't find '" + public_id.to_string() + "' in warehouse");
+
+   add_traps(ctx.current_project_, public_id.to_string());
+}
+
 void install_warehouse_rules(call_resolver& resolver,
                              engine& engine)
 {
    resolver.insert("warehouse-trap", boost::function<void (project*, string&)>(boost::bind(warehouse_trap_rule, _1, _2)));
+   engine.get_rule_manager().add_rule("warehouse-trap", warehouse_trap_rule_v2, { "public-id" });
 }
 
 }

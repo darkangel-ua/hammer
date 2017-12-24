@@ -195,6 +195,7 @@ warehouse_impl::warehouse_impl(const std::string& name,
       fs::ofstream f(hamroot_path, ios_base::trunc);
       if (!f)
          throw std::runtime_error("Can't create '" + hamroot_path.string() + "'");
+      f << "#pragma parser v2\n\n";
    }
 
    const fs::path packages_full_filename = repository_path_ / packages_filename;
@@ -484,11 +485,34 @@ void insert_line_in_front(const fs::path& filename,
 }
 
 static
-void append_line(const fs::path filename,
+void append_line(const fs::path& filename,
                  const string& line)
 {
    fs::ofstream f(filename, ios_base::app);
    f << line << endl;
+}
+
+static
+void add_new_target(const fs::path& filename,
+                    const string& new_target_line)
+{
+   const fs::path tmp_name = filename.branch_path() / (filename.filename().string() + ".tmp");
+   {
+      fs::ifstream src(filename);
+      fs::ofstream tmp_file(tmp_name);
+      string line;
+      while (getline(src, line)) {
+         if (line.find("warehouse-trap") == 0) {
+            tmp_file << new_target_line << endl
+                     << line;
+            break;
+         } else
+            tmp_file << line << endl;
+      }
+   }
+
+   fs::remove(filename);
+   fs::rename(tmp_name, filename);
 }
 
 static
@@ -539,12 +563,13 @@ void warehouse_impl::install_package(const package_t& p,
    const fs::path package_hamfile = lib_path / "hamfile";
    if (!exists(package_hamfile)) {
       fs::ofstream f(package_hamfile);
+      f << "#pragma parser v2\n\n";
       f << "project " << p.public_id_ << " ;\n\n";
-      f << "warehouse-trap " << p.public_id_ << ";";
+      f << "warehouse-trap " << p.public_id_ << ";\n";
       f.close();
    }
 
-   insert_line_in_front(package_hamfile, make_package_alias_line(p.public_id_, p.version_, p.targets_));
+   add_new_target(package_hamfile, make_package_alias_line(p.public_id_, p.version_, p.targets_));
 }
 
 bool warehouse_impl::resolves_to_real_project(engine& e,

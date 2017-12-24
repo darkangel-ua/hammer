@@ -1,8 +1,7 @@
-project lib2 : requirements <version>1.0 ;
- 
-lib foo : foo.cpp : @<define>LIB2_FOO_1_0 ;
-explicit foo ;
+#pragma parser v2
 
-lib bar : bar.cpp : @<define>LIB2_BAR_1_0 ; 
-explicit bar ;
+project lib2 : requirements = <version>1.0 ;
+ 
+explicit lib foo : foo.cpp : @<define>LIB2_FOO_1_0 ;
+explicit lib bar : bar.cpp : @<define>LIB2_BAR_1_0 ; 
 

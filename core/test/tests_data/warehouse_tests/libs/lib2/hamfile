@@ -1,3 +1,5 @@
+#pragma parser v2
+
 target-version-alias foo : 1.0 ;
 target-version-alias bar : 1.0 ;
 

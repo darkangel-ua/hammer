@@ -175,6 +175,24 @@ ast2sources_decl(invocation_context& ctx,
 }
 
 static
+std::unique_ptr<id_or_list_of_ids_t>
+ast2identifier_or_list_of_identifiers(invocation_context& ctx,
+                                      const ast::expression* e)
+{
+   auto result = boost::make_unique<id_or_list_of_ids_t>();
+
+   if (const ast::id_expr* id = ast::as<ast::id_expr>(e))
+      result->push_back(id->id());
+   else {
+      const ast::list_of* l = ast::as<ast::list_of>(e);
+      for (const ast::expression* le : l->values())
+         result->push_back(ast::as<ast::id_expr>(le)->id());
+   }
+
+   return result;
+}
+
+static
 std::unique_ptr<requirement_condition_op_base>
 ast2requirement_condition_op(invocation_context& ctx,
                              const ast::expression* e)
@@ -324,6 +342,12 @@ void handle_one_arg(invocation_context& ctx,
             const ast::id_expr* id = ast::as<ast::id_expr>(e);
             assert(id);
             rule_manager_arg_ptr arg(new rule_manager_arg<parscore::identifier>(new parscore::identifier(id->id())));
+            args.push_back(move(arg));
+            break;
+         }
+
+         case rule_argument_type::identifier_or_list_of_identifiers: {
+            rule_manager_arg_ptr arg(new rule_manager_arg<id_or_list_of_ids_t>(ast2identifier_or_list_of_identifiers(ctx, e)));
             args.push_back(move(arg));
             break;
          }

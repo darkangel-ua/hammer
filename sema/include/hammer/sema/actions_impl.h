@@ -91,6 +91,9 @@ class actions_impl : public actions
 		process_identifier_arg(const rule_argument& ra,
 									  const ast::expression* arg);
 		const ast::expression*
+		process_identifier_or_list_of_identifiers_arg(const rule_argument& ra,
+		                                              const ast::expression* arg);
+		const ast::expression*
 		process_feature_arg(const rule_argument& ra,
 								  const ast::expression* arg);
 		const ast::expression*

@@ -1,0 +1,13 @@
+#pragma parser v2
+#testing only parsing part
+
+testing.run
+    main.cpp
+    /hammer/core
+   :
+   :
+    '../tests_data/.'
+   :
+   :
+    hammer.core.test
+   ;

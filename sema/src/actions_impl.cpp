@@ -144,6 +144,28 @@ actions_impl::process_identifier_arg(const rule_argument& ra,
 }
 
 const expression*
+actions_impl::process_identifier_or_list_of_identifiers_arg(const rule_argument& ra,
+                                                            const expression* arg)
+{
+   if (const id_expr* expr = as<id_expr>(arg))
+      return expr;
+
+   if (const list_of* l = as<list_of>(arg)) {
+      for (const expression* e : l->values()) {
+         if (!is_a<id_expr>(e)) {
+            diag_.error(arg->start_loc(), "Argument '%s': must be simple identifier or list of identifiers") << ra.name();
+            return new (ctx_) error_expression(arg);
+         }
+      }
+
+      return arg;
+   }
+
+   diag_.error(arg->start_loc(), "Argument '%s': must be simple identifier or list of identifiers") << ra.name();
+   return new (ctx_) error_expression(arg);
+}
+
+const expression*
 actions_impl::process_feature_set_arg(const rule_argument& ra,
                                       const expression* arg)
 {
@@ -397,6 +419,9 @@ actions_impl::process_one_arg(const rule_argument& ra,
    {
       case rule_argument_type::identifier:
          return process_identifier_arg(ra, arg);
+
+      case rule_argument_type::identifier_or_list_of_identifiers:
+         return process_identifier_or_list_of_identifiers_arg(ra, arg);
 
       case rule_argument_type::feature:
          return process_feature_arg(ra, arg);

@@ -30,7 +30,7 @@ enum class rule_argument_type {
 	invocation_context,
 	target_invocation_context,
 	identifier,
-	identifier_of_list_of_identifiers,
+	identifier_or_list_of_identifiers,
 	feature,
 	feature_set,
 	feature_or_feature_set,

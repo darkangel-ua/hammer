@@ -11,6 +11,11 @@
 #include <hammer/core/header_lib_meta_target.h>
 #include <hammer/core/version_alias_meta_target.h>
 #include <hammer/core/target_version_alias_meta_target.h>
+#include <hammer/core/copy_meta_target.h>
+#include <hammer/core/obj_meta_target.h>
+#include <hammer/core/testing_compile_fail_meta_target.h>
+#include <hammer/core/testing_intermediate_meta_target.h>
+#include <hammer/core/testing_meta_target.h>
 #include <hammer/ast/target_ref.h>
 #include <hammer/ast/path.h>
 #include <hammer/ast/list_of.h>
@@ -424,6 +429,174 @@ rglob_rule(invocation_context& ctx,
    return glob_rule_impl(ctx, patterns, exceptions, true);
 }
 
+static
+void copy_rule(target_invocation_context& ctx,
+               const parscore::identifier& name,
+               const sources_decl& sources,
+               const requirements_decl* requirements,
+               const feature_set* default_build,
+               const usage_requirements_decl* usage_requirements)
+{
+   auto_ptr<basic_meta_target> mt(new copy_meta_target(&ctx.current_project_,
+                                                       name.to_string(),
+                                                       requirements ? *requirements : requirements_decl(),
+                                                       usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl()));
+
+   mt->sources(sources);
+   mt->set_local(ctx.local_);
+   mt->set_explicit(ctx.explicit_);
+   ctx.current_project_.add_target(mt);
+}
+
+static
+void obj_rule(target_invocation_context& ctx,
+              const parscore::identifier& name,
+              const sources_decl& sources,
+              const requirements_decl* requirements,
+              const feature_set* default_build,
+              const usage_requirements_decl* usage_requirements)
+{
+   auto_ptr<basic_meta_target> mt(new obj_meta_target(&ctx.current_project_,
+                                                      name.to_string(),
+                                                      requirements ? *requirements : requirements_decl(),
+                                                      usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl()));
+   mt->sources(sources);
+   mt->set_local(ctx.local_);
+   mt->set_explicit(ctx.explicit_);
+   ctx.current_project_.add_target(mt);
+}
+
+static
+void test_suite_rule(target_invocation_context& ctx,
+                     const parscore::identifier& name,
+                     sources_decl& sources,
+                     const sources_decl* propagated_sources)
+{
+   sources_decl empty_source;
+   const sources_decl& real_propagated_sources = (propagated_sources == NULL ? empty_source : *propagated_sources);
+   feature_set* additional_sources_set = ctx.current_project_.get_engine()->feature_registry().make_set();
+   for(sources_decl::const_iterator i = real_propagated_sources.begin(), last = real_propagated_sources.end(); i != last; ++i) {
+      feature* f = ctx.current_project_.get_engine()->feature_registry().create_feature("testing.additional-source", "");
+      f->set_dependency_data(*i, &ctx.current_project_);
+      additional_sources_set->join(f);
+   }
+
+   for(auto s : sources)
+      if (s.properties() != NULL)
+         s.properties()->join(*additional_sources_set);
+      else
+         s.properties(additional_sources_set);
+
+   auto_ptr<basic_meta_target> mt(new alias_meta_target(&ctx.current_project_,
+                                                        name.to_string(),
+                                                        sources,
+                                                        requirements_decl(),
+                                                        requirements_decl()));
+
+   mt->set_local(ctx.local_);
+   mt->set_explicit(ctx.explicit_);
+   ctx.current_project_.add_target(mt);
+}
+
+static
+std::unique_ptr<sources_decl>
+testing_run_rule(target_invocation_context& ctx,
+                 const sources_decl* sources,
+                 const std::vector<parscore::identifier>* args,
+                 const std::vector<parscore::identifier>* input_files,
+                 const requirements_decl* requirements,
+                 const parscore::identifier* target_name)
+{
+   feature_registry& fr = ctx.current_project_.get_engine()->feature_registry();
+   type_registry& tr = ctx.current_project_.get_engine()->get_type_registry();
+   string real_target_name;
+   if (target_name != NULL)
+      real_target_name = target_name->to_string();
+   else
+      if (sources != NULL && !sources->empty())
+         real_target_name = location_t(sources->begin()->target_path()).stem().string();
+      else
+         throw std::runtime_error("Target must have either sources or target name");
+
+   const string& exe_name = real_target_name;
+   auto_ptr<basic_meta_target> intermediate_exe(
+      new testing_intermediate_meta_target(&ctx.current_project_,
+                                           exe_name,
+                                           requirements != NULL ? *requirements
+                                                                : requirements_decl(),
+                                           requirements_decl(),
+                                           tr.get(types::EXE)));
+
+   intermediate_exe->sources(sources == NULL ? sources_decl() : *sources);
+   intermediate_exe->set_local(true);
+   intermediate_exe->set_explicit(true);
+
+   ctx.current_project_.add_target(intermediate_exe);
+
+   requirements_decl run_requirements;
+
+   if (input_files != NULL)
+      for (auto f : *input_files)
+         run_requirements.add(*fr.create_feature("testing.input-file", f.to_string()));
+
+   if (args != NULL)
+      for(auto a : *args)
+         run_requirements.add(*fr.create_feature("testing.argument", a.to_string()));
+
+   auto_ptr<basic_meta_target> run_target(
+      new testing_meta_target(&ctx.current_project_,
+                              real_target_name + ".runner",
+                              run_requirements,
+                              requirements_decl(),
+                              tr.get(types::TESTING_RUN_PASSED)));
+
+   sources_decl run_sources;
+   run_sources.push_back(exe_name, tr);
+   run_target->sources(run_sources);
+
+   source_decl run_target_source(run_target->name(),
+                                 std::string(),
+                                 NULL /*to signal that this is meta target*/,
+                                 NULL);
+
+   ctx.current_project_.add_target(run_target);
+
+   auto result = boost::make_unique<sources_decl>();
+   result->push_back(run_target_source);
+
+   return result;
+}
+
+static
+std::unique_ptr<sources_decl>
+testing_compile_fail_rule(target_invocation_context& ctx,
+                          const sources_decl& sources,
+                          const requirements_decl* requirements,
+                          const requirements_decl* default_build,
+                          const requirements_decl* usage_requirements)
+{
+   const string target_name = location_t(sources.begin()->target_path()).stem().string();
+   auto_ptr<basic_meta_target> mt(new testing_compile_fail_meta_target(&ctx.current_project_,
+                                                                       target_name,
+                                                                       requirements ? *requirements : requirements_decl(),
+                                                                       usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl()));
+   mt->sources(sources);
+
+   const source_decl compile_source(mt->name(),
+                                    std::string(),
+                                    NULL /*to signal that this is meta target*/,
+                                    NULL);
+
+   mt->set_local(ctx.local_);
+   mt->set_explicit(ctx.explicit_);
+   ctx.current_project_.add_target(mt);
+
+   auto result = boost::make_unique<sources_decl>();
+   result->push_back(compile_source);
+
+   return result;
+}
+
 void install_builtin_rules(rule_manager& rm)
 {
    rm.add_rule("project", project_rule, {"id", "requirements", "usage-requirements"});
@@ -439,6 +612,11 @@ void install_builtin_rules(rule_manager& rm)
    rm.add_target("version-alias", version_alias_rule, {"id", "version", "target-path"});
    rm.add_target("target-version-alias", target_version_alias_rule, {"id", "version", "target-path"});
    rm.add_target("header-lib", header_lib_rule, {"id", "sources", "requirements", "default-build", "usage-requirements"});
+   rm.add_target("copy", copy_rule, {"name", "sources", "requirements", "default-build", "usage-requirements"});
+   rm.add_target("obj", obj_rule, {"name", "sources", "requirements", "default-build", "usage-requirements"});
+   rm.add_target("test-suite", test_suite_rule, {"name", "sources", "propagated-sources"});
+   rm.add_target("testing.run", testing_run_rule, {"sources", "args", "input-files", "requirements", "target-name"});
+   rm.add_target("testing.compile-fail", testing_compile_fail_rule, {"sources", "requirements", "default-build", "usage-requirements"});
 }
 
 }}

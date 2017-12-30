@@ -66,8 +66,7 @@ void warehouse_test::add_all_libs()
 
 void warehouse_test::setup_engine_warehouse()
 {
-   const string script = (boost::format("setup-warehouse test : \"file://%1%\" : %2% ;") % packages_path_.string() % installed_packages_path_).str();
-   engine_.load_hammer_script(script, "setup-warehouse");
+   engine_.setup_warehouse("test", "file://" + packages_path_.string(), installed_packages_path_);
    install_warehouse_rules(engine_.call_resolver(), engine_);
 }
 

@@ -49,7 +49,9 @@ namespace hammer
          hammer::scanner_manager& scanner_manager() { return *scanner_manager_; }
          const hammer::scanner_manager& scanner_manager() const { return *scanner_manager_; }
          hammer::warehouse& warehouse() { return *warehouse_; }
-
+			void setup_warehouse(const std::string& name,
+			                     const std::string& url,
+                              const location_t& storage_dir);
          hammer::output_location_strategy& output_location_strategy() { return *output_location_strategy_; }
          void output_location_strategy(boost::shared_ptr<hammer::output_location_strategy>& strategy);
          void use_project(const project& p, const std::string& project_id_alias, const location_t& project_location);

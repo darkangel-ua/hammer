@@ -1,3 +1,5 @@
+#pragma parser v2
+
 testing.run
     [ glob ../src/build/*.c ]
     [ glob ../src/*.cpp ]
@@ -13,7 +15,7 @@ testing.run
     /boost/spirit/<version>1.58.0+1
    :
    :
-    ../tests_data/.
+    '../tests_data/.'
    :
    :
     hammer.core.test

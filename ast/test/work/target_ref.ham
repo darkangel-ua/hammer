@@ -5,3 +5,4 @@ exe test : /boost/config//bar/<define>FOO ;
 exe test : ./foo//bar ;
 exe test : ./foo/<define>FOO ;
 exe test : ./foo//bar/<define>FOO ;
+exe test : @/ext/boost/guid/<version>0.1+1 ;

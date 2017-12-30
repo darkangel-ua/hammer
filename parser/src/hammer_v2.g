@@ -147,7 +147,7 @@ path_uri
 	: 'file:///' path_root -> path_root
 	;	
 path_root 
-	: path_element path_rest* -> ^(Path Slash path_element path_rest?)
+	: path_element path_rest* -> ^(Path Slash path_element path_rest*)
 	;
 path_rest 
 	: '/' path_element -> path_element
@@ -197,7 +197,7 @@ Explicit : 'explicit' ;
 QuestionMark : '?';
 Asterix : '*';
 
-Id : ('a'..'z' | 'A'..'Z' | '0'..'9' | '.' | '-' | '_')+
+Id : ('a'..'z' | 'A'..'Z' | '0'..'9' | '.' | '-' | '_' | '+')+
    | STRING | STRING_1
    ;
 fragment 

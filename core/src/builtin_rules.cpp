@@ -9,6 +9,7 @@
 #include <hammer/core/alias_meta_target.h>
 #include <hammer/core/lib_meta_target.h>
 #include <hammer/core/header_lib_meta_target.h>
+#include <hammer/core/prebuilt_lib_meta_target.h>
 #include <hammer/core/version_alias_meta_target.h>
 #include <hammer/core/target_version_alias_meta_target.h>
 #include <hammer/core/copy_meta_target.h>
@@ -37,13 +38,21 @@ namespace hammer { namespace details {
 static
 void project_rule(invocation_context& ctx,
                   const parscore::identifier& id,
-                  const requirements_decl* requirements,
-                  const usage_requirements_decl* usage_requirements)
+                  requirements_decl* requirements,
+                  usage_requirements_decl* usage_requirements)
 {
    ctx.current_project_.name(id.to_string());
+
    // we use insert because we already put there requirements/usage requirements from upper project
-   ctx.current_project_.requirements().insert(requirements ? *requirements : requirements_decl());
-   ctx.current_project_.usage_requirements().insert(usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl());
+   if (requirements) {
+      requirements->setup_path_data(&ctx.current_project_);
+      ctx.current_project_.requirements().insert(*requirements);
+   }
+
+   if (usage_requirements) {
+      usage_requirements->setup_path_data(&ctx.current_project_);
+      ctx.current_project_.usage_requirements().insert(static_cast<const requirements_decl&>(*usage_requirements));
+   }
 }
 
 static
@@ -462,7 +471,7 @@ void obj_rule(target_invocation_context& ctx,
                                                       usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl()));
    mt->sources(sources);
    mt->set_local(ctx.local_);
-   mt->set_explicit(ctx.explicit_);
+   // its explicit by design
    ctx.current_project_.add_target(mt);
 }
 
@@ -573,7 +582,7 @@ testing_compile_fail_rule(target_invocation_context& ctx,
                           const sources_decl& sources,
                           const requirements_decl* requirements,
                           const requirements_decl* default_build,
-                          const requirements_decl* usage_requirements)
+                          const usage_requirements_decl* usage_requirements)
 {
    const string target_name = location_t(sources.begin()->target_path()).stem().string();
    auto_ptr<basic_meta_target> mt(new testing_compile_fail_meta_target(&ctx.current_project_,
@@ -597,6 +606,71 @@ testing_compile_fail_rule(target_invocation_context& ctx,
    return result;
 }
 
+static
+void prebuilt_lib_rule(target_invocation_context& ctx,
+                       const parscore::identifier& name,
+                       const sources_decl* sources,
+                       const location_t& filename,
+                       const requirements_decl* requirements,
+                       const usage_requirements_decl* usage_requirements)
+{
+   auto_ptr<basic_meta_target> mt(new prebuilt_lib_meta_target(&ctx.current_project_,
+                                                               name.to_string(),
+                                                               filename.string(),
+                                                               requirements ? *requirements : requirements_decl(),
+                                                               usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl()));
+   if (sources)
+      mt->sources(*sources);
+
+   mt->set_local(ctx.local_);
+   mt->set_explicit(ctx.explicit_);
+   ctx.current_project_.add_target(mt);
+}
+
+static
+void searched_shared_lib_rule(target_invocation_context& ctx,
+                              const parscore::identifier& name,
+                              const sources_decl* sources,
+                              const parscore::identifier& libname,
+                              const requirements_decl* requirements,
+                              const usage_requirements_decl* usage_requirements)
+{
+   auto_ptr<basic_meta_target> mt(new searched_lib_meta_target(&ctx.current_project_,
+                                                               name.to_string(),
+                                                               libname.to_string(),
+                                                               requirements ? *requirements : requirements_decl(),
+                                                               usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl(),
+                                                               ctx.current_project_.get_engine()->get_type_registry().get(types::SEARCHED_SHARED_LIB)));
+   if (sources)
+      mt->sources(*sources);
+
+   mt->set_local(ctx.local_);
+   mt->set_explicit(ctx.explicit_);
+   ctx.current_project_.add_target(mt);
+}
+
+static
+void searched_static_lib_rule(target_invocation_context& ctx,
+                              const parscore::identifier& name,
+                              const sources_decl* sources,
+                              const parscore::identifier& libname,
+                              const requirements_decl* requirements,
+                              const usage_requirements_decl* usage_requirements)
+{
+   auto_ptr<basic_meta_target> mt(new searched_lib_meta_target(&ctx.current_project_,
+                                                               name.to_string(),
+                                                               libname.to_string(),
+                                                               requirements ? *requirements : requirements_decl(),
+                                                               usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl(),
+                                                               ctx.current_project_.get_engine()->get_type_registry().get(types::SEARCHED_STATIC_LIB)));
+   if (sources)
+      mt->sources(*sources);
+
+   mt->set_local(ctx.local_);
+   mt->set_explicit(ctx.explicit_);
+   ctx.current_project_.add_target(mt);
+}
+
 void install_builtin_rules(rule_manager& rm)
 {
    rm.add_rule("project", project_rule, {"id", "requirements", "usage-requirements"});
@@ -606,12 +680,15 @@ void install_builtin_rules(rule_manager& rm)
    rm.add_rule("feature.compose", feature_compose_rule, {"feature", "components"});
    rm.add_rule("glob", glob_rule, {"patterns", "exceptions"});
    rm.add_rule("rglob", rglob_rule, {"patterns", "exceptions"});
-   rm.add_target("exe", exe_rule, {"id", "sources", "requirements", "default-build", "usage-requirements"});
-   rm.add_target("lib", lib_rule, {"id", "sources", "requirements", "default-build", "usage-requirements"});
-   rm.add_target("alias", alias_rule, {"id", "sources", "requirements", "usage-requirements"});
-   rm.add_target("version-alias", version_alias_rule, {"id", "version", "target-path"});
-   rm.add_target("target-version-alias", target_version_alias_rule, {"id", "version", "target-path"});
-   rm.add_target("header-lib", header_lib_rule, {"id", "sources", "requirements", "default-build", "usage-requirements"});
+   rm.add_target("exe", exe_rule, {"name", "sources", "requirements", "default-build", "usage-requirements"});
+   rm.add_target("lib", lib_rule, {"name", "sources", "requirements", "default-build", "usage-requirements"});
+   rm.add_target("alias", alias_rule, {"name", "sources", "requirements", "usage-requirements"});
+   rm.add_target("version-alias", version_alias_rule, {"name", "version", "target-path"});
+   rm.add_target("target-version-alias", target_version_alias_rule, {"name", "version", "target-path"});
+   rm.add_target("header-lib", header_lib_rule, {"name", "sources", "requirements", "default-build", "usage-requirements"});
+   rm.add_target("prebuilt-lib", prebuilt_lib_rule, {"name", "sources", "filename", "requirements", "usage-requirements"});
+   rm.add_target("searched-shared-lib", searched_shared_lib_rule, {"name", "sources", "libname", "requirements", "usage-requirements"});
+   rm.add_target("searched-static-lib", searched_static_lib_rule, {"name", "sources", "libname", "requirements", "usage-requirements"});
    rm.add_target("copy", copy_rule, {"name", "sources", "requirements", "default-build", "usage-requirements"});
    rm.add_target("obj", obj_rule, {"name", "sources", "requirements", "default-build", "usage-requirements"});
    rm.add_target("test-suite", test_suite_rule, {"name", "sources", "propagated-sources"});

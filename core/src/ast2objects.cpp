@@ -57,6 +57,9 @@ ast2feature(invocation_context& ctx,
       feature* result = fr->create_feature(f.name().to_string(), {});
       result->set_dependency_data(handle_one_source(ctx, ctx.current_project_.get_engine()->get_type_registry(), f.value()), nullptr);
       return result;
+   } else if (const ast::path* p = ast::as<ast::path>(f.value())) {
+      feature* result = fr->create_feature(f.name().to_string(), p->to_string());
+      return result;
    } else
       throw std::runtime_error("Not implemented");
 }
@@ -89,6 +92,21 @@ ast2feature_set(invocation_context& ctx,
    }
 
    return result;
+}
+
+static
+feature_set*
+ast2feature_set(invocation_context& ctx,
+                const ast::feature_set& fs)
+{
+   if (const ast::feature* f = ast::as<ast::feature>(fs.values())) {
+      feature_set* result = ctx.current_project_.get_engine()->feature_registry().make_set();
+      result->join(ast2feature(ctx, *f));
+      return result;
+   } else if (const ast::list_of* l = ast::as<ast::list_of>(fs.values()))
+      return ast2feature_set(ctx, *l);
+   else
+      throw std::runtime_error("ast2feature_set: Unexpected AST node");
 }
 
 static
@@ -533,8 +551,8 @@ ast2feature_or_feature_set(invocation_context& ctx,
 {
    if (const ast::feature* f = ast::as<ast::feature>(&e))
       return boost::make_unique<feature_or_feature_set_t>(ast2feature(ctx, *f));
-   else if (const ast::list_of* l = ast::as<ast::list_of>(&e))
-      return boost::make_unique<feature_or_feature_set_t>(ast2feature_set(ctx, *l));
+   else if (const ast::feature_set* fs = ast::as<ast::feature_set>(&e))
+      return boost::make_unique<feature_or_feature_set_t>(ast2feature_set(ctx, *fs));
    else
       throw std::runtime_error("ast2feature_or_feature_set: Unexpected AST node");
 }

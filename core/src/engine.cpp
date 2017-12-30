@@ -1089,14 +1089,22 @@ void engine::use_project_rule(project* p,
    add_project_alias(p, project_id_alias, project_location, props);
 }
 
+void engine::setup_warehouse(const std::string& name,
+                             const std::string& url,
+                             const location_t& storage_dir)
+{
+   if (warehouse_)
+      throw std::runtime_error("You can setup only one warehouse to use");
+
+   warehouse_.reset(new warehouse_impl(name, url, storage_dir));
+   load_project(storage_dir);
+}
+
 void engine::setup_warehouse_rule(project* p,
                                   const std::string& name,
                                   const std::string& url,
                                   const std::string* storage_dir_)
 {
-   if (warehouse_)
-      throw std::runtime_error("You can setup only one warehouse to use");
-
    string storage_dir;
    if (storage_dir_ && !storage_dir_->empty()) {
       fs::path sd(*storage_dir_);
@@ -1109,8 +1117,7 @@ void engine::setup_warehouse_rule(project* p,
       }
    }
 
-   warehouse_.reset(new warehouse_impl(name, url, storage_dir));
-   load_project(storage_dir);
+   setup_warehouse(name, url, storage_dir);
 }
 
 project::selected_targets_t

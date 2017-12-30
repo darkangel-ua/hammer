@@ -177,5 +177,5 @@ BOOST_AUTO_TEST_CASE(invoke_test_2)
    BOOST_REQUIRE_NO_THROW(result = rd.invoke(args));
 
    BOOST_CHECK_EQUAL(invoke_function_2_invoked, true);
-   BOOST_CHECK_EQUAL(*static_cast<identifier*>(result->v_), identifier("123qwe"));
+   BOOST_CHECK_EQUAL(*static_cast<identifier*>(result->value()), identifier("123qwe"));
 }

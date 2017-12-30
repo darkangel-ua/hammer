@@ -1,3 +1,5 @@
+#pragma parser v2
+
 lib hammer.core_objects
    :
     [ glob ../src/*.cpp ]

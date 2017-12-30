@@ -1,3 +1,5 @@
+#pragma parser v2
+
 lib hammer.parscore
    :
     [ glob ../src/*.cpp ]

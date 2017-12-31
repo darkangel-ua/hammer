@@ -564,8 +564,8 @@ void warehouse_impl::install_package(const package_t& p,
    if (!exists(package_hamfile)) {
       fs::ofstream f(package_hamfile);
       f << "#pragma parser v2\n\n";
-      f << "project " << p.public_id_ << " ;\n\n";
-      f << "warehouse-trap " << p.public_id_ << ";\n";
+      f << "project \"" << p.public_id_ << "\";\n\n";
+      f << "warehouse-trap \"" << p.public_id_ << "\";\n";
       f.close();
    }
 

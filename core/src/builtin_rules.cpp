@@ -116,7 +116,7 @@ void lib_rule(target_invocation_context& ctx,
 static
 void header_lib_rule(target_invocation_context& ctx,
                      const parscore::identifier& id,
-                     const sources_decl& sources,
+                     const sources_decl* sources,
                      const requirements_decl* requirements,
                      const feature_set* default_build,
                      const usage_requirements_decl* usage_requirements)
@@ -125,7 +125,9 @@ void header_lib_rule(target_invocation_context& ctx,
                                                              id.to_string(),
                                                              requirements ? *requirements : requirements_decl(),
                                                              usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl()));
-   mt->sources(sources);
+   if (sources)
+      mt->sources(*sources);
+
    mt->set_local(ctx.local_);
    mt->set_explicit(ctx.explicit_);
 

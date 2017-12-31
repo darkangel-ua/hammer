@@ -572,15 +572,6 @@ namespace
       }
    }
 
-   void use_toolset_rule(project*, engine& e, string& toolset_name, string& toolset_version, string* toolset_home_)
-   {
-      location_t toolset_home;
-      if (toolset_home_ != NULL)
-         toolset_home = *toolset_home_;
-
-      e.toolset_manager().init_toolset(e, toolset_name, toolset_version, toolset_home_ == NULL ? NULL : &toolset_home);
-   }
-
    bool has_configured_toolsets(const hammer::engine& e)
    {
       const feature_registry& fs = e.feature_registry();
@@ -804,8 +795,6 @@ int main(int argc, char** argv) {
 
          if (opts.debug_level_ > 0)
             cout << "Done" << endl;
-
-         engine.call_resolver().insert("use-toolset", boost::function<void (project*, string&, string&, string*)>(boost::bind(use_toolset_rule, _1, boost::ref(engine), _2, _3, _4)));
 
          location_t user_config_script = get_user_config_location();
          if (user_config_script.empty() || !exists(user_config_script)) {

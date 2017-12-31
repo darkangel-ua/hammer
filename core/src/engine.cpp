@@ -91,6 +91,7 @@ engine::engine()
    resolver_.insert("explicit", boost::function<void (project*, const string&)>(boost::bind(&engine::explicit_rule, this, _1, _2)));
    resolver_.insert("use-project", boost::function<void (project*, const string&, const string&, feature_set*)>(boost::bind(&engine::use_project_rule, this, _1, _2, _3, _4)));
    resolver_.insert("setup-warehouse", boost::function<void (project*, const string&, const string&, const string*)>(boost::bind(&engine::setup_warehouse_rule, this, _1, _2, _3, _4)));
+   resolver_.insert("use-toolset", boost::function<void (project*, const string&, const string&, const string*)>(boost::bind(&engine::use_toolset_rule, this, _1, _2, _3, _4)));
 
    details::install_builtin_rules(*rule_manager_);
 
@@ -325,6 +326,26 @@ project& engine::load_project(location_t project_path)
    return result.front();
 }
 
+static
+bool is_hamfile_v2(const location_t& filepath)
+{
+   boost::filesystem::ifstream f(filepath);
+   string first_line;
+   getline(f, first_line);
+
+   return boost::regex_match(first_line, boost::regex("^#pragma\\s+parser\\s+v2\\s*$"));
+}
+
+static
+bool is_hamfile_v2(const string& content)
+{
+   istringstream f(content);
+   string first_line;
+   getline(f, first_line);
+
+   return boost::regex_match(first_line, boost::regex("^#pragma\\s+parser\\s+v2\\s*$"));
+}
+
 void engine::load_hammer_script(location_t filepath)
 {
    filepath.normalize();
@@ -335,54 +356,106 @@ void engine::load_hammer_script(location_t filepath)
    if (i != projects_.end())
       throw std::runtime_error("Hammer script '" + filepath.string() + "' already loaded.");
 
-   hammer_walker_context ctx;
+   if (is_hamfile_v2(filepath))
+      load_hammer_script_v2(filepath);
+   else {
+      hammer_walker_context ctx;
 
-   try
-   {
-      ctx.engine_ = this;
-      ctx.location_ = filepath;
-      ctx.project_ = new project(this);
-      ctx.project_->location(filepath);
-      ctx.call_resolver_ = &resolver_;
+      try {
+         ctx.engine_ = this;
+         ctx.location_ = filepath;
+         ctx.project_ = new project(this);
+         ctx.project_->location(filepath);
+         ctx.call_resolver_ = &resolver_;
 
-      parser p(this);
-      if (!p.parse(filepath.string().c_str()))
-         throw  runtime_error("Can't load script at '"  + filepath.string() + ": parser errors");
+         parser p(this);
+         if (!p.parse(filepath.string().c_str()))
+            throw  runtime_error("Can't load script at '"  + filepath.string() + ": parser errors");
 
-      p.walk(&ctx);
-      assert(ctx.project_);
-      insert(ctx.project_);
-   }
-   catch(...)
-   {
-      delete ctx.project_;
-      throw;
+         p.walk(&ctx);
+         assert(ctx.project_);
+         insert(ctx.project_);
+      } catch(...) {
+         delete ctx.project_;
+         throw;
+      }
    }
 }
 
 void engine::load_hammer_script(const string& script_body,
                                 const string& script_name)
 {
-   hammer_walker_context ctx;
+   projects_t::iterator i = projects_.find(script_name);
+   if (i != projects_.end())
+      throw std::runtime_error("Hammer script '" + script_name + "' already loaded.");
 
-   try {
-      ctx.engine_ = this;
-      ctx.location_ = script_name;
-      ctx.project_ = new project(this);
-      ctx.project_->location(script_name);
-      ctx.call_resolver_ = &resolver_;
+   if (is_hamfile_v2(script_body))
+      load_hammer_script_v2(script_body, script_name);
+   else {
+      hammer_walker_context ctx;
 
-      parser p(this);
-      if (!p.parse_raw_script(script_body, script_name))
-         throw  runtime_error("Can't parse raw script '" + script_name + "': parser errors");
+      try {
+         ctx.engine_ = this;
+         ctx.location_ = script_name;
+         ctx.project_ = new project(this);
+         ctx.project_->location(script_name);
+         ctx.call_resolver_ = &resolver_;
 
-      p.walk(&ctx);
-      assert(ctx.project_);
-      insert(ctx.project_);
-   } catch(const std::exception& e) {
-      delete ctx.project_;
-      throw std::runtime_error("Failed to load '" + script_name + "' raw script: " + e.what());
+         parser p(this);
+         if (!p.parse_raw_script(script_body, script_name))
+            throw  runtime_error("Can't parse raw script '" + script_name + "': parser errors");
+
+         p.walk(&ctx);
+         assert(ctx.project_);
+         insert(ctx.project_);
+      } catch(const std::exception& e) {
+         delete ctx.project_;
+         throw std::runtime_error("Failed to load '" + script_name + "' raw script: " + e.what());
+      }
    }
+}
+
+void engine::load_hammer_script_v2(location_t filepath)
+{
+   ostringstream s;
+   streamed_diagnostic diag(filepath.native(), s);
+   ast::context ast_ctx;
+   sema::actions_impl actions(ast_ctx, *rule_manager_, diag);
+   ast_hamfile_ptr ast = parse_hammer_script(filepath, actions);
+
+   if (diag.error_count())
+      throw std::runtime_error("Parse errors: " + s.str());
+
+   std::unique_ptr<project> loaded_project(new project(this));
+   loaded_project->location(filepath.branch_path());
+   invocation_context invc_ctx = { *loaded_project, diag, *rule_manager_ };
+
+   ast2objects(invc_ctx, *ast);
+
+   insert(loaded_project.get());
+   loaded_project.release();
+}
+
+void engine::load_hammer_script_v2(const std::string& script_body,
+                                   const std::string& script_name)
+{
+   ostringstream s;
+   streamed_diagnostic diag(script_name, s);
+   ast::context ast_ctx;
+   sema::actions_impl actions(ast_ctx, *rule_manager_, diag);
+   ast_hamfile_ptr ast = parse_hammer_script(script_body, script_name, actions);
+
+   if (diag.error_count())
+      throw std::runtime_error("Parse errors: " + s.str());
+
+   std::unique_ptr<project> loaded_project(new project(this));
+   loaded_project->location(script_name);
+   invocation_context invc_ctx = { *loaded_project, diag, *rule_manager_ };
+
+   ast2objects(invc_ctx, *ast);
+
+   insert(loaded_project.get());
+   loaded_project.release();
 }
 
 std::unique_ptr<project>
@@ -410,16 +483,6 @@ engine::load_project_v2(const location_t& project_path,
    ast2objects(invc_ctx, *ast);
 
    return loaded_project;
-}
-
-static
-bool is_hamfile_v2(const location_t& filepath)
-{
-   boost::filesystem::ifstream f(filepath);
-   string first_line;
-   getline(f, first_line);
-
-   return boost::regex_match(first_line, boost::regex("^#pragma\\s+parser\\s+v2\\s*$"));
 }
 
 engine::loaded_projects_t engine::try_load_project(location_t project_path)
@@ -1118,6 +1181,18 @@ void engine::setup_warehouse_rule(project* p,
    }
 
    setup_warehouse(name, url, storage_dir);
+}
+
+void engine::use_toolset_rule(project*,
+                              const std::string& toolset_name,
+                              const std::string& toolset_version,
+                              const std::string* toolset_home_)
+{
+   location_t toolset_home;
+   if (toolset_home_ != NULL)
+      toolset_home = *toolset_home_;
+
+   toolset_manager().init_toolset(*this, toolset_name, toolset_version, toolset_home_ == NULL ? NULL : &toolset_home);
 }
 
 project::selected_targets_t

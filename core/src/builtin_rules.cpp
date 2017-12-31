@@ -25,6 +25,7 @@
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature.h>
 #include <hammer/core/ast2objects.h>
+#include <hammer/core/toolset_manager.h>
 #include <boost/variant/get.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/make_unique.hpp>
@@ -671,6 +672,41 @@ void searched_static_lib_rule(target_invocation_context& ctx,
    ctx.current_project_.add_target(mt);
 }
 
+static
+void use_toolset_rule(invocation_context& ctx,
+                      const parscore::identifier& toolset_name,
+                      const parscore::identifier& toolset_version,
+                      const location_t* toolset_home_)
+{
+   location_t toolset_home;
+   if (toolset_home_ != NULL)
+      toolset_home = *toolset_home_;
+
+   engine& e = *ctx.current_project_.get_engine();
+   e.toolset_manager().init_toolset(e, toolset_name.to_string(), toolset_version.to_string(), toolset_home_ == NULL ? NULL : &toolset_home);
+}
+
+static
+void setup_warehouse_rule(invocation_context& ctx,
+                          const parscore::identifier& name,
+                          const parscore::identifier& url,
+                          const location_t* storage_dir_)
+{
+   string storage_dir;
+   if (storage_dir_ && !storage_dir_->empty()) {
+      fs::path sd(*storage_dir_);
+      if (sd.is_absolute())
+         storage_dir = sd.string();
+      else {
+         sd = ctx.current_project_.location() / sd;
+         sd.normalize();
+         storage_dir = sd.string();
+      }
+   }
+
+   ctx.current_project_.get_engine()->setup_warehouse(name.to_string(), url.to_string(), storage_dir);
+}
+
 void install_builtin_rules(rule_manager& rm)
 {
    rm.add_rule("project", project_rule, {"id", "requirements", "usage-requirements"});
@@ -694,6 +730,8 @@ void install_builtin_rules(rule_manager& rm)
    rm.add_target("test-suite", test_suite_rule, {"name", "sources", "propagated-sources"});
    rm.add_target("testing.run", testing_run_rule, {"sources", "args", "input-files", "requirements", "target-name"});
    rm.add_target("testing.compile-fail", testing_compile_fail_rule, {"sources", "requirements", "default-build", "usage-requirements"});
+   rm.add_rule("use-toolset", use_toolset_rule, {"name", "version", "home"});
+   rm.add_rule("setup-warehouse", setup_warehouse_rule, {"name", "url", "storage-dir"});
 }
 
 }}

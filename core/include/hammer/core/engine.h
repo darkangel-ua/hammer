@@ -134,6 +134,10 @@ namespace hammer
          use_project_data_t use_project_data_;
          boost::shared_ptr<hammer::warehouse> warehouse_;
 
+			void load_hammer_script_v2(location_t filepath);
+         void load_hammer_script_v2(const std::string& script_body,
+                                    const std::string& script_name);
+
          std::unique_ptr<project>
 			load_project_v2(const location_t& project_path,
 			                const project* upper_project);
@@ -225,6 +229,10 @@ namespace hammer
                                    const std::string& name,
                                    const std::string& url,
                                    const std::string* storage_dir);
+			void use_toolset_rule(project*,
+			                      const std::string& toolset_name,
+			                      const std::string& toolset_version,
+			                      const std::string* toolset_home_);
    };
 
    boost::filesystem::path find_root(const boost::filesystem::path& initial_path);

@@ -195,7 +195,6 @@ warehouse_impl::warehouse_impl(const std::string& name,
       fs::ofstream f(hamroot_path, ios_base::trunc);
       if (!f)
          throw std::runtime_error("Can't create '" + hamroot_path.string() + "'");
-      f << "#pragma parser v2\n\n";
    }
 
    const fs::path packages_full_filename = repository_path_ / packages_filename;
@@ -563,7 +562,6 @@ void warehouse_impl::install_package(const package_t& p,
    const fs::path package_hamfile = lib_path / "hamfile";
    if (!exists(package_hamfile)) {
       fs::ofstream f(package_hamfile);
-      f << "#pragma parser v2\n\n";
       f << "project \"" << p.public_id_ << "\";\n\n";
       f << "warehouse-trap \"" << p.public_id_ << "\";\n";
       f.close();

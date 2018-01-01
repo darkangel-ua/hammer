@@ -1,5 +1,3 @@
-#pragma parser v2
-
 project lib2 : requirements = <version>2.0 ;
  
 explicit lib foo : foo.cpp : @<define>LIB2_FOO_2_0 ;

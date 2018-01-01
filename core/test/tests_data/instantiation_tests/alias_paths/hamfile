@@ -1,2 +1,1 @@
-#pragma parser v2
 exe test : main.cpp ./lib1 ;

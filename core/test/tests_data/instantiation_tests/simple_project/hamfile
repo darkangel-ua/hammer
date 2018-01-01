@@ -1,5 +1,3 @@
-#pragma parser v2
-
 project test : requirements = <define>"requirements=1"
              : usage-requirements = <define>"usage_requirements=1"
              ;

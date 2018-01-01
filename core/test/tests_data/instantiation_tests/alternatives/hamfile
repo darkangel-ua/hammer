@@ -1,5 +1,3 @@
-#pragma parser v2
-
 lib local_lib : local_lib_single_thread.cpp : <threading>single ;
 lib local_lib : local_lib_multi_thread.cpp : <threading>multi ;
 

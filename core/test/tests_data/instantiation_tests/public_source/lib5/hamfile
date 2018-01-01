@@ -1,3 +1,1 @@
-#pragma parser v2
-
 lib lib5 : lib5.cpp @./foo ;

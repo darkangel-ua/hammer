@@ -1,2 +1,1 @@
-#pragma parser v2
 alias lib1 : lib1.cpp ;

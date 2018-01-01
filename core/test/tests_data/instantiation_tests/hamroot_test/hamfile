@@ -1,5 +1,3 @@
-#pragma parser v2
-
 project test : requirements = <define>project_test ;
 
 exe test : lib1 lib2 main.cpp ;

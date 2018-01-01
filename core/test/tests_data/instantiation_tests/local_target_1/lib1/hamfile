@@ -1,5 +1,3 @@
-#pragma parser v2
-
 local
 lib local_target : local_target.cpp ;
 

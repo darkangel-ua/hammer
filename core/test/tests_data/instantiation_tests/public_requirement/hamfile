@@ -1,4 +1,2 @@
-#pragma parser v2
-
 lib lib1 : lib1.cpp : @<define>WITH_LIB1 ;
 exe test : main.cpp lib1 ;

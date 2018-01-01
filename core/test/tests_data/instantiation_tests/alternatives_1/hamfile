@@ -1,4 +1,3 @@
-#pragma parser v2
 # options: should-fail=1
 
 alias src : multi.cpp ;

@@ -1,3 +1,1 @@
-#pragma parser v2
-
 lib lib4 : lib4.cpp ;

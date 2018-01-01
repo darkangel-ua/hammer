@@ -1,5 +1,3 @@
-#pragma parser v2
-
 testing.run
     [ glob ../src/build/*.c ]
     [ glob ../src/*.cpp ]

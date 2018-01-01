@@ -1,5 +1,3 @@
-#pragma parser v2
-
 explicit
 obj c_as_cpp_files 
    :     

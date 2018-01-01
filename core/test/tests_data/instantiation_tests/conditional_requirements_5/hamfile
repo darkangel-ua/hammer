@@ -1,4 +1,3 @@
-#pragma parser v2
 #testing complex condition
 
 lib a : a.cpp : (<toolset>foo && <link>static || <toolset>bar && <link>shared -> <define>YES) ;

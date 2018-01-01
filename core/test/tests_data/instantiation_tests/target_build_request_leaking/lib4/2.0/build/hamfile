@@ -1,5 +1,3 @@
-#pragma parser v2
-
 explicit 
 lib lib3 : lib3.cpp : <version>1.0 ;
 

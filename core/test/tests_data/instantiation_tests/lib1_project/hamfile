@@ -1,2 +1,1 @@
-#pragma parser v2
 lib test : test.cpp : <define>"NDEBUG=1" ;

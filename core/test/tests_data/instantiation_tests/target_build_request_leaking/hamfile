@@ -1,4 +1,3 @@
-#pragma parser v2
 # check that we do not leak <version>2.0 build request for lib2
 # when produce <use>/lib1/<version>1.0 usage requirement for lib2 
 # and same for lib4 to test version-alias meta-target

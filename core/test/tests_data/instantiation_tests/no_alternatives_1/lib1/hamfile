@@ -1,4 +1,2 @@
-#pragma parser v2
-
 lib lib1 : lib1.cpp sockets : <link>shared ;
 explicit lib sockets : : <name>sockets ;

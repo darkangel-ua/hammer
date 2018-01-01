@@ -1,4 +1,2 @@
-#pragma parser v2
-
 project lib2 : requirements = <define>lib2 ;
 lib lib2 : a.cpp : <link>static ;

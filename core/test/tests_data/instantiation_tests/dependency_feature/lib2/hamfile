@@ -1,5 +1,3 @@
-#pragma parser v2
-
 explicit 
 lib foo : foo.cpp ;
 

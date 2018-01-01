@@ -1,3 +1,1 @@
-#pragma parser v2
-
 version-alias foo : 1.0 ;

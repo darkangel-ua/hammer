@@ -1,5 +1,3 @@
-#pragma parser v2
-
 feature.feature all-static : on : propagated composite no-defaults ;
 feature.compose <all-static>on : <link>static <runtime-link>static ;
 

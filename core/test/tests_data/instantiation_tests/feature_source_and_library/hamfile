@@ -1,4 +1,2 @@
-#pragma parser v2
-
 lib a : a.cpp : : : <source>b.cpp <library>c.cpp ;
 exe test : main.cpp a : <library>d.cpp <source>e.cpp ;

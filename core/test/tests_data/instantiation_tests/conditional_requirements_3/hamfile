@@ -1,4 +1,3 @@
-#pragma parser v2
 #testing condition and operator
 
 lib a : a.cpp : (<toolset>foo && <link>static -> <define>FOO_STATIC) ;

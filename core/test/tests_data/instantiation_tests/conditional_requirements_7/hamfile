@@ -1,4 +1,3 @@
-#pragma parser v2
 #testing public condition
 
 lib a : a.cpp : @(<toolset>foo -> <define>A) ;

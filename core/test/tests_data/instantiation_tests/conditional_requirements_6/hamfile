@@ -1,4 +1,3 @@
-#pragma parser v2
 #testing requirements evaluation order
 
 lib a : a.cpp 

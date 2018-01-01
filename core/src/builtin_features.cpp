@@ -3,8 +3,6 @@
 namespace hammer {
 
 const char* g_builtin_features = R"(
-#pragma parser v2
-
 feature.feature undef : : free ;
 feature.feature define : : free ;
 feature.feature include : : free path ;

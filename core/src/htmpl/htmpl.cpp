@@ -18,26 +18,9 @@ namespace hammer{ namespace types {
 namespace hammer {
 
 static
-sources_decl htmpl_rule(project& p,
-                        sources_decl& src)
-{
-   sources_decl result;
-
-   for (const source_decl& sd : src) {
-      const string target_name = "#unnamed::htmpl." + sd.target_path();
-      auto_ptr<basic_meta_target> mt(new htmpl_meta_target(&p, target_name, sd));
-      p.add_target(mt);
-
-      result.push_back(source_decl(target_name, std::string(), nullptr, nullptr));
-   }
-
-   return result;
-}
-
-static
 unique_ptr<sources_decl>
-htmpl_rule_v2(invocation_context& ctx,
-              const sources_decl& sources)
+htmpl_rule(invocation_context& ctx,
+           const sources_decl& sources)
 {
    auto result = boost::make_unique<sources_decl>();
 
@@ -62,8 +45,7 @@ void install_htmpl(engine& e)
    unique_ptr<generator> g_cpp(new htmpl_generator(e, "htmpl.cpp", types::CPP));
    e.generators().insert(move(g_cpp));
 
-   e.call_resolver().insert("htmpl", boost::function<sources_decl(project&, sources_decl&)>(boost::bind(&htmpl_rule, _1, _2)));
-   e.get_rule_manager().add_rule("htmpl", htmpl_rule_v2, {"sources"});
+   e.get_rule_manager().add_rule("htmpl", htmpl_rule, {"sources"});
 }
 
 }

@@ -118,28 +118,10 @@ void qt_uic_meta_target::compute_usage_requirements(feature_set& result,
          .join(dependency);
 }
 
-static sources_decl qt_uic_rule(project* p,
-                                const sources_decl& sources)
-
-{
-   auto_ptr<basic_meta_target> mt(new qt_uic_meta_target(p,
-                                                         "qt.uic",
-                                                         sources,
-                                                         requirements_decl(),
-                                                         requirements_decl()));
-
-   sources_decl result;
-   result.push_back(source_decl("./", mt->name(), NULL, NULL));
-
-   p->add_target(mt);
-
-   return result;
-}
-
 static
 unique_ptr<sources_decl>
-qt_uic_rule_v2(invocation_context& ctx,
-               const sources_decl& sources)
+qt_uic_rule(invocation_context& ctx,
+            const sources_decl& sources)
 {
    std::stringstream s;
    sources.dump_for_hash(s);
@@ -191,28 +173,12 @@ class qt_moc_meta_target : public alias_meta_target
       }
 };
 
-static void qt_moc_rule(project* p,
-                        const string& name,
-                        const sources_decl& sources,
-                        requirements_decl* requirements,
-                        requirements_decl* usage_requirements)
-
-{
-   auto_ptr<basic_meta_target> mt(new qt_moc_meta_target(p,
-                                                         name,
-                                                         sources,
-                                                         requirements ? *requirements : requirements_decl(),
-                                                         usage_requirements ? *usage_requirements : requirements_decl()));
-
-   p->add_target(mt);
-}
-
-void qt_moc_rule_v2(target_invocation_context& ctx,
-                    const parscore::identifier& id,
-                    const sources_decl& sources,
-                    requirements_decl* requirements,
-                    const feature_set* default_build,
-                    requirements_decl* usage_requirements)
+void qt_moc_rule(target_invocation_context& ctx,
+                 const parscore::identifier& id,
+                 const sources_decl& sources,
+                 requirements_decl* requirements,
+                 const feature_set* default_build,
+                 requirements_decl* usage_requirements)
 
 {
    auto_ptr<basic_meta_target> mt(new qt_moc_meta_target(&ctx.current_project_,
@@ -512,11 +478,8 @@ void add_types_and_generators(engine& e,
    e.use_project(*qt_project, "/Qt", "");
    qt_project.release();
 
-   e.call_resolver().insert("qt.moc", boost::function<void (project*, const string&, const sources_decl&, requirements_decl*, requirements_decl*)>(&qt_moc_rule));
-   e.call_resolver().insert("qt.uic", boost::function<sources_decl (project*, const sources_decl&)>(&qt_uic_rule));
-
-   e.get_rule_manager().add_target("qt.moc", qt_moc_rule_v2, { "id", "sources", "requirements", "default-build", "usage-requirements" });
-   e.get_rule_manager().add_rule("qt.uic", qt_uic_rule_v2, { "sources" });
+   e.get_rule_manager().add_target("qt.moc", qt_moc_rule, { "id", "sources", "requirements", "default-build", "usage-requirements" });
+   e.get_rule_manager().add_rule("qt.uic", qt_uic_rule, { "sources" });
 }
 
 void qt_toolset::init_impl(engine& e, const std::string& version_id,

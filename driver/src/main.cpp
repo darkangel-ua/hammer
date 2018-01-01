@@ -756,7 +756,7 @@ int main(int argc, char** argv) {
 
       while(true) {
          hammer::engine engine;
-         install_warehouse_rules(engine.call_resolver(), engine);
+         install_warehouse_rules(engine);
 
          types::register_standart_types(engine.get_type_registry(), engine.feature_registry());
 

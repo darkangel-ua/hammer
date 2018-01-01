@@ -423,7 +423,7 @@ void handle_one_arg(invocation_context& ctx,
          }
 
          case rule_argument_type::feature_set: {
-            const ast::list_of* fs = ast::as<ast::list_of>(e);
+            const ast::feature_set* fs = ast::as<ast::feature_set>(e);
             assert(fs);
             rule_manager_arg_ptr arg(new rule_manager_arg<feature_set>(*ast2feature_set(ctx, *fs)));
             args.push_back(move(arg));
@@ -465,6 +465,7 @@ rule_invocation_impl(invocation_context& ctx,
                      rule_manager_arguments_t& args,
                      const ast::rule_invocation& ri)
 {
+   assert(ctx.rule_manager_.find(ri.name()) != ctx.rule_manager_.end());
    const rule_declaration& rd = ctx.rule_manager_.find(ri.name())->second;
    auto i_ri = ri.arguments().begin();
    // skipping first argument because it will always be context

@@ -211,7 +211,7 @@ void use_project_rule(invocation_context& ctx,
       throw std::runtime_error("Sematic error");
    }
 
-   ctx.current_project_.get_engine()->add_project_alias(&ctx.current_project_, project_alias, location.string(), props);
+   ctx.current_project_.get_engine()->add_project_alias(&ctx.current_project_, project_alias, location, props);
 }
 
 static
@@ -332,6 +332,35 @@ void feature_compose_rule(invocation_context& ctx,
       cc = (**boost::get<const feature_set*>(&components)).clone();
 
    fr.get_def(f.definition().name()).compose(f.value(), cc);
+}
+
+static
+void feature_subfeature_rule(invocation_context& ctx,
+                             const parscore::identifier& feature_name,
+                             const parscore::identifier& subfeature_name)
+{
+   feature_def& def = ctx.current_project_.get_engine()->feature_registry().get_def(feature_name.to_string());
+   def.add_subfeature(subfeature_name.to_string());
+}
+
+static
+void variant_rule(invocation_context& ctx,
+                  const parscore::identifier& variant_name,
+                  const parscore::identifier* base,
+                  feature_set& components)
+{
+   engine& e = *ctx.current_project_.get_engine();
+   feature_def& def = e.feature_registry().get_def("variant");
+   def.extend_legal_values(variant_name.to_string());
+
+   if (base == NULL)
+      def.compose(variant_name.to_string(), &components);
+   else {
+      feature_set* composite_features = e.feature_registry().make_set();
+      def.expand_composites(base->to_string(), composite_features);
+      composite_features->join(components);
+      def.compose(variant_name.to_string(), composite_features);
+   }
 }
 
 static
@@ -716,6 +745,8 @@ void install_builtin_rules(rule_manager& rm)
    rm.add_rule("feature.feature", feature_feature_rule, {"name", "values", "attributes"});
    rm.add_rule("feature.local", feature_local_rule, {"name", "values", "attributes"});
    rm.add_rule("feature.compose", feature_compose_rule, {"feature", "components"});
+   rm.add_rule("feature.subfeature", feature_subfeature_rule, {"feature-name", "subfeature-name"});
+   rm.add_rule("variant", variant_rule, {"name", "base", "components"});
    rm.add_rule("glob", glob_rule, {"patterns", "exceptions"});
    rm.add_rule("rglob", rglob_rule, {"patterns", "exceptions"});
    rm.add_target("exe", exe_rule, {"name", "sources", "requirements", "default-build", "usage-requirements"});

@@ -67,7 +67,7 @@ void warehouse_test::add_all_libs()
 void warehouse_test::setup_engine_warehouse()
 {
    engine_.setup_warehouse("test", "file://" + packages_path_.string(), installed_packages_path_);
-   install_warehouse_rules(engine_.call_resolver(), engine_);
+   install_warehouse_rules(engine_);
 }
 
 }

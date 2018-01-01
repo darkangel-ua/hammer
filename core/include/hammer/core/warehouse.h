@@ -105,8 +105,7 @@ namespace hammer {
    std::vector<const warehouse_target*>
    find_all_warehouse_unresolved_targets(const std::vector<basic_target*>& targets);
 
-   void install_warehouse_rules(call_resolver& resolver,
-                                engine& engine);
+   void install_warehouse_rules(hammer::engine& engine);
    void add_traps(project& p,
                   const std::string& public_id);
 }

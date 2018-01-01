@@ -2,7 +2,6 @@
 #include <hammer/core/warehouse_target.h>
 #include <hammer/core/warehouse_meta_target.h>
 #include <hammer/core/main_target.h>
-#include <hammer/core/call_resolver.h>
 #include <hammer/core/project.h>
 #include <hammer/core/engine.h>
 #include <hammer/core/feature_set.h>
@@ -106,19 +105,8 @@ void add_traps(project& p,
 }
 
 static
-void warehouse_trap_rule(project* p,
-                         string& public_id)
-{
-   warehouse& wh = p->get_engine()->warehouse();
-   if (!wh.has_project("/" / location_t(public_id), warehouse::any_version))
-      throw std::runtime_error("Can't find '" + public_id + "' in warehouse");
-
-   add_traps(*p, public_id);
-}
-
-static
-void warehouse_trap_rule_v2(invocation_context& ctx,
-                            const parscore::identifier& public_id)
+void warehouse_trap_rule(invocation_context& ctx,
+                         const parscore::identifier& public_id)
 {
    warehouse& wh = ctx.current_project_.get_engine()->warehouse();
    if (!wh.has_project("/" / location_t(public_id.to_string()), warehouse::any_version))
@@ -127,11 +115,9 @@ void warehouse_trap_rule_v2(invocation_context& ctx,
    add_traps(ctx.current_project_, public_id.to_string());
 }
 
-void install_warehouse_rules(call_resolver& resolver,
-                             engine& engine)
+void install_warehouse_rules(engine& engine)
 {
-   resolver.insert("warehouse-trap", boost::function<void (project*, string&)>(boost::bind(warehouse_trap_rule, _1, _2)));
-   engine.get_rule_manager().add_rule("warehouse-trap", warehouse_trap_rule_v2, { "public-id" });
+   engine.get_rule_manager().add_rule("warehouse-trap", warehouse_trap_rule, { "public-id" });
 }
 
 }

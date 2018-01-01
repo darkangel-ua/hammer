@@ -76,7 +76,7 @@ parse_hammer_script(const std::string content,
                     sema::actions& actions)
 {
    std::unique_ptr<parser_context> ctx(new parser_context);
-   ctx->input_ = antlr3NewAsciiStringInPlaceStream((pANTLR3_UINT8)content.c_str(), content.size(), (pANTLR3_UINT8)content_name.c_str());
+   ctx->input_ = antlr3NewAsciiStringCopyStream((pANTLR3_UINT8)content.c_str(), content.size(), (pANTLR3_UINT8)content_name.c_str());
 
    return parse(std::move(ctx), actions);
 }

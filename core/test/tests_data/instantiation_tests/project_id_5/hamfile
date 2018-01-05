@@ -1,0 +1,2 @@
+#options: load-should-fail=true
+project foo/*.cpp ;

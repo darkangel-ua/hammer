@@ -41,18 +41,21 @@ static boost::regex project_id_pattern("[a-zA-Z0-9_.\\-]+");
 
 static
 void process_project_id(invocation_context& ctx,
-                        const ast::expression& e)
+                        const ast::expression* e)
 {
-   if (const ast::id_expr* id = ast::as<ast::id_expr>(&e)) {
+   if (!e)
+      return;
+
+   if (const ast::id_expr* id = ast::as<ast::id_expr>(e)) {
       if (id->id().valid()) {
          const string& s_id = id->id().to_string();
          if (s_id == "." || s_id == ".." || !boost::regex_match(s_id, project_id_pattern)) {
-            ctx.diag_.error(e.start_loc(), "project id should not be '.' or '..' and should match '%s' regex") << project_id_pattern.str().c_str();
+            ctx.diag_.error(e->start_loc(), "project id should not be '.' or '..' and should match '%s' regex") << project_id_pattern.str().c_str();
             throw ast2objects_semantic_error();
          }
          ctx.current_project_.name(s_id);
       } // otherwise its empty id
-   } else if (const ast::path* id = ast::as<ast::path>(&e)) {
+   } else if (const ast::path* id = ast::as<ast::path>(e)) {
       for (const ast::expression* pe : id->elements()) {
          if (const ast::id_expr* e_id = ast::as<ast::id_expr>(pe)) {
             const string& s_id = e_id->id().to_string();
@@ -67,14 +70,14 @@ void process_project_id(invocation_context& ctx,
       }
       ctx.current_project_.name(id->to_string());
    } else {
-      ctx.diag_.error(e.start_loc(), "project id must be simple ID or path with elements that matches '%s' regex") << project_id_pattern.str().c_str();
+      ctx.diag_.error(e->start_loc(), "project id must be simple ID or path with elements that matches '%s' regex") << project_id_pattern.str().c_str();
       throw ast2objects_semantic_error();
    }
 }
 
 static
 void project_rule(invocation_context& ctx,
-                  const ast::expression& id,
+                  const ast::expression* id,
                   requirements_decl* requirements,
                   usage_requirements_decl* usage_requirements)
 {

@@ -314,7 +314,11 @@ void engine::load_hammer_script_v2(location_t filepath)
    loaded_project->location(filepath.branch_path());
    invocation_context invc_ctx = { *loaded_project, diag, *rule_manager_ };
 
-   ast2objects(invc_ctx, *ast);
+   try {
+      ast2objects(invc_ctx, *ast);
+   } catch (const ast2objects_semantic_error&) {
+      throw std::runtime_error(s.str());
+   }
 
    insert(loaded_project.get());
    loaded_project.release();
@@ -336,7 +340,11 @@ void engine::load_hammer_script_v2(const std::string& script_body,
    loaded_project->location(script_name);
    invocation_context invc_ctx = { *loaded_project, diag, *rule_manager_ };
 
-   ast2objects(invc_ctx, *ast);
+   try {
+      ast2objects(invc_ctx, *ast);
+   } catch (const ast2objects_semantic_error&) {
+      throw std::runtime_error(s.str());
+   }
 
    insert(loaded_project.get());
    loaded_project.release();
@@ -364,7 +372,11 @@ engine::load_project_v2(const location_t& project_path,
 
    invocation_context invc_ctx = { *loaded_project, diag, *rule_manager_ };
 
-   ast2objects(invc_ctx, *ast);
+   try {
+      ast2objects(invc_ctx, *ast);
+   } catch (const ast2objects_semantic_error&) {
+      throw std::runtime_error(s.str());
+   }
 
    return loaded_project;
 }

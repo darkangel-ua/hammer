@@ -14,6 +14,12 @@ namespace hammer {
 class project;
 class invocation_context;
 
+class ast2objects_semantic_error : public std::exception
+{
+	public:
+		ast2objects_semantic_error() {}
+};
+
 void ast2objects(invocation_context& ctx,
                  const ast::hamfile& node);
 

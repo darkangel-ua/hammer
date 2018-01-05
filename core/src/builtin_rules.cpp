@@ -29,6 +29,7 @@
 #include <boost/variant/get.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/make_unique.hpp>
+#include <boost/regex.hpp>
 #include "wildcard.hpp"
 
 using namespace std;
@@ -36,13 +37,48 @@ namespace fs = boost::filesystem;
 
 namespace hammer { namespace details {
 
+static boost::regex project_id_pattern("[a-zA-Z0-9_.\\-]+");
+
+static
+void process_project_id(invocation_context& ctx,
+                        const ast::expression& e)
+{
+   if (const ast::id_expr* id = ast::as<ast::id_expr>(&e)) {
+      if (id->id().valid()) {
+         const string& s_id = id->id().to_string();
+         if (s_id == "." || s_id == ".." || !boost::regex_match(s_id, project_id_pattern)) {
+            ctx.diag_.error(e.start_loc(), "project id should not be '.' or '..' and should match '%s' regex") << project_id_pattern.str().c_str();
+            throw ast2objects_semantic_error();
+         }
+         ctx.current_project_.name(s_id);
+      } // otherwise its empty id
+   } else if (const ast::path* id = ast::as<ast::path>(&e)) {
+      for (const ast::expression* pe : id->elements()) {
+         if (const ast::id_expr* e_id = ast::as<ast::id_expr>(pe)) {
+            const string& s_id = e_id->id().to_string();
+            if (s_id == "." || s_id == ".." || !boost::regex_match(s_id, project_id_pattern)) {
+               ctx.diag_.error(e_id->start_loc(), "project id path element should not be '.' or '..' and should match '%s' regex") << project_id_pattern.str().c_str();
+               throw ast2objects_semantic_error();
+            }
+         } else {
+            ctx.diag_.error(pe->start_loc(), "project id path element should not contains wildcard elements");
+            throw ast2objects_semantic_error();
+         }
+      }
+      ctx.current_project_.name(id->to_string());
+   } else {
+      ctx.diag_.error(e.start_loc(), "project id must be simple ID or path with elements that matches '%s' regex") << project_id_pattern.str().c_str();
+      throw ast2objects_semantic_error();
+   }
+}
+
 static
 void project_rule(invocation_context& ctx,
-                  const parscore::identifier& id,
+                  const ast::expression& id,
                   requirements_decl* requirements,
                   usage_requirements_decl* usage_requirements)
 {
-   ctx.current_project_.name(id.to_string());
+   process_project_id(ctx, id);
 
    // we use insert because we already put there requirements/usage requirements from upper project
    if (requirements) {

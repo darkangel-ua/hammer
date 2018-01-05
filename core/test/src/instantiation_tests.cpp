@@ -27,6 +27,11 @@ struct instantiation_tests : public setuped_engine
       if (opts.exists("skip"))
          return;
 
+      if (opts.exists("load-should-fail") && opts["load-should-fail"] == "true") {
+         BOOST_CHECK_THROW(engine_.load_project(test_data_path), std::exception);
+         return;
+      }
+
       project& p = engine_.load_project(test_data_path);
 
       // if instantiation.jcf presents that run checker 

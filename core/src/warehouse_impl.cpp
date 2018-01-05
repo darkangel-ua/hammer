@@ -562,7 +562,7 @@ void warehouse_impl::install_package(const package_t& p,
    const fs::path package_hamfile = lib_path / "hamfile";
    if (!exists(package_hamfile)) {
       fs::ofstream f(package_hamfile);
-      f << "project \"" << p.public_id_ << "\";\n\n";
+      f << "project " << p.public_id_ << ";\n\n";
       f << "warehouse-trap \"" << p.public_id_ << "\";\n";
       f.close();
    }

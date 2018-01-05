@@ -512,6 +512,8 @@ process_target_rule_invocation(invocation_context& ctx,
    return rule_invocation_impl(ctx, args, *td.body());
 }
 
+static ast::id_expr empty_project_id{parscore::identifier{}};
+
 void ast2objects(invocation_context& ctx,
                  const ast::hamfile& node)
 {
@@ -524,8 +526,7 @@ void ast2objects(invocation_context& ctx,
    if (const ast::rule_invocation* p = node.get_project_def())
       process_rule_invocation(ctx, *p);
    else {
-      parscore::identifier id("<unnamed>");
-      rule_manager_arg_ptr id_arg(new rule_manager_arg<parscore::identifier>(id));
+      rule_manager_arg_ptr id_arg(new rule_manager_arg<ast::expression>(empty_project_id));
       rule_manager_arg_ptr requirements_arg, usage_requirements_arg;
       args.push_back(move(id_arg));
       args.push_back(move(requirements_arg));

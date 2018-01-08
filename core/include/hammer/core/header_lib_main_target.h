@@ -14,7 +14,7 @@ namespace hammer
                                 const feature_set* props);
       
       protected:
-         virtual void add_additional_dependencies(hammer::build_node& generated_node) const {}
+         void add_additional_dependencies(hammer::build_node& generated_node) const override {}
    };
 }
 

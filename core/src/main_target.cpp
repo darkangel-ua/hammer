@@ -135,11 +135,6 @@ const location_t& main_target::location() const
    return meta_target_->location();
 }
 
-void main_target::timestamp_info_impl() const
-{
-   throw std::logic_error("[main_target][FIXME] - this is bad target hierarchy");
-}
-
 std::string main_target::version() const
 {
    feature_set::const_iterator i = properties().find("version");

@@ -24,13 +24,13 @@ namespace hammer
                      const target_type* t, 
                      const feature_set* props);
 
-         virtual const location_t& location() const;
+         const location_t& location() const override;
          void sources(const sources_t& srcs);
          const sources_t& sources() const { return sources_; }
          void dependencies(const dependencies_t& deps);
          const dependencies_t& dependencies() const { return dependencies_; }
          const basic_meta_target* get_meta_target() const { return meta_target_; }
-         virtual build_nodes_t generate() const;
+         build_nodes_t generate() const override;
          const location_t& intermediate_dir() const;
          boost::intrusive_ptr<const hammer::build_node> build_node() const { return build_node_; }
          std::string version() const;
@@ -38,7 +38,7 @@ namespace hammer
 
       protected:
          virtual void add_additional_dependencies(hammer::build_node& generated_node) const;
-         virtual void additional_hash_string_data(std::ostream& s) const;
+         void additional_hash_string_data(std::ostream& s) const override;
          virtual location_t intermediate_dir_impl() const;
          // must be private, but bad design require me to place it here for file_main_target
          void generate_and_add_dependencies(hammer::build_node& node) const;
@@ -54,8 +54,6 @@ namespace hammer
          mutable bool generate_cache_filled_;
          static boost::shared_ptr<mksig_action> mksig_action_;
 
-         virtual void timestamp_info_impl() const;
-         
          build_node_ptr 
          create_intermediate_dir_dependency() const;
          

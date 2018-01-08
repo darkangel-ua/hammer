@@ -15,7 +15,7 @@ namespace hammer
                          const feature_set* props);
 
       protected:
-         virtual location_t intermediate_dir_impl() const;
+         location_t intermediate_dir_impl() const override;
       
       private:
          const main_target& owner_;

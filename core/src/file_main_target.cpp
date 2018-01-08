@@ -17,8 +17,8 @@ file_main_target::file_main_target(const basic_meta_target* mt,
 
 }
 
-std::vector<boost::intrusive_ptr<hammer::build_node> > 
-file_main_target::generate()
+build_nodes_t
+file_main_target::generate() const
 {
    boost::intrusive_ptr<hammer::build_node> result(new hammer::build_node(*this, true));
    location_t l_filename = filename_;

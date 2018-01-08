@@ -19,10 +19,10 @@ namespace hammer
          const basic_build_target& pch_header() const { return *pch_header_; }
          const basic_build_target& pch_source() const { return *pch_source_; }
          const basic_build_target& pch_product() const { return *pch_product_; }
-         virtual build_nodes_t generate() const;
+         build_nodes_t generate() const override;
       
       protected:
-         virtual location_t intermediate_dir_impl() const;
+         location_t intermediate_dir_impl() const override;
 
       private:
          const main_target& owner_;

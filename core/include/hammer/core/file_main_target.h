@@ -13,7 +13,7 @@ class file_main_target : public main_target
                        const std::string& filename,
                        const feature_set* props,
                        const target_type& t);
-         virtual std::vector<boost::intrusive_ptr<hammer::build_node> > generate();
+         build_nodes_t generate() const override;
       
       private:
          const target_type* type_;

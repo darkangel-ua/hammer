@@ -13,7 +13,7 @@ class testing_main_target : public main_target
                           const target_type* t, 
                           const feature_set* props);
    protected:
-      virtual location_t intermediate_dir_impl() const;
+      location_t intermediate_dir_impl() const override;
 };
 
 }

@@ -1,7 +1,7 @@
 #include <hammer/core/compile_fail_generator.h>
 #include <hammer/core/types.h>
 #include <hammer/core/engine.h>
-#include <hammer/core/virtual_target.h>
+#include <hammer/core/virtual_build_target.h>
 #include <hammer/core/target_type.h>
 #include <hammer/core/build_action.h>
 #include <hammer/core/proxied_build_environment.h>
@@ -88,7 +88,7 @@ build_nodes_t
 compile_fail_generator::construct(const target_type& type_to_construct,
                                   const feature_set& props,
                                   const build_nodes_t& sources,
-                                  const basic_target* source_target,
+                                  const basic_build_target* source_target,
                                   const std::string* composite_target_name,
                                   const main_target& owner) const
 {
@@ -107,7 +107,7 @@ compile_fail_generator::construct(const target_type& type_to_construct,
    return compile_nodes;
 }
 
-basic_target*
+basic_build_target*
 compile_fail_generator::create_target(const main_target* mt,
                                       const build_node::sources_t& sources,
                                       const string& n,
@@ -115,7 +115,7 @@ compile_fail_generator::create_target(const main_target* mt,
                                       const feature_set* f) const
 {
    if (get_engine().get_type_registry().get(types::TESTING_COMPILE_FAIL) == *t)
-      return new virtual_target(mt, n, t, f);
+      return new virtual_build_target(mt, n, t, f, false);
 
    return generator::create_target(mt, sources, n, t, f);
 }

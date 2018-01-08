@@ -3,6 +3,7 @@
 #include <hammer/core/target_type.h>
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature.h>
+#include <hammer/core/basic_build_target.h>
 #include <hammer/core/basic_target.h>
 #include <boost/crypto/md5.hpp>
 
@@ -25,7 +26,7 @@ static string get_version(const feature_set& properties)
 }
 
 std::string
-make_product_name(const basic_target& source_target,
+make_product_name(const basic_build_target& source_target,
                   const target_type& product_type,
                   const feature_set& product_properties,
                   const main_target* owner)

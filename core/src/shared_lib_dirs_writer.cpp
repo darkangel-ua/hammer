@@ -1,9 +1,9 @@
 #include "stdafx.h"
 #include <hammer/core/shared_lib_dirs_writer.h>
 #include <hammer/core/collect_nodes.h>
-#include <hammer/core/basic_target.h>
+#include <hammer/core/basic_build_target.h>
 
-namespace hammer{
+namespace hammer {
 
 void shared_lib_dirs_writer::write_impl(std::ostream& output,
                                         const build_node& node,

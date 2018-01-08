@@ -15,12 +15,12 @@ class compile_fail_generator : public generator
       construct(const target_type& type_to_construct,
                 const feature_set& props,
                 const build_nodes_t& sources,
-                const basic_target* source_target,
+                const basic_build_target* source_target,
                 const std::string* composite_target_name,
                 const main_target& owner) const override;
 
    protected:
-      basic_target*
+      basic_build_target*
       create_target(const main_target* mt,
                     const build_node::sources_t& sources,
                     const std::string& n,

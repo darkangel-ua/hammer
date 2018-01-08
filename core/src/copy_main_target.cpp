@@ -3,7 +3,7 @@
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature.h>
 #include <hammer/core/basic_meta_target.h>
-#include <hammer/core/directory_target.h>
+#include <hammer/core/directory_build_target.h>
 #include <hammer/core/type_registry.h>
 #include <hammer/core/meta_target.h>
 #include <hammer/core/project.h>
@@ -45,8 +45,8 @@ copy_main_target::copy_main_target(const basic_meta_target* mt,
 void copy_main_target::add_additional_dependencies(hammer::build_node& generated_node) const
 {
    boost::intrusive_ptr<hammer::build_node> int_dir_node(new hammer::build_node(*this, false));
-   int_dir_node->products_.push_back(new directory_target(this, destination()));
-   int_dir_node->action(static_cast<const directory_target*>(int_dir_node->products_.front())->action());
+   int_dir_node->products_.push_back(new directory_build_target(this, destination()));
+   int_dir_node->action(static_cast<const directory_build_target*>(int_dir_node->products_.front())->action());
 
    generated_node.dependencies_.push_back(int_dir_node);
 }

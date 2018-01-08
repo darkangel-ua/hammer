@@ -29,7 +29,7 @@ class build_environment_impl : public build_environment
       virtual void copy(const location_t& full_source_path, const location_t& full_destination_path) const;
       virtual bool write_tag_file(const std::string& filename, const std::string& content) const;
       virtual std::unique_ptr<std::ostream> create_output_file(const char* filename, std::ios_base::openmode mode) const;
-      virtual location_t working_directory(const basic_target& t) const;
+      location_t working_directory(const basic_build_target& t) const override;
       virtual std::ostream& output_stream() const;
       virtual std::ostream& error_stream() const;
       virtual const location_t* cache_directory() const;

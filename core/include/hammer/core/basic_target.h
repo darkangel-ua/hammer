@@ -2,10 +2,10 @@
 #define h_5c00dc03_f874_4599_a716_cf9f475192d0
 
 #include <boost/noncopyable.hpp>
+#include <boost/optional.hpp>
 #include "build_node.h"
 #include "timestamp_info.h"
 #include "location.h"
-#include <boost/optional.hpp>
 
 namespace hammer
 {
@@ -22,13 +22,15 @@ namespace hammer
       public:
          typedef std::vector<boost::intrusive_ptr<build_node> > build_nodes_t;
 
-         basic_target(const main_target* mt, const std::string& name,
-                      const target_type* t, const feature_set* f) 
-                     : main_target_(mt),  
-                       type_(t), 
-                       name_(name),
-                       features_(f)
-         {};
+			basic_target(const main_target* mt,
+			             const std::string& name,
+			             const target_type* t,
+			             const feature_set* f)
+			   : main_target_(mt),
+			     type_(t),
+			     name_(name),
+			     features_(f)
+			{}
 
          const std::string& name() const { return name_; }
          const target_type& type() const { return *type_; }
@@ -40,24 +42,16 @@ namespace hammer
          engine* get_engine() const;
          
          virtual build_nodes_t generate() const = 0;
-         // maybe this is wrong? The reason to making it const was cleaner implementation
-         virtual void clean(const build_environment& environment) const {};
-
-         const timestamp_info_t& timestamp_info() const;
-
          virtual const location_t& location() const;
          location_t full_path() const;
 
          const std::string& hash_string() const;
          static std::string hash_string(const feature_set& fs, const main_target& mt);
 
-         virtual ~basic_target(){};
+         virtual ~basic_target(){}
       
       protected:
-         mutable timestamp_info_t timestamp_info_;
-
-         virtual void timestamp_info_impl() const = 0;
-         virtual void additional_hash_string_data(std::ostream& s) const {};
+         virtual void additional_hash_string_data(std::ostream& s) const {}
 
       private:
          const main_target* main_target_;

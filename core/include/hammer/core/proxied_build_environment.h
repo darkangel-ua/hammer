@@ -2,6 +2,7 @@
 #define HAMMER_CORE_PROXIED_BUILD_ENVIRONMENT_H
 
 #include <hammer/core/build_environment.h>
+#include <hammer/core/basic_build_target.h>
 
 namespace hammer {
 
@@ -78,7 +79,7 @@ class proxied_build_environment : public build_environment
          return env_.create_output_file(filename, mode);
       }
 
-      location_t working_directory(const basic_target& t) const override
+      location_t working_directory(const basic_build_target& t) const override
       {
          return env_.working_directory(t);
       }

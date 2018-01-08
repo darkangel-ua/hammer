@@ -23,7 +23,7 @@
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature.h>
 #include <hammer/core/basic_meta_target.h>
-#include <hammer/core/basic_target.h>
+#include <hammer/core/basic_build_target.h>
 #include <hammer/core/build_environment.h>
 #include <hammer/core/hashed_location_serialization.h>
 #include <hammer/core/c_scanner.h>
@@ -639,8 +639,9 @@ c_scanner_context::get_include_dirs(const feature_set& properties)
    }
 }
 
-boost::posix_time::ptime c_scanner::process(const basic_target& t, 
-                                            scanner_context& context_outer) const
+boost::posix_time::ptime
+c_scanner::process(const basic_build_target& t,
+                         scanner_context& context_outer) const
 {
    c_scanner_context& context = static_cast<c_scanner_context&>(context_outer);
 

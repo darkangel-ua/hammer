@@ -1,18 +1,10 @@
-#include "stdafx.h"
 #include <boost/filesystem/operations.hpp>
 #include <boost/date_time/posix_time/conversion.hpp>
-#include <hammer/core/file_target.h>
-#include <hammer/core/main_target.h>
+#include <hammer/core/file_build_target.h>
 
-namespace hammer
-{
+namespace hammer {
 
-std::vector<boost::intrusive_ptr<build_node> > file_target::generate() const
-{
-   return std::vector<boost::intrusive_ptr<build_node> >();
-}
-
-void file_target::timestamp_info_impl() const
+void file_build_target::timestamp_info_impl() const
 {
    boost::filesystem::path p(location() / name());
    timestamp_info_.is_unknown_ = false;

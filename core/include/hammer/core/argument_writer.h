@@ -17,7 +17,9 @@ namespace hammer
          {}
 
          const std::string& name() const { return name_; }
-         void write(std::ostream& output, const build_node& node, const build_environment& environment) const
+         void write(std::ostream& output,
+			           const build_node& node,
+			           const build_environment& environment) const
          {
             write_impl(output, node, environment);
          }
@@ -26,7 +28,9 @@ namespace hammer
          virtual ~argument_writer() {}
       
       protected:   
-         virtual void write_impl(std::ostream& output, const build_node& node, const build_environment& environment) const = 0;
+         virtual void write_impl(std::ostream& output,
+			                        const build_node& node,
+			                        const build_environment& environment) const = 0;
       
       private:
          std::string name_;

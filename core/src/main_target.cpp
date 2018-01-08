@@ -5,15 +5,14 @@
 #include <hammer/core/engine.h>
 #include <hammer/core/generator_registry.h>
 #include <hammer/core/build_node.h>
-#include <hammer/core/directory_target.h>
+#include <hammer/core/directory_build_target.h>
 #include <boost/crypto/md5.hpp>
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature.h>
 #include <hammer/core/output_location_strategy.h>
-#include <hammer/core/generated_target.h>
 #include <hammer/core/types.h>
 #include "mksig_action.h"
-#include "signature_target.h"
+#include "signature_build_target.h"
 #include <set>
 
 using namespace std;
@@ -74,8 +73,8 @@ build_node_ptr
 main_target::create_intermediate_dir_dependency() const
 {
    build_node_ptr int_dir_node(new hammer::build_node(*this, false));
-   int_dir_node->products_.push_back(new directory_target(this, intermediate_dir()));
-   int_dir_node->action(static_cast<const directory_target*>(int_dir_node->products_.front())->action());
+   int_dir_node->products_.push_back(new directory_build_target(this, intermediate_dir()));
+   int_dir_node->action(static_cast<const directory_build_target*>(int_dir_node->products_.front())->action());
    
    return int_dir_node;
 }
@@ -91,10 +90,10 @@ void main_target::add_hamfile_dependency(hammer::build_node& node,
 {
    boost::intrusive_ptr<hammer::build_node> signature_node(new hammer::build_node(*this, false));
    signature_node->products_.push_back(
-      new signature_target(this, 
-                           name() + ".target.sig",
-                           &get_engine()->get_type_registry().get(types::UNKNOWN),
-                           &properties()));
+      new signature_build_target(this,
+                                 name() + ".target.sig",
+                                 &get_engine()->get_type_registry().get(types::UNKNOWN),
+                                 &properties()));
    
    signature_node->action(mksig_action_.get());
    signature_node->dependencies_.push_back(intermediate_dir_node);

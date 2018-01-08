@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include <hammer/core/pch_argument_writer.h>
 #include <hammer/core/build_node.h>
+#include <hammer/core/basic_build_target.h>
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature.h>
 #include <hammer/core/pch_main_target.h>
@@ -9,7 +10,9 @@
 
 namespace hammer{
 
-void pch_argument_writer::write_impl(std::ostream& output, const build_node& node, const build_environment& environment) const
+void pch_argument_writer::write_impl(std::ostream& output,
+                                     const build_node& node,
+                                     const build_environment& environment) const
 {
    const feature_set& build_request = node.build_request();
    feature_set::const_iterator pch_iter = build_request.find("pch");

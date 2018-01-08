@@ -6,7 +6,7 @@
 #include <hammer/core/target_type.h>
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature.h>
-#include <hammer/core/basic_target.h>
+#include <hammer/core/basic_build_target.h>
 
 namespace hammer{
 
@@ -26,7 +26,7 @@ build_nodes_t
 exe_and_shared_lib_generator::construct(const target_type& type_to_construct,
                                         const feature_set& props,
                                         const std::vector<boost::intrusive_ptr<build_node> >& sources,
-                                        const basic_target* t,
+                                        const basic_build_target* t,
                                         const std::string* name,
                                         const main_target& owner) const
 {
@@ -39,7 +39,7 @@ exe_and_shared_lib_generator::construct(const target_type& type_to_construct,
       if ((**i).targeting_type_->equal_or_derived_from(searched_lib_))
       {
          // searched_lib may have <search> feature - add it to current build request
-         const basic_target& lib_target = *(**i).products_.front();
+         const basic_build_target& lib_target = *(**i).products_.front();
 
          feature_set::const_iterator search_location = lib_target.properties().find("search");
          if (search_location != lib_target.properties().end())

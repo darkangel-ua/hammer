@@ -1,8 +1,8 @@
-#include "stdafx.h"
-#include <hammer/core/pch_main_target.h>
 #include <cassert>
+#include <hammer/core/pch_main_target.h>
 #include <hammer/core/types.h>
 #include <hammer/core/meta_target.h>
+#include <hammer/core/basic_build_target.h>
 #include <hammer/core/project.h>
 #include <hammer/core/engine.h>
 #include <hammer/core/target_type.h>

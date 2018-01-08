@@ -7,8 +7,7 @@
 #include <hammer/core/type_registry.h>
 #include <hammer/core/types.h>
 #include <hammer/core/copy_main_target.h>
-#include <hammer/core/copy_target.h>
-#include <hammer/core/generated_target.h>
+#include <hammer/core/generated_build_target.h>
 #include <hammer/core/types.h>
 #include <hammer/core/build_action.h>
 #include <hammer/core/target_type.h>
@@ -89,7 +88,7 @@ build_nodes_t
 copy_generator::construct(const target_type& type_to_construct, 
                           const feature_set& props,
                           const nodes_t& sources,
-                          const basic_target* t,
+                          const basic_build_target* t,
                           const std::string* composite_target_name,
                           const main_target& owner) const
 {
@@ -113,7 +112,7 @@ copy_generator::construct(const target_type& type_to_construct,
       new_node->sources_.push_back(*i);
       new_node->down_.push_back(i->source_node_);
 
-      copy_target* new_target = new copy_target(&owner, i->source_target_->name(), &type_to_construct, &props);
+      basic_build_target* new_target = new generated_2_build_target(&owner, i->source_target_->name(), true_owner.destination(), &type_to_construct, &props);
       new_node->products_.push_back(new_target);
 
       result.push_back(new_node);

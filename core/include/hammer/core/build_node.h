@@ -8,7 +8,7 @@
 
 namespace hammer
 {
-   class basic_target; 
+   class basic_build_target;
    class main_target; 
    class target_type;
    class build_action;
@@ -24,19 +24,19 @@ namespace hammer
       public:
          struct source_t
          {
-            source_t(const basic_target* source_target, 
+            source_t(const basic_build_target* source_target,
                      boost::intrusive_ptr<build_node> source_node) 
                    :
                     source_target_(source_target),
                     source_node_(source_node)
             {}
 
-            const basic_target* source_target_;
+            const basic_build_target* source_target_;
             boost::intrusive_ptr<build_node> source_node_;
          };
          
          typedef std::vector<source_t> sources_t;
-         typedef std::vector<const basic_target*> targets_t;
+         typedef std::vector<const basic_build_target*> targets_t;
          typedef std::vector<boost::intrusive_ptr<build_node> > nodes_t;
 
          build_node(const main_target& products_owner, bool composite) 
@@ -49,7 +49,7 @@ namespace hammer
               action_(NULL) 
          {}
 
-         const basic_target* find_product(const basic_target* t) const;
+         const basic_build_target* find_product(const basic_build_target* t) const;
          
          boost::tribool::value_t up_to_date() const { return up_to_date_.value; }
          void up_to_date(boost::tribool::value_t v);

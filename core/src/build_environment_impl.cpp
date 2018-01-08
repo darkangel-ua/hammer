@@ -11,6 +11,7 @@
 #include <hammer/core/build_environment_impl.h>
 #include <hammer/core/fs_helpers.h>
 #include <hammer/core/main_target.h>
+#include <hammer/core/basic_build_target.h>
 
 namespace bp = boost::process;
 namespace fs = boost::filesystem;
@@ -262,7 +263,8 @@ build_environment_impl::create_output_file(const char* filename, ios_base::openm
    return std::unique_ptr<ostream>(std::move(f));
 }
 
-location_t build_environment_impl::working_directory(const basic_target& t) const
+location_t
+build_environment_impl::working_directory(const basic_build_target& t) const
 {
    return t.get_main_target()->location();
 }

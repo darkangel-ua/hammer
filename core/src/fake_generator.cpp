@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include <hammer/core/fake_generator.h>
-#include <hammer/core/fake_target.h>
+#include <hammer/core/fake_build_target.h>
 
 namespace hammer{
 
@@ -18,7 +18,7 @@ build_nodes_t
 fake_generator::construct(const target_type& type_to_construct, 
                           const feature_set& props,
                           const build_nodes_t& sources,
-                          const basic_target* source_target,
+                          const basic_build_target* source_target,
                           const std::string* composite_target_name,
                           const main_target& owner) const
 {
@@ -40,13 +40,14 @@ fake_generator::construct(const target_type& type_to_construct,
    return result;
 }
 
-basic_target* fake_generator::create_target(const main_target* mt,
-                                            const build_node::sources_t& sources,
-                                            const std::string& n,
-                                            const target_type* t,
-                                            const feature_set* f) const
+basic_build_target*
+fake_generator::create_target(const main_target* mt,
+                              const build_node::sources_t& sources,
+                              const std::string& n,
+                              const target_type* t,
+                              const feature_set* f) const
 {
-   return new fake_target(mt, sources, n, t, f);
+   return new fake_build_target(mt, sources, n, t, f);
 }
 
 }

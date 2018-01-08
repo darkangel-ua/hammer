@@ -11,6 +11,7 @@
 #include <hammer/core/feature_set.h>
 #include <hammer/core/generator_registry.h>
 #include <hammer/core/basic_target.h>
+#include <hammer/core/basic_build_target.h>
 #include <hammer/core/project_generators/msvc_solution.h>
 #include <hammer/core/fs_helpers.h>
 #include "enviroment.h"
@@ -47,7 +48,9 @@ static void compare_files(const fs::path& lhs, const fs::path& rhs, const fs::pa
    }
 }
 
-static bool less_target(const basic_target* lhs, const basic_target* rhs)
+static
+bool less_target(const basic_build_target* lhs,
+                 const basic_build_target* rhs)
 {
    location_t lhs_id = lhs->location() / lhs->name();
    location_t rhs_id = rhs->location() / rhs->name();

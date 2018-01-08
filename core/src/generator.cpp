@@ -4,7 +4,7 @@
 #include <hammer/core/basic_target.h>
 #include <hammer/core/main_target.h>
 #include <hammer/core/meta_target.h>
-#include <hammer/core/generated_target.h>
+#include <hammer/core/generated_build_target.h>
 #include <hammer/core/engine.h>
 #include <hammer/core/np_helpers.h>
 #include <hammer/core/build_action.h>
@@ -41,20 +41,21 @@ bool generator::is_consumable(const target_type& t) const
    return false;
 }
 
-basic_target* generator::create_target(const main_target* mt,
-                                       const build_node::sources_t& sources,
-                                       const std::string& n,
-                                       const target_type* t,
-                                       const feature_set* f) const
+basic_build_target*
+generator::create_target(const main_target* mt,
+                         const build_node::sources_t& sources,
+                         const std::string& n,
+                         const target_type* t,
+                         const feature_set* f) const
 {
-   return new generated_target(mt, n, t, f);
+   return new generated_build_target(mt, n, t, f);
 }
 
 build_nodes_t
 generator::construct(const target_type& type_to_construct,
                      const feature_set& props,
                      const build_nodes_t& sources,
-                     const basic_target* source_target,
+                     const basic_build_target* source_target,
                      const std::string* composite_target_name,
                      const main_target& owner) const
 {

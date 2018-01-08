@@ -19,7 +19,7 @@
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature_registry.h>
 #include <hammer/core/type_registry.h>
-#include <hammer/core/basic_target.h>
+#include <hammer/core/basic_build_target.h>
 #include <hammer/core/main_target.h>
 #include <hammer/core/meta_target.h>
 #include <hammer/core/project_generators/msvc_solution.h>
@@ -32,7 +32,6 @@
 #include <hammer/core/actuality_checker.h>
 #include <hammer/core/generator_registry.h>
 #include <hammer/core/types.h>
-#include <hammer/core/copy_target.h>
 #include <hammer/core/header_lib_generator.h>
 #include <hammer/core/toolsets/msvc_toolset.h>
 #include <hammer/core/toolsets/gcc_toolset.h>
@@ -46,6 +45,7 @@
 #include <hammer/core/fs_helpers.h>
 #include <hammer/core/warehouse_target.h>
 #include <hammer/core/warehouse.h>
+#include <hammer/core/generated_build_target.h>
 
 #include "user_config_location.h"
 #include "dump_targets_to_update.h"
@@ -598,24 +598,6 @@ namespace
            << r.cleaned_target_count_ << " targets was cleaned.\n";
    }
 
-   class dep_copy_target : public file_target
-   {
-      public:
-         dep_copy_target(const location_t& destination,
-                         const main_target* mt, const std::string& name,
-                         const target_type* t, const feature_set* f)
-            : file_target(mt, name, t, f), destination_(destination)
-         {}
-
-         virtual const location_t& location() const
-         {
-            return destination_;
-         }
-
-      private:
-         location_t destination_;
-   };
-
    void add_copy_dependencies_nodes(nodes_t& nodes, engine& e)
    {
       // collect all executables
@@ -655,11 +637,12 @@ namespace
          new_node->sources_.push_back(*i);
          new_node->down_.push_back(i->source_node_);
 
-         dep_copy_target* new_target = new dep_copy_target(executables[0].source_target_->location(),
-                                                           &new_node->products_owner(),
-                                                           i->source_target_->name(),
-                                                           new_node->targeting_type_,
-                                                           &executables[0].source_target_->properties());
+         basic_build_target* new_target =
+            new generated_2_build_target(&new_node->products_owner(),
+                                         i->source_target_->name(),
+                                         executables[0].source_target_->location(),
+                                         new_node->targeting_type_,
+                                         &executables[0].source_target_->properties());
          new_node->products_.push_back(new_target);
 
          copy_nodes.push_back(new_node);

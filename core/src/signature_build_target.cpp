@@ -1,12 +1,12 @@
 #include "stdafx.h"
-#include "signature_target.h"
+#include "signature_build_target.h"
 #include <hammer/core/feature_set.h>
 #include <hammer/core/main_target.h>
 #include <fstream>
 
 namespace hammer{
 
-void signature_target::timestamp_info_impl() const
+void signature_build_target::timestamp_info_impl() const
 {
    timestamp_info_.is_unknown_ = false;
 

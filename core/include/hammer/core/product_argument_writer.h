@@ -5,7 +5,7 @@
 
 namespace hammer
 {
-   class basic_target;
+   class basic_build_target;
 
    class product_argument_writer : public targets_argument_writer
    {
@@ -15,11 +15,11 @@ namespace hammer
          product_argument_writer(const std::string& name, 
                                  const target_type& t,
                                  output_strategy::value strategy = output_strategy::RELATIVE_TO_MAIN_TARGET);
-         virtual argument_writer* clone() const;
+         argument_writer* clone() const override;
 
       protected:
-         virtual void write_impl(std::ostream& output, const build_node& node, const build_environment& environment) const;
-         virtual bool accept(const basic_target& t) const;
+         void write_impl(std::ostream& output, const build_node& node, const build_environment& environment) const override;
+         bool accept(const basic_build_target& t) const;
       
       private:
          output_strategy::value output_strategy_;

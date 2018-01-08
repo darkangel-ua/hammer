@@ -8,10 +8,10 @@ namespace hammer
    class target_type;   
    class feature_set;
    class main_target;
-   class basic_target;
+   class basic_build_target;
 
    std::string
-   make_product_name(const basic_target& source_target,
+   make_product_name(const hammer::basic_build_target& source_target,
                      const target_type& product_type,
                      const feature_set& product_properties,
                      const main_target* owner);

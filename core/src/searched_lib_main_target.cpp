@@ -6,12 +6,11 @@
 #include <hammer/core/engine.h>
 #include <hammer/core/type_registry.h>
 #include <hammer/core/types.h>
-#include <hammer/core/file_target.h>
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature.h>
-#include <hammer/core/searched_lib_target.h>
+#include <hammer/core/virtual_build_target.h>
+#include <hammer/core/source_build_target.h>
 #include <hammer/core/target_type.h>
-#include <hammer/core/file_target.h>
 
 namespace hammer{
 
@@ -31,12 +30,15 @@ std::vector<boost::intrusive_ptr<hammer::build_node> >
 searched_lib_main_target::generate() const
 {
    boost::intrusive_ptr<hammer::build_node> result(new hammer::build_node(*this, true));
-   basic_target* t = type_->equal_or_derived_from(get_engine()->get_type_registry().get(types::SEARCHED_LIB)) 
-                     ? 
-                      new searched_lib_target(this, lib_name_, type_, &properties()) 
-                     : 
-                      new file_target(this, lib_name_, type_, &properties())
-                     ;
+   basic_build_target* t;
+   if (type_->equal_or_derived_from(get_engine()->get_type_registry().get(types::SEARCHED_LIB)))
+      t = new virtual_build_target(this, lib_name_, type_, &properties(), true);
+   else {
+      location_t l(lib_name_);
+      if (!l.has_root_path())
+         l = (location() / l).normalize();
+      t = new source_build_target(this, l.filename().string(), l.branch_path().string(), type_, &properties());
+   }
    result->products_.push_back(t);
    result->targeting_type_ = this->type_;
 

@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "mksig_action.h"
 #include <hammer/core/build_node.h>
-#include <hammer/core/basic_target.h>
+#include <hammer/core/basic_build_target.h>
 #include <hammer/core/main_target.h>
 #include <hammer/core/build_environment.h>
 #include <hammer/core/fs_helpers.h>

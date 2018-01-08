@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "dump_targets_to_update.h"
-#include <hammer/core/basic_target.h>
+#include <hammer/core/basic_build_target.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 using namespace hammer;

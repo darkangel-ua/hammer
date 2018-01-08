@@ -1,7 +1,7 @@
-#include "stdafx.h"
 #include <hammer/core/generator_registry.h>
 #include <stdexcept>
 #include <hammer/core/main_target.h>
+#include <hammer/core/basic_build_target.h>
 #include <hammer/core/target_type.h>
 #include <boost/format.hpp>
 #include <hammer/core/feature_set.h>
@@ -120,7 +120,7 @@ generator_registry::find_viable_generators(const target_type& t,
 bool
 generator_registry::transform(const generator& target_generator,
                               const generator& current_generator,
-                              const basic_target* source_target,
+                              const basic_build_target* source_target,
                               build_node_ptr& source_node,
                               build_nodes_t* result,
                               const feature_set& props,

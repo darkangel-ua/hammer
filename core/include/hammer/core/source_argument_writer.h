@@ -5,7 +5,7 @@
 
 namespace hammer
 {
-   class basic_target;
+   class basic_build_target;
 
    class source_argument_writer : public targets_argument_writer
    {
@@ -18,13 +18,15 @@ namespace hammer
                                 output_strategy os = RELATIVE_TO_MAIN_TARGET,
                                 const std::string& quoting_string = "\"",
                                 const std::string& prefix = std::string());
-         virtual argument_writer* clone() const;
+         argument_writer* clone() const override;
 
       protected:
-         virtual void write_impl(std::ostream& output, const build_node& node, const build_environment& environment) const;
+         void write_impl(std::ostream& output,
+			                const build_node& node,
+			                const build_environment& environment) const override;
          
          // return true if source type is accepted for output
-         virtual bool accept(const basic_target& source) const;
+         bool accept(const basic_build_target& source) const;
 
       private:
          bool exact_type_;

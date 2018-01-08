@@ -10,6 +10,7 @@
 #include <hammer/core/fs_helpers.h>
 #include <hammer/core/main_target.h>
 #include <hammer/core/meta_target.h>
+#include <hammer/core/basic_build_target.h>
 #include <hammer/core/project_generators/msvc_project.h>
 #include <hammer/core/project_generators/msvc_solution.h>
 

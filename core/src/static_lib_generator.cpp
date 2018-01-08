@@ -22,10 +22,10 @@ static_lib_generator::static_lib_generator(hammer::engine& e,
 }
 
 build_nodes_t
-static_lib_generator::construct(const target_type& type_to_construct, 
+static_lib_generator::construct(const target_type& type_to_construct,
                                 const feature_set& props,
                                 const std::vector<boost::intrusive_ptr<build_node> >& sources,
-                                const basic_target* t,
+                                const basic_build_target* t,
                                 const std::string* name,
                                 const main_target& owner) const
 {

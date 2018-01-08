@@ -89,7 +89,7 @@ namespace hammer
                file_configuration() : exclude_from_build(true) {}
                
                void write(write_context& ctx, const variant& v) const;
-               const basic_target* target_;
+               const basic_build_target* target_;
                boost::intrusive_ptr<build_node> node_;
                bool exclude_from_build;
             };
@@ -108,7 +108,7 @@ namespace hammer
             {
                public:   
                   typedef std::vector<const target_type*> types_t;
-                  typedef std::map<const basic_target*, file_with_cfgs_t> files_t;
+                  typedef std::map<const basic_build_target*, file_with_cfgs_t> files_t;
                   std::string name;
                   std::string uid;
                   files_t files_;
@@ -122,7 +122,7 @@ namespace hammer
                   void write(write_context& ctx, const std::string& path_prefix) const;
                   bool accept(const target_type* t) const;
                   void insert(const boost::intrusive_ptr<build_node>& node,
-                              const basic_target* t, 
+                              const basic_build_target* t,
                               const variant& v);
                   virtual ~filter_t() {}
 
@@ -162,8 +162,8 @@ namespace hammer
             void write_files(write_context& ctx) const;
             void gether_files_impl(const build_node& node, variant& v);
             void gether_files();
-            void insert_into_files(const boost::intrusive_ptr<build_node>& node, 
-                                   const basic_target* t, 
+            void insert_into_files(const boost::intrusive_ptr<build_node>& node,
+                                   const basic_build_target* t,
                                    const variant& v);
             configuration_types::value resolve_configuration_type(const variant& v) const;
       };

@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include <hammer/core/actuality_checker.h>
 #include <hammer/core/timestamp_info.h>
-#include <hammer/core/basic_target.h>
+#include <hammer/core/basic_build_target.h>
 #include <hammer/core/scaner.h>
 #include <hammer/core/scaner_manager.h>
 #include <hammer/core/engine.h>

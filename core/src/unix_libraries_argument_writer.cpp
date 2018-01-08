@@ -2,6 +2,7 @@
 #include <hammer/core/build_node.h>
 #include <hammer/core/types.h>
 #include <hammer/core/basic_target.h>
+#include <hammer/core/basic_build_target.h>
 #include <hammer/core/target_type.h>
 #include <hammer/core/engine.h>
 #include <hammer/core/type_registry.h>

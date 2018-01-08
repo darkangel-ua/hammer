@@ -5,7 +5,9 @@
 
 namespace hammer
 {
-   class pch_main_target : public main_target
+   class basic_build_target;
+
+	class pch_main_target : public main_target
    {
       public:
          pch_main_target(const basic_meta_target* mt,
@@ -14,9 +16,9 @@ namespace hammer
                          const target_type* t,
                          const feature_set* props);
 
-         const basic_target& pch_header() const { return *pch_header_; }
-         const basic_target& pch_source() const { return *pch_source_; }
-         const basic_target& pch_product() const { return *pch_product_; }
+         const basic_build_target& pch_header() const { return *pch_header_; }
+         const basic_build_target& pch_source() const { return *pch_source_; }
+         const basic_build_target& pch_product() const { return *pch_product_; }
          virtual build_nodes_t generate() const;
       
       protected:
@@ -24,9 +26,9 @@ namespace hammer
 
       private:
          const main_target& owner_;
-         mutable const basic_target* pch_header_;
-         mutable const basic_target* pch_source_;
-         mutable const basic_target* pch_product_;
+         mutable const basic_build_target* pch_header_;
+         mutable const basic_build_target* pch_source_;
+         mutable const basic_build_target* pch_product_;
    };
 }
 

@@ -33,10 +33,10 @@ namespace hammer
                                       build_nodes_t* result,
                                       const feature_set& props,
                                       const main_target& owner) const;
-         bool transform(const generator& target_generator, 
-                        const generator& current_generator, 
-                        const basic_target* t,
-                        build_node_ptr& target_owner, 
+         bool transform(const generator& target_generator,
+                        const generator& current_generator,
+                        const basic_build_target* t,
+                        build_node_ptr& target_owner,
                         build_nodes_t* result,
                         const feature_set& props,
                         const main_target& owner) const;

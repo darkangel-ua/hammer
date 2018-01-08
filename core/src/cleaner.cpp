@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include <hammer/core/cleaner.h>
-#include <hammer/core/basic_target.h>
+#include <hammer/core/basic_build_target.h>
 #include <boost/unordered_set.hpp>
 
 namespace hammer{

@@ -1,13 +1,14 @@
 #include "stdafx.h"
 #include <hammer/core/build_node.h>
-#include <hammer/core/basic_target.h>
+#include <hammer/core/basic_build_target.h>
 
 #include <cassert>
 #include <algorithm>
 
 namespace hammer{
 
-const basic_target* build_node::find_product(const basic_target* t) const
+const basic_build_target*
+build_node::find_product(const basic_build_target* t) const
 {
    targets_t::const_iterator i = std::find(products_.begin(), products_.end(), t);
    if (i != products_.end())

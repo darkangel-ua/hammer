@@ -5,6 +5,7 @@
 #include <boost/regex.hpp>
 #include <hammer/core/project_generators/msvc_project.h>
 #include <hammer/core/main_target.h>
+#include <hammer/core/basic_build_target.h>
 #include <hammer/core/meta_target.h>
 #include <hammer/core/project.h>
 #include <hammer/core/engine.h>
@@ -52,7 +53,7 @@ namespace
             return std::unique_ptr<std::ostream>(new ostringstream);
          }
 
-         virtual location_t working_directory(const basic_target& t) const
+         location_t working_directory(const basic_build_target& t) const override
          {
             return project_output_dir_;
          }
@@ -256,7 +257,7 @@ void msvc_project::add_variant(boost::intrusive_ptr<const build_node> node)
    else
       naked_variant->real_node_ = node;
 
-   const basic_target* t = node->products_[0];
+   const basic_build_target* t = node->products_[0];
    v->properties_ = &t->properties();
    v->node_ = node;
    v->target_ = node->products_[0]->get_main_target();
@@ -470,7 +471,7 @@ void msvc_project::file_with_cfgs_t::write(write_context& ctx, const std::string
 
 struct less_target
 {
-   bool operator ()(const basic_target* lhs, const basic_target* rhs)
+   bool operator ()(const basic_build_target* lhs, const basic_build_target* rhs)
    {
       location_t lhs_id = lhs->location() / lhs->name();
       location_t rhs_id = rhs->location() / rhs->name();
@@ -494,7 +495,7 @@ void msvc_project::filter_t::write(write_context& ctx, const std::string& path_p
       ctx.output_ << ">\n";
 
    // FIXME: this trick used only for test to stabilize order of sources in project file
-   typedef std::map<const basic_target*, boost::reference_wrapper<const file_with_cfgs_t>, less_target> stabilized_t;
+   typedef std::map<const basic_build_target*, boost::reference_wrapper<const file_with_cfgs_t>, less_target> stabilized_t;
    stabilized_t stabilized;
 
    for(const files_t::value_type& f : files_)
@@ -554,7 +555,7 @@ bool msvc_project::filter_t::accept(const target_type* t) const
 }
 
 void msvc_project::filter_t::insert(const boost::intrusive_ptr<build_node>& node,
-                                    const basic_target* t,
+                                    const basic_build_target* t,
                                     const variant& v)
 {
    file_with_cfgs_t& fwc = files_[t];
@@ -566,7 +567,7 @@ void msvc_project::filter_t::insert(const boost::intrusive_ptr<build_node>& node
 }
 
 void msvc_project::insert_into_files(const boost::intrusive_ptr<build_node>& node,
-                                     const basic_target* t,
+                                     const basic_build_target* t,
                                      const variant& v)
 {
    const target_type* tp = &t->type();

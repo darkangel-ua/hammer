@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include <hammer/core/file_main_target.h>
-#include <hammer/core/file_target.h>
+#include <hammer/core/source_build_target.h>
 
 namespace hammer{
 
@@ -21,7 +21,11 @@ std::vector<boost::intrusive_ptr<hammer::build_node> >
 file_main_target::generate()
 {
    boost::intrusive_ptr<hammer::build_node> result(new hammer::build_node(*this, true));
-   basic_target* t = new file_target(this, filename_, type_, &properties());
+   location_t l_filename = filename_;
+   if (!l_filename.has_root_path())
+      l_filename = (location() / l_filename).normalize();
+
+   basic_build_target* t = new source_build_target(this, l_filename.filename().string(), l_filename.branch_path(), type_, &properties());
    result->products_.push_back(t);
    result->targeting_type_ = this->type_;
    generate_and_add_dependencies(*result);

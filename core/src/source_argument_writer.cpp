@@ -2,6 +2,7 @@
 #include <hammer/core/source_argument_writer.h>
 #include <hammer/core/build_node.h>
 #include <hammer/core/main_target.h>
+#include <hammer/core/basic_build_target.h>
 #include <hammer/core/target_type.h>
 #include <hammer/core/fs_helpers.h>
 #include <hammer/core/build_environment.h>
@@ -22,12 +23,13 @@ source_argument_writer::source_argument_writer(const std::string& name,
 {
 }
 
-argument_writer* source_argument_writer::clone() const
+argument_writer*
+source_argument_writer::clone() const
 {
    return new source_argument_writer(*this);
 }
 
-bool source_argument_writer::accept(const basic_target& source) const
+bool source_argument_writer::accept(const basic_build_target& source) const
 {
    if (exact_type_)
       return source.type() == this->source_type();
@@ -35,7 +37,9 @@ bool source_argument_writer::accept(const basic_target& source) const
       return source.type().equal_or_derived_from(this->source_type());
 }
 
-void source_argument_writer::write_impl(std::ostream& output, const build_node& node, const build_environment& environment) const
+void source_argument_writer::write_impl(std::ostream& output,
+                                        const build_node& node,
+                                        const build_environment& environment) const
 {
    bool first = true;
    for(build_node::sources_t::const_iterator i = node.sources_.begin(), last = node.sources_.end(); i != last; ++i)

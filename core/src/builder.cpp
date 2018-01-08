@@ -304,7 +304,7 @@ void builder::generate_graphviz(std::ostream& os, const nodes_t& nodes, const pr
       {
          labels += "|{prod|{";
          bool first = true;
-         for(const basic_target* p : n->node_->products_)
+         for(const basic_build_target* p : n->node_->products_)
          {
             if (!first)
                labels += "|";

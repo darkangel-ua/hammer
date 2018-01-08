@@ -1,12 +1,11 @@
-#include "stdafx.h"
 #include <hammer/core/build_action.h>
 #include <hammer/core/build_node.h>
-#include <hammer/core/basic_target.h>
+#include <hammer/core/basic_build_target.h>
 #include <hammer/core/build_environment.h>
 
 using namespace std;
 
-namespace hammer{
+namespace hammer {
 
 bool build_action::execute(const build_node& node, const build_environment& environment) const 
 { 

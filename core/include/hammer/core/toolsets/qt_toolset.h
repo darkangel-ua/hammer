@@ -9,11 +9,12 @@ class qt_toolset : public toolset
 {
 	public:
     	qt_toolset();
-    	virtual void autoconfigure(engine& e) const;
+    	void autoconfigure(engine& e) const override;
 
 	protected:
-    	virtual void init_impl(engine& e, const std::string& version_id = std::string(),
-    						   const location_t* toolset_home = NULL) const;
+    	void init_impl(engine& e,
+		               const std::string& version_id = std::string(),
+    						const location_t* toolset_home = NULL) const override;
 };
 
 class type_tag;

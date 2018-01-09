@@ -138,7 +138,7 @@ class checked_diagnostic : public diagnostic
       expected_diags_t expected_diags_;
       reported_lines_t reported_lines_;
 
-      virtual void report(const char* formated_message);
+      void report(const char* formated_message) override;
 };
 
 void checked_diagnostic::report(const char* formated_message)

@@ -13,7 +13,7 @@ class buffered_output_environment : public proxied_build_environment
       struct one_line_pusher : boost::iostreams::line_filter
       {
          private:
-            virtual string_type do_filter(const string_type& s)
+            string_type do_filter(const string_type& s) override
             {
                return s;
             }

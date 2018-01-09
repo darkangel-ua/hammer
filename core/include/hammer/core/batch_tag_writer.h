@@ -9,12 +9,12 @@ namespace hammer
    {
       public:
          batch_tag_writer() : argument_writer("") {}
-         virtual argument_writer* clone() const { return new batch_tag_writer(*this); }
+         argument_writer* clone() const override { return new batch_tag_writer(*this); }
 
       protected:   
-         virtual void write_impl(std::ostream& output, 
-                                 const build_node& node, 
-                                 const build_environment& environment) const
+         void write_impl(std::ostream& output,
+                         const build_node& node,
+                         const build_environment& environment) const override
          {
             output << "batched." << &node;
          };

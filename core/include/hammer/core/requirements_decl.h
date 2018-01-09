@@ -32,11 +32,11 @@ namespace hammer
    {
       public:
          just_feature_requirement(feature* f) : f_(f) {}
-         virtual void eval(const feature_set& build_request,
-                           feature_set* result,
-                           feature_set* public_result) const;
-         virtual requirement_base* clone() const { return new just_feature_requirement(*this); }
-         virtual void setup_path_data(const basic_meta_target* t);
+			void eval(const feature_set& build_request,
+			          feature_set* result,
+			          feature_set* public_result) const override;
+			requirement_base* clone() const override { return new just_feature_requirement(*this); }
+         void setup_path_data(const basic_meta_target* t) override;
       
       private:
          feature* f_;
@@ -47,11 +47,11 @@ namespace hammer
       public:
          void add(feature* c);
          void result(feature *r) { result_ = r; }
-         virtual void eval(const feature_set& build_request,
-                           feature_set* result,
-                           feature_set* public_result) const;
-         virtual requirement_base* clone() const { return new linear_and_condition(*this); }
-         virtual void setup_path_data(const basic_meta_target* t);
+			void eval(const feature_set& build_request,
+			          feature_set* result,
+			          feature_set* public_result) const override;
+			requirement_base* clone() const override { return new linear_and_condition(*this); }
+         void setup_path_data(const basic_meta_target* t) override;
       
       private:
          typedef std::vector<const feature*> features_t;

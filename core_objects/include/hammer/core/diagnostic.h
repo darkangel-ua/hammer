@@ -82,7 +82,7 @@ class streamed_diagnostic : public diagnostic
 		{}
    
    protected:
-      virtual void report(const char* formated_message);
+      void report(const char* formated_message) override;
 
    private:
       std::ostream& os_;

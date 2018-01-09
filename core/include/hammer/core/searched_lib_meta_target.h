@@ -15,7 +15,8 @@ namespace hammer{
                                   const requirements_decl& usage_req,
                                   const target_type& t);
       protected:
-         virtual main_target* construct_main_target(const main_target* owner, const feature_set* properties) const;
+         main_target* construct_main_target(const main_target* owner,
+			                                   const feature_set* properties) const override;
       
       private:
          const std::string lib_name_;

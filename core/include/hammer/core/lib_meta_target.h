@@ -13,7 +13,8 @@ namespace hammer
                          const requirements_decl& usage_req);
       
       protected:
-         virtual main_target* construct_main_target(const main_target* owner, const feature_set* properties) const;
+         main_target* construct_main_target(const main_target* owner,
+			                                   const feature_set* properties) const override;
    };
 }
 

@@ -18,9 +18,9 @@ namespace hammer
          }
       
       protected:
-         virtual bool run_shell_commands(const std::vector<std::string>& commands,
-                                         const build_node& node, 
-                                         const build_environment& environment) const;
+         bool run_shell_commands(const std::vector<std::string>& commands,
+                                 const build_node& node,
+                                 const build_environment& environment) const override;
 
       private:
          boost::shared_ptr<argument_writer> output_writer_;

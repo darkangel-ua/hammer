@@ -54,7 +54,7 @@ namespace hammer
                               add_targets_as_explicit_(false)
          {};
          
-         virtual const location_t& location() const { return location_; }
+         const location_t& location() const override { return location_; }
          void location(const location_t& l);
          void add_target(std::auto_ptr<basic_meta_target> t);
          const targets_t& targets() const { return targets_; }
@@ -99,11 +99,11 @@ namespace hammer
          bool add_targets_as_local_ = false;
          mutable feature_registry local_feature_registry_;
 
-         virtual void instantiate_impl(const main_target* owner, 
-                                       const feature_set& build_request,
-                                       std::vector<basic_target*>* result, 
-                                       feature_set* usage_requirements) const;
-   };
+			void instantiate_impl(const main_target* owner,
+			                      const feature_set& build_request,
+			                      std::vector<basic_target*>* result,
+			                      feature_set* usage_requirements) const override;
+	};
 
    // -1 == not suitable 
    // > -1 == suitable with computed rank. Zero IS valid rank

@@ -10,10 +10,12 @@ namespace hammer
    {
       public:
          mkdir_action(const location_t& dir_to_create);
-         virtual std::string target_tag(const build_node& node, const build_environment& environment) const;
+         std::string target_tag(const build_node& node,
+			                       const build_environment& environment) const override;
 
       protected:
-         virtual bool execute_impl(const build_node& node, const build_environment& environment) const;
+         bool execute_impl(const build_node& node,
+			                  const build_environment& environment) const override;
       
       private:
          location_t dir_to_create_;

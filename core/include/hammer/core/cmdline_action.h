@@ -29,15 +29,18 @@ namespace hammer
          {
          }
 
-         virtual std::string target_tag(const build_node& node, const build_environment& environment) const;
+         std::string target_tag(const build_node& node,
+			                       const build_environment& environment) const override;
 
          cmdline_action& operator +=(const cmdline_builder& b);
 
       protected:
-         virtual bool execute_impl(const build_node& node, const build_environment& environment) const;
-         virtual bool run_shell_commands(const std::vector<std::string>& commands,
-                                         const build_node& node, 
-                                         const build_environment& environment) const;
+         bool execute_impl(const build_node& node,
+			                  const build_environment& environment) const override;
+         virtual
+			bool run_shell_commands(const std::vector<std::string>& commands,
+                                 const build_node& node,
+                                 const build_environment& environment) const;
 
       private:
          typedef std::vector<cmdline_builder> builders_t;

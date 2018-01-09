@@ -11,7 +11,8 @@ namespace hammer
          batched_cmdline_action(const std::string& name);
 
       protected:
-         virtual bool execute_impl(const build_node& node, const build_environment& environment) const;
+         bool execute_impl(const build_node& node,
+			                  const build_environment& environment) const override;
    };
 }
 

@@ -29,11 +29,14 @@ namespace{
               tag_writer_("", tag_type)
          {}
 
-         virtual std::string target_tag(const build_node& node, const build_environment& environment) const;
+         std::string target_tag(const build_node& node,
+                                const build_environment& environment) const override;
 
       protected:
-         virtual bool execute_impl(const build_node& node, const build_environment& environment) const;
-         virtual void clean_on_fail(const build_node& node, const build_environment& environment) const;
+         bool execute_impl(const build_node& node,
+                           const build_environment& environment) const override;
+         void clean_on_fail(const build_node& node,
+                            const build_environment& environment) const override;
       
       private:
          product_argument_writer tag_writer_;

@@ -18,7 +18,7 @@ namespace hammer
                                  const std::string& delimiter = std::string(" "),
                                  const std::string& global_prefix = std::string(),
                                  const std::string& global_suffix = std::string());
-         virtual free_feature_arg_writer* clone() const;
+         free_feature_arg_writer* clone() const override;
 
       private:
          const feature_def& feature_def_;
@@ -28,7 +28,9 @@ namespace hammer
          std::string global_prefix_;
          std::string global_suffix_;
 
-         virtual void write_impl(std::ostream& output, const build_node& node, const build_environment& environment) const;
+         void write_impl(std::ostream& output,
+			                const build_node& node,
+			                const build_environment& environment) const override;
    };
 }
 

@@ -17,8 +17,9 @@ namespace hammer
          const location_t& destination() const { return destination_; }
          const types_t& types_to_copy() const { return types_to_copy_; }
          bool recursive() const { return recursive_; }
-      protected:
-         virtual void add_additional_dependencies(hammer::build_node& generated_node) const;
+
+		protected:
+         void add_additional_dependencies(hammer::build_node& generated_node) const override;
 
       private:
          location_t destination_;

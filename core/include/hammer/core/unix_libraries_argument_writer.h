@@ -13,7 +13,7 @@ namespace hammer
          unix_libraries_argument_writer(const std::string& name,
                                         linker_type::value linker,
                                         engine& e);
-         virtual unix_libraries_argument_writer* clone() const;
+         unix_libraries_argument_writer* clone() const override;
 
       private:
          linker_type::value linker_type_;
@@ -23,7 +23,9 @@ namespace hammer
          const target_type* searched_static_lib_type_;
          const target_type* import_lib_type_;
 
-         virtual void write_impl(std::ostream& output, const build_node& node, const build_environment& environment) const;
+         void write_impl(std::ostream& output,
+			                const build_node& node,
+			                const build_environment& environment) const override;
    };
 }
 

@@ -17,12 +17,14 @@ namespace hammer
          };
 
          gcc_toolset();
-         virtual void autoconfigure(engine& e) const;
+         void autoconfigure(engine& e) const override;
       
       protected:
-         virtual void init_impl(engine& e, const std::string& version_id = std::string(),
-                                const location_t* toolset_home = NULL) const;
-         virtual gcc_install_data resolve_install_data(const location_t* toolset_home, const std::string& version_id) const;
+         void init_impl(engine& e,
+			               const std::string& version_id = std::string(),
+                        const location_t* toolset_home = NULL) const override;
+         gcc_install_data resolve_install_data(const location_t* toolset_home,
+			                                      const std::string& version_id) const;
    };
 }
 

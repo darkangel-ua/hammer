@@ -14,8 +14,8 @@ class testing_intermediate_meta_target : public typed_meta_target
                                        const requirements_decl& usage_req,
                                        const target_type& t);
    protected:
-      virtual sources_decl compute_additional_sources(const main_target& owner) const;
-      virtual bool is_cachable(const main_target* owner) const { return false; }
+      sources_decl compute_additional_sources(const main_target& owner) const override;
+      bool is_cachable(const main_target* owner) const override { return false; }
 };
 
 }

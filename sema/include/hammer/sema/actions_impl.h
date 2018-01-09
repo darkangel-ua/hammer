@@ -46,7 +46,7 @@ class actions_impl : public actions
 		on_rule_invocation(const parscore::identifier& rule_name,
 								 const ast::expressions_t& arguments) override;
 
-		virtual const ast::statement*
+		const ast::statement*
 		on_top_level_rule_invocation(const parscore::source_location explicit_tag,
 											  const parscore::source_location local_tag,
 											  const parscore::identifier& rule_name,

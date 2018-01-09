@@ -10,10 +10,12 @@ class mksig_action : public build_action
 {
    public:
       mksig_action();
-      virtual std::string target_tag(const build_node& node, const build_environment& environment) const;
+      std::string target_tag(const build_node& node,
+		                       const build_environment& environment) const override;
 
    protected:
-      virtual bool execute_impl(const build_node& node, const build_environment& environment) const;
+      bool execute_impl(const build_node& node,
+		                  const build_environment& environment) const override;
 };
 
 }

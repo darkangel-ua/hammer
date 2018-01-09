@@ -13,10 +13,10 @@ namespace hammer
                            const requirements_decl& req,
                            const requirements_decl& usage_req);
       protected:
-         virtual void instantiate_impl(const main_target* owner,
-                                       const feature_set& build_request,
-                                       std::vector<basic_target*>* result,
-                                       feature_set* usage_requirements) const;
+         void instantiate_impl(const main_target* owner,
+                               const feature_set& build_request,
+                               std::vector<basic_target*>* result,
+                               feature_set* usage_requirements) const override;
    };
 }
 

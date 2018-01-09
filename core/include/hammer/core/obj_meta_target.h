@@ -13,8 +13,9 @@ namespace hammer
                          const requirements_decl& req, 
                          const requirements_decl& usage_req);
       protected:
-         virtual main_target* construct_main_target(const main_target* owner, const feature_set* properties) const;
-         virtual bool is_cachable(const main_target* owner) const { return false; }
+         main_target* construct_main_target(const main_target* owner,
+			                                   const feature_set* properties) const override;
+         bool is_cachable(const main_target* owner) const override { return false; }
 
       private:
          mutable main_target* last_constructed_main_target_;

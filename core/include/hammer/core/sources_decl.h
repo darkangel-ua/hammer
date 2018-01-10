@@ -17,6 +17,7 @@ namespace hammer
          typedef std::vector<source_decl>::const_iterator const_iterator;
 
          sources_decl();
+			~sources_decl();
          sources_decl(const sources_decl& rhs);
          sources_decl& operator = (const sources_decl& rhs);
 

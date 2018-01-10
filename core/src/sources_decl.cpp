@@ -68,6 +68,12 @@ sources_decl::sources_decl() : impl_(new impl_t)
 
 }
 
+sources_decl::~sources_decl()
+{
+   if (--impl_->ref_counter_  == 0)
+      delete impl_;
+}
+
 void sources_decl::clone_if_needed()
 {
    if (impl_->ref_counter_ > 1)

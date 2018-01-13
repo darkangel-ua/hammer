@@ -13,7 +13,7 @@ class fake_generator : public generator
                      const consumable_types_t& source_types,
                      const producable_types_t& target_types,
                      bool composite,
-                     const feature_set* c = 0);
+                     const feature_set* c = nullptr);
    protected:
       basic_build_target*
 		create_target(const main_target* mt,

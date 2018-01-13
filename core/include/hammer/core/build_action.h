@@ -2,7 +2,7 @@
 #define h_ee7eef40_46e2_4a70_bb84_999ada9c5565
 
 #include <string>
-#include <boost/shared_ptr.hpp>
+#include <hammer/core/build_action_fwd.h>
 
 namespace hammer
 {
@@ -10,7 +10,7 @@ namespace hammer
    class build_environment;
    class basic_target;
 
-   class build_action
+	class build_action
    {
       public:
          build_action(const std::string& name) : name_(name) {}
@@ -18,8 +18,8 @@ namespace hammer
          bool execute(const build_node& node, const build_environment& environment) const;
          virtual std::string target_tag(const build_node& node, const build_environment& environment) const = 0;
 
-         void batched_action(const boost::shared_ptr<build_action>& ba) { batched_action_ = ba; }
-         const build_action* batched_action() const { return batched_action_.get(); }
+         void batched_action(const build_action_ptr& ba) { batched_action_ = ba; }
+         const build_action_ptr& batched_action() const { return batched_action_; }
 
          virtual ~build_action();
 
@@ -29,7 +29,7 @@ namespace hammer
       
       private:
          std::string name_;
-         boost::shared_ptr<build_action> batched_action_;
+         build_action_ptr batched_action_;
    };
 }
 

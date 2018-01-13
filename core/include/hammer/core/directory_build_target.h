@@ -11,13 +11,13 @@ namespace hammer
       public:
          directory_build_target(const main_target* mt,
 			                       const location_t& dir);
-         const build_action* action() const { return &action_; }
+         const std::shared_ptr<mkdir_action>& action() const { return action_; }
 			const location_t& location() const override { return dir_to_create_; }
 			void clean(const build_environment& environment) const override;
 
       private:
          location_t dir_to_create_;
-         mkdir_action action_;
+         std::shared_ptr<mkdir_action> action_;
 
          void timestamp_info_impl() const override;
    };

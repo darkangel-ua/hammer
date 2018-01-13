@@ -2,6 +2,7 @@
 #define HAMMER_CORE_COMPILE_FAIL_GENERATOR_H
 
 #include <hammer/core/generator.h>
+#include <hammer/core/build_action.h>
 
 namespace hammer {
 
@@ -9,8 +10,7 @@ class compile_fail_generator : public generator
 {
    public:
       compile_fail_generator(engine& e,
-                             std::unique_ptr<generator> compile_generator,
-                             std::unique_ptr<build_action> compile_action);
+                             std::unique_ptr<generator> failing_compile_generator);
       build_nodes_t
       construct(const target_type& type_to_construct,
                 const feature_set& props,
@@ -30,6 +30,26 @@ class compile_fail_generator : public generator
    private:
       std::unique_ptr<generator> compile_generator_;
 };
+
+class compile_fail_build_action : public build_action
+{
+   public:
+      compile_fail_build_action(engine& e,
+		                          const build_action_ptr& compile_action);
+
+		std::string	target_tag(const build_node& node,
+		                       const build_environment& environment) const override;
+	protected:
+      bool execute_impl(const build_node& node,
+                        const build_environment& environment) const override;
+
+   private:
+      build_action_ptr compile_action_;
+      const target_type& output_target_type_;
+};
+
+void add_compile_fail_generator(engine& e,
+                                std::unique_ptr<generator> compile_generator);
 
 }
 

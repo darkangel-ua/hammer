@@ -391,15 +391,14 @@ void add_types_and_generators(engine& e,
       uic_cmd += ui_source;
       uic_cmd += uic_product;
 
-      unique_ptr<cmdline_action> uic_action(new cmdline_action("qt.uic", uic_product));
+      auto uic_action = std::make_shared<cmdline_action>("qt.uic", uic_product);
       *uic_action += uic_cmd;
 
       generator::consumable_types_t source;
       generator::producable_types_t target;
       source.push_back(generator::consumable_type(e.get_type_registry().get(qt_ui), 1, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(qt_uiced_h)));
-      unique_ptr<generator> g(new generator(e, "qt.uic", source, target, false));
-      g->action(std::move(uic_action));
+      unique_ptr<generator> g(new generator(e, "qt.uic", source, target, false, uic_action));
       e.generators().insert(std::move(g));
    }
 
@@ -412,15 +411,14 @@ void add_types_and_generators(engine& e,
       rcc_cmd += rcc_source;
       rcc_cmd += rcc_product;
 
-      unique_ptr<cmdline_action> rcc_action(new cmdline_action("qt.rcc", rcc_product));
+      auto rcc_action = std::make_shared<cmdline_action>("qt.rcc", rcc_product);
       *rcc_action += rcc_cmd;
 
       generator::consumable_types_t source;
       generator::producable_types_t target;
       source.push_back(generator::consumable_type(e.get_type_registry().get(qt_rc), 1, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(qt_rced_cpp)));
-      unique_ptr<generator> g(new generator(e, "qt.rcc", source, target, false));
-      g->action(std::move(rcc_action));
+      unique_ptr<generator> g(new generator(e, "qt.rcc", source, target, false, rcc_action));
       e.generators().insert(std::move(g));
    }
 
@@ -433,15 +431,14 @@ void add_types_and_generators(engine& e,
       moc_cmd += mocable_source;
       moc_cmd += cpp_product;
 
-      unique_ptr<cmdline_action> moc_action(new cmdline_action("qt.moc", cpp_product));
+      auto moc_action = std::make_shared<cmdline_action>("qt.moc", cpp_product);
       *moc_action += moc_cmd;
 
       generator::consumable_types_t source;
       generator::producable_types_t target;
       source.push_back(generator::consumable_type(e.get_type_registry().get(qt_mocable), 1, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::CPP)));
-      unique_ptr<generator> g(new generator(e, "qt.moc", source, target, false));
-      g->action(std::move(moc_action));
+      unique_ptr<generator> g(new generator(e, "qt.moc", source, target, false, moc_action));
       e.generators().insert(std::move(g));
    }
 

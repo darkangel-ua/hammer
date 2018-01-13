@@ -25,7 +25,7 @@ void generic_batcher::process(const build_node::nodes_t& nodes, unsigned concure
       }
 }
 
-typedef boost::unordered_map<pair<const feature_set*, const build_action*>, build_node::sources_t> selected_nodes_t;
+typedef boost::unordered_map<pair<const feature_set*, const build_action_ptr>, build_node::sources_t> selected_nodes_t;
 static void process_interval(build_node& node, 
                              selected_nodes_t::const_iterator i,
                              unsigned concurency_level)
@@ -37,9 +37,8 @@ static void process_interval(build_node& node,
    for(size_t batched_sources_count = 0; batched_sources_count < i->second.size(); )
    {
       const build_node& front_node = *s_iter->source_node_;
-      boost::intrusive_ptr<build_node> new_node(new build_node(front_node.products_owner(), false));
+      build_node_ptr new_node(new build_node(front_node.products_owner(), false, front_node.action()->batched_action()));
       new_node->up_to_date(boost::tribool::false_value);
-      new_node->action(front_node.action()->batched_action());
       new_node->targeting_type_ = front_node.targeting_type_;
 
       for(; s_iter != s_block_last; ++s_iter, ++batched_sources_count)

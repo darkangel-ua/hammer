@@ -42,6 +42,7 @@ init_unit_test_suite( int argc, char* argv[] )
 
    add_tests_from_filesystem(test_data_path / "htmpl", "htmpl", bind(complete_build_test_function, placeholders::_1));
    add_tests_from_filesystem(test_data_path / "qt", "qt", bind(complete_build_test_function, placeholders::_1));
+   add_tests_from_filesystem(test_data_path / "full_build_tests", "full_build_tests", bind(complete_build_test_function, placeholders::_1));
 
    return 0;            
 }                             

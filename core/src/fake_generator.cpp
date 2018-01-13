@@ -10,7 +10,7 @@ fake_generator::fake_generator(engine& e,
                                const producable_types_t& target_types,
                                bool composite,
                                const feature_set* c)
-   : generator(e, name, source_types, target_types, composite, c)
+   : generator(e, name, source_types, target_types, composite, build_action_ptr{}, c)
 {
 }
 

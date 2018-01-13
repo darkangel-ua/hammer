@@ -12,8 +12,9 @@ pch_generator::pch_generator(hammer::engine& e,
                              const consumable_types_t& source_types,
                              const producable_types_t& target_types,
                              bool composite,
+                             const build_action_ptr& action,
                              const feature_set* c)
-   : generator(e, name, source_types, target_types, composite, c),
+   : generator(e, name, source_types, target_types, composite, action, c),
      c_type_(e.get_type_registry().get(types::C)),
      cpp_type_(e.get_type_registry().get(types::CPP)),
      h_type_(e.get_type_registry().get(types::H))

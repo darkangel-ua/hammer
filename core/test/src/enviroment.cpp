@@ -19,6 +19,7 @@
 #include <hammer/core/toolsets/msvc_toolset.h>
 #include <hammer/core/toolsets/qt_toolset.h>
 #include <hammer/core/htmpl/htmpl.h>
+#include "options.h"
 
 using namespace hammer;
 using namespace std;
@@ -87,13 +88,18 @@ void complete_build_tests_environment::run_test(const boost::filesystem::path& w
    volatile bool interrupt_flag = false;
    builder builder(be, interrupt_flag, 1, true);
 
+   options opts(working_dir / "hamfile");
+
 //   FIXME: will enable this later using options from hamfile
 //   ofstream graphviz((working_dir / "build.dot").string());
 //   builder.generate_graphviz(graphviz, nodes_to_build);
 //   graphviz.close();
 
    builder::result build_result = builder.build(nodes_to_build);
-   BOOST_REQUIRE_EQUAL(build_result.failed_to_build_targets_, 0);
+   if (opts.exists("should-fail"))
+      BOOST_REQUIRE_NE(build_result.failed_to_build_targets_, 0);
+   else
+      BOOST_REQUIRE_EQUAL(build_result.failed_to_build_targets_, 0);
 }
 
 void add_tests_from_filesystem(const boost::filesystem::path& test_data_path,

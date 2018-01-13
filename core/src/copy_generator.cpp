@@ -76,12 +76,13 @@ namespace{
 }
 
 copy_generator::copy_generator(hammer::engine& e)
-   : generator(e, "copy", consumable_types_t(),
-                          list_of<produced_type>(e.get_type_registry().get(types::COPIED), 0),
-                          true)
+   : generator(e,
+               "copy",
+               consumable_types_t(),
+               list_of<produced_type>(e.get_type_registry().get(types::COPIED), 0),
+               true,
+               std::make_shared<copy_action>(e.get_type_registry().get(types::COPIED)))
 {
-   std::unique_ptr<build_action> a(new copy_action(e.get_type_registry().get(types::COPIED)));
-   action(std::move(a));
 }
 
 typedef std::vector<boost::intrusive_ptr<build_node> > nodes_t;
@@ -109,9 +110,8 @@ copy_generator::construct(const target_type& type_to_construct,
    result.reserve(collected_nodes.size());
    for(build_node::sources_t::const_iterator i = collected_nodes.begin(), last = collected_nodes.end(); i != last; ++i)
    {
-      boost::intrusive_ptr<build_node> new_node(new build_node(owner, false));
+      boost::intrusive_ptr<build_node> new_node(new build_node(owner, false, action()));
       new_node->targeting_type_ = &type_to_construct;
-      new_node->action(action());
       new_node->sources_.push_back(*i);
       new_node->down_.push_back(i->source_node_);
 

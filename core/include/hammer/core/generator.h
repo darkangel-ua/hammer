@@ -45,7 +45,8 @@ namespace hammer
                    const consumable_types_t& source_types,
                    const producable_types_t& target_types,
                    bool composite,
-                   const feature_set* c = 0);
+			          const build_action_ptr& action,
+                   const feature_set* c = nullptr);
          virtual ~generator();
 
          hammer::engine& get_engine() { return *engine_; }
@@ -68,9 +69,7 @@ namespace hammer
          bool include_composite_generators() const { return include_composite_generators_; } 
          void include_composite_generators(bool v) { include_composite_generators_ = v; }
 
-         template <typename T>
-         void action(std::unique_ptr<T> a) { action_ = std::move(a); }
-         const build_action* action() const { return action_.get(); } 
+         const build_action_ptr& action() const { return action_; }
 
       protected:
          virtual basic_build_target* create_target(const main_target* mt,
@@ -86,7 +85,7 @@ namespace hammer
          producable_types_t target_types_;
          bool composite_;
          const feature_set* constraints_; // == null if no constraints specified
-         std::unique_ptr<build_action> action_;
+         build_action_ptr action_;
          bool include_composite_generators_; // include composite generators while searching for sources indirect transformations
    };
 

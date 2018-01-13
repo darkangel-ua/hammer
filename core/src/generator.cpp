@@ -19,11 +19,13 @@ generator::generator(hammer::engine& e,
                      const consumable_types_t& source_types,
                      const producable_types_t& target_types,
                      bool composite,
+                     const build_action_ptr& action,
                      const feature_set* c) :
    engine_(&e), name_(name), source_types_(source_types),
    target_types_(target_types),
    composite_(composite),
    constraints_(c),
+   action_(action),
    include_composite_generators_(false)
 {
 
@@ -61,8 +63,7 @@ generator::construct(const target_type& type_to_construct,
 {
    if (!source_target)
    {
-      boost::intrusive_ptr<build_node> result(new build_node(owner, composite_));
-      result->action(action());
+      build_node_ptr result(new build_node(owner, composite_, action()));
 
       typedef build_nodes_t::const_iterator iter;
       for(iter i = sources.begin(), last = sources.end(); i != last; ++i)
@@ -105,9 +106,7 @@ generator::construct(const target_type& type_to_construct,
                                                producable_types().front().need_tag_ ? &owner : NULL);
       assert(sources.size() == 1);
 
-      boost::intrusive_ptr<build_node> result(new build_node(owner, composite_));
-      result->action(action());
-
+      build_node_ptr result(new build_node(owner, composite_, action()));
       result->sources_.push_back(build_node::source_t(source_target, sources.front()));
       result->down_.push_back(sources.front());
       result->products_.push_back(create_target(&owner, result->sources_, new_name, producable_types().front().type_, &props));

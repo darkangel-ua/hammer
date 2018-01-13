@@ -19,7 +19,8 @@ obj_generator::obj_generator(hammer::engine& e)
                                        (e.get_type_registry().get(types::LIB))
                                        (e.get_type_registry().get(types::H)),
                list_of<produced_type>(e.get_type_registry().get(types::OBJ)),
-               true),
+               true,
+               build_action_ptr{}),
      obj_type_(e.get_type_registry().get(types::OBJ))
 {
 }

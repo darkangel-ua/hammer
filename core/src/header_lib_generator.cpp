@@ -15,7 +15,7 @@ header_lib_generator::header_lib_generator(hammer::engine& e,
                                            const feature_set* c)
    :
     generator(e, name, source_types, 
-              target_types, true, c),
+              target_types, true, build_action_ptr{}, c),
     header_type_(e.get_type_registry().get(types::H))
 {
 
@@ -33,7 +33,7 @@ header_lib_generator::construct(const target_type& type_to_construct,
    build_sources_t result;
 
    // add HEADER_LIB node to result
-   boost::intrusive_ptr<build_node> header_lib_node(new build_node(owner, true));
+   boost::intrusive_ptr<build_node> header_lib_node(new build_node(owner, true, build_action_ptr{}));
    header_lib_node->targeting_type_ = &type_to_construct;
    result.push_back(header_lib_node);
    std::auto_ptr<virtual_build_target> header_lib_product(new virtual_build_target(&owner, *composite_target_name, &type_to_construct, &props, true));

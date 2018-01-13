@@ -11,6 +11,7 @@
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature.h>
 #include <hammer/core/feature_def.h>
+#include <hammer/core/engine.h>
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/fstream.hpp>
@@ -113,9 +114,13 @@ htmpl_action::execute_impl(const build_node& node,
 htmpl_generator::htmpl_generator(engine& e,
                                  const string& name,
                                  const type_tag& product_type)
-   : generator(e, name, make_consume_types(e, {HTMPL}), make_product_types(e, {product_type}), true)
+   : generator(e,
+               name,
+               make_consume_types(e, {HTMPL}),
+               make_product_types(e, {product_type}),
+               true,
+               std::make_shared<htmpl_action>(e.get_type_registry().get(HTMPL)))
 {
-   action(std::unique_ptr<build_action>(new htmpl_action(*consumable_types().front().type_)));
 }
 
 }

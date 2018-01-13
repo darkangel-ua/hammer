@@ -1,0 +1,2 @@
+alias test : [ testing.compile-fail main.cpp ] ;
+

@@ -26,10 +26,10 @@ searched_lib_main_target::searched_lib_main_target(const basic_meta_target* mt,
 {
 }
 
-std::vector<boost::intrusive_ptr<hammer::build_node> > 
+build_nodes_t
 searched_lib_main_target::generate() const
 {
-   boost::intrusive_ptr<hammer::build_node> result(new hammer::build_node(*this, true));
+   build_node_ptr result{new hammer::build_node{*this, true, build_action_ptr{}}};
    basic_build_target* t;
    if (type_->equal_or_derived_from(get_engine()->get_type_registry().get(types::SEARCHED_LIB)))
       t = new virtual_build_target(this, lib_name_, type_, &properties(), true);
@@ -44,7 +44,7 @@ searched_lib_main_target::generate() const
 
    generate_and_add_dependencies(*result);
 
-   return std::vector<boost::intrusive_ptr<hammer::build_node> >(1, result);
+   return build_nodes_t{1, result};
 }
 
 }

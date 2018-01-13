@@ -631,9 +631,8 @@ namespace
       nodes_t copy_nodes;
       for(build_node::sources_t::const_iterator i = shared_libs.begin(), last = shared_libs.end(); i != last; ++i)
       {
-         boost::intrusive_ptr<build_node> new_node(new build_node(executables[0].source_node_->products_owner(), false));
+         build_node_ptr new_node(new build_node(executables[0].source_node_->products_owner(), false, copy_generator.action()));
          new_node->targeting_type_ = &e.get_type_registry().get(types::COPIED);
-         new_node->action(copy_generator.action());
          new_node->sources_.push_back(*i);
          new_node->down_.push_back(i->source_node_);
 

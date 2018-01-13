@@ -19,7 +19,8 @@ using namespace std;
 
 namespace hammer{
 
-boost::shared_ptr<mksig_action> main_target::mksig_action_ = boost::shared_ptr<mksig_action>(new mksig_action);
+static
+std::shared_ptr<mksig_action> mksig_action_ = std::make_shared<mksig_action>();
 
 main_target::main_target(const basic_meta_target* mt,
                          const std::string& name,
@@ -72,9 +73,9 @@ main_target::generate() const
 build_node_ptr 
 main_target::create_intermediate_dir_dependency() const
 {
-   build_node_ptr int_dir_node(new hammer::build_node(*this, false));
-   int_dir_node->products_.push_back(new directory_build_target(this, intermediate_dir()));
-   int_dir_node->action(static_cast<const directory_build_target*>(int_dir_node->products_.front())->action());
+   directory_build_target* t = new directory_build_target(this, intermediate_dir());
+   build_node_ptr int_dir_node(new hammer::build_node(*this, false, t->action()));
+   int_dir_node->products_.push_back(t);
    
    return int_dir_node;
 }
@@ -88,14 +89,13 @@ void main_target::add_additional_dependencies(hammer::build_node& generated_node
 void main_target::add_hamfile_dependency(hammer::build_node& node,
                                          const build_node_ptr& intermediate_dir_node) const
 {
-   boost::intrusive_ptr<hammer::build_node> signature_node(new hammer::build_node(*this, false));
+   build_node_ptr signature_node(new hammer::build_node(*this, false, mksig_action_));
    signature_node->products_.push_back(
       new signature_build_target(this,
                                  name() + ".target.sig",
                                  &get_engine()->get_type_registry().get(types::UNKNOWN),
                                  &properties()));
    
-   signature_node->action(mksig_action_.get());
    signature_node->dependencies_.push_back(intermediate_dir_node);
 
    add_this_target_dependency(node, build_nodes_t(1, signature_node));

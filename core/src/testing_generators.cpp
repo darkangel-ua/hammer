@@ -30,39 +30,32 @@ void add_testing_generators(engine& e, generator_registry& gr)
 
    target.push_back(generator::produced_type(e.get_type_registry().get(types::TESTING_OUTPUT)));
    target.push_back(generator::produced_type(e.get_type_registry().get(types::TESTING_RUN_PASSED)));
-   unique_ptr<generator> g(new generator(e, "testing.run", source, target, true));
-   g->include_composite_generators(true);
 
    shared_ptr<product_argument_writer> run_product(new product_argument_writer("run_product", e.get_type_registry().get(types::TESTING_RUN_PASSED)));
    shared_ptr<product_argument_writer> run_output_product(new product_argument_writer("run_output_product", e.get_type_registry().get(types::TESTING_OUTPUT)));
    shared_ptr<source_argument_writer> test_executable(new source_argument_writer("test_executable", e.get_type_registry().get(types::EXE)));
    shared_ptr<shared_lib_dirs_writer> additional_dirs(new shared_lib_dirs_writer("additional_dirs", e.get_type_registry().get(types::SHARED_LIB)));
    shared_ptr<free_feature_arg_writer> input_files(new free_feature_arg_writer("input_files", e.feature_registry().get_def("testing.input-file")));
+   shared_ptr<free_feature_arg_writer> args(new free_feature_arg_writer("args", e.feature_registry().get_def("testing.argument")));
 #if defined(_WIN32)
    cmdline_builder cmdline("@SET PATH=%PATH%;$(additional_dirs)\n"
-                           "@$(test_executable) $(input_files)\n");
+                           "@$(test_executable) $(args) $(input_files)\n");
 #else
    cmdline_builder cmdline("export LD_LIBRARY_PATH=$(additional_dirs):$LD_LIBRARY_PATH\n"
-                           "$(test_executable) $(input_files)");
+                           "$(test_executable) $(args) $(input_files)");
 #endif
    cmdline += run_product;
    cmdline += run_output_product;
    cmdline += test_executable;
    cmdline += additional_dirs;
    cmdline += input_files;
+   cmdline += args;
 
-   unique_ptr<testing_run_action> action(new testing_run_action("testing.run", run_product, run_output_product));
+   auto action = std::make_shared<testing_run_action>("testing.run", run_product, run_output_product);
    *action += cmdline;
-   g->action(std::move(action));
+   unique_ptr<generator> g(new generator(e, "testing.run", source, target, true, action));
+   g->include_composite_generators(true);
    gr.insert(std::move(g));
-}
-
-void add_compile_fail_generator(engine& e,
-                                unique_ptr<generator> compile_generator,
-                                unique_ptr<build_action> compile_action)
-{
-   unique_ptr<generator> g(new compile_fail_generator(e, std::move(compile_generator), std::move(compile_action)));
-   e.generators().insert(std::move(g));
 }
 
 }

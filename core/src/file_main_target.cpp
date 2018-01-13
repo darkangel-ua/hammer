@@ -20,7 +20,7 @@ file_main_target::file_main_target(const basic_meta_target* mt,
 build_nodes_t
 file_main_target::generate() const
 {
-   boost::intrusive_ptr<hammer::build_node> result(new hammer::build_node(*this, true));
+   build_node_ptr result{new hammer::build_node{*this, true, build_action_ptr{}}};
    location_t l_filename = filename_;
    if (!l_filename.has_root_path())
       l_filename = (location() / l_filename).normalize();

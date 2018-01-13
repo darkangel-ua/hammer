@@ -13,7 +13,8 @@ namespace hammer
                                       const consumable_types_t& source_types,
                                       const producable_types_t& target_types,
                                       bool composite,
-                                      const feature_set* c = 0);
+			                             const build_action_ptr& action,
+                                      const feature_set* c);
 
          build_nodes_t
          construct(const target_type& type_to_construct,

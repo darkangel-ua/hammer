@@ -32,7 +32,6 @@ class basic_build_target : private boost::noncopyable
 		const std::string& name() const { return name_; }
       const target_type& type() const { return *type_; }
       const feature_set& properties() const { return *features_; }
-      void properties(const feature_set* p);
       const main_target* get_main_target() const { return main_target_; }
       const basic_meta_target* get_meta_target() const;
       const project* get_project() const;

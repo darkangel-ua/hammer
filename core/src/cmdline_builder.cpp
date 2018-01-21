@@ -4,6 +4,7 @@
 #include <boost/spirit/include/classic_core.hpp>
 #include <boost/spirit/include/classic_lists.hpp>
 #include <hammer/core/cmdline_builder.h>
+#include <hammer/core/argument_writer.h>
 
 using namespace std;
 
@@ -54,6 +55,19 @@ void cmdline_builder::write(std::ostream& output, const build_node& node, const 
 
    if (c_str_cmd != end_c_str_cmd)
       output.write(c_str_cmd, static_cast<std::streamsize>(end_c_str_cmd - c_str_cmd));
+}
+
+std::vector<const feature*>
+cmdline_builder::valuable_features() const
+{
+   std::vector<const feature*> result;
+
+   for(const auto& writer : writers_) {
+      auto v = writer.second->valuable_features();
+      result.insert(result.end(), v.begin(), v.end());
+   }
+
+   return result;
 }
 
 }

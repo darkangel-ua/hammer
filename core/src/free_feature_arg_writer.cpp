@@ -6,25 +6,33 @@
 #include <hammer/core/feature.h>
 #include <hammer/core/basic_meta_target.h>
 #include <hammer/core/build_environment.h>
+#include <hammer/core/basic_build_target.h>
 #include <hammer/core/fs_helpers.h>
 #include <hammer/core/main_target.h>
+#include <hammer/core/feature_registry.h>
 
 namespace hammer{
 
-free_feature_arg_writer::free_feature_arg_writer(const std::string& name, 
-                                                 const feature_def& def,
-                                                 const std::string& prefix, 
+free_feature_arg_writer::free_feature_arg_writer(const std::string& name,
+                                                 feature_registry& fr,
+                                                 const std::string& feature_name,
+                                                 const std::string& prefix,
                                                  const std::string& suffix,
                                                  const std::string& delimiter,
                                                  const std::string& global_prefix,
                                                  const std::string& global_suffix)
-   : argument_writer(name), feature_def_(def),
+   : argument_writer(name),
+     feature_def_(fr.get_def(feature_name)),
+     fr_(fr),
      prefix_(prefix), suffix_(suffix), delimiter_(delimiter),
      global_prefix_(global_prefix), global_suffix_(global_suffix)
 {
+   assert(feature_def_.attributes().free);
 }
 
-void free_feature_arg_writer::write_impl(std::ostream& output, const build_node& node, const build_environment& environment) const
+void free_feature_arg_writer::write_impl(std::ostream& output,
+                                         const build_node& node,
+                                         const build_environment& environment) const
 {
    bool global_prefix_written = false;
    const feature_set& build_request = node.build_request();
@@ -37,8 +45,24 @@ void free_feature_arg_writer::write_impl(std::ostream& output, const build_node&
          global_prefix_written = true;
       }
 
-      if (feature_def_.attributes().path)
-      {
+      if (feature_def_.attributes().generated) {
+         // everything generated should always be in dependencies of this node
+         if (feature_def_.attributes().path) {
+            std::set<location_t> includes;
+            for (const build_node_ptr& d : node.dependencies_) {
+               if (&d->products_owner() != (**i).get_generated_data().target_)
+                  continue;
+               for (const basic_build_target* p : d->products_) {
+                  location_t include_path = p->location();
+                  include_path = relative_path(include_path, environment.working_directory(*node.products_.front()));
+                  include_path.normalize();
+                  includes.insert(include_path);
+               }
+            }
+            for (const location_t& l : includes)
+               output << prefix_ << l.string() << suffix_ << delimiter_;
+         }
+      } else if (feature_def_.attributes().path) {
          if(node.products_.empty()) 
             throw std::runtime_error("[free_feature_arg_writer] Can't write path feature for node without products.");
 
@@ -47,8 +71,7 @@ void free_feature_arg_writer::write_impl(std::ostream& output, const build_node&
          include_path = relative_path(include_path, environment.working_directory(*node.products_.front()));
          include_path.normalize();
          output << prefix_ << include_path.string() << suffix_ << delimiter_;
-      }
-      else
+      } else
          output << prefix_ << (**i).value() << suffix_ << delimiter_;
       i = build_request.find(++i, feature_def_.name());
    }
@@ -60,6 +83,12 @@ void free_feature_arg_writer::write_impl(std::ostream& output, const build_node&
 free_feature_arg_writer* free_feature_arg_writer::clone() const
 {
    return new free_feature_arg_writer(*this);
+}
+
+std::vector<const feature*>
+free_feature_arg_writer::valuable_features() const
+{
+   return {1, fr_.create_feature(feature_def_.name(), {})};
 }
 
 }

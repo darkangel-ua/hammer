@@ -13,6 +13,7 @@ namespace hammer
       public:
          targets_argument_writer(const std::string& name, const target_type& t);
          const target_type& source_type() const { return *source_type_; }
+			std::vector<const feature*> valuable_features() const override { return {}; }
 
       private:
          const target_type* source_type_;

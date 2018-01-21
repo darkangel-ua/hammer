@@ -9,23 +9,13 @@ class generated_build_target : public file_build_target
 		generated_build_target(const main_target* mt,
 		                       const std::string& n,
 		                       const target_type* t,
-		                       const feature_set* f);
-		const location_t& location() const override;
-		void clean(const build_environment& environment) const override;
-};
-
-class generated_2_build_target : public generated_build_target
-{
-	public:
-		generated_2_build_target(const main_target* mt,
-		                         const std::string& n,
-		                         const location_t& l,
-		                         const target_type* t,
-		                         const feature_set* f);
+		                       const feature_set* f,
+		                       const location_t* l = nullptr);
 		const location_t& location() const override { return location_; }
+		void clean(const build_environment& environment) const override;
 
 	private:
-		const location_t& location_;
+		const location_t location_;
 };
 
 }

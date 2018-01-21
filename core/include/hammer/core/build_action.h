@@ -2,6 +2,7 @@
 #define h_ee7eef40_46e2_4a70_bb84_999ada9c5565
 
 #include <string>
+#include <vector>
 #include <hammer/core/build_action_fwd.h>
 
 namespace hammer
@@ -9,6 +10,7 @@ namespace hammer
    class build_node;
    class build_environment;
    class basic_target;
+	class feature;
 
 	class build_action
    {
@@ -18,8 +20,10 @@ namespace hammer
          bool execute(const build_node& node, const build_environment& environment) const;
          virtual std::string target_tag(const build_node& node, const build_environment& environment) const = 0;
 
-         void batched_action(const build_action_ptr& ba) { batched_action_ = ba; }
+         // FIXME: this need to factored out. This should be fully const object
+			void batched_action(const build_action_ptr& ba) { batched_action_ = ba; }
          const build_action_ptr& batched_action() const { return batched_action_; }
+			virtual std::vector<const feature*> valuable_features() const = 0;
 
          virtual ~build_action();
 

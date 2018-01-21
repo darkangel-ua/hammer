@@ -19,6 +19,7 @@ class pch_argument_writer : public argument_writer
 		{}
 
 		pch_argument_writer* clone() const override { return new pch_argument_writer(*this); }
+		std::vector<const feature*> valuable_features() const override { return {}; }
 
 	protected:
 		void write_impl(std::ostream& output,

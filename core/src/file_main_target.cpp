@@ -28,7 +28,6 @@ file_main_target::generate() const
    basic_build_target* t = new source_build_target(this, l_filename.filename().string(), l_filename.branch_path(), type_, &properties());
    result->products_.push_back(t);
    result->targeting_type_ = this->type_;
-   generate_and_add_dependencies(*result);
 
    return std::vector<boost::intrusive_ptr<hammer::build_node> >(1, result);
 }

@@ -20,6 +20,7 @@ namespace hammer
          fs_argument_writer& add(const feature_set* pattern, const std::string& what_write);
          fs_argument_writer& add(const std::string& pattern, const std::string& what_write);
          fs_argument_writer* clone() const override;
+			std::vector<const feature*> valuable_features() const override;
 
       private:
          typedef std::vector<std::pair<const feature_set* /*pattern*/, std::string /*what write*/> > patterns_t;

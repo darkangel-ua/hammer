@@ -1,12 +1,13 @@
 #include "stdafx.h"
+#include <sstream>
+#include <fstream>
+#include <iostream>
 #include <hammer/core/testing_run_action.h>
 #include <hammer/core/build_environment.h>
 #include <hammer/core/build_node.h>
 #include <hammer/core/main_target.h>
 #include <hammer/core/basic_build_target.h>
-#include <sstream>
-#include <fstream>
-#include <iostream>
+#include <hammer/core/argument_writer.h>
 
 using namespace std;
 using namespace boost::filesystem;

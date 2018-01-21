@@ -57,4 +57,24 @@ fs_argument_writer* fs_argument_writer::clone() const
    return new fs_argument_writer(*this);
 }
 
+std::vector<const feature*>
+fs_argument_writer::valuable_features() const
+{
+   std::vector<const feature*> result;
+
+   for (auto& p : patterns_) {
+      const feature_set* pfs = p.first;
+      for (const feature* f : *pfs) {
+         auto i = std::find_if(result.begin(), result.end(), [&](const feature* v) {
+            return *v == *f;
+         });
+
+         if (i == result.end())
+            result.push_back(f);
+      }
+   }
+
+   return result;
+}
+
 }

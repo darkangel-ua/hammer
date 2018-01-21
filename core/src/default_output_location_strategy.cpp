@@ -11,7 +11,7 @@ namespace hammer{
 
 location_t default_output_location_strategy::compute_output_location(const main_target& mt) const
 {
-   return mt.get_project()->location() / ".hammer/bin" / mt.name() / mt.hash_string();
+   return mt.get_project()->location() / ".hammer/bin" / mt.name();
 }
 
 }

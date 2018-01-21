@@ -72,7 +72,8 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
 
    shared_ptr<free_feature_arg_writer> searched_lib_searched_dirs(
       new free_feature_arg_writer("searched_lib_searched_dirs",
-                                  e.feature_registry().get_def("search"),
+                                  e.feature_registry(),
+                                  "search",
                                   string("-L \""),
                                   string("\"")));
 
@@ -100,13 +101,14 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
                add("<address-model>64", "-m64").
                add("<runtime-link>static", "-static-libgcc -static-libstdc++");
 
-   shared_ptr<free_feature_arg_writer> user_link_flags(new free_feature_arg_writer("user_link_flags", e.feature_registry().get_def("linkflags")));
-   shared_ptr<free_feature_arg_writer> user_cxx_flags(new free_feature_arg_writer("user_cxx_flags", e.feature_registry().get_def("cxxflags")));
-   shared_ptr<free_feature_arg_writer> user_c_flags(new free_feature_arg_writer("user_c_flags", e.feature_registry().get_def("cflags")));
-   shared_ptr<free_feature_arg_writer> user_archive_flags(new free_feature_arg_writer("user_archive_flags", e.feature_registry().get_def("archiveflags")));
+   shared_ptr<free_feature_arg_writer> user_link_flags(new free_feature_arg_writer("user_link_flags", e.feature_registry(), "linkflags"));
+   shared_ptr<free_feature_arg_writer> user_cxx_flags(new free_feature_arg_writer("user_cxx_flags", e.feature_registry(), "cxxflags"));
+   shared_ptr<free_feature_arg_writer> user_c_flags(new free_feature_arg_writer("user_c_flags", e.feature_registry(), "cflags"));
+   shared_ptr<free_feature_arg_writer> user_archive_flags(new free_feature_arg_writer("user_archive_flags", e.feature_registry(), "archiveflags"));
 
-   shared_ptr<free_feature_arg_writer> includes(new free_feature_arg_writer("includes", e.feature_registry().get_def("include"), "-I\"", "\""));
-   shared_ptr<free_feature_arg_writer> defines(new free_feature_arg_writer("defines", e.feature_registry().get_def("define"), "-D"));
+   shared_ptr<free_feature_arg_writer> includes(new free_feature_arg_writer("includes", e.feature_registry(), "include", "-I\"", "\""));
+   shared_ptr<free_feature_arg_writer> generated_includes(new free_feature_arg_writer("generated-includes", e.feature_registry(), "__generated-include", "-I\"", "\""));
+   shared_ptr<free_feature_arg_writer> defines(new free_feature_arg_writer("defines", e.feature_registry(), "define", "-D"));
 
    const string generator_prefix = name() + "-" + install_data.version_;
 
@@ -114,10 +116,11 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
    {
       shared_ptr<source_argument_writer> c_input(new source_argument_writer("c_input", e.get_type_registry().get(types::C), /*exact_type=*/false, source_argument_writer::FULL_PATH));
       cmdline_builder obj_cmd(install_data.compiler_.string() +
-                              " -x c -c $(cflags) $(user_c_flags) $(includes) $(defines) -o \"$(obj_product)\" $(c_input)");
+                              " -x c -c $(cflags) $(user_c_flags) $(generated-includes) $(includes) $(defines) -o \"$(obj_product)\" $(c_input)");
       obj_cmd += cflags;
       obj_cmd += user_c_flags;
       obj_cmd += c_input;
+      obj_cmd += generated_includes;
       obj_cmd += includes;
       obj_cmd += defines;
       obj_cmd += obj_product;
@@ -142,11 +145,12 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
 
       shared_ptr<source_argument_writer> cpp_input(new source_argument_writer("cpp_input", e.get_type_registry().get(types::CPP), /*exact_type=*/false, source_argument_writer::FULL_PATH));
       cmdline_builder obj_cmd(install_data.compiler_.string() +
-                              " -c -ftemplate-depth-128 $(cflags) $(cxxflags) $(user_cxx_flags) $(includes) $(defines) -o \"$(obj_product)\" $(cpp_input)");
+                              " -c -ftemplate-depth-128 $(cflags) $(cxxflags) $(user_cxx_flags) $(generated-includes) $(includes) $(defines) -o \"$(obj_product)\" $(cpp_input)");
       obj_cmd += cflags;
       obj_cmd += cxxflags;
       obj_cmd += user_cxx_flags;
       obj_cmd += cpp_input;
+      obj_cmd += generated_includes;
       obj_cmd += includes;
       obj_cmd += defines;
       obj_cmd += obj_product;
@@ -198,7 +202,8 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
    {
       shared_ptr<free_feature_arg_writer> ld_library_path_dirs(
          new free_feature_arg_writer("ld_library_path_dirs",
-                                     e.feature_registry().get_def("search"),
+                                     e.feature_registry(),
+                                     "search",
                                      string(),
                                      string(),
                                      ":"));

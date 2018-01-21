@@ -10,6 +10,7 @@ namespace hammer
       public:
          batch_tag_writer() : argument_writer("") {}
          argument_writer* clone() const override { return new batch_tag_writer(*this); }
+			std::vector<const feature*> valuable_features() const override { return {}; }
 
       protected:   
          void write_impl(std::ostream& output,

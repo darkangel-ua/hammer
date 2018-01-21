@@ -42,9 +42,7 @@ searched_lib_main_target::generate() const
    result->products_.push_back(t);
    result->targeting_type_ = this->type_;
 
-   generate_and_add_dependencies(*result);
-
-   return build_nodes_t{1, result};
+   return {1, result};
 }
 
 }

@@ -8,6 +8,8 @@
 #include <hammer/core/engine.h>
 #include <hammer/core/np_helpers.h>
 #include <hammer/core/build_action.h>
+#include <hammer/core/feature.h>
+#include <hammer/core/feature_set.h>
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/multi_index/sequenced_index.hpp>
@@ -28,7 +30,8 @@ generator::generator(hammer::engine& e,
    action_(action),
    include_composite_generators_(false)
 {
-
+   if (action)
+      action_valuable_features_ = action->valuable_features();
 }
 
 bool generator::is_consumable(const target_type& t) const
@@ -61,6 +64,8 @@ generator::construct(const target_type& type_to_construct,
                      const std::string* composite_target_name,
                      const main_target& owner) const
 {
+   const feature_set* valuable_properties = make_valuable_properties(props, action_valuable_features_, constraints());
+
    if (!source_target)
    {
       build_node_ptr result(new build_node(owner, composite_, action()));
@@ -92,7 +97,7 @@ generator::construct(const target_type& type_to_construct,
                                                   i->need_tag_ ? &owner : NULL,
                                                   /*primary_target=*/ p == 0);
 
-         result->products_.push_back(create_target(&owner, result->sources_, new_name, i->type_, &props));
+         result->products_.push_back(create_target(&owner, result->sources_, new_name, i->type_, valuable_properties));
       }
 
       result->targeting_type_ = &type_to_construct;
@@ -109,7 +114,7 @@ generator::construct(const target_type& type_to_construct,
       build_node_ptr result(new build_node(owner, composite_, action()));
       result->sources_.push_back(build_node::source_t(source_target, sources.front()));
       result->down_.push_back(sources.front());
-      result->products_.push_back(create_target(&owner, result->sources_, new_name, producable_types().front().type_, &props));
+      result->products_.push_back(create_target(&owner, result->sources_, new_name, producable_types().front().type_, valuable_properties));
       result->targeting_type_ = &type_to_construct;
       return build_nodes_t(1, result);
   }
@@ -161,6 +166,47 @@ make_consume_types(engine& e,
    generator::consumable_types_t result;
    for(const type_tag& t : types)
       result.push_back(e.get_type_registry().get(t));
+
+   return result;
+}
+
+feature_set*
+make_valuable_properties(const feature_set& target_props,
+                         const std::vector<const feature*>& action_valuable_props,
+                         const feature_set* generator_constraints)
+{
+   feature_set* result = target_props.owner().make_set();
+
+   auto process_one = [&](const feature* f) {
+      if (f->attributes().free) {
+         // copy all
+         const std::string& name = f->name();
+         for(auto i = target_props.find(name); i != target_props.end(); i = target_props.find(i, name)) {
+            result->join(*i);
+            std::advance(i, 1);
+         }
+      } else {
+         if (const feature* tpf = target_props.find(f->name().c_str(), f->value().c_str()))
+            result->join(target_props.owner().clone_feature(*tpf));
+      }
+   };
+
+   for (const feature* f : action_valuable_props)
+      process_one(f);
+
+   if (generator_constraints) {
+      for (const feature* f : *generator_constraints) {
+         // skip features that is alse presented in action_valuable_props
+         auto i = std::find_if(action_valuable_props.begin(), action_valuable_props.end(), [&](const feature* v){
+            return v->name() == f->name();
+         });
+         if (i != action_valuable_props.end())
+            continue;
+
+         // ok, this feature is valuable
+         process_one(f);
+      }
+   }
 
    return result;
 }

@@ -90,10 +90,11 @@ void complete_build_tests_environment::run_test(const boost::filesystem::path& w
 
    options opts(working_dir / "hamfile");
 
-//   FIXME: will enable this later using options from hamfile
-//   ofstream graphviz((working_dir / "build.dot").string());
-//   builder.generate_graphviz(graphviz, nodes_to_build);
-//   graphviz.close();
+   if (opts.exists("write-build-graph")) {
+      ofstream graphviz((working_dir / "build.dot").string());
+      builder.generate_graphviz(graphviz, nodes_to_build);
+      graphviz.close();
+   }
 
    builder::result build_result = builder.build(nodes_to_build);
    if (opts.exists("should-fail"))

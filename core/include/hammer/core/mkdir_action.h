@@ -12,6 +12,7 @@ namespace hammer
          mkdir_action(const location_t& dir_to_create);
          std::string target_tag(const build_node& node,
 			                       const build_environment& environment) const override;
+			std::vector<const feature*> valuable_features() const override { return {}; }
 
       protected:
          bool execute_impl(const build_node& node,

@@ -1,11 +1,12 @@
 #include "stdafx.h"
+#include <iostream>
+#include <fstream>
 #include <hammer/core/cmdline_action.h>
 #include <hammer/core/build_environment.h>
 #include <hammer/core/build_node.h>
 #include <hammer/core/main_target.h>
 #include <hammer/core/basic_build_target.h>
-#include <iostream>
-#include <fstream>
+#include <hammer/core/argument_writer.h>
 
 using namespace std;
 
@@ -59,6 +60,19 @@ std::string cmdline_action::target_tag(const build_node& node, const build_envir
    std::ostringstream s;
    target_writer_->write(s, node, environment);
    return s.str();
+}
+
+std::vector<const feature*>
+cmdline_action::valuable_features() const
+{
+   std::vector<const feature*> result;
+
+   for(const cmdline_builder& b : builders_) {
+      auto v = b.valuable_features();
+      result.insert(result.end(), v.begin(), v.end());
+   }
+
+   return result;
 }
 
 }

@@ -137,7 +137,7 @@ msvc_project::msvc_project(engine& e,
              add("<inlining>full", "2");
    compiller_options_ += inlining;
 
-   boost::shared_ptr<free_feature_arg_writer> includes(new free_feature_arg_writer("includes", e.feature_registry().get_def("include"), string(), string(), ";"));
+   boost::shared_ptr<free_feature_arg_writer> includes(new free_feature_arg_writer("includes", e.feature_registry(), "include", string(), string(), ";"));
    compiller_options_ += includes;
 
    boost::shared_ptr<fs_argument_writer> debug_format(new fs_argument_writer("debug_format", e.feature_registry()));
@@ -152,7 +152,7 @@ msvc_project::msvc_project(engine& e,
                   add("<warnings>all", "4");
    compiller_options_ += warning_level;
 
-   boost::shared_ptr<free_feature_arg_writer> defines(new free_feature_arg_writer("defines", e.feature_registry().get_def("define"), string(), string(), ";"));
+   boost::shared_ptr<free_feature_arg_writer> defines(new free_feature_arg_writer("defines", e.feature_registry(), "define", string(), string(), ";"));
    compiller_options_ += defines;
 
    boost::shared_ptr<fs_argument_writer> exception_handling(new fs_argument_writer("exception_handling", e.feature_registry()));
@@ -173,10 +173,10 @@ msvc_project::msvc_project(engine& e,
          add("<rtti>off", "false");
    compiller_options_ += rtti;
 
-   boost::shared_ptr<free_feature_arg_writer> cxxflags(new free_feature_arg_writer("cxxflags", e.feature_registry().get_def("cxxflags")));
+   boost::shared_ptr<free_feature_arg_writer> cxxflags(new free_feature_arg_writer("cxxflags", e.feature_registry(), "cxxflags"));
    compiller_options_ += cxxflags;
 
-   boost::shared_ptr<free_feature_arg_writer> cflags(new free_feature_arg_writer("cflags", e.feature_registry().get_def("cflags")));
+   boost::shared_ptr<free_feature_arg_writer> cflags(new free_feature_arg_writer("cflags", e.feature_registry(), "cflags"));
    compiller_options_ += cflags;
 
    boost::shared_ptr<pch_argument_writer> pch_header(new pch_argument_writer("pch_header"));
@@ -205,7 +205,8 @@ msvc_project::msvc_project(engine& e,
 
    boost::shared_ptr<free_feature_arg_writer> additional_libraries_dirs(
        new free_feature_arg_writer("additional_libraries_dirs",
-                                   e.feature_registry().get_def("search"),
+                                   e.feature_registry(),
+                                   "search",
                                    string(), string(), ";"));
    linker_options_ += additional_libraries_dirs;
 
@@ -227,12 +228,14 @@ msvc_project::msvc_project(engine& e,
    // Post Build Step section
    boost::shared_ptr<free_feature_arg_writer> path_args(
        new free_feature_arg_writer("path_args",
-                                   e.feature_registry().get_def("testing.input-file")));
+                                   e.feature_registry(),
+                                   "testing.input-file"));
    post_build_step_ += path_args;
 
    boost::shared_ptr<free_feature_arg_writer> non_path_args(
        new free_feature_arg_writer("non_path_args",
-                                   e.feature_registry().get_def("testing.argument")));
+                                   e.feature_registry(),
+                                   "testing.argument"));
    post_build_step_ += non_path_args;
 }
 

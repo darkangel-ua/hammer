@@ -37,11 +37,8 @@ namespace hammer
          const std::string& hash() const;
 
       protected:
-         virtual void add_additional_dependencies(hammer::build_node& generated_node) const;
          void additional_hash_string_data(std::ostream& s) const override;
          virtual location_t intermediate_dir_impl() const;
-         // must be private, but bad design require me to place it here for file_main_target
-         void generate_and_add_dependencies(hammer::build_node& node) const;
 
       private:
          const basic_meta_target* meta_target_;
@@ -53,13 +50,15 @@ namespace hammer
          mutable std::vector<boost::intrusive_ptr<hammer::build_node> > generate_cache_;
          mutable bool generate_cache_filled_;
 
-         build_node_ptr 
-         create_intermediate_dir_dependency() const;
+         build_nodes_t
+			create_intermediate_dirs_build_nodes(const build_nodes_t& build) const;
          
-         void add_hamfile_dependency(hammer::build_node& node,
-                                     const build_node_ptr& intermediate_dir_node) const;
-         bool add_this_target_dependency(hammer::build_node& node,
-                                         const build_nodes_t& nodes) const;
+         void add_this_target_dependency(hammer::build_node& node,
+                                         const build_nodes_t& dependencies) const;
+			void add_this_target_dependency(build_nodes_t& nodes,
+                                         const build_nodes_t& dependencies) const;
+			void add_additional_dependencies(build_nodes_t& generated_nodes) const;
+			void generate_and_add_dependencies(build_nodes_t& nodes) const;
    };
 }
 

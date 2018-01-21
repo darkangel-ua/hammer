@@ -35,8 +35,8 @@ void add_testing_generators(engine& e, generator_registry& gr)
    shared_ptr<product_argument_writer> run_output_product(new product_argument_writer("run_output_product", e.get_type_registry().get(types::TESTING_OUTPUT)));
    shared_ptr<source_argument_writer> test_executable(new source_argument_writer("test_executable", e.get_type_registry().get(types::EXE)));
    shared_ptr<shared_lib_dirs_writer> additional_dirs(new shared_lib_dirs_writer("additional_dirs", e.get_type_registry().get(types::SHARED_LIB)));
-   shared_ptr<free_feature_arg_writer> input_files(new free_feature_arg_writer("input_files", e.feature_registry().get_def("testing.input-file")));
-   shared_ptr<free_feature_arg_writer> args(new free_feature_arg_writer("args", e.feature_registry().get_def("testing.argument")));
+   shared_ptr<free_feature_arg_writer> input_files(new free_feature_arg_writer("input_files", e.feature_registry(), "testing.input-file"));
+   shared_ptr<free_feature_arg_writer> args(new free_feature_arg_writer("args", e.feature_registry(), "testing.argument"));
 #if defined(_WIN32)
    cmdline_builder cmdline("@SET PATH=%PATH%;$(additional_dirs)\n"
                            "@$(test_executable) $(args) $(input_files)\n");

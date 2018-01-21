@@ -39,6 +39,8 @@ class compile_fail_build_action : public build_action
 
 		std::string	target_tag(const build_node& node,
 		                       const build_environment& environment) const override;
+		std::vector<const feature*> valuable_features() const override { return compile_action_->valuable_features(); }
+
 	protected:
       bool execute_impl(const build_node& node,
                         const build_environment& environment) const override;

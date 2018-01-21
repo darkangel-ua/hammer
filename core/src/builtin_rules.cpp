@@ -300,10 +300,6 @@ resolve_attributes(const std::vector<std::string>& attributes)
    if (i != attributes.end())
       result.no_checks = true;
 
-   i = find(attributes.begin(), attributes.end(), "generated");
-   if (i != attributes.end())
-      result.generated = true;
-
    return result;
 }
 

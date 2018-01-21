@@ -8,7 +8,7 @@ namespace hammer{
 mkdir_action::mkdir_action(const location_t& dir_to_create)
    : build_action("mkdir"), dir_to_create_(dir_to_create)
 {
-
+   assert(!dir_to_create.empty());
 }
 
 bool mkdir_action::execute_impl(const build_node& node, const build_environment& environment) const

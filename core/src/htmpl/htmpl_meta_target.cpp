@@ -36,7 +36,7 @@ make_usage_requirements(feature_registry& fr,
 {
    requirements_decl result;
 
-   // making dependency on self :)
+   // making dependency on self :) because this will build this target before any targets that belongs to owner
    feature* dependency = fr.create_feature("dependency", "");
    dependency->set_dependency_data(source_decl(target_name, string(), nullptr, nullptr), this_);
    result.add(*dependency);
@@ -85,10 +85,9 @@ void htmpl_meta_target::compute_usage_requirements(feature_set& result,
 {
    if (type().equal_or_derived_from(types::H)) {
       // generated include dir should apear first, so generated includes will be found earlier
-      const fs::path relative_intermediate_dir_path = relative_path(constructed_target.intermediate_dir(), location());
-      feature* include_intermediate_dir = get_engine()->feature_registry().create_feature("include", relative_intermediate_dir_path.string());
-      include_intermediate_dir->get_path_data().target_ = this;
-      result.join(include_intermediate_dir);
+      feature* generated_include = get_engine()->feature_registry().create_feature("__generated-include", "");
+      generated_include->get_generated_data().target_ = &constructed_target;
+      result.join(generated_include);
    }
 
    typed_meta_target::compute_usage_requirements(result, constructed_target, build_request, computed_usage_requirements, owner);

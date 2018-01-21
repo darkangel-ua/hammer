@@ -31,6 +31,7 @@ namespace hammer
 
          std::string target_tag(const build_node& node,
 			                       const build_environment& environment) const override;
+			std::vector<const feature*> valuable_features() const override;
 
          cmdline_action& operator +=(const cmdline_builder& b);
 

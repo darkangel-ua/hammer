@@ -22,12 +22,8 @@ class basic_build_target : private boost::noncopyable
 		basic_build_target(const main_target* mt,
 		                   const std::string& name,
 	                      const target_type* t,
-		                   const feature_set* f)
-                  : main_target_(mt),
-                    type_(t),
-                    name_(name),
-                    features_(f)
-      {}
+		                   const feature_set* f);
+		virtual ~basic_build_target();
 
 		const std::string& name() const { return name_; }
       const target_type& type() const { return *type_; }
@@ -38,7 +34,7 @@ class basic_build_target : private boost::noncopyable
       engine* get_engine() const;
 
 		const timestamp_info_t& timestamp_info() const;
-		virtual const location_t& location() const;
+		virtual const location_t& location() const = 0;
 
 		// FIXME: const here seams not good solution because after clean timestamp_info should return
 		// something different than before. But I leave this for future clean-up

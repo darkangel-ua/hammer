@@ -31,6 +31,7 @@ namespace{
 
          std::string target_tag(const build_node& node,
                                 const build_environment& environment) const override;
+         std::vector<const feature*> valuable_features() const override { return {}; }
 
       protected:
          bool execute_impl(const build_node& node,
@@ -115,7 +116,7 @@ copy_generator::construct(const target_type& type_to_construct,
       new_node->sources_.push_back(*i);
       new_node->down_.push_back(i->source_node_);
 
-      basic_build_target* new_target = new generated_2_build_target(&owner, i->source_target_->name(), true_owner.destination(), &type_to_construct, &props);
+      basic_build_target* new_target = new generated_build_target(&owner, i->source_target_->name(), &type_to_construct, &props, &true_owner.destination());
       new_node->products_.push_back(new_target);
 
       result.push_back(new_node);

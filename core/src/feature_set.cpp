@@ -5,6 +5,7 @@
 #include <hammer/core/location.h>
 #include <hammer/core/basic_meta_target.h>
 #include <hammer/core/fs_helpers.h>
+#include <hammer/core/basic_target.h>
 #include <hammer/core/engine.h>
 #include <iterator>
 #include <stdexcept>
@@ -13,6 +14,7 @@
 #include <boost/spirit/include/classic_core.hpp>
 #include <boost/spirit/include/classic_lists.hpp>
 #include <hammer/core/subfeature.h>
+#include <boost/crypto/md5.hpp>
 
 using namespace std;
 
@@ -337,31 +339,29 @@ static bool less_by_name(const feature* lhs, const feature* rhs)
 
 static void dump_value(std::ostream& s, const feature& f)
 {
-   if (f.attributes().path)
-   {
-      const feature::path_data& pd = f.get_path_data();
-      location_t l(f.value());
-      if (!l.has_root_name())
-      {
-         l = pd.target_->location() / l;   
-         l.normalize();
-      }
+   if (f.attributes().path) {
+      if (f.attributes().generated)
+         s << f.get_generated_data().target_->location();
+      else {
+         const feature::path_data& pd = f.get_path_data();
+         location_t l(f.value());
+         if (!l.has_root_name()) {
+            l = pd.target_->location() / l;
+            l.normalize();
+         }
 
-      s << l;
-   }
-   else
-      if (f.attributes().dependency)
-      {
-         const feature::dependency_data& dd = f.get_dependency_data();
-         s << dd.source_.target_path();
-         if (!dd.source_.target_name().empty())
-            s << "//" << dd.source_.target_name();
-         
-          if (f.get_path_data().target_ != NULL)
-             s << " " << f.get_path_data().target_->location();
+         s << l;
       }
-      else
-         s << f.value();
+   } else if (f.attributes().dependency) {
+      const feature::dependency_data& dd = f.get_dependency_data();
+      s << dd.source_.target_path();
+      if (!dd.source_.target_name().empty())
+         s << "//" << dd.source_.target_name();
+
+      if (f.get_path_data().target_ != NULL)
+         s << " " << f.get_path_data().target_->location();
+   } else
+      s << f.value();
 }
 
 static void dump_for_hash(std::ostream& s, const feature& f)
@@ -462,6 +462,14 @@ void feature_set::erase_all(const std::string& feature_name)
             break;
          }
    }
+}
+
+std::string
+md5(const feature_set& fs, bool use_all)
+{
+   std::ostringstream s;
+   dump_for_hash(s, fs, use_all);
+   return boost::crypto::md5(s.str()).to_string();
 }
 
 void apply_build_request(feature_set& dest,

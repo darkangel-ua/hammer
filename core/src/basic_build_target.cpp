@@ -3,6 +3,21 @@
 
 namespace hammer{
 
+basic_build_target::basic_build_target(const main_target* mt,
+                                       const std::string& name,
+                                       const target_type* t,
+                                       const feature_set* f)
+   : main_target_(mt),
+     type_(t),
+     name_(name),
+     features_(f)
+{
+}
+
+basic_build_target::~basic_build_target()
+{
+}
+
 const basic_meta_target*
 basic_build_target::get_meta_target() const
 {
@@ -19,12 +34,6 @@ engine*
 basic_build_target::get_engine() const
 {
    return get_main_target()->get_engine();
-}
-
-const location_t&
-basic_build_target::location() const
-{
-   return get_main_target()->location();
 }
 
 const timestamp_info_t&

@@ -56,6 +56,7 @@ namespace hammer
          bool contains(const feature_set& rhs) const;
 
          feature_registry& owner() { return *fr_; }
+			feature_registry& owner() const { return *fr_; }
 
       private:
          feature_registry* fr_;
@@ -81,6 +82,8 @@ namespace hammer
    feature_set* parse_simple_set(const std::string& s, feature_registry& r);
    void dump_for_hash(std::ostream& s, const feature_set& fs, bool dump_all = false);
    std::string dump_for_hash(const feature_set& fs, bool dump_all = false);
+	std::string md5(const feature_set& fs, bool use_all);
+
    // when construct usage requirements we need to add to all <use> build request
    // been used in target constuction
    void apply_build_request(feature_set& dest, const feature_set& build_request);

@@ -2,7 +2,6 @@
 #include <iostream>
 #include <hammer/core/engine.h>
 #include <hammer/core/type_registry.h>
-//#include <hammer/core/types.h>
 #include <hammer/core/basic_target.h>
 #include <hammer/core/feature_registry.h>
 #include <hammer/core/feature_set.h>
@@ -54,6 +53,11 @@ engine::engine()
       // used to mark targets that belong to pch meta target. Needed for distinguishing PCH and OBJ generators
       feature_attributes ft = {0}; ft.free = 1;
       fr->add_feature_def("__pch", vector<string>(), ft);
+   }
+
+   {
+      feature_attributes ft = {0}; ft.free = ft.generated = ft.path = 1;
+      fr->add_feature_def("__generated-include", vector<string>(), ft);
    }
 
    {

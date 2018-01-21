@@ -2,12 +2,14 @@
 #define h_2c15e695_c37e_498d_b12a_5bd65ba5e645
 
 #include <string>
+#include <vector>
 #include <iosfwd>
 
 namespace hammer
 {
    class build_node;
    class build_environment; 
+	class feature;
 
    class argument_writer
    {
@@ -25,6 +27,8 @@ namespace hammer
          }
 
          virtual argument_writer* clone() const = 0;
+			virtual std::vector<const feature*> valuable_features() const = 0;
+
          virtual ~argument_writer() {}
       
       protected:   

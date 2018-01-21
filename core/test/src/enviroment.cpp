@@ -6,6 +6,7 @@
 #include <boost/bind.hpp>
 #include <hammer/core/toolsets/msvc_toolset.h>
 #include <hammer/core/copy_generator.h>
+#include <hammer/core/obj_generator.h>
 #include <hammer/core/generator_registry.h>
 #include <hammer/core/testing_generators.h>
 #include <hammer/core/toolset_manager.h>
@@ -60,6 +61,7 @@ void complete_build_tests_environment::install_toolsets()
    engine_.toolset_manager().add_toolset(unique_ptr<toolset>(new msvc_toolset));
    engine_.toolset_manager().add_toolset(unique_ptr<toolset>(new qt_toolset));
    install_htmpl(engine_);
+   engine_.generators().insert(std::auto_ptr<generator>(new obj_generator(engine_)));
 }
 
 void complete_build_tests_environment::run_test(const boost::filesystem::path& working_dir)

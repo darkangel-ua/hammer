@@ -1,0 +1,2 @@
+obj f : f.cpp ;
+exe test : main.cpp f ;

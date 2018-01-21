@@ -54,6 +54,7 @@ htmpl_meta_target::htmpl_meta_target(project* p,
                        resolve_target_type(src.target_path(), *p->get_engine()))
 {
    set_explicit(true);
+   set_local(true);
 
    sources_decl sources;
    sources.push_back(src);
@@ -64,16 +65,13 @@ main_target*
 htmpl_meta_target::construct_main_target(const main_target* owner,
                                          const feature_set* properties) const
 {
-   if (!owner)
-      throw std::runtime_error("htmpl targets MUST not be used in alias-kind targets");
-
    const fs::path source = sources().begin()->target_path();
-   const string main_target_name = source.filename().stem().stem().string();
+   const string main_target_name = source.filename().stem().string();
    // we use owner properties because htmpl targets created without any properties at all
    main_target* mt = new main_target(this,
                                      main_target_name,
                                      &type(),
-                                     &owner->properties());
+                                     owner ? &owner->properties() : properties);
    return mt;
 }
 

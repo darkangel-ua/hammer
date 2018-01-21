@@ -88,7 +88,8 @@ void collect_locations(const main_target* this_,
    }
 
    for (const build_node::source_t& s : node.sources_) {
-      if (&s.source_node_->products_owner() == this_)
+      // inspect only intermediate source nodes
+      if (&s.source_node_->products_owner() == this_ && !s.source_node_->sources_.empty())
          collect_locations(this_, locations, *s.source_node_);
    }
 }

@@ -12,6 +12,7 @@
 #include <hammer/core/feature.h>
 #include <hammer/core/feature_def.h>
 #include <hammer/core/engine.h>
+#include <hammer/core/generated_build_target.h>
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/fstream.hpp>
@@ -123,6 +124,18 @@ htmpl_generator::htmpl_generator(engine& e,
                true,
                std::make_shared<htmpl_action>(e.get_type_registry().get(HTMPL)))
 {
+}
+
+basic_build_target*
+htmpl_generator::create_target(const main_target* mt,
+                               const build_node::sources_t& sources,
+                               const std::string& target_name,
+                               const target_type* t,
+                               const feature_set* f) const
+{
+   // because we use name with extension for main target generator::generate will add extra suffix for output type that we need to remove
+   const std::string new_target_name = fs::path(target_name).stem().string();
+   return new generated_build_target(mt, new_target_name, t, f);
 }
 
 }

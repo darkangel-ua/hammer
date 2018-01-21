@@ -11,7 +11,13 @@ class htmpl_generator : public generator
       htmpl_generator(engine& e,
                       const std::string& name,
                       const type_tag& product_type);
-
+	protected:
+		basic_build_target*
+		create_target(const main_target* mt,
+		              const build_node::sources_t& sources,
+		              const std::string& target_name,
+		              const target_type* t,
+		              const feature_set* f) const override;
 };
 
 }

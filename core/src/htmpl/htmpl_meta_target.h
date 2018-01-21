@@ -12,7 +12,7 @@ class htmpl_meta_target : public typed_meta_target
                         const std::string& name,
                         const source_decl& src);
    protected:
-      main_target*
+		main_target*
       construct_main_target(const main_target* owner,
                             const feature_set* properties) const override;
 

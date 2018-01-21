@@ -263,6 +263,17 @@ void builder::impl_t::task_completition_handler(shared_ptr<worker_ctx_t> ctx)
    }
 }
 
+static
+bool in_dependencies(const build_node& where,
+                     const build_node& what)
+{
+   for (auto& d : where.dependencies_)
+      if (d.get() == &what)
+         return true;
+
+   return false;
+}
+
 void builder::generate_graphviz(std::ostream& os, const nodes_t& nodes, const project* bounds)
 {
    nodes_to_build_t nodes_to_build;
@@ -338,10 +349,13 @@ void builder::generate_graphviz(std::ostream& os, const nodes_t& nodes, const pr
    }
 
    // write uses edges
-   boost::format edge_format("\"%s\" -> \"%s\":\"%s\"\n");
-   for(const build_queue_node_t* n : all_build_nodes)
-      for(const build_queue_node_t* un : n->uses_nodes_)
-         os << (edge_format % un % n % un);
+   boost::format edge_format("\"%s\" -> \"%s\":\"%s\" [color=%s]\n");
+   for(const build_queue_node_t* n : all_build_nodes) {
+      for(const build_queue_node_t* un : n->uses_nodes_) {
+         const char* color = in_dependencies(*un->node_, *n->node_) ? "blue" : "black";
+         os << (edge_format % un % n % un % color);
+      }
+   }
 
    os << "}";
 }

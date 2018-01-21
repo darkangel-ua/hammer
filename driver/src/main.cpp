@@ -637,11 +637,11 @@ namespace
          new_node->down_.push_back(i->source_node_);
 
          basic_build_target* new_target =
-            new generated_2_build_target(&new_node->products_owner(),
-                                         i->source_target_->name(),
-                                         executables[0].source_target_->location(),
-                                         new_node->targeting_type_,
-                                         &executables[0].source_target_->properties());
+            new generated_build_target(&new_node->products_owner(),
+                                       i->source_target_->name(),
+                                       new_node->targeting_type_,
+                                       &executables[0].source_target_->properties(),
+                                       &executables[0].source_target_->location());
          new_node->products_.push_back(new_target);
 
          copy_nodes.push_back(new_node);

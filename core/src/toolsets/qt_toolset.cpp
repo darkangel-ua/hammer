@@ -17,7 +17,6 @@
 #include <hammer/core/cmdline_action.h>
 #include <hammer/core/source_argument_writer.h>
 #include <hammer/core/product_argument_writer.h>
-#include <hammer/core/fake_generator.h>
 #include <hammer/core/generator_registry.h>
 #include <hammer/core/feature.h>
 #include <hammer/core/alias_meta_target.h>
@@ -27,6 +26,8 @@
 #include <hammer/core/feature_set.h>
 #include <hammer/core/output_location_strategy.h>
 #include <hammer/core/rule_argument_types.h>
+#include <hammer/core/generated_build_target.h>
+#include <hammer/core/np_helpers.h>
 
 using std::string;
 using std::unique_ptr;
@@ -41,28 +42,8 @@ namespace hammer{
 const type_tag qt_mocable("QT_MOCABLE");
 const type_tag qt_ui("QT_UI");
 const type_tag qt_uiced_h("QT_UICED_H");
-const type_tag qt_uic_main("QT_UIC_MAIN");
 const type_tag qt_rc("QT_RC");
 const type_tag qt_rced_cpp("QT_RCED_CPP");
-
-class qt_uic_main_target : public main_target
-{
-   public:
-      qt_uic_main_target(const meta_target* mt,
-                         const main_target& owner,
-                         const std::string& name,
-                         const target_type* t,
-                         const feature_set* props)
-                         : main_target(mt, name, t, props), owner_(owner)
-      {
-      }
-
-   protected:
-      location_t intermediate_dir_impl() const override { return owner_.intermediate_dir(); }
-
-   private:
-      const main_target& owner_;
-};
 
 class qt_uic_meta_target : public typed_meta_target
 {
@@ -72,7 +53,7 @@ class qt_uic_meta_target : public typed_meta_target
                          const sources_decl& sources,
                          const requirements_decl& req,
                          const requirements_decl& usage_req)
-                         : typed_meta_target(p, name, req, usage_req, p->get_engine()->get_type_registry().get(qt_uic_main))
+                         : typed_meta_target(p, name, req, usage_req, p->get_engine()->get_type_registry().get(qt_uiced_h))
       {
          add_sources(sources);
          set_explicit(true);
@@ -84,22 +65,7 @@ class qt_uic_meta_target : public typed_meta_target
                                       const feature_set& build_request,
                                       const feature_set& computed_usage_requirements,
                                       const main_target* owner) const override;
-      main_target*
-      construct_main_target(const main_target* owner,
-                            const feature_set* properties) const override;
 };
-
-main_target*
-qt_uic_meta_target::construct_main_target(const main_target* owner,
-                                          const feature_set* properties) const
-{
-   return
-      new qt_uic_main_target(this,
-                             *owner,
-                             name(),
-                             &type(),
-                             properties);
-}
 
 void qt_uic_meta_target::compute_usage_requirements(feature_set& result,
                                                     const main_target& constructed_target,
@@ -109,16 +75,55 @@ void qt_uic_meta_target::compute_usage_requirements(feature_set& result,
 {
    typed_meta_target::compute_usage_requirements(result, constructed_target, build_request, computed_usage_requirements, owner);
 
-   feature* uic_inc = result.owner().create_feature("include", relative_path(owner->intermediate_dir(), location()).string());
-   uic_inc->get_path_data().target_ = owner->get_meta_target();
+   feature* uic_inc = result.owner().create_feature("__generated-include", "");
+   uic_inc->get_generated_data().target_ = &constructed_target;
 
    // making dependency on self :)
    feature* dependency = result.owner().create_feature("dependency", "");
    dependency->set_dependency_data(source_decl(name(), std::string(), nullptr, nullptr), this);
 
-   result.join(uic_inc)
-         .join(dependency);
+   result.join(uic_inc).join(dependency);
 }
+
+class qt_uic_generator : public generator
+{
+   public:
+      qt_uic_generator(engine& e,
+                       const build_action_ptr& action,
+                       const feature_set* c = nullptr)
+         : generator(e, "qt.uic", make_consume_types(e, { qt_ui }), make_product_types(e, { qt_uiced_h }), true, action, c)
+      {
+      }
+
+      build_nodes_t
+      construct(const target_type& type_to_construct,
+                const feature_set& props,
+                const build_nodes_t& sources,
+                const basic_build_target* source_target,
+                const std::string* composite_target_name,
+                const main_target& owner) const override
+      {
+         const feature_set* valuable_properties = make_valuable_properties(props, action_valuable_features(), constraints());
+         build_nodes_t result;
+
+         for (auto& source : sources) {
+            for (auto& product_from_source : source->products_) {
+               if (is_consumable(product_from_source->type())) {
+                  build_node_ptr one_node(new build_node(owner, false, action()));
+
+                  const std::string new_name = make_product_name(*product_from_source, type_to_construct, *valuable_properties, nullptr);
+                  one_node->sources_.push_back(build_node::source_t(product_from_source, source));
+                  one_node->products_.push_back(create_target(&owner, one_node->sources_, new_name, &type_to_construct, valuable_properties));
+                  one_node->targeting_type_ = &type_to_construct;
+
+                  result.push_back(one_node);
+               }
+            }
+         }
+
+         return result;
+      }
+};
 
 static
 unique_ptr<sources_decl>
@@ -380,12 +385,11 @@ void add_types_and_generators(engine& e,
    e.get_type_registry().insert(target_type(qt_rc, ".qrc"));
    e.get_type_registry().insert(target_type(qt_rced_cpp, ".cpp", e.get_type_registry().get(types::CPP), "qrc_"));
    e.get_type_registry().insert(target_type(qt_uiced_h, ".h", e.get_type_registry().get(types::H), "ui_"));
-   e.get_type_registry().insert(target_type(qt_uic_main, ""));
 
    // QT_UI -> QT_UICED_H
    {
       shared_ptr<source_argument_writer> ui_source(new source_argument_writer("ui_source", e.get_type_registry().get(qt_ui)));
-      shared_ptr<product_argument_writer> uic_product(new product_argument_writer("uic_product", e.get_type_registry().get(qt_uiced_h)));
+      shared_ptr<product_argument_writer> uic_product(new product_argument_writer("uic_product", e.get_type_registry().get(types::H)));
       cmdline_builder uic_cmd((*toolset_home / ("bin/uic" + bin_tag)).string<string>() + " -o \"$(uic_product)\" $(ui_source)");
 
       uic_cmd += ui_source;
@@ -397,8 +401,9 @@ void add_types_and_generators(engine& e,
       generator::consumable_types_t source;
       generator::producable_types_t target;
       source.push_back(generator::consumable_type(e.get_type_registry().get(qt_ui), 1, 0));
-      target.push_back(generator::produced_type(e.get_type_registry().get(qt_uiced_h)));
-      unique_ptr<generator> g(new generator(e, "qt.uic", source, target, false, uic_action));
+      target.push_back(generator::produced_type(e.get_type_registry().get(types::H)));
+//      unique_ptr<generator> g(new generator(e, "qt.uic", source, target, true, uic_action));
+      unique_ptr<generator> g(new qt_uic_generator(e, uic_action));
       e.generators().insert(std::move(g));
    }
 
@@ -439,26 +444,6 @@ void add_types_and_generators(engine& e,
       source.push_back(generator::consumable_type(e.get_type_registry().get(qt_mocable), 1, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::CPP)));
       unique_ptr<generator> g(new generator(e, "qt.moc", source, target, false, moc_action));
-      e.generators().insert(std::move(g));
-   }
-
-   // many QT_UICED_H -> HEADER_LIB
-   {
-      generator::consumable_types_t source;
-      generator::producable_types_t target;
-      source.push_back(generator::consumable_type(e.get_type_registry().get(qt_uiced_h), 0, 0));
-      target.push_back(generator::produced_type(e.get_type_registry().get(qt_uic_main)));
-      auto_ptr<generator> g(new fake_generator(e, "qt.uic-main", source, target, true));
-      e.generators().insert(std::move(g));
-   }
-
-   // QT_UIC_MAIN -> many H(QT_UICED_H)
-   {
-      generator::consumable_types_t source;
-      generator::producable_types_t target;
-      source.push_back(generator::consumable_type(e.get_type_registry().get(qt_uic_main), 0, 0));
-      target.push_back(generator::produced_type(e.get_type_registry().get(types::H)));
-      auto_ptr<generator> g(new fake_generator(e, "qt.uic-proxy", source, target, false));
       e.generators().insert(std::move(g));
    }
 

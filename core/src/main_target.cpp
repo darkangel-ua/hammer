@@ -81,8 +81,11 @@ void collect_locations(const main_target* this_,
                        boost::unordered_set<hashed_location>& locations,
                        const build_node& node)
 {
-   for (const basic_build_target* bt : node.products_)
-      locations.insert(bt->location());
+   for (const basic_build_target* bt : node.products_) {
+      // virtual targets have empty location - skip them
+      if (!bt->location().empty())
+         locations.insert(bt->location());
+   }
 
    for (const build_node::source_t& s : node.sources_) {
       if (&s.source_node_->products_owner() == this_)
@@ -116,21 +119,6 @@ void main_target::add_additional_dependencies(build_nodes_t& generated_nodes) co
 {
    add_this_target_dependency(generated_nodes, create_intermediate_dirs_build_nodes(generated_nodes));
 }
-
-//void main_target::add_hamfile_dependency(hammer::build_node& node,
-//                                         const build_node_ptr& intermediate_dir_node) const
-//{
-//   build_node_ptr signature_node(new hammer::build_node(*this, false, mksig_action_));
-//   signature_node->products_.push_back(
-//      new signature_build_target(this,
-//                                 name() + ".target.sig",
-//                                 &get_engine()->get_type_registry().get(types::UNKNOWN),
-//                                 &properties()));
-   
-//   signature_node->dependencies_.push_back(intermediate_dir_node);
-
-//   add_this_target_dependency(node, build_nodes_t(1, signature_node));
-//}
 
 // search for all leaf nodes and add hamfile_node to it as dependency
 void main_target::add_this_target_dependency(build_nodes_t& nodes,

@@ -71,6 +71,7 @@ namespace hammer
          void include_composite_generators(bool v) { include_composite_generators_ = v; }
 
          const build_action_ptr& action() const { return action_; }
+			const std::vector<const feature*>& action_valuable_features() const { return action_valuable_features_; }
 
       protected:
          virtual basic_build_target* create_target(const main_target* mt,

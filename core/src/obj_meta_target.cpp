@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include <hammer/core/obj_meta_target.h>
-#include <hammer/core/obj_main_target.h>
 #include <hammer/core/types.h>
 #include <hammer/core/project.h>
 #include <hammer/core/engine.h>
@@ -18,17 +17,6 @@ obj_meta_target::obj_meta_target(hammer::project* p,
                        usage_req, 
                        p->get_engine()->get_type_registry().get(types::OBJ))
 {
-   set_explicit(true);
-}
-
-main_target* obj_meta_target::construct_main_target(const main_target* owner, const feature_set* properties) const
-{
-   return new obj_main_target(this, 
-                              *owner,
-                              name(), 
-                              &type(), 
-                              properties);
-
 }
 
 }

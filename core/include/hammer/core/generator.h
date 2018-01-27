@@ -71,7 +71,6 @@ namespace hammer
          void include_composite_generators(bool v) { include_composite_generators_ = v; }
 
          const build_action_ptr& action() const { return action_; }
-			const std::vector<const feature*>& action_valuable_features() const { return action_valuable_features_; }
 
       protected:
          virtual basic_build_target* create_target(const main_target* mt,
@@ -89,7 +88,10 @@ namespace hammer
          const feature_set* constraints_; // == null if no constraints specified
          build_action_ptr action_;
          bool include_composite_generators_; // include composite generators while searching for sources indirect transformations
-			std::vector<const feature*> action_valuable_features_;
+
+		protected:
+			const std::vector<const feature*> action_valuable_features_;
+			const std::vector<const feature*> constraints_valuable_features_;
    };
 
    // we must not change order in nodes, because if that we use multi_index
@@ -106,8 +108,9 @@ namespace hammer
 
 	feature_set*
 	make_valuable_properties(const feature_set& target_props,
-	                         const std::vector<const feature*>& action_valuable_props,
-	                         const feature_set* generator_constraints);
+	                         const std::vector<const feature*>& action_valuable_features,
+	                         const std::vector<const feature*>& constraint_valuable_features,
+	                         const std::vector<const feature*>& target_type_valuable_features);
 }
 
 #endif //h_9b0699bd_cc04_4e19_874b_45c95b909551

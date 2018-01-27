@@ -103,7 +103,10 @@ class qt_uic_generator : public generator
                 const std::string* composite_target_name,
                 const main_target& owner) const override
       {
-         const feature_set* valuable_properties = make_valuable_properties(props, action_valuable_features(), constraints());
+         const feature_set* valuable_properties = make_valuable_properties(props,
+                                                                           action_valuable_features_,
+                                                                           constraints_valuable_features_,
+                                                                           type_to_construct.valuable_features());
          build_nodes_t result;
 
          for (auto& source : sources) {

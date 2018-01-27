@@ -7,6 +7,7 @@
 #include <hammer/core/main_target.h>
 #include <hammer/core/basic_build_target.h>
 #include <hammer/core/argument_writer.h>
+#include <hammer/core/feature_set.h>
 
 using namespace std;
 
@@ -67,10 +68,8 @@ cmdline_action::valuable_features() const
 {
    std::vector<const feature*> result;
 
-   for(const cmdline_builder& b : builders_) {
-      auto v = b.valuable_features();
-      result.insert(result.end(), v.begin(), v.end());
-   }
+   for (const cmdline_builder& b : builders_)
+      merge(result, b.valuable_features());
 
    return result;
 }

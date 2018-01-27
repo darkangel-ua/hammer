@@ -10,13 +10,14 @@ namespace hammer
 {
    class type_registry;
    class feature_set;
+	class feature;
 
    class target_type
    {
       public:
          struct suffix_def
          {
-            suffix_def() : condition_(NULL) {};
+            suffix_def() : condition_(NULL) {}
             suffix_def(const std::string& suffix) : suffix_(suffix), condition_(NULL) {}
             suffix_def(const char* suffix) : suffix_(suffix), condition_(NULL) {}
             suffix_def(const char* suffix,
@@ -53,14 +54,23 @@ namespace hammer
          bool operator == (const target_type& rhs) const;
          std::auto_ptr<target_type> clone(const type_registry& tr) const;
 
+			const std::vector<const feature*>&
+			valuable_features() const { return valuable_features_; }
+
       private:
          type_tag tag_;
          suffixes_t suffixes_;
          prefixes_t prefixes_;
          const type_registry* owner_;
          const target_type* base_;
+			const std::vector<const feature*> valuable_features_;
 
          bool equal(const target_type& rhs) const;
+
+			static
+			std::vector<const feature*>
+			make_valuable_features(const suffixes_t& suffixes,
+			                       const prefixes_t& prefixes);
    };
 }
 

@@ -87,6 +87,14 @@ namespace hammer
    // when construct usage requirements we need to add to all <use> build request
    // been used in target constuction
    void apply_build_request(feature_set& dest, const feature_set& build_request);
+
+	void append_valuable_features(std::vector<const feature*>& result,
+	                              const feature_set& fs);
+	std::vector<const feature*>
+	make_valuable_features(const feature_set& fs);
+
+	void merge(std::vector<const feature*>& result,
+	           const std::vector<const feature*>& features);
 }
 
 #endif //h_9689707e_e6c1_4154_9276_3693b32bc777

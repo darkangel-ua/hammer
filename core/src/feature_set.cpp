@@ -484,4 +484,54 @@ void apply_build_request(feature_set& dest,
       }
 }
 
+std::vector<const feature*>
+make_valuable_features(const feature_set& fs)
+{
+   std::vector<const feature*> result;
+
+   append_valuable_features(result, fs);
+
+   return result;
+}
+
+void append_valuable_features(std::vector<const feature*>& result,
+                              const feature_set& fs)
+{
+   for (const feature* f : fs) {
+//      FIXME: add this later
+//      if (f->attributes().incidental)
+//         continue;
+
+      if (f->attributes().free) {
+         auto i = std::find_if(result.begin(), result.end(), [&](const feature* v) {
+            return v->name() == f->name();
+         });
+
+         if (i == result.end())
+            result.push_back(fs.owner().create_feature(f->name(), {}));
+
+      } else {
+         auto i = std::find_if(result.begin(), result.end(), [&](const feature* v) {
+            return *v == *f;
+         });
+
+         if (i == result.end())
+            result.push_back(f);
+      }
+   }
+}
+
+void merge(std::vector<const feature*>& result,
+           const std::vector<const feature*>& features)
+{
+   for (const feature* f : features) {
+      auto i = std::find_if(result.begin(), result.end(), [&](const feature* v) {
+         return *v == *f;
+      });
+
+      if (i == result.end())
+         result.push_back(f);
+   }
+}
+
 }

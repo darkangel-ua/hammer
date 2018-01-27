@@ -1,0 +1,1 @@
+lib test : main.cpp : <link>shared ;

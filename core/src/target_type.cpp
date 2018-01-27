@@ -10,26 +10,61 @@ using namespace std;
 
 namespace hammer{
 
+std::vector<const feature*>
+target_type::make_valuable_features(const suffixes_t& suffixes,
+                                    const prefixes_t& prefixes)
+{
+   std::vector<const feature*> result;
+
+   for (auto& s : suffixes) {
+      if (s.condition_)
+         append_valuable_features(result, *s.condition_);
+   }
+
+   for (auto& p : prefixes) {
+      if (p.condition_)
+         append_valuable_features(result, *p.condition_);
+   }
+
+   return result;
+}
+
 target_type::target_type(const type_tag& tag, const suffix_def& suffix, const prefix_def& prefix)
-   : tag_(tag), suffixes_(1, suffix), prefixes_(1, prefix), base_(NULL)
+   : tag_(tag),
+     suffixes_(1, suffix),
+     prefixes_(1, prefix),
+     base_(NULL),
+     valuable_features_(make_valuable_features(suffixes_, prefixes_))
 {
 
 }
 
 target_type::target_type(const type_tag& tag, const suffix_def& suffix, const target_type& base, const prefix_def& prefix)
-   : tag_(tag), suffixes_(1, suffix), prefixes_(1, prefix), base_(&base)
+   : tag_(tag),
+     suffixes_(1, suffix),
+     prefixes_(1, prefix),
+     base_(&base),
+     valuable_features_(make_valuable_features(suffixes_, prefixes_))
 {
 
 }
 
 target_type::target_type(const type_tag& tag, const suffixes_t& suffixes, const prefixes_t& prefixes)
-: tag_(tag), suffixes_(suffixes), base_(NULL), prefixes_(prefixes)
+   : tag_(tag),
+     suffixes_(suffixes),
+     prefixes_(prefixes),
+     base_(NULL),
+     valuable_features_(make_valuable_features(suffixes_, prefixes_))
 {
 
 }
 
 target_type::target_type(const type_tag& tag, const suffixes_t& suffixes, const target_type& base, const prefixes_t& prefixes)
-   : tag_(tag), suffixes_(suffixes), base_(&base), prefixes_(prefixes)
+   : tag_(tag),
+     suffixes_(suffixes),
+     prefixes_(prefixes),
+     base_(&base),
+     valuable_features_(make_valuable_features(suffixes_, prefixes_))
 {
 
 }

@@ -28,10 +28,10 @@ generator::generator(hammer::engine& e,
    composite_(composite),
    constraints_(c),
    action_(action),
-   include_composite_generators_(false)
+   include_composite_generators_(false),
+   action_valuable_features_( action ? action->valuable_features() : std::vector<const feature*>()),
+   constraints_valuable_features_(c ? make_valuable_features(*c) : std::vector<const feature*>())
 {
-   if (action)
-      action_valuable_features_ = action->valuable_features();
 }
 
 bool generator::is_consumable(const target_type& t) const
@@ -64,7 +64,10 @@ generator::construct(const target_type& type_to_construct,
                      const std::string* composite_target_name,
                      const main_target& owner) const
 {
-   const feature_set* valuable_properties = make_valuable_properties(props, action_valuable_features_, constraints());
+   const feature_set* valuable_properties = make_valuable_properties(props,
+                                                                     action_valuable_features_,
+                                                                     constraints_valuable_features_,
+                                                                     type_to_construct.valuable_features());
 
    if (!source_target)
    {
@@ -93,7 +96,7 @@ generator::construct(const target_type& type_to_construct,
       {
          std::string new_name = make_product_name(*composite_target_name,
                                                   *i->type_,
-                                                  props,
+                                                  *valuable_properties,
                                                   i->need_tag_ ? &owner : NULL,
                                                   /*primary_target=*/ p == 0);
 
@@ -107,7 +110,7 @@ generator::construct(const target_type& type_to_construct,
    {
       std::string new_name = make_product_name(*source_target,
                                                type_to_construct,
-                                               props,
+                                               *valuable_properties,
                                                producable_types().front().need_tag_ ? &owner : NULL);
       assert(sources.size() == 1);
 
@@ -172,10 +175,15 @@ make_consume_types(engine& e,
 
 feature_set*
 make_valuable_properties(const feature_set& target_props,
-                         const std::vector<const feature*>& action_valuable_props,
-                         const feature_set* generator_constraints)
+                         const std::vector<const feature*>& action_valuable_features,
+                         const std::vector<const feature*>& constraint_valuable_features,
+                         const std::vector<const feature*>& target_type_valuable_features)
 {
    feature_set* result = target_props.owner().make_set();
+
+   auto all_valuable_features = action_valuable_features;
+   merge(all_valuable_features, constraint_valuable_features);
+   merge(all_valuable_features, target_type_valuable_features);
 
    auto process_one = [&](const feature* f) {
       if (f->attributes().free) {
@@ -191,22 +199,8 @@ make_valuable_properties(const feature_set& target_props,
       }
    };
 
-   for (const feature* f : action_valuable_props)
+   for (const feature* f : all_valuable_features)
       process_one(f);
-
-   if (generator_constraints) {
-      for (const feature* f : *generator_constraints) {
-         // skip features that is alse presented in action_valuable_props
-         auto i = std::find_if(action_valuable_props.begin(), action_valuable_props.end(), [&](const feature* v){
-            return v->name() == f->name();
-         });
-         if (i != action_valuable_props.end())
-            continue;
-
-         // ok, this feature is valuable
-         process_one(f);
-      }
-   }
 
    return result;
 }

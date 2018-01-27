@@ -5,6 +5,7 @@
 #include <boost/spirit/include/classic_lists.hpp>
 #include <hammer/core/cmdline_builder.h>
 #include <hammer/core/argument_writer.h>
+#include <hammer/core/feature_set.h>
 
 using namespace std;
 
@@ -62,10 +63,8 @@ cmdline_builder::valuable_features() const
 {
    std::vector<const feature*> result;
 
-   for(const auto& writer : writers_) {
-      auto v = writer.second->valuable_features();
-      result.insert(result.end(), v.begin(), v.end());
-   }
+   for(const auto& writer : writers_)
+      merge(result, writer.second->valuable_features());
 
    return result;
 }

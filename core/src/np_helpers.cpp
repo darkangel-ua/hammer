@@ -41,7 +41,7 @@ make_product_name(const basic_build_target& source_target,
       if (!version.empty())
          hash_suffix = '-' + version;
 
-      hash_suffix += '-' + compute_hash(product_properties, *owner);
+      hash_suffix += '-' + md5(product_properties, true);
    }
  
    string source_name_without_suffix = std::string(source_name.begin(),
@@ -71,7 +71,7 @@ make_product_name(const std::string& composite_target_name,
          if (!version.empty())
             hash_suffix = '-' + version;
 
-         hash_suffix += '-' + compute_hash(product_properties, *owner);
+         hash_suffix += '-' + md5(product_properties, true);
       }
 
       return product_type.prefix_for(product_properties) + composite_target_name + hash_suffix + product_type.suffix_for(product_properties);

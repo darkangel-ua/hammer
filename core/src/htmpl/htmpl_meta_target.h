@@ -1,9 +1,7 @@
-#ifndef HAMMER_CORE_HTMPL_HTMPL_META_TARGET
-#define HAMMER_CORE_HTMPL_HTMPL_META_TARGET
-
+#pragma once
 #include <hammer/core/typed_meta_target.h>
 
-namespace hammer {
+namespace hammer{
 
 class htmpl_meta_target : public typed_meta_target
 {
@@ -21,10 +19,12 @@ class htmpl_meta_target : public typed_meta_target
                                       const feature_set& build_request,
                                       const feature_set& computed_usage_requirements,
                                       const main_target* owner) const override;
-
-
+	private:
+		basic_target*
+		create_simple_target(const main_target& owner,
+		                     const location_t& source_location,
+		                     const target_type& tp,
+		                     const feature_set* properties) const override;
 };
 
 }
-
-#endif

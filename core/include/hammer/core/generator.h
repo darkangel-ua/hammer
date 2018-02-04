@@ -110,7 +110,8 @@ namespace hammer
 	make_valuable_properties(const feature_set& target_props,
 	                         const std::vector<const feature*>& action_valuable_features,
 	                         const std::vector<const feature*>& constraint_valuable_features,
-	                         const std::vector<const feature*>& target_type_valuable_features);
+	                         const std::vector<const feature*>& target_type_valuable_features,
+	                         const std::vector<const feature*>& source_target_valuable_features);
 }
 
 #endif //h_9b0699bd_cc04_4e19_874b_45c95b909551

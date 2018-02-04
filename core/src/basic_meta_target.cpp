@@ -50,18 +50,24 @@ void basic_meta_target::instantiate_simple_targets(const sources_decl& targets,
                                                    const main_target& owner,
                                                    std::vector<basic_target*>* result) const
 {
-   //const type_registry& tr = get_engine()->get_type_registry(); // unused variable tr;
-   for(sources_decl::const_iterator i = targets.begin(), last = targets.end(); i != last; ++i)
-   {
-      const hammer::target_type* tp = i->type();
-      if (tp == 0)
-         throw std::runtime_error("Can't resolve type from source '" + i->target_path() + "'.");
+   for (const source_decl& sd : targets) {
+      const hammer::target_type* tp = sd.type();
+      if (!tp)
+         throw std::runtime_error("Can't resolve type from source '" + sd.target_path() + "'.");
 
-      location_t source_location = (owner.location() / i->target_path()).normalize();
-      const std::string source_filename = source_location.filename().string();
-      source_target* st = new source_target(&owner, source_location.branch_path(), source_filename, tp, &owner.properties());
+      location_t source_location = (owner.location() / sd.target_path()).normalize();
+      basic_target* st = create_simple_target(owner, source_location, *tp, &owner.properties());
       result->push_back(st);
    }
+}
+
+basic_target*
+basic_meta_target::create_simple_target(const main_target& owner,
+                                        const location_t& source_location,
+                                        const target_type& tp,
+                                        const feature_set* properties) const
+{
+   return new source_target(&owner, source_location.branch_path(), source_location.filename().string(), &tp, properties);
 }
 
 void instantiate_meta_targets(const meta_targets_t& targets,
@@ -82,7 +88,7 @@ void basic_meta_target::split_one_source(sources_decl* simple_targets,
                                          const feature_set& build_request,
                                          const type_registry& tr) const
 {
-   if (const target_type* t = source.type())
+   if (source.type())
       simple_targets->push_back(source);
    else
       resolve_meta_target_source(source, build_request, simple_targets, meta_targets);
@@ -104,8 +110,8 @@ void basic_meta_target::resolve_meta_target_source(const source_decl& source,
    const feature_set* build_request_with_source_properties = (source.properties() == NULL ? &build_request : build_request.join(*source.properties()));
 
 	// check that source is simple one ID. Maybe its source or maybe its target ID.
-   const bool local_target = source.target_name().empty() && !source.target_path().empty() ||
-                             !source.target_name().empty() && source.target_path() == "./";
+   const bool local_target = (source.target_name().empty() && !source.target_path().empty()) ||
+                             (!source.target_name().empty() && source.target_path() == "./");
    if (local_target) {
       const std::string target_name = source.target_name().empty() ? source.target_path() : source.target_name();
       if (project_->find_target(target_name)) {

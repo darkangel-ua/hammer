@@ -56,6 +56,9 @@ generator::create_target(const main_target* mt,
    return new generated_build_target(mt, n, t, f);
 }
 
+static
+std::vector<const feature*> empty_valuable_features;
+
 build_nodes_t
 generator::construct(const target_type& type_to_construct,
                      const feature_set& props,
@@ -64,50 +67,17 @@ generator::construct(const target_type& type_to_construct,
                      const std::string* composite_target_name,
                      const main_target& owner) const
 {
+   const auto& source_valuable_features = source_target ? source_target->valuable_features()
+                                                        : sources.size() == 1 && sources.front()->products_.size() == 1
+                                                        ? sources.front()->products_.front()->valuable_features() : empty_valuable_features;
    const feature_set* valuable_properties = make_valuable_properties(props,
                                                                      action_valuable_features_,
                                                                      constraints_valuable_features_,
-                                                                     type_to_construct.valuable_features());
+                                                                     type_to_construct.valuable_features(),
+                                                                     source_valuable_features);
 
-   if (!source_target)
-   {
-      build_node_ptr result(new build_node(owner, composite_, action()));
-
-      typedef build_nodes_t::const_iterator iter;
-      for(iter i = sources.begin(), last = sources.end(); i != last; ++i)
-      {
-         bool node_added = false;
-         for(build_node::targets_t::const_iterator p_i = (**i).products_.begin(), p_last = (**i).products_.end(); p_i != p_last; ++p_i)
-         {
-            if (is_consumable((**p_i).type()))
-            {
-               result->sources_.push_back(build_node::source_t(*p_i, *i));
-               if (!node_added)
-               {
-                  result->down_.push_back(*i);
-                  node_added = true;
-               }
-            }
-         }
-      }
-
-      unsigned p = 0;
-      for(producable_types_t::const_iterator i = target_types_.begin(), last = target_types_.end(); i != last; ++i, ++p)
-      {
-         std::string new_name = make_product_name(*composite_target_name,
-                                                  *i->type_,
-                                                  *valuable_properties,
-                                                  i->need_tag_ ? &owner : NULL,
-                                                  /*primary_target=*/ p == 0);
-
-         result->products_.push_back(create_target(&owner, result->sources_, new_name, i->type_, valuable_properties));
-      }
-
-      result->targeting_type_ = &type_to_construct;
-      return build_nodes_t(1, result);
-   }
-   else
-   {
+   if (source_target) {
+      // this is one-to-one construction
       std::string new_name = make_product_name(*source_target,
                                                type_to_construct,
                                                *valuable_properties,
@@ -118,6 +88,37 @@ generator::construct(const target_type& type_to_construct,
       result->sources_.push_back(build_node::source_t(source_target, sources.front()));
       result->down_.push_back(sources.front());
       result->products_.push_back(create_target(&owner, result->sources_, new_name, producable_types().front().type_, valuable_properties));
+      result->targeting_type_ = &type_to_construct;
+      return build_nodes_t(1, result);
+   } else {
+      // this is many-to-one(+additional) construction
+      build_node_ptr result(new build_node(owner, composite_, action()));
+
+      typedef build_nodes_t::const_iterator iter;
+      for(iter i = sources.begin(), last = sources.end(); i != last; ++i) {
+         bool node_added = false;
+         for(build_node::targets_t::const_iterator p_i = (**i).products_.begin(), p_last = (**i).products_.end(); p_i != p_last; ++p_i) {
+            if (is_consumable((**p_i).type())) {
+               result->sources_.push_back(build_node::source_t(*p_i, *i));
+               if (!node_added) {
+                  result->down_.push_back(*i);
+                  node_added = true;
+               }
+            }
+         }
+      }
+
+      unsigned p = 0;
+      for(producable_types_t::const_iterator i = target_types_.begin(), last = target_types_.end(); i != last; ++i, ++p) {
+         std::string new_name = make_product_name(*composite_target_name,
+                                                  *i->type_,
+                                                  *valuable_properties,
+                                                  i->need_tag_ ? &owner : NULL,
+                                                  /*primary_target=*/ p == 0);
+
+         result->products_.push_back(create_target(&owner, result->sources_, new_name, i->type_, valuable_properties));
+      }
+
       result->targeting_type_ = &type_to_construct;
       return build_nodes_t(1, result);
   }
@@ -177,13 +178,15 @@ feature_set*
 make_valuable_properties(const feature_set& target_props,
                          const std::vector<const feature*>& action_valuable_features,
                          const std::vector<const feature*>& constraint_valuable_features,
-                         const std::vector<const feature*>& target_type_valuable_features)
+                         const std::vector<const feature*>& target_type_valuable_features,
+                         const std::vector<const feature*>& source_target_valuable_features)
 {
    feature_set* result = target_props.owner().make_set();
 
    auto all_valuable_features = action_valuable_features;
    merge(all_valuable_features, constraint_valuable_features);
    merge(all_valuable_features, target_type_valuable_features);
+   merge(all_valuable_features, source_target_valuable_features);
 
    auto process_one = [&](const feature* f) {
       if (f->attributes().free) {

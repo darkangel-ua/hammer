@@ -495,6 +495,28 @@ make_valuable_features(const feature_set& fs)
 }
 
 void append_valuable_features(std::vector<const feature*>& result,
+                              const feature& f,
+                              feature_registry& f_owner)
+{
+   if (f.attributes().free) {
+      auto i = std::find_if(result.begin(), result.end(), [&](const feature* v) {
+         return v->name() == f.name();
+      });
+
+      if (i == result.end())
+         result.push_back(f_owner.create_feature(f.name(), {}));
+
+   } else {
+      auto i = std::find_if(result.begin(), result.end(), [&](const feature* v) {
+         return *v == f;
+      });
+
+      if (i == result.end())
+         result.push_back(&f);
+   }
+}
+
+void append_valuable_features(std::vector<const feature*>& result,
                               const feature_set& fs)
 {
    for (const feature* f : fs) {

@@ -89,6 +89,9 @@ namespace hammer
    void apply_build_request(feature_set& dest, const feature_set& build_request);
 
 	void append_valuable_features(std::vector<const feature*>& result,
+	                              const feature& f,
+	                              feature_registry& f_owner);
+	void append_valuable_features(std::vector<const feature*>& result,
 	                              const feature_set& fs);
 	std::vector<const feature*>
 	make_valuable_features(const feature_set& fs);

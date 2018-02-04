@@ -15,6 +15,9 @@
 #include <hammer/core/feature_set.h>
 #include <hammer/core/builder.h>
 #include <hammer/core/build_environment_impl.h>
+#include <hammer/core/actuality_checker.h>
+#include <hammer/core/c_scanner.h>
+#include <hammer/core/scaner_manager.h>
 
 #include <hammer/core/toolsets/gcc_toolset.h>
 #include <hammer/core/toolsets/msvc_toolset.h>
@@ -47,6 +50,11 @@ complete_build_tests_environment::complete_build_tests_environment()
 {
    hammer::types::register_standart_types(engine_.get_type_registry(), engine_.feature_registry());
    install_toolsets();
+
+   boost::shared_ptr<scanner> c_scaner(new hammer::c_scanner);
+   engine_.scanner_manager().register_scanner(engine_.get_type_registry().get(types::CPP), c_scaner);
+   engine_.scanner_manager().register_scanner(engine_.get_type_registry().get(types::C), c_scaner);
+   engine_.scanner_manager().register_scanner(engine_.get_type_registry().get(types::RC), c_scaner);
 
    // Simplest way is to specify /home/username/user-config.ham as toolset configuring script
    const char* toolset_setup_script = getenv("HAMMER_TOOLSET_SETUP_SCRIPT");
@@ -87,6 +95,11 @@ void complete_build_tests_environment::run_test(const boost::filesystem::path& w
    }
 
    build_environment_impl be(fs::current_path());
+
+   // we run checker but not actualy use the result
+   actuality_checker checker(engine_, be);
+   checker.check(nodes_to_build);
+
    volatile bool interrupt_flag = false;
    builder builder(be, interrupt_flag, 1, true);
 

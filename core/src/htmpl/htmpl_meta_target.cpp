@@ -1,4 +1,6 @@
-#include "htmpl_meta_target.h"
+#include <stdexcept>
+#include <regex>
+#include <boost/filesystem/fstream.hpp>
 #include <hammer/core/project.h>
 #include <hammer/core/engine.h>
 #include <hammer/core/main_target.h>
@@ -7,7 +9,10 @@
 #include <hammer/core/target_type.h>
 #include <hammer/core/types.h>
 #include <hammer/core/fs_helpers.h>
-#include <stdexcept>
+#include <hammer/core/source_target.h>
+#include <hammer/core/source_build_target.h>
+#include "htmpl_meta_target.h"
+#include "htmpl_source_target.h"
 
 using namespace std;
 namespace fs = boost::filesystem;
@@ -89,6 +94,15 @@ void htmpl_meta_target::compute_usage_requirements(feature_set& result,
    }
 
    typed_meta_target::compute_usage_requirements(result, constructed_target, build_request, computed_usage_requirements, owner);
+}
+
+basic_target*
+htmpl_meta_target::create_simple_target(const main_target& owner,
+                                        const location_t& source_location,
+                                        const target_type& tp,
+                                        const feature_set* properties) const
+{
+   return new htmpl_source_target(&owner, source_location.branch_path(), source_location.filename().string(), &tp, properties);
 }
 
 }

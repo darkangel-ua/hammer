@@ -2,6 +2,7 @@
 
 #include <boost/noncopyable.hpp>
 #include <string>
+#include <vector>
 #include <hammer/core/location.h>
 #include <hammer/core/timestamp_info.h>
 #include <hammer/core/build_node.h>
@@ -11,6 +12,7 @@ namespace hammer {
 class main_target;
 class target_type;
 class feature_set;
+class feature;
 class basic_meta_target;
 class project;
 class engine;
@@ -39,6 +41,10 @@ class basic_build_target : private boost::noncopyable
 		// FIXME: const here seams not good solution because after clean timestamp_info should return
 		// something different than before. But I leave this for future clean-up
 		virtual void clean(const build_environment& environment) const = 0;
+
+		virtual
+		const std::vector<const feature*>&
+		valuable_features() const;
 
 	protected:
 		mutable timestamp_info_t timestamp_info_;

@@ -28,6 +28,7 @@
 #include <hammer/core/hashed_location_serialization.h>
 #include <hammer/core/c_scanner.h>
 #include <hammer/core/scaner_context.h>
+#include <hammer/core/main_target.h>
 
 using namespace std;
 using namespace boost::posix_time;
@@ -165,7 +166,9 @@ struct c_scanner_context : public scanner_context
    template<class Archive>
    void load(Archive & ar, const unsigned int version);
 
-   const directories_t& get_include_dirs(const feature_set& properties);
+   const directories_t&
+   get_include_dirs(const build_node& node,
+                    const feature_set& properties);
    // location + was insertion flag
    // this function load file nodes when unknown directory encountered
    pair<const hashed_location*, bool> get_cached_location(const hashed_location& v) const;
@@ -617,16 +620,31 @@ static location_t get_parent(const location_t& l)
 }
 
 const c_scanner_context::directories_t& 
-c_scanner_context::get_include_dirs(const feature_set& properties)
+c_scanner_context::get_include_dirs(const build_node& node,
+                                    const feature_set& properties)
 {
    features_2_dirs_t::const_iterator i = features_2_dirs_.find(&properties);
    if (i != features_2_dirs_.end())
       return i->second;
-   else
-   {
+   else {
       directories_t result;
-      for(feature_set::const_iterator i = properties.find("include"), last = properties.end(); i != last; i = properties.find(++i, "include"))
-      {
+      for(feature_set::const_iterator i = properties.find("__generated-include"), last = properties.end(); i != last; i = properties.find(++i, "__generated-include")) {
+         // everything generated should always be in dependencies of this node
+         for (const build_node_ptr& d : node.dependencies_) {
+            if (&d->products_owner() != (**i).get_generated_data().target_)
+               continue;
+            for (const basic_build_target* p : d->products_) {
+               location_t l = p->location() / ".";
+               l.normalize();
+               pair<const hashed_location*, bool> r = get_cached_location(l);
+               load_directory(*r.first);
+
+               result.push_back(r.first);
+            }
+         }
+      }
+
+      for(feature_set::const_iterator i = properties.find("include"), last = properties.end(); i != last; i = properties.find(++i, "include")) {
          location_t l = (**i).get_path_data().target_->location() / (**i).value() / ".";
          l.normalize();
          pair<const hashed_location*, bool> r = get_cached_location(l);
@@ -641,14 +659,15 @@ c_scanner_context::get_include_dirs(const feature_set& properties)
 
 boost::posix_time::ptime
 c_scanner::process(const basic_build_target& t,
-                         scanner_context& context_outer) const
+                   const build_node& node,
+                   scanner_context& context_outer) const
 {
    c_scanner_context& context = static_cast<c_scanner_context&>(context_outer);
 
    location_t target_path = t.location() / t.name();
    target_path.normalize();
 
-   const c_scanner_context::directories_t& include_files_dirs = context.get_include_dirs(t.properties());
+   const c_scanner_context::directories_t& include_files_dirs = context.get_include_dirs(node, t.properties());
    const hashed_location& file_dir = *context.get_cached_location(get_parent(target_path)).first;
    context.load_directory(file_dir);
    c_scanner_context::visited_nodes_t visited_nodes;

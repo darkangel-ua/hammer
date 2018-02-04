@@ -1,5 +1,3 @@
-# options: write-build-graph=true
-
 exe test 
    : main.cpp
      mainwindow.cpp

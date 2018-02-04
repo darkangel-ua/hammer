@@ -17,9 +17,14 @@ namespace hammer
 
       public:
          c_scanner() : scanner("C scanner") {}
-         boost::posix_time::ptime process(const basic_build_target& t,
-														scanner_context& context) const override;
-         boost::shared_ptr<scanner_context> create_context(const build_environment& env) const override;
+
+			boost::posix_time::ptime
+			process(const basic_build_target& t,
+			        const hammer::build_node& node,
+			        scanner_context& context) const override;
+
+			boost::shared_ptr<scanner_context>
+			create_context(const build_environment& env) const override;
       
       private:
          mutable boost::weak_ptr<scanner_context> context_;

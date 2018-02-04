@@ -83,6 +83,13 @@ namespace hammer
 
          const feature_set& resolve_undefined_features(const feature_set& fs) const;
 
+			virtual
+			basic_target*
+			create_simple_target(const main_target& owner,
+			                     const location_t& source_location,
+			                     const target_type& tp,
+			                     const feature_set* properties) const;
+
       private:
          struct cached_instantiation_data_t
          {

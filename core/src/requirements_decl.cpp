@@ -100,7 +100,7 @@ void linear_and_condition::eval(const feature_set& build_request,
       else
          if (build_request.find((**i).name()) != build_request.end() ||
              result->find((**i).name()) != result->end() ||
-             (**i).definition().get_default() != (**i).value())
+             !(**i).definition().defaults_contains((**i).value()))
          {
             satisfy = false;
             break;
@@ -205,7 +205,7 @@ bool requirement_condition_op_feature::eval(const feature_set& build_request,
    else {
       if (build_request.find(f_->name()) != build_request.end() ||
           result->find(f_->name()) != result->end() ||
-          f_->definition().get_default() != f_->value())
+          !f_->definition().defaults_contains(f_->value()))
       {
          return false;
       } else

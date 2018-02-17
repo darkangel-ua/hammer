@@ -14,7 +14,7 @@ feature.feature runtime-debugging : on off ;
 feature.feature threading : multi single ;
 # force target name to be equal to this feature value
 # works only on composite targets
-feature.feature name : : free ;
+feature.feature name : : no-defaults no-checks ;
 feature.feature search : : free path ;
 feature.feature file : : free path ;
 feature.feature cxxflags : : free ;

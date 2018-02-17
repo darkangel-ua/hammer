@@ -17,7 +17,7 @@ struct environment
       {
          feature_attributes attrs = {0};
          attrs.propagated = 1;
-         fr_.add_feature_def("link", { "shared", "static" }, attrs);
+         fr_.add_feature_def("link", { {"shared"}, {"static"} }, attrs);
       }
 
       {
@@ -29,7 +29,7 @@ struct environment
       {
          feature_attributes attrs = {0};
          attrs.propagated = 1;
-         feature_def& toolset_def = fr_.add_feature_def("toolset", { "gcc", "msvc" }, attrs);
+         feature_def& toolset_def = fr_.add_feature_def("toolset", { {"gcc"}, {"msvc"} }, attrs);
          subfeature_def& toolset_version_def = toolset_def.add_subfeature("version");
          toolset_version_def.extend_legal_values("gcc", "4");
          toolset_version_def.extend_legal_values("gcc", "5");

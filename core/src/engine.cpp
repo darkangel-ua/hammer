@@ -46,24 +46,24 @@ engine::engine()
 
    {
       feature_attributes ft = {0}; ft.free = 1;
-      fr->add_feature_def("__searched_lib_name", vector<string>(), ft);
+      fr->add_feature_def("__searched_lib_name", {}, ft);
    }
 
    {
       // used to mark targets that belong to pch meta target. Needed for distinguishing PCH and OBJ generators
       feature_attributes ft = {0}; ft.free = 1;
-      fr->add_feature_def("__pch", vector<string>(), ft);
+      fr->add_feature_def("__pch", {}, ft);
    }
 
    {
       feature_attributes ft = {0}; ft.free = ft.generated = ft.path = 1;
-      fr->add_feature_def("__generated-include", vector<string>(), ft);
+      fr->add_feature_def("__generated-include", {}, ft);
    }
 
    {
       feature_attributes ft = {0};
       ft.propagated = true;
-      fr->add_feature_def("host-os", {"windows", "linux"}, ft);
+      fr->add_feature_def("host-os", { {"windows", {}}, {"linux", {}} }, ft);
    }
 
 #if defined(_WIN32)

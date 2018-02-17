@@ -51,7 +51,6 @@ void register_standart_types(type_registry& tr, feature_registry& fr)
    tr.insert(target_type(RES, ".res"));
 
    target_type::suffixes_t obj_suffixes = list_of<target_type::suffix_def>(".o", *parse_simple_set("<host-os>linux", fr))
-                                                                          (".o", *parse_simple_set("<toolset>gcc", fr))
                                                                           (".obj", *parse_simple_set("<host-os>windows", fr));
    tr.insert(target_type(OBJ, obj_suffixes));
    tr.insert(target_type(PCH, ".pch"));

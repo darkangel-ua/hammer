@@ -219,8 +219,8 @@ void remove_duplicates(deduplicator_t& deduplicator,
       deduplicator_t sources_deduplicator;
       remove_duplicates(sources_deduplicator, meta_targets);
 
-      get_engine()->feature_registry().add_defaults(mt_fs);
-      get_project()->local_feature_registry().add_defaults(mt_fs);
+      get_engine()->feature_registry().add_defaults(*mt_fs);
+      get_project()->local_feature_registry().add_defaults(*mt_fs);
 
       main_target* mt = construct_main_target(owner, mt_fs); // construct_main_target may construct main_target with different properties PCH is example
       mt_fs = mt->properties().clone(); // FIXME ref semantic required

@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include <boost/filesystem/convenience.hpp>
-#include <boost/assign/list_of.hpp>
 #include <hammer/core/toolsets/msvc_toolset.h>
 #include <hammer/core/generator.h>
 #include <hammer/core/types.h>
@@ -22,7 +21,6 @@
 #include <hammer/core/output_dir_argument_writer.h>
 #include <hammer/core/batched_cmdline_action.h>
 
-using namespace boost::assign;
 using std::string;
 using std::unique_ptr;
 using namespace boost;
@@ -68,7 +66,7 @@ void msvc_toolset::init_impl(engine& e,
 {
    feature_def& toolset_def = e.feature_registry().get_def("toolset");
    if (!toolset_def.is_legal_value(name()))
-      toolset_def.extend_legal_values(name());
+      toolset_def.extend_legal_values(name(), e.feature_registry().get_or_create_feature_value_ns("c/c++"));
 
    if (!toolset_home)
       throw std::runtime_error("[msvc_toolset]: You must specify toolset home directory");
@@ -93,7 +91,7 @@ void msvc_toolset::init(engine& e,
    if (!e.feature_registry().find_def("debug-store")) {
       feature_attributes fa = {0};
       fa.propagated = true;
-      e.feature_registry().add_feature_def("debug-store", list_of("database")("object"), fa);
+      e.feature_registry().add_feature_def("debug-store", { {"database"}, {"object"} }, fa);
    }
 
    feature_set* generator_condition = e.feature_registry().make_set();

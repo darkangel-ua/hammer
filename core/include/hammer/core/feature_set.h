@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <boost/noncopyable.hpp>
+#include <hammer/core/feature_value_ns_fwd.h>
 
 namespace hammer
 {
@@ -34,7 +35,9 @@ namespace hammer
          // gcc and gcc-6 will match gcc-6, while find will return only gcc-6
          const_iterator contains(const feature& f) const;
          iterator find(const std::string& name) { return find(name.c_str()); }
-         iterator find(const char* name); // find first occurrence 
+			iterator find(const std::string& name,
+			              const feature_value_ns_ptr& ns);
+         iterator find(const char* name); // find first occurrence
          const_iterator find(const_iterator from, const char* name) const; // find next occurrence 
          const_iterator find(const_iterator from, const std::string& name) const { return find(from, name.c_str()); }
          iterator find(iterator from, const char* name); // find next occurrence 
@@ -88,9 +91,9 @@ namespace hammer
    // been used in target constuction
    void apply_build_request(feature_set& dest, const feature_set& build_request);
 
-	void append_valuable_features(std::vector<const feature*>& result,
-	                              const feature& f,
-	                              feature_registry& f_owner);
+	void append_valuable_feature(std::vector<const feature*>& result,
+	                             const feature& f,
+	                             feature_registry& f_owner);
 	void append_valuable_features(std::vector<const feature*>& result,
 	                              const feature_set& fs);
 	std::vector<const feature*>

@@ -27,7 +27,7 @@ htmpl_build_target::htmpl_build_target(const main_target* mt,
 		const string feature_name = (*first)[2];
 		auto i = f->find(feature_name);
 		if (i != f->end())
-			append_valuable_features(valuable_features_, *properties().owner().create_feature(feature_name, (**i).value()), properties().owner());
+         append_valuable_feature(valuable_features_, *properties().owner().create_feature(feature_name, (**i).value()), properties().owner());
 	}
 }
 

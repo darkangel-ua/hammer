@@ -261,7 +261,7 @@ namespace
 
       vector<basic_target*> result;
       feature_set* usage_requirements = project.get_engine()->feature_registry().make_set();
-      const feature_set* build_request_with_defs = project.get_engine()->feature_registry().add_defaults(build_request.clone());
+      const feature_set* build_request_with_defs = &project.get_engine()->feature_registry().add_defaults(*build_request.clone());
       for(vector<string>::const_iterator i = targets.begin(), last = targets.end(); i != last; ++i)
       {
          if (is_looks_like_project(*i))
@@ -857,7 +857,7 @@ int main(int argc, char** argv) {
             build_request->join("variant", "debug");
 
          if (build_request->find("host-os") == build_request->end())
-            build_request->join("host-os", engine.feature_registry().get_def("host-os").get_default().c_str());
+            build_request->join("host-os", engine.feature_registry().get_def("host-os").get_defaults().front().value_.c_str());
 
          if (opts.debug_level_ > 0)
             cout << "...Build request: " << dump_for_hash(*build_request) << endl;

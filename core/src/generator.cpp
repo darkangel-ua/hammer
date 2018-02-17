@@ -14,7 +14,23 @@
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/multi_index/sequenced_index.hpp>
 
-namespace hammer{
+namespace hammer {
+
+static
+std::vector<const feature*> empty_valuable_features;
+
+static
+std::vector<const feature*>
+make_generator_valuable_properties(const bool composite,
+                                   feature_registry& fr)
+{
+   if (composite) {
+      std::vector<const feature*> result;
+      append_valuable_feature(result, *fr.create_feature("name", ""), fr);
+      return result;
+   } else
+      return empty_valuable_features;
+}
 
 generator::generator(hammer::engine& e,
                      const std::string& name,
@@ -30,7 +46,8 @@ generator::generator(hammer::engine& e,
    action_(action),
    include_composite_generators_(false),
    action_valuable_features_( action ? action->valuable_features() : std::vector<const feature*>()),
-   constraints_valuable_features_(c ? make_valuable_features(*c) : std::vector<const feature*>())
+   constraints_valuable_features_(c ? make_valuable_features(*c) : std::vector<const feature*>()),
+   generator_valuable_features_(make_generator_valuable_properties(composite, e.feature_registry()))
 {
 }
 
@@ -56,9 +73,6 @@ generator::create_target(const main_target* mt,
    return new generated_build_target(mt, n, t, f);
 }
 
-static
-std::vector<const feature*> empty_valuable_features;
-
 build_nodes_t
 generator::construct(const target_type& type_to_construct,
                      const feature_set& props,
@@ -71,8 +85,6 @@ generator::construct(const target_type& type_to_construct,
                                                         : sources.size() == 1 && sources.front()->products_.size() == 1
                                                         ? sources.front()->products_.front()->valuable_features() : empty_valuable_features;
    const feature_set* valuable_properties = make_valuable_properties(props,
-                                                                     action_valuable_features_,
-                                                                     constraints_valuable_features_,
                                                                      type_to_construct.valuable_features(),
                                                                      source_valuable_features);
 
@@ -175,21 +187,21 @@ make_consume_types(engine& e,
 }
 
 feature_set*
-make_valuable_properties(const feature_set& target_props,
-                         const std::vector<const feature*>& action_valuable_features,
-                         const std::vector<const feature*>& constraint_valuable_features,
-                         const std::vector<const feature*>& target_type_valuable_features,
-                         const std::vector<const feature*>& source_target_valuable_features)
+generator::make_valuable_properties(const feature_set& target_props,
+                                    const std::vector<const feature*>& target_type_valuable_features,
+                                    const std::vector<const feature*>& source_target_valuable_features) const
 {
    feature_set* result = target_props.owner().make_set();
 
-   auto all_valuable_features = action_valuable_features;
-   merge(all_valuable_features, constraint_valuable_features);
+   auto all_valuable_features = action_valuable_features_;
+   merge(all_valuable_features, constraints_valuable_features_);
+   merge(all_valuable_features, generator_valuable_features_);
    merge(all_valuable_features, target_type_valuable_features);
    merge(all_valuable_features, source_target_valuable_features);
+   append_valuable_feature(all_valuable_features, *result->owner().create_feature("version", ""), result->owner());
 
    auto process_one = [&](const feature* f) {
-      if (f->attributes().free) {
+      if (f->attributes().free || f->attributes().no_checks) {
          // copy all
          const std::string& name = f->name();
          for(auto i = target_props.find(name); i != target_props.end(); i = target_props.find(i, name)) {

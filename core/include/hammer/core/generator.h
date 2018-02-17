@@ -92,6 +92,12 @@ namespace hammer
 		protected:
 			const std::vector<const feature*> action_valuable_features_;
 			const std::vector<const feature*> constraints_valuable_features_;
+			const std::vector<const feature*> generator_valuable_features_;
+
+			feature_set*
+			make_valuable_properties(const feature_set& target_props,
+			                         const std::vector<const feature*>& target_type_valuable_features,
+			                         const std::vector<const feature*>& source_target_valuable_features) const;
    };
 
    // we must not change order in nodes, because if that we use multi_index
@@ -105,13 +111,6 @@ namespace hammer
    generator::consumable_types_t
    make_consume_types(engine& e,
                       const std::vector<type_tag>& types);
-
-	feature_set*
-	make_valuable_properties(const feature_set& target_props,
-	                         const std::vector<const feature*>& action_valuable_features,
-	                         const std::vector<const feature*>& constraint_valuable_features,
-	                         const std::vector<const feature*>& target_type_valuable_features,
-	                         const std::vector<const feature*>& source_target_valuable_features);
 }
 
 #endif //h_9b0699bd_cc04_4e19_874b_45c95b909551

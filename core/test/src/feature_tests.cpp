@@ -13,23 +13,18 @@ BOOST_AUTO_TEST_CASE(feature_def_simple_methods)
 {
    feature_registry fr;
 
-   vector<string> empty_values;
-   vector<string> values;
-      values.push_back("on");
-      values.push_back("of");
-
    feature_attributes base_fa = {0};
-   feature_def& d1 = fr.add_feature_def("name", empty_values, base_fa);
+   feature_def& d1 = fr.add_feature_def("name", {}, base_fa);
    BOOST_CHECK_EQUAL(d1.name(), "name");
-   BOOST_CHECK_EQUAL(d1.get_default(), "");
+   BOOST_CHECK(d1.get_defaults().empty());
    BOOST_CHECK_THROW(d1.set_default("on"), std::exception);
-   d1.extend_legal_values("on");
+   d1.extend_legal_values("on", {});
    BOOST_REQUIRE_EQUAL(d1.legal_values().size(), 1);
-   BOOST_REQUIRE_EQUAL(d1.get_default(), "on");
-   BOOST_REQUIRE_THROW(d1.extend_legal_values("on"), std::exception);
-   BOOST_REQUIRE_NO_THROW(d1.extend_legal_values("off"));
+   BOOST_REQUIRE(d1.defaults_contains("on"));
+   BOOST_REQUIRE_THROW(d1.extend_legal_values("on", {}), std::exception);
+   BOOST_REQUIRE_NO_THROW(d1.extend_legal_values("off", {}));
    BOOST_REQUIRE_EQUAL(d1.legal_values().size(), 2);
-   BOOST_REQUIRE_EQUAL(d1.get_default(), "on");
+   BOOST_REQUIRE(d1.defaults_contains("on"));
 }
 
 BOOST_AUTO_TEST_CASE(feature_def_subfeatures)
@@ -49,7 +44,7 @@ BOOST_AUTO_TEST_CASE(feature_compare_with_subfeatures)
    feature_def& toolset_def = fr.add_feature_def("toolset");
    subfeature_def& toolset_version_def = toolset_def.add_subfeature("version");
 
-   toolset_def.extend_legal_values("msvc");
+   toolset_def.extend_legal_values("msvc", {});
    toolset_version_def.extend_legal_values("msvc", "11.0");
    toolset_version_def.extend_legal_values("msvc", "12.0");
 
@@ -72,7 +67,7 @@ BOOST_AUTO_TEST_CASE(feature_contains)
 {
    feature_registry fr;
 
-   feature_def& toolset_def = fr.add_feature_def("toolset", { "gcc" } );
+   feature_def& toolset_def = fr.add_feature_def("toolset", { { "gcc", {} } } );
    subfeature_def& toolset_version_def = toolset_def.add_subfeature("version");
    toolset_version_def.extend_legal_values("gcc", "6");
    toolset_version_def.extend_legal_values("gcc", "7");

@@ -12,4 +12,16 @@ feature_base::feature_base(const feature_def* def,
    assert(def && "Definition cannot be NULL");   
 }
 
+static
+feature_value_ns_ptr global_ns;
+
+const feature_value_ns_ptr&
+feature_base::get_value_ns() const
+{
+   if (attributes().no_checks)
+      return global_ns;
+   else
+      return definition_->get_legal_value_ns(value());
+}
+
 }

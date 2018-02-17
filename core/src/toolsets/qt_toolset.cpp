@@ -103,11 +103,7 @@ class qt_uic_generator : public generator
                 const std::string* composite_target_name,
                 const main_target& owner) const override
       {
-         const feature_set* valuable_properties = make_valuable_properties(props,
-                                                                           action_valuable_features_,
-                                                                           constraints_valuable_features_,
-                                                                           type_to_construct.valuable_features(),
-                                                                           {});
+         const feature_set* valuable_properties = make_valuable_properties(props, type_to_construct.valuable_features(), {});
          build_nodes_t result;
 
          for (auto& source : sources) {
@@ -479,7 +475,7 @@ void qt_toolset::init_impl(engine& e, const std::string& version_id,
 
          feature_def& toolset_def = e.feature_registry().get_def("toolset");
          if (!toolset_def.is_legal_value("qt"))
-            toolset_def.extend_legal_values("qt");
+            toolset_def.extend_legal_values("qt", e.feature_registry().get_or_create_feature_value_ns("qt"));
 
          return;
       }
@@ -489,7 +485,7 @@ void qt_toolset::init_impl(engine& e, const std::string& version_id,
 
          feature_def& toolset_def = e.feature_registry().get_def("toolset");
          if (!toolset_def.is_legal_value("qt"))
-            toolset_def.extend_legal_values("qt");
+            toolset_def.extend_legal_values("qt", e.feature_registry().get_or_create_feature_value_ns("qt"));
 
          return;
       }

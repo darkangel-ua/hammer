@@ -29,32 +29,26 @@ feature_set& feature_set::join(const char* name, const char* value)
    return join(fr_->create_feature(name, value));
 }
 
-feature_set& feature_set::join(feature* f)
+feature_set&
+feature_set::join(feature* f)
 {
    if (f->attributes().undefined_)
       has_undefined_ = true;
 
-   if (!f->attributes().free)
-   {
-      iterator i = find(f->name());
-      if (i != end())
-      {
-         if ((**i).value() != f->value())
-         {
+   if (!f->attributes().free) {
+      iterator i = find(f->name(), f->get_value_ns());
+      if (i != end()) {
+         if ((**i).value() != f->value()) {
             *i = f;
             if (f->attributes().composite)
                f->definition().expand_composites(f->value(), this);
          }
-      }
-      else
-      {
+      } else {
          features_.push_back(f);
          if (f->attributes().composite)
             f->definition().expand_composites(f->value(), this);
       }
-   }
-   else
-   {
+   } else {
       if (find(*f) == end())
          features_.push_back(f);
    }
@@ -109,6 +103,15 @@ const feature* feature_set::find(const char* name, const char* value) const
          return *i;
 
    return 0;
+}
+
+feature_set::iterator
+feature_set::find(const std::string& name,
+                  const feature_value_ns_ptr& ns)
+{
+   return find_if(features_.begin(), features_.end(), [&](const feature* v) {
+      return v->name() == name && v->get_value_ns() == ns;
+   });
 }
 
 void feature_set::join_impl(feature_set* lhs, const feature_set& rhs) const
@@ -278,7 +281,7 @@ bool feature_set::compatible_with(const feature_set& rhs) const
          {
             if (rhs_p->find((**i).name()) == rhs_p->end())
             {
-               if ((**i).definition().get_default() != (**i).value())
+               if (!(**i).definition().defaults_contains((**i).value()))
                   return false;
             }
             else
@@ -494,9 +497,9 @@ make_valuable_features(const feature_set& fs)
    return result;
 }
 
-void append_valuable_features(std::vector<const feature*>& result,
-                              const feature& f,
-                              feature_registry& f_owner)
+void append_valuable_feature(std::vector<const feature*>& result,
+                             const feature& f,
+                             feature_registry& f_owner)
 {
    if (f.attributes().free) {
       auto i = std::find_if(result.begin(), result.end(), [&](const feature* v) {

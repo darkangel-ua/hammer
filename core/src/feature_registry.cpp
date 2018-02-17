@@ -3,6 +3,7 @@
 #include <map>
 #include <cassert>
 #include <cstdlib>
+#include <unordered_map>
 #include <boost/shared_ptr.hpp>
 #include <boost/checked_delete.hpp>
 #include <boost/tokenizer.hpp>
@@ -14,6 +15,7 @@
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature.h>
 #include <hammer/core/subfeature.h>
+#include <hammer/core/feature_value_ns.h>
 
 using std::string;
 using std::unique_ptr;
@@ -202,6 +204,7 @@ namespace hammer{
       typedef std::map<std::string, std::unique_ptr<feature_def> > defs_t;
       typedef std::list<feature_set*> feature_set_storage_t;
       typedef boost::ptr_vector<feature> non_cached_features_t;
+      typedef std::unordered_map<std::string, feature_value_ns_ptr> value_namespaces;
 
       typedef multi_index_container<boost::shared_ptr<feature>,
                                     indexed_by<
@@ -227,6 +230,7 @@ namespace hammer{
       non_cached_features_t non_cached_features_;
       subfeatures_t subfeatures_;
       feature_set* singleton_;
+      value_namespaces value_namespaces_;
    };
 
    feature_def* feature_registry::impl_t::find_def(const std::string& name)
@@ -299,6 +303,7 @@ namespace hammer{
    feature_registry::feature_registry() : impl_(new impl_t)
    {
       impl_->singleton_ = make_set();
+      impl_->value_namespaces_.insert({ string(), feature_value_ns_ptr()});
    }
 
    feature_registry::~feature_registry()
@@ -410,17 +415,17 @@ namespace hammer{
       return simply_create_feature(name, value);
    }
 
-   feature_set* feature_registry::add_defaults(feature_set* s)
+   feature_set&
+   feature_registry::add_defaults(feature_set& s)
    {
-      typedef impl_t::defs_t::const_iterator iter;
-      for(iter i = impl_->defs_.begin(), last = impl_->defs_.end(); i != last; ++i)
-      {
-         if (!i->second->attributes().optional &&
-             !i->second->attributes().free &&
-             !i->second->attributes().no_defaults &&
-             s->find(i->first.c_str()) == s->end())
+      for (auto& fd : impl_->defs_) {
+         if (!fd.second->attributes().optional &&
+             !fd.second->attributes().free &&
+             !fd.second->attributes().no_defaults &&
+             s.find(fd.first.c_str()) == s.end())
          {
-            s->join(create_feature(i->first, i->second->get_default()));
+            for (auto& d : fd.second->get_defaults())
+               s.join(create_feature(fd.first, d.value_));
          }
       }
 
@@ -487,4 +492,15 @@ namespace hammer{
 
       return result;
    }
+
+   const feature_value_ns_ptr&
+   feature_registry::get_or_create_feature_value_ns(const std::string& ns)
+   {
+      auto i = impl_->value_namespaces_.find(ns);
+      if (i == impl_->value_namespaces_.end())
+         return impl_->value_namespaces_.insert({ns, feature_value_ns_ptr(new feature_value_ns(ns))}).first->second;
+      else
+         return i->second;
+   }
+
 }

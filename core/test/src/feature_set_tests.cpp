@@ -18,7 +18,7 @@ namespace
          {
             feature_attributes attrs = {0};
             attrs.free = 1;
-            fr_.add_feature_def("define", vector<string>(), attrs);
+            fr_.add_feature_def("define", {}, attrs);
          }
 
          {
@@ -86,6 +86,33 @@ BOOST_FIXTURE_TEST_CASE(join_non_free, enviroment)
    feature_set::const_iterator i = f->find("link");
    BOOST_REQUIRE(i != f->end());
    BOOST_REQUIRE(i == f->begin());
+}
+
+BOOST_FIXTURE_TEST_CASE(join_non_free_ns, enviroment)
+{
+   feature_value_ns_ptr cpp_ns = fr_.get_or_create_feature_value_ns("c++");
+   feature_value_ns_ptr qt_ns = fr_.get_or_create_feature_value_ns("qt");
+   fr_.add_feature_def("toolset", { {"gcc", cpp_ns}, {"msvc", cpp_ns}, {"qt", qt_ns} } );
+
+   feature_set& fs = *fr_.make_set();
+   fs.join("toolset", "gcc");
+   BOOST_REQUIRE_EQUAL(fs.size(), 1);
+   fs.join("toolset", "qt");
+   BOOST_REQUIRE_EQUAL(fs.size(), 2);
+
+   vector<const feature*> toolsets;
+   for (auto i = fs.find("toolset"); i != fs.end(); i = fs.find(i + 1, "toolset"))
+      toolsets.push_back(*i);
+
+   sort(toolsets.begin(), toolsets.end(), [](const feature* lhs, const feature* rhs) { return *lhs < *rhs; });
+
+   const vector<const feature*> expected_toolsets =
+      { fr_.create_feature("toolset", "gcc"),
+        fr_.create_feature("toolset", "qt")
+      };
+
+   BOOST_CHECK(toolsets[0] == expected_toolsets[0]);
+   BOOST_CHECK(toolsets[1] == expected_toolsets[1]);
 }
 
 BOOST_FIXTURE_TEST_CASE(simple_composite, enviroment)

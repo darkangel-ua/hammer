@@ -57,7 +57,7 @@ void gcc_toolset::init_impl(engine& e, const std::string& version_id,
 {
    feature_def& toolset_def = e.feature_registry().get_def("toolset");
    if (!toolset_def.is_legal_value(name()))
-      toolset_def.extend_legal_values(name());
+      toolset_def.extend_legal_values(name(), e.feature_registry().get_or_create_feature_value_ns("c/c++"));
 
    gcc_install_data install_data(resolve_install_data(toolset_home, version_id));
    toolset_def.get_subfeature("version").extend_legal_values(name(), install_data.version_);

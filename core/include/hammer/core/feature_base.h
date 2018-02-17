@@ -40,6 +40,10 @@ namespace hammer
          feature_base(const feature_def* def, const std::string& value);
          const std::string& name() const { return definition_->name(); }
          const std::string& value() const { return value_; }
+
+			const feature_value_ns_ptr&
+			get_value_ns() const;
+
          feature_attributes attributes() const { return definition_->attributes(); }
          const path_data& get_path_data() const { return path_data_; }
          path_data& get_path_data() { return path_data_; }

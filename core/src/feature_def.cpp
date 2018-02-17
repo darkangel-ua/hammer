@@ -8,8 +8,7 @@
 
 using namespace std;
 
-namespace hammer
-{
+namespace hammer {
 
 feature_def::feature_def(const std::string& name, 
                          const legal_values_t& legal_values,
@@ -18,34 +17,72 @@ feature_def::feature_def(const std::string& name,
      legal_values_(legal_values),
      attributes_(attributes)
 {
-   if (!legal_values_.empty())
-      default_ = legal_values_[0];
+   map<feature_value_ns_ptr, string> defaults;
+   for (auto& lv : legal_values) {
+      if (defaults.find(lv.ns_) == defaults.end()) {
+         defaults.insert({lv.ns_, lv.value_});
+         defaults_.push_back(lv);
+      }
+   }
 }
 
 void feature_def::set_default(const std::string& v)
 {
-   if (legal_values_.end() == std::find(legal_values_.begin(), legal_values_.end(), v))
+   auto i = find_legal_value(v);
+   if (!is_legal_value(v))
       throw std::runtime_error("The value '" + v + "' is not in legal values list for feature '" + name_ + "'.");
 
-   default_ = v;
+   // find default value for v namespace and replace it
+   auto di = find_if(defaults_.begin(), defaults_.end(), [&](const legal_value& v){ return v.ns_ == i->ns_; });
+   *di = *i;
 }
 
-void feature_def::extend_legal_values(const std::string& new_legal_value)
+bool feature_def::defaults_contains(const std::string& value) const
 {
-   if (find(legal_values_.begin(), legal_values_.end(), new_legal_value) != legal_values_.end())
+   return find_if(defaults_.begin(), defaults_.end(), [&](const legal_value& lv){ return lv.value_ == value; }) != defaults_.end();
+}
+
+void feature_def::extend_legal_values(const std::string& new_legal_value,
+                                      feature_value_ns_ptr ns)
+{
+   if (is_legal_value(new_legal_value))
       throw std::runtime_error("Legal value '" + new_legal_value + "' already registred for feature '" + name_ + "'");
 
-   legal_values_.push_back(new_legal_value);
-   if (legal_values_.size() == 1)
-      default_ = legal_values_[0];
+   legal_values_.push_back({new_legal_value, ns});
+   if (legal_values_.size() == 1) {
+      defaults_.clear();
+      defaults_.push_back(legal_values_.front());
+   } else {
+      // find default value for v namespace and add
+      auto di = find_if(defaults_.begin(), defaults_.end(), [&](const legal_value& v){ return v.ns_ == ns; });
+      if (di == defaults_.end())
+         defaults_.push_back(legal_values_.back());
+   }
+}
+
+feature_def::legal_values_t::const_iterator
+feature_def::find_legal_value(const string& value) const
+{
+   return std::find_if(legal_values_.begin(), legal_values_.end(), [&](const legal_value& lv) { return lv.value_ == value; });
 }
 
 bool feature_def::is_legal_value(const std::string& v) const
 {
-   return std::find(legal_values_.begin(), legal_values_.end(), v) != legal_values_.end();
+   return find_legal_value(v) != legal_values_.end();
 }
 
-void feature_def::compose(const std::string& value, feature_set* c)
+const feature_value_ns_ptr&
+feature_def::get_legal_value_ns(const std::string& value) const
+{
+   auto i = find_legal_value(value);
+   if (i == legal_values_.end())
+      throw std::runtime_error("Value '" + value + "' is not legal");
+
+   return i->ns_;
+}
+
+void feature_def::compose(const std::string& value,
+                          feature_set* c)
 {
    assert(attributes().composite);
 
@@ -85,7 +122,8 @@ feature_def::add_subfeature(const std::string& subfeature_name)
    return *r.first->second;
 }
 
-const subfeature_def* feature_def::find_subfeature(const std::string& name) const
+const subfeature_def*
+feature_def::find_subfeature(const std::string& name) const
 {
    subfeatures_t::const_iterator i = subfeatures_.find(name);
    if (i == subfeatures_.end())
@@ -94,7 +132,8 @@ const subfeature_def* feature_def::find_subfeature(const std::string& name) cons
       return i->second.get();
 }
 
-const subfeature_def& feature_def::get_subfeature(const std::string& subfeature_name) const
+const subfeature_def&
+feature_def::get_subfeature(const std::string& subfeature_name) const
 {
    const subfeature_def* sd = find_subfeature(subfeature_name);
    if (sd == NULL)
@@ -103,13 +142,15 @@ const subfeature_def& feature_def::get_subfeature(const std::string& subfeature_
       return *sd;
 }
 
-subfeature_def& feature_def::get_subfeature(const std::string& name)
+subfeature_def&
+feature_def::get_subfeature(const std::string& name)
 {
    return const_cast<subfeature_def&>(const_cast<const feature_def*>(this)->get_subfeature(name));
 }
 
-const subfeature_def* feature_def::find_subfeature_for_value(const std::string& feature_value,
-                                                             const std::string& value) const
+const subfeature_def*
+feature_def::find_subfeature_for_value(const std::string& feature_value,
+                                       const std::string& value) const
 {
    for(subfeatures_t::const_iterator i = subfeatures_.begin(), last = subfeatures_.end(); i != last; ++i)
       if (i->second->is_legal_value(feature_value, value))

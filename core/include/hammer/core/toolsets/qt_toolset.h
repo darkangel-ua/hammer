@@ -21,7 +21,6 @@ class type_tag;
 
 extern const type_tag qt_mockable;
 extern const type_tag qt_ui;
-extern const type_tag qt_uic_main;
 extern const type_tag qt_rc;
 
 }

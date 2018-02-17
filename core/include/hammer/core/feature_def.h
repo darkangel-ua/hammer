@@ -6,6 +6,7 @@
 #include <vector>
 #include "feature_attributes.h"
 #include "subfeature_def.h"
+#include <hammer/core/feature_value_ns_fwd.h>
 
 namespace hammer
 {
@@ -18,20 +19,35 @@ namespace hammer
          friend class feature_registry;
 
       public:
-         typedef std::vector<std::string> legal_values_t;
+			struct legal_value {
+				legal_value(const std::string& name) : value_(name) {}
+				legal_value(const std::string& name, feature_value_ns_ptr ns) : value_(name), ns_(ns) {}
+
+				std::string value_;
+				feature_value_ns_ptr ns_;
+			};
+
+         typedef std::vector<legal_value> legal_values_t;
 
          feature_def(const feature_def&) = delete;
          feature_def(feature_def&&) = delete;
          feature_def& operator = (const feature_def&) = delete;
 
          const std::string& name() const { return name_; }
-         void set_default(const std::string& v);
-         const std::string& get_default() const { return default_; }
+
+			void set_default(const std::string& v);
+         const legal_values_t& get_defaults() const { return defaults_; }
+			bool defaults_contains(const std::string& value) const;
+
          feature_attributes attributes() const { return attributes_; }
          feature_attributes& attributes() { return attributes_; }
-         void extend_legal_values(const std::string& new_legal_value);
+         void extend_legal_values(const std::string& new_legal_value,
+			                         feature_value_ns_ptr ns);
          const legal_values_t& legal_values() const { return legal_values_; }
          bool is_legal_value(const std::string& v) const;
+
+			const feature_value_ns_ptr&
+			get_legal_value_ns(const std::string& value) const;
 
          void compose(const std::string& value, feature_set* c); // FIXME: take ownership of c
          void expand_composites(const std::string value, feature_set* fs) const;
@@ -67,10 +83,13 @@ namespace hammer
          std::string name_;
          legal_values_t legal_values_;
          feature_attributes attributes_;
-         std::string default_;
+         legal_values_t defaults_;
 
          components_t components_;
          subfeatures_t subfeatures_;
+
+			legal_values_t::const_iterator
+			find_legal_value(const std::string& value) const;
    };
 }
 

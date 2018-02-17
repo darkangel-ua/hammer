@@ -338,8 +338,13 @@ void feature_feature_rule(invocation_context& ctx,
                           const ast::expression* ast_attributes)
 {
    std::vector<std::string> values = ast2list_of_ids(ctx, ast_values);
+   feature_def::legal_values_t legal_values;
+   transform(values.begin(), values.end(), back_inserter(legal_values), [](const string& v) -> feature_def::legal_value {
+      return { v, {} };
+   });
+
    std::vector<std::string> attributes = ast2list_of_ids(ctx, ast_attributes);
-   ctx.current_project_.get_engine()->feature_registry().add_feature_def(name.to_string(), values, resolve_attributes(attributes));
+   ctx.current_project_.get_engine()->feature_registry().add_feature_def(name.to_string(), legal_values, resolve_attributes(attributes));
 }
 
 static
@@ -349,8 +354,12 @@ void feature_local_rule(invocation_context& ctx,
                         const ast::expression* ast_attributes)
 {
    std::vector<std::string> values = ast2list_of_ids(ctx, ast_values);
+   feature_def::legal_values_t legal_values;
+   transform(values.begin(), values.end(), back_inserter(legal_values), [](const string& v) -> feature_def::legal_value {
+      return { v, {} };
+   });
    std::vector<std::string> attributes = ast2list_of_ids(ctx, ast_attributes);
-   ctx.current_project_.local_feature_registry().add_feature_def(name.to_string(), values, resolve_attributes(attributes));
+   ctx.current_project_.local_feature_registry().add_feature_def(name.to_string(), legal_values, resolve_attributes(attributes));
 }
 
 static
@@ -386,7 +395,7 @@ void variant_rule(invocation_context& ctx,
 {
    engine& e = *ctx.current_project_.get_engine();
    feature_def& def = e.feature_registry().get_def("variant");
-   def.extend_legal_values(variant_name.to_string());
+   def.extend_legal_values(variant_name.to_string(), {});
 
    if (base == NULL)
       def.compose(variant_name.to_string(), &components);
@@ -538,7 +547,7 @@ void obj_rule(target_invocation_context& ctx,
                                                       usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl()));
    mt->sources(sources);
    mt->set_local(ctx.local_);
-   // its explicit by design
+   mt->set_explicit(ctx.explicit_);
    ctx.current_project_.add_target(mt);
 }
 

@@ -37,6 +37,7 @@ class basic_build_target : private boost::noncopyable
 
 		const timestamp_info_t& timestamp_info() const;
 		virtual const location_t& location() const = 0;
+		virtual const std::string& hash() const = 0;
 
 		// FIXME: const here seams not good solution because after clean timestamp_info should return
 		// something different than before. But I leave this for future clean-up

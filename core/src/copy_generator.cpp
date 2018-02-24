@@ -116,7 +116,7 @@ copy_generator::construct(const target_type& type_to_construct,
       new_node->sources_.push_back(*i);
       new_node->down_.push_back(i->source_node_);
 
-      basic_build_target* new_target = new generated_build_target(&owner, i->source_target_->name(), &type_to_construct, &props, &true_owner.destination());
+      basic_build_target* new_target = new generated_build_target(&owner, i->source_target_->name(), i->source_target_->hash(), &type_to_construct, &props, &true_owner.destination());
       new_node->products_.push_back(new_target);
 
       result.push_back(new_node);

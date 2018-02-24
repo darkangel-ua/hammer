@@ -129,13 +129,14 @@ htmpl_generator::htmpl_generator(engine& e,
 basic_build_target*
 htmpl_generator::create_target(const main_target* mt,
                                const build_node::sources_t& sources,
-                               const std::string& target_name,
-                               const target_type* t,
+                               const string* composite_target_name,
+                               const produced_type& type,
                                const feature_set* f) const
 {
    // because we use name with extension for main target generator::generate will add extra suffix for output type that we need to remove
-   const std::string new_target_name = fs::path(target_name).stem().string();
-   return new generated_build_target(mt, new_target_name, t, f);
+   const std::string new_target_name = fs::path(*composite_target_name).stem().string();
+   auto nh = make_product_name_and_hash(sources, &new_target_name, type, *f);
+   return new generated_build_target(mt, nh.first, nh.second, type.type_, f);
 }
 
 }

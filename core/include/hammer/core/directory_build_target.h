@@ -13,6 +13,7 @@ namespace hammer
 			                       const location_t& dir);
          const std::shared_ptr<mkdir_action>& action() const { return action_; }
 			const location_t& location() const override { return dir_to_create_; }
+			const std::string& hash() const override;
 			void clean(const build_environment& environment) const override;
 
       private:

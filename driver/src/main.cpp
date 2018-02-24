@@ -100,7 +100,6 @@ namespace
       std::string just_one_source_;
       std::string just_one_source_project_path_;
       unsigned worker_count_ = get_number_of_processors();
-      bool copy_dependencies_ = false;
       bool write_build_graph_ = false;
       bool update_warehouse_ = false;
       bool add_to_packages_ = false;
@@ -131,7 +130,6 @@ namespace
          ("just-one-source,s", po::value<string>(&opts.just_one_source_), "build unconditionally specified source")
          ("just-one-source-project-path", po::value<string>(&opts.just_one_source_project_path_), "path to project where source reside")
          ("jobs,j", po::value<unsigned>(&opts.worker_count_), "concurrency level")
-         ("copy-dependencies", po::bool_switch(&opts.copy_dependencies_), "copy shared modules to output dir when building excecutable")
          ("write-build-graph", po::bool_switch(&opts.write_build_graph_), "don't build, just write graphviz build-graph.dot for building process")
          ("update-warehouse", po::bool_switch(&opts.update_warehouse_), "update warehouse package database")
          ("update-all-warehouse-packages", po::bool_switch(&opts.update_all_warehouse_packages_), "update all warehouse packages that has been changed on the server")
@@ -318,18 +316,6 @@ namespace
          solution.add_target(*i);
 
       solution.write();
-   }
-
-   void remove_propagated_targets(nodes_t& nodes, const project& project)
-   {
-      for(nodes_t::iterator i = nodes.begin(); i != nodes.end();)
-      {
-         if ((**i).products_.empty() ||
-             *(**i).products_[0]->get_project() != project)
-            i = nodes.erase(i);
-         else
-            ++i;
-      }
    }
 
    typedef boost::unordered_set<const build_node*> visited_nodes_t;
@@ -596,58 +582,6 @@ namespace
       cleaner::result r = cleaner.clean_all(nodes);
       cout << "Done.\n"
            << r.cleaned_target_count_ << " targets was cleaned.\n";
-   }
-
-   void add_copy_dependencies_nodes(nodes_t& nodes, engine& e)
-   {
-      // collect all executables
-      build_node::sources_t executables;
-      {
-         std::set<const build_node*> visited_nodes;
-         std::vector<const target_type*> types_to_collect;
-         types_to_collect.push_back(&e.get_type_registry().get(types::EXE));
-         collect_nodes(executables, visited_nodes, nodes, types_to_collect, /*recursive=*/false);
-      }
-
-      if (executables.empty())
-         return;
-
-      if (executables.size() != 1)
-         throw std::runtime_error("Dependency copying working only with one exe target");
-
-      // collect all shared lib that needed for executables
-      build_node::sources_t shared_libs;
-      {
-         std::set<const build_node*> visited_nodes;
-         std::vector<const target_type*> types_to_collect;
-         types_to_collect.push_back(&e.get_type_registry().get(types::SHARED_LIB));
-         collect_nodes(shared_libs, visited_nodes, nodes, types_to_collect, /*recursive=*/true);
-      }
-
-      const generator& copy_generator = *e.generators()
-                                          .find_viable_generators(e.get_type_registry().get(types::COPIED),
-                                                                  true, *e.feature_registry().make_set()).at(0).first;
-
-      nodes_t copy_nodes;
-      for(build_node::sources_t::const_iterator i = shared_libs.begin(), last = shared_libs.end(); i != last; ++i)
-      {
-         build_node_ptr new_node(new build_node(executables[0].source_node_->products_owner(), false, copy_generator.action()));
-         new_node->targeting_type_ = &e.get_type_registry().get(types::COPIED);
-         new_node->sources_.push_back(*i);
-         new_node->down_.push_back(i->source_node_);
-
-         basic_build_target* new_target =
-            new generated_build_target(&new_node->products_owner(),
-                                       i->source_target_->name(),
-                                       new_node->targeting_type_,
-                                       &executables[0].source_target_->properties(),
-                                       &executables[0].source_target_->location());
-         new_node->products_.push_back(new_target);
-
-         copy_nodes.push_back(new_node);
-      }
-
-      nodes.insert(nodes.end(), copy_nodes.begin(), copy_nodes.end());
    }
 
    // http://stackoverflow.com/questions/3758606/how-to-convert-byte-size-into-human-readable-format-in-java
@@ -945,9 +879,6 @@ int main(int argc, char** argv) {
             wh.download_and_install(engine, packages, notifier);
             continue; // restart
          }
-
-         if (opts.copy_dependencies_)
-            add_copy_dependencies_nodes(nodes, engine);
 
          cout << "Done." << endl;
 

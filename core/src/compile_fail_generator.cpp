@@ -101,14 +101,14 @@ compile_fail_generator::construct(const target_type& type_to_construct,
 basic_build_target*
 compile_fail_generator::create_target(const main_target* mt,
                                       const build_node::sources_t& sources,
-                                      const string& n,
-                                      const target_type* t,
+                                      const string* target_name,
+                                      const produced_type& type,
                                       const feature_set* f) const
 {
-   if (get_engine().get_type_registry().get(types::TESTING_COMPILE_FAIL) == *t)
-      return new virtual_build_target(mt, n, t, f, false);
+   if (get_engine().get_type_registry().get(types::TESTING_COMPILE_FAIL) == *type.type_)
+      return new virtual_build_target(mt, *target_name, type.type_, f, false);
 
-   return generator::create_target(mt, sources, n, t, f);
+   return generator::create_target(mt, sources, target_name, type, f);
 }
 
 void add_compile_fail_generator(engine& e,

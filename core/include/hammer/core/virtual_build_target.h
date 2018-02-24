@@ -12,6 +12,7 @@ class virtual_build_target : public basic_build_target
 		                     const feature_set* f,
 		                     const bool exists);
 		const location_t& location() const override;
+		const std::string& hash() const override;
 		void clean(const build_environment& environment) const override {}
 
    protected:

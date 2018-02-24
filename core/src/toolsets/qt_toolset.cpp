@@ -27,7 +27,6 @@
 #include <hammer/core/output_location_strategy.h>
 #include <hammer/core/rule_argument_types.h>
 #include <hammer/core/generated_build_target.h>
-#include <hammer/core/np_helpers.h>
 
 using std::string;
 using std::unique_ptr;
@@ -111,9 +110,8 @@ class qt_uic_generator : public generator
                if (is_consumable(product_from_source->type())) {
                   build_node_ptr one_node(new build_node(owner, false, action()));
 
-                  const std::string new_name = make_product_name(*product_from_source, type_to_construct, *valuable_properties, nullptr);
                   one_node->sources_.push_back(build_node::source_t(product_from_source, source));
-                  one_node->products_.push_back(create_target(&owner, one_node->sources_, new_name, &type_to_construct, valuable_properties));
+                  one_node->products_.push_back(create_target(&owner, one_node->sources_, nullptr, producable_types().front(), valuable_properties));
                   one_node->targeting_type_ = &type_to_construct;
 
                   result.push_back(one_node);

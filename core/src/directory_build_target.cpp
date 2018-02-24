@@ -12,7 +12,7 @@ namespace hammer{
 
 directory_build_target::directory_build_target(const main_target* mt,
                                                const location_t& dir)
-   : generated_build_target(mt, dir.string(), &mt->get_engine()->get_type_registry().get(types::UNKNOWN), &mt->properties()),
+   : generated_build_target(mt, {}, dir.string(), &mt->get_engine()->get_type_registry().get(types::UNKNOWN), &mt->properties()),
      dir_to_create_(dir),
      action_(std::make_shared<mkdir_action>(dir))
 {
@@ -32,6 +32,15 @@ void directory_build_target::timestamp_info_impl() const
 void directory_build_target::clean(const build_environment& environment) const
 {
    environment.remove(location());
+}
+
+static
+std::string empty_hash;
+
+const std::string&
+directory_build_target::hash() const
+{
+   return empty_hash;
 }
 
 }

@@ -23,8 +23,8 @@ class compile_fail_generator : public generator
       basic_build_target*
       create_target(const main_target* mt,
                     const build_node::sources_t& sources,
-                    const std::string& n,
-                    const target_type* t,
+                    const std::string* target_name,
+                    const produced_type& type,
                     const feature_set* f) const override;
 
    private:

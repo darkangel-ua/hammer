@@ -6,13 +6,13 @@
 #include <hammer/core/meta_target.h>
 #include <hammer/core/generated_build_target.h>
 #include <hammer/core/engine.h>
-#include <hammer/core/np_helpers.h>
 #include <hammer/core/build_action.h>
 #include <hammer/core/feature.h>
 #include <hammer/core/feature_set.h>
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/multi_index/sequenced_index.hpp>
+#include <boost/crypto/md5.hpp>
 
 namespace hammer {
 
@@ -66,11 +66,80 @@ bool generator::is_consumable(const target_type& t) const
 basic_build_target*
 generator::create_target(const main_target* mt,
                          const build_node::sources_t& sources,
-                         const std::string& n,
-                         const target_type* t,
+                         const std::string* composite_target_name,
+                         const produced_type& type,
                          const feature_set* f) const
 {
-   return new generated_build_target(mt, n, t, f);
+   auto nh = make_product_name_and_hash(sources, composite_target_name, type, *f);
+   return new generated_build_target(mt, nh.first, nh.second, type.type_, f);
+}
+
+// we making generated target dependent on sources hashes to rebuild it when
+// sources specific properties changes
+static
+std::string calculate_hash(const build_node::sources_t& sources,
+                           const feature_set& props)
+{
+   std::set<std::string> sources_hashes;
+   for (auto& s : sources)
+      if (!s.source_target_->hash().empty())
+         sources_hashes.insert(s.source_target_->hash());
+
+   std::ostringstream hash_stream;
+   dump_for_hash(hash_stream, props, true);
+
+   for (auto& h : sources_hashes)
+      hash_stream << ' ' << h;
+
+   return boost::crypto::md5(hash_stream.str()).to_string();
+}
+
+static
+void add_version(std::string& s,
+                 const feature_set& properties)
+{
+   feature_set::const_iterator i = properties.find("version");
+   if (i != properties.end())
+      s += '-' + (**i).value();
+}
+
+std::pair<std::string /*name*/, std::string /*hash*/>
+generator::make_product_name_and_hash(const build_node::sources_t& sources,
+                                      const std::string* composite_target_name,
+                                      const produced_type& product_type,
+                                      const feature_set& product_properties)
+{
+   const std::string hash = calculate_hash(sources, product_properties);
+   auto p_name = product_properties.find("name");
+   const std::string pure_name = [&]() {
+      if (composite_target_name) {
+         if ( p_name != product_properties.end())
+            return (**p_name).value();
+
+         return *composite_target_name;
+      }
+
+      auto& source_target = *sources.front().source_target_;
+      auto& source_suffix = source_target.type().suffix_for(source_target.name(), source_target.properties());
+
+      return std::string(source_target.name().begin(), source_target.name().begin() + (source_target.name().size() - source_suffix.size()));
+   }();
+
+   const std::string& product_name = [&]() {
+      if (p_name == product_properties.end()) {
+         std::string result = product_type.type_->prefix_for(product_properties) + pure_name;
+         if (product_type.need_tag_ && p_name == product_properties.end()) {
+            add_version(result, product_properties);
+            result += '-' + hash;
+         }
+         result += product_type.type_->suffix_for(product_properties);
+
+         return result;
+      } else
+         return pure_name;
+   }();
+
+   return { product_name, hash };
 }
 
 build_nodes_t
@@ -90,16 +159,12 @@ generator::construct(const target_type& type_to_construct,
 
    if (source_target) {
       // this is one-to-one construction
-      std::string new_name = make_product_name(*source_target,
-                                               type_to_construct,
-                                               *valuable_properties,
-                                               producable_types().front().need_tag_ ? &owner : NULL);
       assert(sources.size() == 1);
 
       build_node_ptr result(new build_node(owner, composite_, action()));
       result->sources_.push_back(build_node::source_t(source_target, sources.front()));
       result->down_.push_back(sources.front());
-      result->products_.push_back(create_target(&owner, result->sources_, new_name, producable_types().front().type_, valuable_properties));
+      result->products_.push_back(create_target(&owner, result->sources_, nullptr, producable_types().front(), valuable_properties));
       result->targeting_type_ = &type_to_construct;
       return build_nodes_t(1, result);
    } else {
@@ -120,16 +185,8 @@ generator::construct(const target_type& type_to_construct,
          }
       }
 
-      unsigned p = 0;
-      for(producable_types_t::const_iterator i = target_types_.begin(), last = target_types_.end(); i != last; ++i, ++p) {
-         std::string new_name = make_product_name(*composite_target_name,
-                                                  *i->type_,
-                                                  *valuable_properties,
-                                                  i->need_tag_ ? &owner : NULL,
-                                                  /*primary_target=*/ p == 0);
-
-         result->products_.push_back(create_target(&owner, result->sources_, new_name, i->type_, valuable_properties));
-      }
+      for(auto type : target_types_)
+         result->products_.push_back(create_target(&owner, result->sources_, composite_target_name, type, valuable_properties));
 
       result->targeting_type_ = &type_to_construct;
       return build_nodes_t(1, result);

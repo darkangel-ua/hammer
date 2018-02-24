@@ -22,6 +22,15 @@ virtual_build_target::location() const
    return empty_location;
 }
 
+static
+std::string empty_hash;
+
+const std::string&
+virtual_build_target::hash() const
+{
+   return empty_hash;
+}
+
 void virtual_build_target::timestamp_info_impl() const
 {
    timestamp_info_.is_unknown_ = false;

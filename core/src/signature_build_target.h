@@ -10,10 +10,10 @@ class signature_build_target : public generated_build_target
 {
    public:
 		signature_build_target(const main_target* mt,
-		                       const std::string& n,
+		                       const std::string& target_name,
 		                       const target_type* t,
 		                       const feature_set* f)
-		   : generated_build_target(mt, n, t, f)
+		   : generated_build_target(mt, {}, target_name, t, f)
 		{}
 
    protected:

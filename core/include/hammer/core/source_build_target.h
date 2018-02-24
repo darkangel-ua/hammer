@@ -16,6 +16,7 @@ class source_build_target : public file_build_target
 		{}
 
 		const location_t& location() const override { return location_; }
+		const std::string& hash() const override;
 		void clean(const build_environment& environment) const override {}
 
 	private:

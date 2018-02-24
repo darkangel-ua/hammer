@@ -73,11 +73,20 @@ namespace hammer
          const build_action_ptr& action() const { return action_; }
 
       protected:
-         virtual basic_build_target* create_target(const main_target* mt,
-			                                          const build_node::sources_t& sources,
-			                                          const std::string& n,
-			                                          const target_type* t,
-			                                          const feature_set* f) const;
+         /// composite_target_name will be presented only for composite targets
+			virtual
+			basic_build_target*
+			create_target(const main_target* mt,
+			              const build_node::sources_t& sources,
+			              const std::string* composite_target_name,
+			              const produced_type& type,
+			              const feature_set* f) const;
+			static
+			std::pair<std::string /*name*/, std::string /*hash*/>
+			make_product_name_and_hash(const build_node::sources_t& sources,
+			                           const std::string* composite_target_name,
+							               const produced_type& product_type,
+							               const feature_set& product_properties);
 
       private:
          hammer::engine* engine_;

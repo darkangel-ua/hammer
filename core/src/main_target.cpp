@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include <boost/unordered_set.hpp>
+#include <boost/unordered_map.hpp>
 #include <hammer/core/main_target.h>
 #include <hammer/core/meta_target.h>
 #include <hammer/core/project.h>
@@ -78,16 +78,16 @@ main_target::generate() const
 
 static
 void collect_locations(const main_target* this_,
-                       boost::unordered_set<hashed_location>& locations,
-                       const build_node& node)
+                       boost::unordered_map<hashed_location, build_node*>& locations,
+                       build_node& node)
 {
    for (const basic_build_target* bt : node.products_) {
       // virtual targets have empty location - skip them
       if (!bt->location().empty())
-         locations.insert(bt->location());
+         locations.insert({bt->location(), &node});
    }
 
-   for (const build_node::source_t& s : node.sources_) {
+   for (build_node::source_t& s : node.sources_) {
       // inspect only intermediate source nodes
       if (&s.source_node_->products_owner() == this_ && !s.source_node_->sources_.empty())
          collect_locations(this_, locations, *s.source_node_);
@@ -97,7 +97,7 @@ void collect_locations(const main_target* this_,
 build_nodes_t
 main_target::create_intermediate_dirs_build_nodes(const build_nodes_t& build) const
 {
-   boost::unordered_set<hashed_location> locations;
+   boost::unordered_map<hashed_location, hammer::build_node*> locations;
    for (auto& node : build) {
       if (&node->products_owner() != this)
          continue;
@@ -106,11 +106,22 @@ main_target::create_intermediate_dirs_build_nodes(const build_nodes_t& build) co
    }
 
    build_nodes_t result;
-   for (const hashed_location& l : locations) {
-      directory_build_target* t = new directory_build_target(this, l.location());
-      build_node_ptr int_dir_node(new hammer::build_node(*this, false, t->action()));
-      int_dir_node->products_.push_back(t);
-      result.push_back(int_dir_node);
+   for (const auto& l : locations) {
+      directory_build_target* intermediate_dir_target = new directory_build_target(this, l.first.location());
+      build_node_ptr intermediate_dir_node(new hammer::build_node(*this, false, intermediate_dir_target->action()));
+      intermediate_dir_node->products_.push_back(intermediate_dir_target);
+      result.push_back(intermediate_dir_node);
+
+      if (need_signature()) {
+         signature_build_target* signature_target =
+            l.second->is_composite() ? new signature_build_target(this, *l.second)
+                                     : new signature_build_target(this, l.second->build_request(), l.first.location());
+
+         build_node_ptr signature_node { new hammer::build_node(*this, false, mksig_action_) };
+         signature_node->products_.push_back(signature_target);
+         signature_node->dependencies_.push_back(intermediate_dir_node);
+         l.second->dependencies_.push_back(signature_node);
+      }
    }
 
    return result;

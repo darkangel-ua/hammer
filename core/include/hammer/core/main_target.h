@@ -39,6 +39,8 @@ namespace hammer
       protected:
          void additional_hash_string_data(std::ostream& s) const override;
          virtual location_t intermediate_dir_impl() const;
+			// some targets, copy for example, don't need signature files
+			virtual bool need_signature() const { return true; }
 
       private:
          const basic_meta_target* meta_target_;
@@ -52,7 +54,7 @@ namespace hammer
 
          build_nodes_t
 			create_intermediate_dirs_build_nodes(const build_nodes_t& build) const;
-         
+
          void add_this_target_dependency(hammer::build_node& node,
                                          const build_nodes_t& dependencies) const;
 			void add_this_target_dependency(build_nodes_t& nodes,

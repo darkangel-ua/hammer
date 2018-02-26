@@ -42,13 +42,4 @@ copy_main_target::copy_main_target(const basic_meta_target* mt,
    }
 }
 
-//void copy_main_target::add_additional_dependencies(hammer::build_node& generated_node) const
-//{
-//   directory_build_target* t = new directory_build_target(this, destination());
-//   boost::intrusive_ptr<hammer::build_node> int_dir_node(new hammer::build_node(*this, false, t->action()));
-//   int_dir_node->products_.push_back(t);
-
-//   generated_node.dependencies_.push_back(int_dir_node);
-//}
-
 }

@@ -36,4 +36,5 @@ lib hammer.core
    :
    :
     <use>(/boost/ptr_container/<version>1.58.0+1)
+    <use>(/hammer/core_objects)
    ;

@@ -1,16 +1,18 @@
-#include "stdafx.h"
 #include <hammer/core/toolset_manager.h>
 #include <hammer/core/toolset.h>
 #include <hammer/core/feature_def.h>
 #include <hammer/core/engine.h>
 
-namespace hammer
-{
+namespace hammer {
 
-void toolset_manager::add_toolset(std::unique_ptr<toolset> t)
+void toolset_manager::add_toolset(engine& e,
+                                  std::unique_ptr<toolset> t)
 {
-   if (!toolsets_.emplace(t->name(), std::move(t)).second)
+   auto r = toolsets_.emplace(t->name(), std::move(t));
+   if (!r.second)
       throw std::runtime_error("Toolset '" + t->name() + "' already registered");
+
+   e.get_rule_manager().add(r.first->second->use_rule());
 }
 
 void toolset_manager::init_toolset(engine& e,
@@ -22,7 +24,7 @@ void toolset_manager::init_toolset(engine& e,
    if (i == toolsets_.end())
       throw std::runtime_error("Toolset '" + toolset_name + "' is not registered");
 
-   i->second->init(e, toolset_version, toolset_home);
+   i->second->configure(e, toolset_version);
 }
 
 void toolset_manager::autoconfigure(engine& e) const

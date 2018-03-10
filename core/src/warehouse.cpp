@@ -117,7 +117,7 @@ void warehouse_trap_rule(invocation_context& ctx,
 
 void install_warehouse_rules(engine& engine)
 {
-   engine.get_rule_manager().add_rule("warehouse-trap", warehouse_trap_rule, { "public-id" });
+   engine.get_rule_manager().add_rule("warehouse-trap", &warehouse_trap_rule, { "public-id" });
 }
 
 }

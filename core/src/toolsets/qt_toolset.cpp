@@ -1,4 +1,9 @@
-#include "stdafx.h"
+#include <boost/bind.hpp>
+#include <boost/filesystem/operations.hpp>
+#include <boost/regex.hpp>
+#include <boost/assign/list_of.hpp>
+#include <boost/make_unique.hpp>
+#include <boost/crypto/md5.hpp>
 #include <hammer/core/toolsets/qt_toolset.h>
 #include <hammer/core/type_tag.h>
 #include <hammer/core/types.h>
@@ -9,11 +14,6 @@
 #include <hammer/core/requirements_decl.h>
 #include <hammer/core/prebuilt_lib_meta_target.h>
 #include <hammer/core/searched_lib_meta_target.h>
-#include <boost/filesystem/operations.hpp>
-#include <boost/regex.hpp>
-#include <boost/assign/list_of.hpp>
-#include <boost/make_unique.hpp>
-#include <boost/crypto/md5.hpp>
 #include <hammer/core/cmdline_action.h>
 #include <hammer/core/source_argument_writer.h>
 #include <hammer/core/product_argument_writer.h>
@@ -37,6 +37,10 @@ using namespace boost::assign;
 namespace fs = boost::filesystem;
 
 namespace hammer{
+
+typedef boost::function<void(invocation_context& ctx,
+                             const parscore::identifier& version,
+                             const location_t& root_folder)> rule_t;
 
 const type_tag qt_mocable("QT_MOCABLE");
 const type_tag qt_ui("QT_UI");
@@ -198,11 +202,15 @@ void qt_moc_rule(target_invocation_context& ctx,
 }
 
 qt_toolset::qt_toolset()
-   : toolset("qt")
+   : toolset("qt",
+             rule_manager::make_rule_declaration("use-toolset-qt",
+                                                 rule_t(boost::bind(&qt_toolset::use_toolset_rule, this, _1, _2, _3)),
+                                                 {"version", "root"}))
 {
 }
 
-static string determinate_version(const location_t& toolset_home)
+static
+string determinate_version(const location_t& toolset_home)
 {
    for(fs::directory_iterator i = fs::directory_iterator(toolset_home), last = fs::directory_iterator(); i != last; ++i)
    {
@@ -217,21 +225,27 @@ static string determinate_version(const location_t& toolset_home)
 
 void qt_toolset::autoconfigure(engine& e) const
 {
-    const char* qt_dir = getenv("QTDIR");
-    if (qt_dir != NULL) {
-      location_t toolset_home(qt_dir);
-      string version = determinate_version(toolset_home);
-      if (version.empty())
-         throw std::runtime_error("Can't determinate version for Qt toolset at '" + toolset_home.string<string>() + "'");
+//    const char* qt_dir = getenv("QTDIR");
+//    if (qt_dir != NULL) {
+//      location_t toolset_home(qt_dir);
+//      string version = determinate_version(toolset_home);
+//      if (version.empty())
+//         throw std::runtime_error("Can't determinate version for Qt toolset at '" + toolset_home.string<string>() + "'");
 
-      init_impl(e, version, &toolset_home);
-    } else if (fs::exists("/usr/include/qt4/Qt/QtCore")) {
-       // FIXME: linux part
-       location_t toolset_home("/usr");
-       string version = "4";
+//      init_impl(e, version, &toolset_home);
+//    } else if (fs::exists("/usr/include/qt4/Qt/QtCore")) {
+//       // FIXME: linux part
+//       location_t toolset_home("/usr");
+//       string version = "4";
 
-       init_impl(e, version, &toolset_home);
-    }
+//       init_impl(e, version, &toolset_home);
+//    }
+}
+
+void qt_toolset::configure(engine& e,
+                           const std::string& version) const
+{
+   throw std::runtime_error("Qt toolset cannot be simply configured specifying version");
 }
 
 static
@@ -369,21 +383,13 @@ void add_lib(project& qt_project,
 }
 
 static
-void add_types_and_generators(engine& e,
-                              const location_t* toolset_home,
-                              const std::string& bin_tag,
-                              const string& lib_tag,
-                              const string& include_tag,
-                              const bool qt5)
+void add_libs_and_generators(engine& e,
+                             const location_t* toolset_home,
+                             const std::string& bin_tag,
+                             const string& lib_tag,
+                             const string& include_tag,
+                             const bool qt5)
 {
-   // register qt types
-   // FIXME: we don't derive qt mocable from H because current generator implementation can't properly choose qt.moc generator
-   e.get_type_registry().insert(target_type(qt_mocable, ""));
-   e.get_type_registry().insert(target_type(qt_ui, ".ui"));
-   e.get_type_registry().insert(target_type(qt_rc, ".qrc"));
-   e.get_type_registry().insert(target_type(qt_rced_cpp, ".cpp", e.get_type_registry().get(types::CPP), "qrc_"));
-   e.get_type_registry().insert(target_type(qt_uiced_h, ".h", e.get_type_registry().get(types::H), "ui_"));
-
    // QT_UI -> QT_UICED_H
    {
       shared_ptr<source_argument_writer> ui_source(new source_argument_writer("ui_source", e.get_type_registry().get(qt_ui)));
@@ -459,37 +465,64 @@ void add_types_and_generators(engine& e,
    e.insert(qt_project.get());
    e.use_project(*qt_project, "/Qt", "");
    qt_project.release();
-
-   e.get_rule_manager().add_target("qt.moc", qt_moc_rule, { "id", "sources", "requirements", "default-build", "usage-requirements" });
-   e.get_rule_manager().add_rule("qt.uic", qt_uic_rule, { "sources" });
 }
 
-void qt_toolset::init_impl(engine& e, const std::string& version_id,
-                           const location_t* toolset_home) const
+void qt_toolset::use_toolset_rule(invocation_context& ctx,
+                                  const parscore::identifier& version,
+                                  const location_t& root_folder)
 {
-   if (e.get_type_registry().find(qt_mocable) == NULL) {
-      if (!version_id.empty() && version_id[0] == '4') {
-         add_types_and_generators(e, toolset_home, "-qt4", "4", "qt4", false);
+   engine& e = *ctx.current_project_.get_engine();
 
-         feature_def& toolset_def = e.feature_registry().get_def("toolset");
-         if (!toolset_def.is_legal_value("qt"))
-            toolset_def.extend_legal_values("qt", e.feature_registry().get_or_create_feature_value_ns("qt"));
+   feature_def& toolset_def = e.feature_registry().get_def("toolset");
+   if (!toolset_def.is_legal_value("qt")) {
+      toolset_def.extend_legal_values("qt", e.feature_registry().get_or_create_feature_value_ns("qt"));
 
-         return;
-      }
+      e.get_rule_manager().add_target("qt.moc", qt_moc_rule, { "id", "sources", "requirements", "default-build", "usage-requirements" });
+      e.get_rule_manager().add_rule("qt.uic", qt_uic_rule, { "sources" });
 
-      if (toolset_home) {
-         add_types_and_generators(e, toolset_home, "", "", "", true);
-
-         feature_def& toolset_def = e.feature_registry().get_def("toolset");
-         if (!toolset_def.is_legal_value("qt"))
-            toolset_def.extend_legal_values("qt", e.feature_registry().get_or_create_feature_value_ns("qt"));
-
-         return;
-      }
+      // register qt types
+      // FIXME: we don't derive qt mocable from H because current generator implementation can't properly choose qt.moc generator
+      e.get_type_registry().insert(target_type(qt_mocable, ""));
+      e.get_type_registry().insert(target_type(qt_ui, ".ui"));
+      e.get_type_registry().insert(target_type(qt_rc, ".qrc"));
+      e.get_type_registry().insert(target_type(qt_rced_cpp, ".cpp", e.get_type_registry().get(types::CPP), "qrc_"));
+      e.get_type_registry().insert(target_type(qt_uiced_h, ".h", e.get_type_registry().get(types::H), "ui_"));
    }
 
-   throw std::runtime_error("Don't know how to configure Qt toolset version '" + version_id + "'");
+   const string s_version=version.to_string();
+   if (!s_version.empty() && s_version[0] == '4')
+      add_libs_and_generators(e, &root_folder, "-qt4", "4", "qt4", false);
+   else
+      add_libs_and_generators(e, &root_folder, "", "", "", true);
 }
+
+//void qt_toolset::init_impl(engine& e,
+//                           const std::string& version_id,
+//                           const location_t* toolset_home) const
+//{
+//   if (e.get_type_registry().find(qt_mocable) == NULL) {
+//      if (!version_id.empty() && version_id[0] == '4') {
+//         add_types_and_generators(e, toolset_home, "-qt4", "4", "qt4", false);
+
+//         feature_def& toolset_def = e.feature_registry().get_def("toolset");
+//         if (!toolset_def.is_legal_value("qt"))
+//            toolset_def.extend_legal_values("qt", e.feature_registry().get_or_create_feature_value_ns("qt"));
+
+//         return;
+//      }
+
+//      if (toolset_home) {
+//         add_types_and_generators(e, toolset_home, "", "", "", true);
+
+//         feature_def& toolset_def = e.feature_registry().get_def("toolset");
+//         if (!toolset_def.is_legal_value("qt"))
+//            toolset_def.extend_legal_values("qt", e.feature_registry().get_or_create_feature_value_ns("qt"));
+
+//         return;
+//      }
+//   }
+
+//   throw std::runtime_error("Don't know how to configure Qt toolset version '" + version_id + "'");
+//}
 
 }

@@ -705,9 +705,9 @@ int main(int argc, char** argv) {
          if (opts.debug_level_ > 0)
             cout << "...Registering known toolsets... " << flush;
 
-         engine.toolset_manager().add_toolset(auto_ptr<toolset>(new msvc_toolset));
-         engine.toolset_manager().add_toolset(auto_ptr<toolset>(new gcc_toolset));
-         engine.toolset_manager().add_toolset(auto_ptr<toolset>(new qt_toolset));
+         engine.toolset_manager().add_toolset(engine, auto_ptr<toolset>(new msvc_toolset));
+         engine.toolset_manager().add_toolset(engine, auto_ptr<toolset>(new gcc_toolset));
+         engine.toolset_manager().add_toolset(engine, auto_ptr<toolset>(new qt_toolset));
 
          if (opts.debug_level_ > 0)
             cout << "Done" << endl;
@@ -792,6 +792,9 @@ int main(int argc, char** argv) {
 
          if (build_request->find("host-os") == build_request->end())
             build_request->join("host-os", engine.feature_registry().get_def("host-os").get_defaults().front().value_.c_str());
+
+         if (build_request->find("target-os") == build_request->end())
+            build_request->join("target-os", engine.feature_registry().get_def("target-os").get_defaults().front().value_.c_str());
 
          if (opts.debug_level_ > 0)
             cout << "...Build request: " << dump_for_hash(*build_request) << endl;

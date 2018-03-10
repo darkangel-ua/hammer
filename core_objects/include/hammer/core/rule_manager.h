@@ -14,6 +14,7 @@
 #include <boost/mpl/reverse.hpp>
 #include <boost/mpl/copy.hpp>
 #include <boost/mpl/front.hpp>
+#include <boost/mpl/empty.hpp>
 #include <vector>
 #include <map>
 
@@ -162,7 +163,7 @@ class rule_manager_invoker : public rule_manager_invoker_base
 
          typedef typename boost::mpl::front<reversed_v_indexes_t>::type arg_t;
          typedef typename boost::mpl::pop_front<reversed_v_indexes_t>::type reduced_indexes;
-         return invoke_impl<reduced_indexes>(args, arg_t());
+			return invoke_impl<reduced_indexes>(args, typename boost::mpl::empty<reduced_indexes>::type{}, arg_t{});
       }
 
    private:
@@ -224,21 +225,22 @@ class rule_manager_invoker : public rule_manager_invoker_base
 		template<typename FArgs, typename... Args>
 		rule_manager_arg_ptr
 		invoke_impl(rule_manager_arguments_t& r_args,
-                  boost::mpl::integral_c<int, 0> first_arg,
+                  boost::mpl::true_,
                   Args... args) const
       {
 			typedef typename boost::function_types::result_type<Function>::type result_type;
-			return invoke_impl_r(r_args, boost::mpl::bool_<boost::is_same<void, result_type>::value>(), first_arg, args...);
+			return invoke_impl_r(r_args, boost::mpl::bool_<boost::is_same<void, result_type>::value>(), args...);
 		}
 
       template<typename FArgs, typename... Args>
       rule_manager_arg_ptr
 		invoke_impl(rule_manager_arguments_t& r_args,
+		            boost::mpl::false_,
                   Args... args) const
       {
          typedef typename boost::mpl::front<FArgs>::type arg_t;
          typedef typename boost::mpl::pop_front<FArgs>::type reduced_args;
-         return invoke_impl<reduced_args>(r_args, arg_t(), args...);
+			return invoke_impl<reduced_args>(r_args, typename boost::mpl::empty<reduced_args>::type{}, arg_t{}, args...);
       }
 
 };
@@ -378,6 +380,41 @@ class rule_manager
          add_impl(id, boost::function<f_type>(f), arg_names, /*is_target =*/false);
       }
 
+		void add(const rule_declaration& decl)
+		{
+			if (!rules_.insert(std::make_pair(decl.name(), decl)).second)
+            throw std::runtime_error("[hammer.rule_manager] Rule/target '" + decl.name().to_string() + "' already added");
+		}
+
+		template<typename FunctionType>
+		static
+		rule_declaration
+		make_rule_declaration(const parscore::identifier& id,
+		                      boost::function<FunctionType> f,
+		                      const std::vector<parscore::identifier>& arg_names)
+		{
+			typedef typename boost::mpl::at_c<typename boost::function_types::parameter_types<FunctionType>::type, 0>::type arg_0_type;
+
+			static_assert(boost::is_same<invocation_context&, arg_0_type>::value || boost::is_same<target_invocation_context&, arg_0_type>::value,
+			              "First argument for rule MUST be invocation_context or target_invocation_context");
+
+         if (arg_names.size() != boost::function_types::function_arity<FunctionType>::value - 1)
+            throw std::runtime_error("[hammer.rule_manager] Not enought argument names");
+
+		   return make_rule_declaration_impl(id, std::move(f), arg_names, boost::is_same<target_invocation_context&, arg_0_type>::value);
+		}
+
+		template<typename FunctionPointer>
+		static
+		rule_declaration
+		make_rule_declaration(const parscore::identifier& id,
+		                      FunctionPointer f,
+		                      const std::vector<parscore::identifier>& arg_names)
+		{
+			typedef typename boost::remove_pointer<FunctionPointer>::type f_type;
+		   return make_rule_declaration(id, boost::function<f_type>(f), arg_names);
+		}
+
    private:
       rules_t rules_;
 
@@ -399,9 +436,29 @@ class rule_manager
                                is_target,
                                std::shared_ptr<rule_manager_invoker_base>(new rule_manager_invoker<T>(f)));
 
-         if (!rules_.insert(std::make_pair(id, decl)).second)
-            throw std::runtime_error("[hammer.rule_manager] Rule '" + id.to_string() + "' already added");
+         add(decl);
       }
+
+		template<typename T>
+		static
+		rule_declaration
+		make_rule_declaration_impl(const parscore::identifier& id,
+		                           boost::function<T> f,
+		                           std::vector<parscore::identifier> arg_names,
+		                           bool is_target)
+		{
+			typedef typename boost::function_types::result_type<T>::type f_result_type;
+
+			arg_names.insert(arg_names.begin(), "$!@ctx$!@");
+			rule_declaration decl(id,
+                               details::make_args<T>(arg_names),
+                               details::make_one_arg(parscore::identifier(), boost::mpl::tag<f_result_type>()),
+                               is_target,
+                               std::shared_ptr<rule_manager_invoker_base>(new rule_manager_invoker<T>(f)));
+
+			return decl;
+		}
+
 };
 
 }

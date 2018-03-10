@@ -1,5 +1,5 @@
-#include "stdafx.h"
 #include <boost/filesystem/convenience.hpp>
+#include <boost/bind.hpp>
 #include <hammer/core/toolsets/msvc_toolset.h>
 #include <hammer/core/generator.h>
 #include <hammer/core/types.h>
@@ -20,6 +20,7 @@
 #include <hammer/core/pch_argument_writer.h>
 #include <hammer/core/output_dir_argument_writer.h>
 #include <hammer/core/batched_cmdline_action.h>
+#include <hammer/core/diagnostic.h>
 
 using std::string;
 using std::unique_ptr;
@@ -38,48 +39,29 @@ struct msvc_data {
    location_t resource_compiler_;
 };
 
+typedef boost::function<void(invocation_context& ctx,
+                             const parscore::identifier& version,
+                             const parscore::identifier* path_to_vc_folder)> rule_t;
 }
 
-struct msvc_toolset::impl_t
+msvc_toolset::msvc_toolset()
+   : toolset("msvc",
+             rule_manager::make_rule_declaration("use-toolset-msvc",
+                                                 rule_t{boost::bind(&msvc_toolset::use_toolset_rule, this, _1, _2,_3)},
+                                                 {"version", "path-to-vc-dir"}))
 {
-   impl_t();
-};
-
-msvc_toolset::impl_t::impl_t()
-{
-
 }
 
-msvc_toolset::msvc_toolset() : toolset("msvc"), impl_(new impl_t)
-{
-
-};
-
-msvc_toolset::~msvc_toolset()
-{
-   delete impl_;
-}
-
-void msvc_toolset::init_impl(engine& e,
-                             const std::string& version_id,
-                             const location_t* toolset_home) const
+void msvc_toolset::init_toolset(engine& e,
+                                const std::string& version_id,
+                                const location_t& toolset_home) const
 {
    feature_def& toolset_def = e.feature_registry().get_def("toolset");
    if (!toolset_def.is_legal_value(name()))
       toolset_def.extend_legal_values(name(), e.feature_registry().get_or_create_feature_value_ns("c/c++"));
 
-   if (!toolset_home)
-      throw std::runtime_error("[msvc_toolset]: You must specify toolset home directory");
+   toolset_def.get_subfeature("version").extend_legal_values(name(), version_id);
 
-   if (!version_id.empty())
-      toolset_def.get_subfeature("version").extend_legal_values(name(), version_id);
-   init(e, version_id, *toolset_home);
-}
-
-void msvc_toolset::init(engine& e,
-                        const std::string& version_id,
-                        const location_t& toolset_home) const
-{
    msvc_data config_data;
    config_data.setup_script_ = toolset_home / "bin/vcvars32.bat";
    config_data.compiler_ = "cl.exe";
@@ -90,7 +72,7 @@ void msvc_toolset::init(engine& e,
 
    if (!e.feature_registry().find_def("debug-store")) {
       feature_attributes fa = {0};
-      fa.propagated = true;
+      fa.propagated = true; //FIXME: why?
       e.feature_registry().add_feature_def("debug-store", { {"database"}, {"object"} }, fa);
    }
 
@@ -344,7 +326,7 @@ void msvc_toolset::init(engine& e,
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::HEADER_LIB), 0, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::EXE)));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::EXE_MANIFEST)));
-      unique_ptr<generator> g(new exe_and_shared_lib_generator(e, generator_prefix + ".linker.exe", source, target, true, exe_action, generator_condition));
+      unique_ptr<generator> g(new exe_and_shared_lib_generator(e, generator_prefix + ".linker.exe", source, target, true, exe_action, generator_condition, nullptr));
       e.generators().insert(std::move(g));
    }
 
@@ -426,24 +408,53 @@ void msvc_toolset::init(engine& e,
       target.push_back(generator::produced_type(e.get_type_registry().get(types::IMPORT_LIB), true));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::DLL_MANIFEST), true));
 
-      unique_ptr<generator> g(new exe_and_shared_lib_generator(e, generator_prefix + ".linker.shared_lib", source, target, true, shared_lib_action, generator_condition));
+      unique_ptr<generator> g(new exe_and_shared_lib_generator(e, generator_prefix + ".linker.shared_lib", source, target, true, shared_lib_action, generator_condition, nullptr));
       e.generators().insert(std::move(g));
    }
 }
 
+static
+const std::map<string, location_t>
+known_versions = {
+   {"11.0", R"(c:\Program Files\Microsoft Visual Studio 11.0\VC)"},
+   {"12.0", R"(c:\Program Files\Microsoft Visual Studio 12.0\VC)"},
+   {"14.0", R"(c:\Program Files\Microsoft Visual Studio 14.0\VC)"},
+};
+
+void msvc_toolset::use_toolset_rule(invocation_context& ctx,
+                                    const parscore::identifier& version,
+                                    const parscore::identifier* path_to_vc_folder)
+{
+   engine& e = *ctx.current_project_.get_engine();
+   if (path_to_vc_folder) {
+      init_toolset(e, version.to_string(), path_to_vc_folder->to_string());
+      return;
+   }
+
+   auto i = known_versions.find(version.to_string());
+   if (i == known_versions.end()) {
+      ctx.diag_.error(version.start_lok(), "Don't know how to configure this version");
+      return;
+   }
+
+   init_toolset(e, i->first, i->second);
+}
+
+void msvc_toolset::configure(engine& e,
+                             const std::string& version) const
+{
+   auto i = known_versions.find(version);
+   if (i == known_versions.end())
+      throw std::runtime_error("[msvc_toolset] Don't know how to configure '" + version + "' version");
+
+   init_toolset(e, i->first, i->second);
+}
+
 void msvc_toolset::autoconfigure(engine& e) const
 {
-   using namespace std;
-   const vector<pair<string, location_t> > known_versions =
-      {
-         {"11.0", R"(c:\Program Files\Microsoft Visual Studio 11.0\VC)"},
-         {"12.0", R"(c:\Program Files\Microsoft Visual Studio 12.0\VC)"},
-         {"14.0", R"(c:\Program Files\Microsoft Visual Studio 14.0\VC)"},
-      };
-
    for (const auto& v : known_versions) {
       if (exists(v.second))
-         init_impl(e, v.first, &v.second);
+         init_toolset(e, v.first, v.second);
    }
 }
 

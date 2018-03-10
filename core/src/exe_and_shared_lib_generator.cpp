@@ -16,9 +16,11 @@ exe_and_shared_lib_generator::exe_and_shared_lib_generator(hammer::engine& e,
                                                            const producable_types_t& target_types,
                                                            bool composite,
                                                            const build_action_ptr& action,
-                                                           const feature_set* c)
-   : generator(e, name, source_types, target_types, composite, action, c),
-     searched_lib_(e.get_type_registry().get(types::SEARCHED_LIB))
+                                                           const feature_set* constraints,
+                                                           const feature_set* additional_target_properties)
+   : generator(e, name, source_types, target_types, composite, action, constraints),
+     searched_lib_(e.get_type_registry().get(types::SEARCHED_LIB)),
+     additional_target_properties_(additional_target_properties)
 {
 }
 
@@ -53,6 +55,21 @@ exe_and_shared_lib_generator::construct(const target_type& type_to_construct,
    }
 
    return generator::construct(type_to_construct, new_props ? *new_props : props, modified_sources, t, name, owner);
+}
+
+basic_build_target*
+exe_and_shared_lib_generator::create_target(const main_target* mt,
+                                            const build_node::sources_t& sources,
+                                            const std::string* composite_target_name,
+                                            const produced_type& type,
+                                            const feature_set* target_properties) const
+{
+   if (additional_target_properties_) {
+      feature_set* new_target_properties = target_properties->clone();
+      new_target_properties->join(*additional_target_properties_);
+      return generator::create_target(mt, sources, composite_target_name, type, new_target_properties);
+   } else
+      return generator::create_target(mt, sources, composite_target_name, type, target_properties);
 }
 
 }

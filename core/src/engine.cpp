@@ -66,12 +66,6 @@ engine::engine()
       fr->add_feature_def("host-os", { {"windows", {}}, {"linux", {}} }, ft);
    }
 
-#if defined(_WIN32)
-   fr->get_def("host-os").set_default("windows");
-#else
-   fr->get_def("host-os").set_default("linux");
-#endif
-
    feature_registry_ = fr.release();
 
    load_hammer_script(g_builtin_features, "builtin_features");
@@ -84,6 +78,14 @@ engine::engine()
          feature_registry_->get_def("address-model").set_default("64");
          break;
    }
+
+#if defined(_WIN32)
+   feature_registry_->get_def("host-os").set_default("windows");
+   feature_registry_->get_def("target-os").set_default("windows");
+#else
+   feature_registry_->get_def("host-os").set_default("linux");
+   feature_registry_->get_def("target-os").set_default("linux");
+#endif
 
    type_registry_.reset(new type_registry);
 
@@ -306,7 +308,7 @@ void engine::load_hammer_script(const string& script_body,
 void engine::load_hammer_script_v2(location_t filepath)
 {
    ostringstream s;
-   streamed_diagnostic diag(filepath.native(), s);
+   streamed_diagnostic diag(filepath.string(), s);
    ast::context ast_ctx;
    sema::actions_impl actions(ast_ctx, *rule_manager_, diag);
    ast_hamfile_ptr ast = parse_hammer_script(filepath, actions);
@@ -359,7 +361,7 @@ engine::load_project_v2(const location_t& project_path,
                         const project* upper_project)
 {
    ostringstream s;
-   streamed_diagnostic diag(project_path.native(), s);
+   streamed_diagnostic diag(project_path.string(), s);
    ast::context ast_ctx;
    sema::actions_impl actions(ast_ctx, *rule_manager_, diag);
    ast_hamfile_ptr ast = parse_hammer_script(project_path, actions);

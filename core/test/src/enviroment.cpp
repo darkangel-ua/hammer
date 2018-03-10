@@ -35,9 +35,9 @@ setuped_engine::setuped_engine(bool install_toolsets)
    hammer::types::register_standart_types(engine_.get_type_registry(), engine_.feature_registry());
    if (install_toolsets)
    {
-      engine_.toolset_manager().add_toolset(std::unique_ptr<hammer::toolset>(new hammer::msvc_toolset()));
+      engine_.toolset_manager().add_toolset(engine_, std::unique_ptr<hammer::toolset>(new hammer::msvc_toolset()));
       hammer::location_t fake_location("fake_msvc_location");
-      engine_.toolset_manager().init_toolset(engine_, "msvc", "8.0", &fake_location);
+      engine_.toolset_manager().init_toolset(engine_, "msvc", "11.0", &fake_location);
    }
 
    hammer::add_testing_generators(engine_, engine_.generators());
@@ -65,9 +65,9 @@ complete_build_tests_environment::complete_build_tests_environment()
 
 void complete_build_tests_environment::install_toolsets()
 {
-   engine_.toolset_manager().add_toolset(unique_ptr<toolset>(new gcc_toolset));
-   engine_.toolset_manager().add_toolset(unique_ptr<toolset>(new msvc_toolset));
-   engine_.toolset_manager().add_toolset(unique_ptr<toolset>(new qt_toolset));
+   engine_.toolset_manager().add_toolset(engine_, unique_ptr<toolset>(new gcc_toolset));
+   engine_.toolset_manager().add_toolset(engine_, unique_ptr<toolset>(new msvc_toolset));
+   engine_.toolset_manager().add_toolset(engine_, unique_ptr<toolset>(new qt_toolset));
    install_htmpl(engine_);
    engine_.generators().insert(std::auto_ptr<generator>(new obj_generator(engine_)));
 }
@@ -94,7 +94,7 @@ void complete_build_tests_environment::run_test(const boost::filesystem::path& w
       nodes_to_build.insert(nodes_to_build.end(), nodes.begin(), nodes.end());
    }
 
-   build_environment_impl be(fs::current_path());
+   build_environment_impl be(working_dir);
 
    // we run checker but not actualy use the result
    actuality_checker checker(engine_, be);

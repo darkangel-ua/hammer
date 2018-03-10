@@ -83,7 +83,7 @@ compile_fail_generator::construct(const target_type& type_to_construct,
                                   const std::string* composite_target_name,
                                   const main_target& owner) const
 {
-   build_nodes_t compile_nodes = compile_generator_->construct(type_to_construct, props, sources, source_target, composite_target_name, owner);
+   build_nodes_t compile_nodes = compile_generator_->construct(*compile_generator_->producable_types()[0].type_, props, sources, source_target, composite_target_name, owner);
    // assume compile can produce only one node - can't imagine situations with many, right now
    assert(compile_nodes.size() == 1);
 

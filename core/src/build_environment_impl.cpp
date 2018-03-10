@@ -65,7 +65,7 @@ bool build_environment_impl::run_shell_commands(std::ostream* captured_output_st
 
       bp::context ctx;
       ctx.environment = bp::self::get_environment();
-      ctx.stdin_behavior = bp::close_stream();
+      ctx.stdin_behavior = bp::inherit_stream();
       ctx.work_directory = working_dir.string();
 
       if (captured_output_stream != NULL)
@@ -206,7 +206,10 @@ const location_t& build_environment_impl::current_directory() const
 
 void build_environment_impl::create_directories(const location_t& dir_to_create) const
 {
-   boost::filesystem::create_directories(dir_to_create);
+   if (dir_to_create.has_root_path())
+      boost::filesystem::create_directories(dir_to_create);
+   else
+      boost::filesystem::create_directories(current_directory_ / dir_to_create);
 }
 
 void build_environment_impl::remove(const location_t& p) const

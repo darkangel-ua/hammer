@@ -118,13 +118,13 @@ void exe_rule(target_invocation_context& ctx,
 static
 void alias_rule(target_invocation_context& ctx,
                 const parscore::identifier& name,
-                const sources_decl& sources,
+                const sources_decl* sources,
                 const requirements_decl* requirements,
                 const usage_requirements_decl* usage_requirements)
 {
    auto_ptr<basic_meta_target> mt(new alias_meta_target(&ctx.current_project_,
                                                         name.to_string(),
-                                                        sources,
+                                                        sources ? *sources : sources_decl(),
                                                         requirements ? *requirements : requirements_decl(),
                                                         usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl()));
    mt->set_local(ctx.local_);
@@ -179,10 +179,14 @@ void version_alias_rule(target_invocation_context& ctx,
                         const parscore::identifier& version,
                         const location_t* target_path)
 {
+   string s_target_path;
+   if (target_path)
+      s_target_path = target_path->string();
+
    auto_ptr<basic_meta_target> mt(new version_alias_meta_target(&ctx.current_project_,
                                                                 name.to_string(),
                                                                 version.to_string(),
-                                                                target_path ? &target_path->string() : nullptr));
+                                                                target_path ? &s_target_path : nullptr));
    mt->set_local(ctx.local_);
    mt->set_explicit(ctx.explicit_);
 
@@ -195,7 +199,11 @@ void target_version_alias_rule(target_invocation_context& ctx,
                                const parscore::identifier& version,
                                const location_t* target_path)
 {
-   auto_ptr<basic_meta_target> mt(new target_version_alias_meta_target(&ctx.current_project_, id.to_string(), version.to_string(), target_path ? &target_path->string() : nullptr));
+   string s_target_path;
+   if (target_path)
+      s_target_path = target_path->string();
+
+   auto_ptr<basic_meta_target> mt(new target_version_alias_meta_target(&ctx.current_project_, id.to_string(), version.to_string(), target_path ? &s_target_path : nullptr));
 
    mt->set_local(ctx.local_);
    // its explicit by design
@@ -748,20 +756,6 @@ void searched_static_lib_rule(target_invocation_context& ctx,
 }
 
 static
-void use_toolset_rule(invocation_context& ctx,
-                      const parscore::identifier& toolset_name,
-                      const parscore::identifier& toolset_version,
-                      const location_t* toolset_home_)
-{
-   location_t toolset_home;
-   if (toolset_home_ != NULL)
-      toolset_home = *toolset_home_;
-
-   engine& e = *ctx.current_project_.get_engine();
-   e.toolset_manager().init_toolset(e, toolset_name.to_string(), toolset_version.to_string(), toolset_home_ == NULL ? NULL : &toolset_home);
-}
-
-static
 void setup_warehouse_rule(invocation_context& ctx,
                           const parscore::identifier& name,
                           const parscore::identifier& url,
@@ -807,7 +801,6 @@ void install_builtin_rules(rule_manager& rm)
    rm.add_target("test-suite", test_suite_rule, {"name", "sources", "propagated-sources"});
    rm.add_target("testing.run", testing_run_rule, {"sources", "args", "input-files", "requirements", "target-name"});
    rm.add_target("testing.compile-fail", testing_compile_fail_rule, {"sources", "requirements", "default-build", "usage-requirements"});
-   rm.add_rule("use-toolset", use_toolset_rule, {"name", "version", "home"});
    rm.add_rule("setup-warehouse", setup_warehouse_rule, {"name", "url", "storage-dir"});
 }
 

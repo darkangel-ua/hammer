@@ -14,7 +14,9 @@ namespace hammer
    class toolset_manager
    {
       public:
-         void add_toolset(std::unique_ptr<toolset> t);
+         // add toolset to manager and register toolset::use_rule() in rule_manager
+			void add_toolset(engine& e,
+			                 std::unique_ptr<toolset> t);
          void init_toolset(engine& e, 
                            const std::string& toolset_name, 
                            const std::string& toolset_version,

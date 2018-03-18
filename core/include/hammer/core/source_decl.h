@@ -43,6 +43,9 @@ namespace hammer
          feature_set* properties() const { return properties_; }
          bool is_public() const { return public_; }
 
+         void set_locals_allowed(bool v) { locals_allowed_ = v; }
+         bool locals_allowed() const { return locals_allowed_; }
+
          bool operator < (const source_decl& rhs) const
 			{
 				if (target_path_ < rhs.target_path_)
@@ -72,7 +75,14 @@ namespace hammer
          
          feature_set* properties_;
          bool public_;
+
+         // this is used internally, when passing around <source> feature that can posibly point on local target
+         // sources from hamfile-s can't have this enabled
+         bool locals_allowed_ = false;
    };
+
+   // check that source_decl looks like local target
+   bool local_target(const source_decl& sd);
 }
 
 #endif //h_1fa42706_d348_48de_9e78_83103be8476d

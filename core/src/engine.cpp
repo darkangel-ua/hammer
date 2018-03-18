@@ -566,12 +566,13 @@ engine::loaded_projects_t::select_best_alternative(const feature_set& build_requ
 
 project::selected_target
 engine::loaded_projects_t::select_best_alternative(const std::string& target_name,
-                                                   const feature_set& build_request) const
+                                                   const feature_set& build_request,
+                                                   bool allow_locals) const
 {
    project::selected_targets_t result;
    for(projects_t::const_iterator i = projects_.begin(), last = projects_.end(); i != last; ++i)
    {
-      project::selected_target st = (**i).try_select_best_alternative(target_name, build_request);
+      project::selected_target st = (**i).try_select_best_alternative(target_name, build_request, allow_locals);
       if (st.target_ != NULL)
          result.push_back(st);
    }

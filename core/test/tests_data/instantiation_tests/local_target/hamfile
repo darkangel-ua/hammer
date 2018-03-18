@@ -1,5 +1,0 @@
-local 
-lib lib1 : lib1.cpp ;
-
-exe test : lib1 ./lib2 ./lib3//lib3 main.cpp ;
-

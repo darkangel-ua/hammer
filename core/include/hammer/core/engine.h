@@ -173,7 +173,9 @@ namespace hammer
             return *this;
          }
          project::selected_targets_t select_best_alternative(const feature_set& build_request) const;
-         project::selected_target select_best_alternative(const std::string& target_name, const feature_set& build_request) const;
+         project::selected_target select_best_alternative(const std::string& target_name,
+                                                          const feature_set& build_request,
+                                                          bool allow_locals) const;
          feature_set* resolve_undefined_features(const feature_set& s);
          bool empty() const { return projects_.empty(); }
 

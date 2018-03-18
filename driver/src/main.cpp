@@ -269,7 +269,7 @@ namespace
             split_target_path(target_path, target_name, *i);
             const hammer::engine::loaded_projects_t& p = project.get_engine()->load_project(target_path, project);
             selected_targets_t st = target_name.empty() ? p.select_best_alternative(*build_request_with_defs) :
-                                                          selected_targets_t(1, p.select_best_alternative(target_name, *build_request_with_defs));
+                                                          selected_targets_t(1, p.select_best_alternative(target_name, *build_request_with_defs, false));
             feature_set* usage_requirements = project.get_engine()->feature_registry().make_set();
             for(selected_targets_t::const_iterator t = st.begin(), t_last = st.end(); t != t_last; ++t)
             {

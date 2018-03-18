@@ -123,24 +123,19 @@ void basic_meta_target::resolve_meta_target_source(const source_decl& source,
 
 	// source has target_name_ only when it was explicitly requested (./foo//bar) where target_name_ == "bar"
    engine::loaded_projects_t suitable_projects = get_engine()->load_project(source.target_path(), *project_);
-   if (source.target_name().empty())
-   {
-      try
-      {
+   if (source.target_name().empty()) {
+      try {
          hammer::project::selected_targets_t selected_targets(suitable_projects.select_best_alternative(*build_request_with_source_properties));
          for(hammer::project::selected_targets_t::const_iterator i = selected_targets.begin(), last = selected_targets.end(); i != last; ++i)
             meta_targets->push_back({i->target_, source.properties()});
-      }
-      catch(const std::exception& e)
-      {
+      } catch(const std::exception& e) {
          throw std::runtime_error("While resolving meta target '" + source.target_path() +
                                   "' at '" + location().string() + "\n" + e.what());
       }
-   }
-   else
-   {
+   } else {
       project::selected_target selected_target = suitable_projects.select_best_alternative(source.target_name(),
-                                                                                           *build_request_with_source_properties);
+                                                                                           *build_request_with_source_properties,
+                                                                                           source.locals_allowed());
       meta_targets->push_back({selected_target.target_, source.properties()});
    }
 }

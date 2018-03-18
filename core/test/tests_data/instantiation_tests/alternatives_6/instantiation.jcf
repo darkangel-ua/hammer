@@ -1,0 +1,3 @@
+test {
+   bar_2.cpp {}
+}

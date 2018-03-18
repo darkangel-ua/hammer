@@ -71,25 +71,31 @@ basic_meta_target* project::find_target(const std::string& name)
       return i->second;
 }
 
+// -1 == not suitable
+// > -1 == suitable with computed rank. Zero IS valid rank
+static
 int compute_alternative_rank(const feature_set& target_properties,
                              const feature_set& build_request)
 {
    unsigned rank = 0;
-   for(feature_set::const_iterator i = target_properties.begin(), last = target_properties.end(); i != last; ++i)
-   {
-      if (!((**i).attributes().free ||
-            (**i).attributes().incidental ||
-            (**i).attributes().undefined_))
+   for(const feature* tf : target_properties) {
+      if (!(tf->attributes().free ||
+            tf->attributes().incidental ||
+            tf->attributes().undefined_))
       {
-         feature_set::const_iterator f = build_request.find((**i).name());
-         if (f != build_request.end())
-            if ((**i).value() != (**f).value())
+         feature_set::const_iterator bf = build_request.find(tf->name());
+         if (bf != build_request.end())
+            if (tf->value() != (**bf).value())
                return -1;
             else
                ++rank;
-         else
-            if ((**i).name() == "override")
+         else {
+            // feature is not in build_request
+            if (tf->name() == "override")
                rank += 10000;
+            else
+               rank += tf->definition().defaults_contains(tf->value());
+         }
       }
    }
 
@@ -109,12 +115,15 @@ project::select_best_alternative(const std::string& target_name,
    return result;
 }
 
-static bool s_great(const project::selected_target& lhs,
-                    const project::selected_target& rhs)
+static
+bool s_great(const project::selected_target& lhs,
+             const project::selected_target& rhs)
 {
-   return lhs.resolved_build_request_rank_ > rhs.resolved_build_request_rank_;
+   return lhs.resolved_requirements_rank_ > rhs.resolved_requirements_rank_;
 }
 
+[[ noreturn ]]
+static
 void error_cannot_choose_alternative(const project& p,
                                      const std::string& target_name,
                                      const feature_set& build_request_param)
@@ -126,6 +135,25 @@ void error_cannot_choose_alternative(const project& p,
    dump_for_hash(s, build_request_param);
    throw std::runtime_error((fmt % target_name % p.location()
                                  % s.str()).str());
+}
+
+static
+int compute_requirements_rank(const feature_set& requirements)
+{
+   int rank = 0;
+   for (const feature* f : requirements) {
+      if (f->attributes().free ||
+          f->attributes().incidental ||
+          f->attributes().undefined_)
+         continue;
+
+      if (!f->definition().defaults_contains(f->value()))
+          return -1;
+
+      ++rank;
+   }
+
+   return rank;
 }
 
 project::selected_target
@@ -144,8 +172,7 @@ project::try_select_best_alternative(const std::string& target_name,
 
    vector<selected_target> selected_targets;
 
-   for(targets_t::const_iterator first = r.begin(), last = r.end(); first != last; ++first)
-   {
+   for(targets_t::const_iterator first = r.begin(), last = r.end(); first != last; ++first) {
       if (!allow_locals && first->second->is_local())
          continue;
 
@@ -153,7 +180,7 @@ project::try_select_best_alternative(const std::string& target_name,
       first->second->requirements().eval(build_request, fs);
       int rank = compute_alternative_rank(*fs, build_request);
       if (rank != -1)
-         selected_targets.push_back(selected_target(first->second, &build_request, rank));
+         selected_targets.push_back(selected_target(first->second, fs, rank));
    }
 
    sort(selected_targets.begin(), selected_targets.end(), s_great);
@@ -163,13 +190,29 @@ project::try_select_best_alternative(const std::string& target_name,
    if (selected_targets.size() == 1)
       return selected_targets.front();
 
-   // selected_targets.size() > 1
-   if (selected_targets[0].resolved_build_request_rank_ != selected_targets[1].resolved_build_request_rank_)
+   if (selected_targets[0].resolved_requirements_rank_ != selected_targets[1].resolved_requirements_rank_)
       return selected_targets.front();
-   else
+
+   // okay, ranks are same, so we need to find target with best computed requirements
+   vector<selected_target> selected_targets_2;
+   for (const selected_target& t : selected_targets) {
+      const int rank = compute_requirements_rank(*t.resolved_requirements_);
+      if (rank >= 0)
+         selected_targets_2.push_back(selected_target(t.target_, t.resolved_requirements_, static_cast<unsigned>(rank)));
+   }
+
+   sort(selected_targets_2.begin(), selected_targets_2.end(), s_great);
+
+   if (selected_targets_2.size() == 1)
+      return selected_targets_2.front();
+
+   if (!selected_targets_2.empty() &&
+       selected_targets_2[0].resolved_requirements_rank_ != selected_targets_2[1].resolved_requirements_rank_)
+   {
+      return selected_targets_2.front();
+   } else
       error_cannot_choose_alternative(*this, target_name, build_request_param);
 }
-
 
 void project::instantiate(const std::string& target_name,
                           const feature_set& build_request,
@@ -177,7 +220,7 @@ void project::instantiate(const std::string& target_name,
 {
    selected_target best_target = select_best_alternative(target_name, build_request);
    feature_set* usage_requirements = engine_->feature_registry().make_set();
-   best_target.target_->instantiate(0, *best_target.resolved_build_request_, result, usage_requirements);
+   best_target.target_->instantiate(0, build_request, result, usage_requirements);
 }
 
 void project::instantiate_impl(const main_target* owner,
@@ -217,7 +260,8 @@ project::select_best_alternative(const feature_set& build_request) const
    return result;
 }
 
-feature_set* project::try_resolve_local_features(const feature_set& fs) const
+feature_set*
+project::try_resolve_local_features(const feature_set& fs) const
 {
    feature_set* result = engine_->feature_registry().make_set();
    for(feature_set::const_iterator i = fs.begin(), last = fs.end(); i != last; ++i)

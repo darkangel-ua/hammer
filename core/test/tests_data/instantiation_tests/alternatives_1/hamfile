@@ -1,6 +1,6 @@
 # options: should-fail=1
 
-alias src : multi.cpp ;
-alias src : single.cpp : <threading>single ;
+feature.feature bar : bar_1 bar_2 ;
 
-lib test : src ;
+lib test : src/<bar>bar_1 ;
+local alias src : bar_2.cpp : <bar>bar_2 ;

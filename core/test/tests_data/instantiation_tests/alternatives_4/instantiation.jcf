@@ -1,0 +1,3 @@
+test {
+   catch-all.cpp {}
+}

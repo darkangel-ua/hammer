@@ -592,10 +592,10 @@ engine::loaded_projects_t::select_best_alternative(const std::string& target_nam
       return result.front();
 
    sort(result.begin(), result.end(), [](const project::selected_target& lhs, const project::selected_target& rhs) {
-      return lhs.resolved_build_request_rank_ > rhs.resolved_build_request_rank_;
+      return lhs.resolved_requirements_rank_ > rhs.resolved_requirements_rank_;
    });
 
-   if (result[0].resolved_build_request_rank_ != result[1].resolved_build_request_rank_)
+   if (result[0].resolved_requirements_rank_ != result[1].resolved_requirements_rank_)
       return result.front();
    else {
       stringstream s;

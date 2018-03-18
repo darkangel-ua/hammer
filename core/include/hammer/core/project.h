@@ -21,22 +21,21 @@ namespace hammer
          struct selected_target
          {
             selected_target(const basic_meta_target* t, 
-                            const feature_set* resolved_build_request,
-                            unsigned resolved_build_request_rank)
+                            const feature_set* resolved_requirements,
+                            unsigned resolved_requirements_rank)
                            : target_(t),
-                             resolved_build_request_(resolved_build_request),
-                             resolved_build_request_rank_(resolved_build_request_rank)
+                             resolved_requirements_(resolved_requirements),
+                             resolved_requirements_rank_(resolved_requirements_rank)
             {}
             
             selected_target() 
-               : target_(NULL), 
-                 resolved_build_request_(NULL) 
+               : target_(nullptr),
+                 resolved_requirements_(nullptr)
             {}
 
             const basic_meta_target* target_;
-            // == project.try_resolve_local_features(build_request)
-            const feature_set* resolved_build_request_; 
-            unsigned resolved_build_request_rank_;
+            const feature_set* resolved_requirements_;
+            unsigned resolved_requirements_rank_;
          };
 
          typedef boost::ptr_multimap<const std::string /* target name */, basic_meta_target> targets_t;
@@ -104,12 +103,6 @@ namespace hammer
 			                      std::vector<basic_target*>* result,
 			                      feature_set* usage_requirements) const override;
 	};
-
-   // -1 == not suitable 
-   // > -1 == suitable with computed rank. Zero IS valid rank
-   int compute_alternative_rank(const feature_set& target_properties, 
-                                const feature_set& build_request);
-
 }
 
 #endif //h_939859ef_4910_49e0_b2b8_fac2a43ebd18

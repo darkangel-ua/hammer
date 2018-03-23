@@ -81,8 +81,8 @@ namespace hammer
          bool locals_allowed_ = false;
    };
 
-   // check that source_decl looks like local target
-   bool local_target(const source_decl& sd);
+   // check that source_decl looks like reference on target within same project
+   bool looks_like_local_target_ref(const source_decl& sd);
 }
 
 #endif //h_1fa42706_d348_48de_9e78_83103be8476d

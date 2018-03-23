@@ -85,7 +85,12 @@ void complete_build_tests_environment::run_test(const boost::filesystem::path& w
    build_request->join("variant", "debug");
 
    vector<basic_target*> instantiated_targets;
-   BOOST_REQUIRE_NO_THROW(p.instantiate("test", *build_request, &instantiated_targets));
+   try {
+      p.instantiate("test", *build_request, &instantiated_targets);
+   } catch (const std::exception& e) {
+      BOOST_FAIL(e.what());
+   }
+
    BOOST_REQUIRE(!instantiated_targets.empty());
 
    build_nodes_t nodes_to_build;

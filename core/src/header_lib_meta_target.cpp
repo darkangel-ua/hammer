@@ -51,7 +51,7 @@ void header_lib_meta_target::instantiate_impl(const main_target* owner,
       else
          new_sd.properties(build_request_for_sourses->clone());
 
-      if (local_target(sd))
+      if (looks_like_local_target_ref(sd))
          new_sd.set_locals_allowed(true);
 
       f->set_dependency_data(new_sd, this);

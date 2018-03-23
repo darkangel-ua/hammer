@@ -109,10 +109,7 @@ void basic_meta_target::resolve_meta_target_source(const source_decl& source,
 {
    const feature_set* build_request_with_source_properties = (source.properties() == NULL ? &build_request : build_request.join(*source.properties()));
 
-	// check that source is simple one ID. Maybe its source or maybe its target ID.
-   const bool local_target = (source.target_name().empty() && !source.target_path().empty()) ||
-                             (!source.target_name().empty() && source.target_path() == "./");
-   if (local_target) {
+   if (looks_like_local_target_ref(source)) {
       const std::string target_name = source.target_name().empty() ? source.target_path() : source.target_name();
       if (project_->find_target(target_name)) {
          project::selected_target selected_target = project_->select_best_alternative(target_name, *build_request_with_source_properties, /*allow_locals=*/true);
@@ -217,7 +214,6 @@ void adjust_dependency_features_sources(feature_set& set_to_adjust,
 
       const source_decl& source = f->get_dependency_data().source_;
       if (source.type() == nullptr /*source is meta-target*/ &&
-          !source.target_path_is_global() &&
           !has_slash(source.target_path()))
       {
          source_decl adjusted_source = source;

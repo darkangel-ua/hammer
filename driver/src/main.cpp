@@ -769,21 +769,18 @@ int main(int argc, char** argv) {
                throw std::runtime_error("Default toolset is set to '"+ default_toolset_name + "', but either you didn't configure it in user-config.ham or it has failed to autoconfigure");
 
             const subfeature_def& toolset_version_def = toolset_definition.get_subfeature("version");
-            if (toolset_version_def.legal_values(default_toolset_name).size() == 1)
-               build_request->join("toolset", (default_toolset_name + "-" + *toolset_version_def.legal_values(default_toolset_name).begin()).c_str());
-            else
-               throw std::runtime_error("Default toolset is set to '"+ default_toolset_name + "', but has multiple version configured. You should request specific version to use.");
+            // peek first configured as default
+            const string& default_toolset_version = *toolset_version_def.legal_values(default_toolset_name).begin();
+            build_request->join("toolset", (default_toolset_name + "-" + default_toolset_version).c_str());
          } else {
             const feature& used_toolset = **i_toolset_in_build_request;
             if (!used_toolset.find_subfeature("version")) {
                const subfeature_def& toolset_version_def = used_toolset.definition().get_subfeature("version");
-               if (toolset_version_def.legal_values(used_toolset.value()).size() > 1)
-                  throw std::runtime_error("Toolset is set to '"+ used_toolset.value() + "', but has multiple version configured. You should request specific version to use.");
-               else {
-                  const string toolset = used_toolset.value();
-                  build_request->erase_all("toolset");
-                  build_request->join("toolset", (toolset + "-" + *toolset_version_def.legal_values(toolset).begin()).c_str());
-               }
+               const string& toolset = used_toolset.value();
+               // peek first configured as default
+               const string& default_toolset_version = *toolset_version_def.legal_values(toolset).begin();
+               build_request->erase_all("toolset");
+               build_request->join("toolset", (toolset + "-" + default_toolset_version).c_str());
             }
          }
 

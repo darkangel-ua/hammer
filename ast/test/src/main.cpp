@@ -172,15 +172,17 @@ void checked_diagnostic::report_unreported_diagnostics() const
 {
    set<int> covered_lines;
 
-   for (const auto& i : expected_diags_)
+   for (const auto& i : expected_diags_) {
       if (reported_lines_.find(i.first) == reported_lines_.end())
          BOOST_CHECK_MESSAGE(false, string("Diagnostic '") + i.second.first + "' was not reported");
       else
          covered_lines.insert(i.first);
+   }
 
-   for (const auto& line : reported_lines_)
+   for (const auto& line : reported_lines_) {
       if (covered_lines.find(line.first) == covered_lines.end())
          BOOST_CHECK_MESSAGE(false, line.second);
+   }
 }
 
 static expected_diags_t extract_expected_diags(const fs::path& hamfile)

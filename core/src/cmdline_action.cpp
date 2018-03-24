@@ -71,6 +71,9 @@ cmdline_action::valuable_features() const
    for (const cmdline_builder& b : builders_)
       merge(result, b.valuable_features());
 
+   if (rsp_builder_)
+      merge(result, rsp_builder_->valuable_features());
+
    return result;
 }
 

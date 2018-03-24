@@ -1,9 +1,8 @@
 #if !defined(h_a1e58555_b259_43a7_a0f6_9c225178390e)
 #define h_a1e58555_b259_43a7_a0f6_9c225178390e
 
-#include "build_action.h"
-#include "cmdline_builder.h"
 #include <vector>
+#include "build_action.h"
 #include "cmdline_builder.h"
 
 namespace hammer
@@ -48,7 +47,7 @@ namespace hammer
 
          builders_t builders_;
          boost::shared_ptr<argument_writer> target_writer_;
-         std::auto_ptr<cmdline_builder> rsp_builder_;
+         std::unique_ptr<cmdline_builder> rsp_builder_;
    };
 }
 

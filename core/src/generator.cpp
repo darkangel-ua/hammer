@@ -111,7 +111,7 @@ generator::make_product_name_and_hash(const build_node::sources_t& sources,
 {
    const std::string hash = calculate_hash(sources, product_properties);
    auto p_name = product_properties.find("name");
-   const std::string pure_name = [&]() {
+   const std::string pure_name = [&]() -> std::string {
       if (composite_target_name) {
          if ( p_name != product_properties.end())
             return (**p_name).value();
@@ -125,7 +125,7 @@ generator::make_product_name_and_hash(const build_node::sources_t& sources,
       return std::string(source_target.name().begin(), source_target.name().begin() + (source_target.name().size() - source_suffix.size()));
    }();
 
-   const std::string& product_name = [&]() {
+   const std::string& product_name = [&]()  -> std::string {
       if (p_name == product_properties.end()) {
          std::string result = product_type.type_->prefix_for(product_properties) + pure_name;
          if (product_type.need_tag_ && p_name == product_properties.end()) {

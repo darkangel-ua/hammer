@@ -72,7 +72,7 @@ namespace hammer
       private:
          const main_target* products_owner_;
          bool is_composite_;
-         boost::tribool up_to_date_ = boost::indeterminate;
+         boost::tribool up_to_date_ = boost::logic::indeterminate;
          boost::posix_time::ptime timestamp_;
          const build_action_ptr action_;
    };

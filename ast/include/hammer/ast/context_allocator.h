@@ -22,6 +22,8 @@ class context_allocator
       template< class U > struct rebind { typedef context_allocator<U> other; };
 
       context_allocator(context& ctx) : ctx_(&ctx) {}
+      template<typename U>
+      context_allocator(const context_allocator<U>& v) : ctx_(v.ctx_) {}
 
       pointer allocate(size_type n) { return static_cast<pointer>(ctx_->allocate(n * sizeof(value_type), 0)); }
       void deallocate(T* p, std::size_t n) {}

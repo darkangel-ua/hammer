@@ -122,7 +122,9 @@ bool s_great(const project::selected_target& lhs,
    return lhs.resolved_requirements_rank_ > rhs.resolved_requirements_rank_;
 }
 
+#if !defined(_WIN32)
 [[ noreturn ]]
+#endif
 static
 void error_cannot_choose_alternative(const project& p,
                                      const std::string& target_name,

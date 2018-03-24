@@ -416,9 +416,9 @@ void msvc_toolset::init_toolset(engine& e,
 static
 const std::map<string, location_t>
 known_versions = {
-   {"11.0", R"(c:\Program Files\Microsoft Visual Studio 11.0\VC)"},
-   {"12.0", R"(c:\Program Files\Microsoft Visual Studio 12.0\VC)"},
    {"14.0", R"(c:\Program Files\Microsoft Visual Studio 14.0\VC)"},
+   {"12.0", R"(c:\Program Files\Microsoft Visual Studio 12.0\VC)"},
+   {"11.0", R"(c:\Program Files\Microsoft Visual Studio 11.0\VC)"}
 };
 
 void msvc_toolset::use_toolset_rule(invocation_context& ctx,

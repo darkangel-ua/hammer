@@ -53,7 +53,7 @@ warehouse_test::warehouse_test(const bool remove_packages,
    if (remove_installed_packages)
       fs::remove_all(installed_packages_path_);
 
-   warehouse_.reset(new warehouse_impl("test", "file://" + packages_path_.string(), installed_packages_path_));
+   warehouse_.reset(new warehouse_impl(engine_, "test", "file://" + packages_path_.string(), installed_packages_path_));
 }
 
 void warehouse_test::add_all_libs()

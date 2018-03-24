@@ -171,7 +171,8 @@ void download_file(const fs::path& working_dir,
       throw std::runtime_error("Failed to download '" + url + "'");
 }
 
-warehouse_impl::warehouse_impl(const std::string& name,
+warehouse_impl::warehouse_impl(engine& e,
+                               const std::string& name,
                                const std::string& url,
                                const boost::filesystem::path& storage_dir)
    : repository_path_(storage_dir.empty() ? (get_home_path() / ".hammer") : storage_dir),
@@ -202,6 +203,7 @@ warehouse_impl::warehouse_impl(const std::string& name,
       download_file(repository_path_, url + "/" + packages_filename.string());
 
    packages_ = load_packages(packages_full_filename);
+   e.load_project(repository_path_);
 }
 
 static

@@ -277,7 +277,7 @@ project& engine::load_project(location_t project_path)
 {
    loaded_projects_t result(try_load_project(project_path));
    if (result.empty())
-      throw  runtime_error("Can't load project at '"  + project_path.string() + ": no such path.");
+      throw  runtime_error("Can't load project at '"  + project_path.string() + "': no such path.");
 
    return result.front();
 }
@@ -510,8 +510,7 @@ void engine::setup_warehouse(const std::string& name,
    if (warehouse_)
       throw std::runtime_error("You can setup only one warehouse to use");
 
-   warehouse_.reset(new warehouse_impl(name, url, storage_dir));
-   load_project(storage_dir);
+   warehouse_.reset(new warehouse_impl(*this, name, url, storage_dir));
 }
 
 void engine::use_project(const project& p,

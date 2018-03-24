@@ -15,7 +15,8 @@ class basic_target;
 class warehouse_impl : public warehouse
 {
    public:
-      warehouse_impl(const std::string& name,
+      warehouse_impl(engine& e,
+                     const std::string& name,
                      const std::string& url,
                      const boost::filesystem::path& storage_dir = boost::filesystem::path());
       ~warehouse_impl();

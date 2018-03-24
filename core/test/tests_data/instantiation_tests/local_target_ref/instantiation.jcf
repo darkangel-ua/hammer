@@ -1,0 +1,10 @@
+test {
+   main.cpp {}
+   lib1 { lib1-local.cpp {} }
+   lib2 [ features = <define>FOO; ] { 
+      lib2-local.cpp {} 
+      lib1 { lib1-external.cpp {} }
+   }
+   lib3 { lib3-local.cpp {} }
+   lib5 { lib5-local.cpp {} }
+}

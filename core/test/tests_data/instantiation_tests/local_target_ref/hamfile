@@ -1,0 +1,9 @@
+# testing correct parsing&selecting references on local target
+
+exe test : main.cpp lib1 lib2/<define>FOO .//lib3 lib4 ;
+lib lib1 : lib1-local.cpp ;
+lib lib2 : lib2-local.cpp ./lib1 ;
+lib lib3 : lib3-local.cpp ;
+#header lib will transfer meta targets to owner and owner should be able to find it
+header-lib lib4 : lib5 ;
+explicit lib lib5 : lib5-local.cpp ;

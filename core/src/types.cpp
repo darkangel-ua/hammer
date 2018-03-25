@@ -29,8 +29,6 @@ const type_tag SEARCHED_SHARED_LIB("SEARCHED_SHARED_LIB");
 const type_tag SEARCHED_STATIC_LIB("SEARCHED_STATIC_LIB");
 const type_tag HEADER_LIB("HEADER_LIB");
 const type_tag EXE("EXE");
-const type_tag EXE_MANIFEST("EXE_MANIFEST");
-const type_tag DLL_MANIFEST("DLL_MANIFEST");
 const type_tag UNKNOWN("UNKNOWN");
 const type_tag COPIED("COPIED");
 const type_tag TESTING_OUTPUT("TESTING_OUTPUT");
@@ -74,8 +72,6 @@ void register_standart_types(type_registry& tr, feature_registry& fr)
    target_type::suffixes_t exe_suffixes = list_of<target_type::suffix_def>(".exe", *parse_simple_set("<target-os>windows", fr))
                                                                            ("", *parse_simple_set("<target-os>linux", fr));
    tr.insert(target_type(EXE, exe_suffixes));
-   tr.insert(target_type(EXE_MANIFEST, ".exe.manifest"));
-   tr.insert(target_type(DLL_MANIFEST, ".dll.manifest"));
    tr.insert(target_type(UNKNOWN, ""));
    tr.insert(target_type(COPIED, ""));
    tr.insert(target_type(TESTING_OUTPUT, ".test_output"));

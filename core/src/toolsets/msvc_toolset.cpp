@@ -291,14 +291,10 @@ void msvc_toolset::init_toolset(engine& e,
       shared_ptr<product_argument_writer> exe_product_unc(new product_argument_writer("exe_product_unc", e.get_type_registry().get(types::EXE),
                                                                                       product_argument_writer::output_strategy::FULL_PATH));
       shared_ptr<product_argument_writer> exe_product(new product_argument_writer("exe_product", e.get_type_registry().get(types::EXE)));
-      shared_ptr<product_argument_writer> exe_manifest_product(new product_argument_writer("exe_manifest_product", e.get_type_registry().get(types::EXE_MANIFEST)));
-      cmdline_builder exe_cmd(config_data.linker_.string() + " \"@$(exe_product).rsp\"\n"
-                              "if %ERRORLEVEL% NEQ 0 EXIT %ERRORLEVEL%\n"
-                              "if exist \"$(exe_manifest_product)\" (" + config_data.manifest_tool_.string() + " -nologo -manifest \"$(exe_manifest_product)\" \"-outputresource:$(exe_product);1\")");
+      cmdline_builder exe_cmd(config_data.linker_.string() + " \"@$(exe_product).rsp\"");
 
       exe_cmd += exe_product;
-      exe_cmd += exe_manifest_product;
-      cmdline_builder exe_rsp("  /nologo /MANIFEST /MANIFESTFILE:$(exe_manifest_product) $(link_flags) $(user_link_flags) $(searched_lib_searched_dirs) /out:\"$(exe_product_unc)\" $(obj_sources) $(res_sources) $(static_lib_sources) $(prebuilt_lib_sources) $(searched_lib_sources) $(import_lib_sources)");
+      cmdline_builder exe_rsp("  /nologo $(link_flags) $(user_link_flags) $(searched_lib_searched_dirs) /out:\"$(exe_product_unc)\" $(obj_sources) $(res_sources) $(static_lib_sources) $(prebuilt_lib_sources) $(searched_lib_sources) $(import_lib_sources)");
 
       exe_rsp += link_flags;
       exe_rsp += user_link_flags;
@@ -310,7 +306,6 @@ void msvc_toolset::init_toolset(engine& e,
       exe_rsp += searched_lib_sources;
       exe_rsp += import_lib_sources;
       exe_rsp += exe_product_unc;
-      exe_rsp += exe_manifest_product;
 
       auto exe_action = std::make_shared<cmdline_action>("link-exe", exe_product, exe_rsp);
       *exe_action += setup_vars;
@@ -325,7 +320,6 @@ void msvc_toolset::init_toolset(engine& e,
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::SEARCHED_STATIC_LIB), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::HEADER_LIB), 0, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::EXE)));
-      target.push_back(generator::produced_type(e.get_type_registry().get(types::EXE_MANIFEST)));
       unique_ptr<generator> g(new exe_and_shared_lib_generator(e, generator_prefix + ".linker.exe", source, target, true, exe_action, generator_condition, nullptr));
       e.generators().insert(std::move(g));
    }
@@ -369,16 +363,12 @@ void msvc_toolset::init_toolset(engine& e,
       shared_ptr<product_argument_writer> shared_lib_rel_product(new product_argument_writer("shared_lib_rel_product", e.get_type_registry().get(types::SHARED_LIB)));
       shared_ptr<product_argument_writer> shared_lib_product(new product_argument_writer("shared_lib_product", e.get_type_registry().get(types::SHARED_LIB), 
                                                                                          product_argument_writer::output_strategy::FULL_PATH));
-      shared_ptr<product_argument_writer> dll_manifest_product(new product_argument_writer("dll_manifest_product", e.get_type_registry().get(types::DLL_MANIFEST)));
-      cmdline_builder shared_lib_cmd(config_data.linker_.string() + " \"@$(shared_lib_rel_product).rsp\"\n"
-                                     "if %ERRORLEVEL% NEQ 0 EXIT %ERRORLEVEL%\n"
-                                     "if exist \"$(dll_manifest_product)\" (" + config_data.manifest_tool_.string() + " -nologo -manifest \"$(dll_manifest_product)\" \"-outputresource:$(shared_lib_rel_product);2\")");
+      cmdline_builder shared_lib_cmd(config_data.linker_.string() + " \"@$(shared_lib_rel_product).rsp\"");
       
       shared_lib_cmd += shared_lib_product;
       shared_lib_cmd += shared_lib_rel_product;
-      shared_lib_cmd += dll_manifest_product;
 
-      cmdline_builder shared_lib_rsp(" /OUT:\"$(shared_lib_product)\" /NOLOGO /DLL /MANIFEST /MANIFESTFILE:$(dll_manifest_product) $(link_flags) $(user_link_flags) $(searched_lib_searched_dirs) /IMPLIB:\"$(import_lib_product)\" $(obj_sources) $(res_sources) $(static_lib_sources) $(prebuilt_lib_sources) $(searched_lib_sources) $(import_lib_sources)");
+      cmdline_builder shared_lib_rsp(" /OUT:\"$(shared_lib_product)\" /NOLOGO /DLL $(link_flags) $(user_link_flags) $(searched_lib_searched_dirs) /IMPLIB:\"$(import_lib_product)\" $(obj_sources) $(res_sources) $(static_lib_sources) $(prebuilt_lib_sources) $(searched_lib_sources) $(import_lib_sources)");
       shared_lib_rsp += link_flags;
       shared_lib_rsp += user_link_flags;
       shared_lib_rsp += searched_lib_searched_dirs;
@@ -390,7 +380,6 @@ void msvc_toolset::init_toolset(engine& e,
       shared_lib_rsp += import_lib_sources;
       shared_lib_rsp += import_lib_product;
       shared_lib_rsp += shared_lib_product;
-      shared_lib_rsp += dll_manifest_product;
 
       auto shared_lib_action = std::make_shared<cmdline_action>("link-shared-lib", shared_lib_rel_product, shared_lib_rsp);
       *shared_lib_action += setup_vars;
@@ -406,7 +395,6 @@ void msvc_toolset::init_toolset(engine& e,
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::H), 0, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::SHARED_LIB), true));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::IMPORT_LIB), true));
-      target.push_back(generator::produced_type(e.get_type_registry().get(types::DLL_MANIFEST), true));
 
       unique_ptr<generator> g(new exe_and_shared_lib_generator(e, generator_prefix + ".linker.shared_lib", source, target, true, shared_lib_action, generator_condition, nullptr));
       e.generators().insert(std::move(g));

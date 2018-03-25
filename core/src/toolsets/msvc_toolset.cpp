@@ -402,12 +402,16 @@ void msvc_toolset::init_toolset(engine& e,
 }
 
 static
-const std::map<string, location_t>
-known_versions = {
+const std::vector<std::pair<string, location_t>>
+known_versions_v = {
    {"14.0", R"(c:\Program Files\Microsoft Visual Studio 14.0\VC)"},
    {"12.0", R"(c:\Program Files\Microsoft Visual Studio 12.0\VC)"},
    {"11.0", R"(c:\Program Files\Microsoft Visual Studio 11.0\VC)"}
 };
+
+static
+const std::map<string, location_t>
+known_versions_m(known_versions_v.begin(), known_versions_v.end());
 
 void msvc_toolset::use_toolset_rule(invocation_context& ctx,
                                     const parscore::identifier& version,
@@ -419,8 +423,8 @@ void msvc_toolset::use_toolset_rule(invocation_context& ctx,
       return;
    }
 
-   auto i = known_versions.find(version.to_string());
-   if (i == known_versions.end()) {
+   auto i = known_versions_m.find(version.to_string());
+   if (i == known_versions_m.end()) {
       ctx.diag_.error(version.start_lok(), "Don't know how to configure this version");
       return;
    }
@@ -431,8 +435,8 @@ void msvc_toolset::use_toolset_rule(invocation_context& ctx,
 void msvc_toolset::configure(engine& e,
                              const std::string& version) const
 {
-   auto i = known_versions.find(version);
-   if (i == known_versions.end())
+   auto i = known_versions_m.find(version);
+   if (i == known_versions_m.end())
       throw std::runtime_error("[msvc_toolset] Don't know how to configure '" + version + "' version");
 
    init_toolset(e, i->first, i->second);
@@ -440,7 +444,7 @@ void msvc_toolset::configure(engine& e,
 
 void msvc_toolset::autoconfigure(engine& e) const
 {
-   for (const auto& v : known_versions) {
+   for (const auto& v : known_versions_v) {
       if (exists(v.second))
          init_toolset(e, v.first, v.second);
    }

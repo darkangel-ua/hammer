@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include <set>
-#include <boost/assign/list_of.hpp>
 #include <boost/filesystem/convenience.hpp>
 #include <hammer/core/copy_generator.h>
 #include <hammer/core/engine.h>
@@ -15,8 +14,6 @@
 #include <hammer/core/fs_helpers.h>
 #include <hammer/core/product_argument_writer.h>
 #include <hammer/core/collect_nodes.h>
-
-using namespace boost::assign;
 
 namespace hammer{
 namespace{
@@ -80,7 +77,7 @@ copy_generator::copy_generator(hammer::engine& e)
    : generator(e,
                "copy",
                consumable_types_t(),
-               list_of<produced_type>(e.get_type_registry().get(types::COPIED), 0),
+               make_product_types(e, {types::COPIED}),
                true,
                std::make_shared<copy_action>(e.get_type_registry().get(types::COPIED)))
 {

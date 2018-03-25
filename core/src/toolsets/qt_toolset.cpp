@@ -1,7 +1,6 @@
 #include <boost/bind.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/regex.hpp>
-#include <boost/assign/list_of.hpp>
 #include <boost/make_unique.hpp>
 #include <boost/crypto/md5.hpp>
 #include <hammer/core/toolsets/qt_toolset.h>
@@ -33,7 +32,6 @@ using std::unique_ptr;
 using std::auto_ptr;
 using std::vector;
 using namespace boost;
-using namespace boost::assign;
 namespace fs = boost::filesystem;
 
 namespace hammer{
@@ -455,11 +453,11 @@ void add_libs_and_generators(engine& e,
    auto_ptr<project> qt_project(new project(&e, "Qt", *toolset_home, requirements_decl(), requirements_decl()));
    if (qt5) {
       add_lib(*qt_project, "Qt5Core", vector<string>(), e, include_tag, "QtCore", lib_tag);
-      add_lib(*qt_project, "Qt5Gui", list_of("Qt5Core"), e, include_tag, "QtGui", lib_tag);
-      add_lib(*qt_project, "Qt5Widgets", list_of("Qt5Core")("Qt5Gui"), e, include_tag, "QtWidgets", lib_tag);
+      add_lib(*qt_project, "Qt5Gui", {"Qt5Core"}, e, include_tag, "QtGui", lib_tag);
+      add_lib(*qt_project, "Qt5Widgets", {"Qt5Core", "Qt5Gui"}, e, include_tag, "QtWidgets", lib_tag);
    } else {
       add_lib(*qt_project, "QtCore", vector<string>(), e, include_tag, "QtCore", lib_tag);
-      add_lib(*qt_project, "QtGui", list_of("QtCore"), e, include_tag, "QtGui", lib_tag);
+      add_lib(*qt_project, "QtGui", {"QtCore"}, e, include_tag, "QtGui", lib_tag);
    }
 
    e.insert(qt_project.get());

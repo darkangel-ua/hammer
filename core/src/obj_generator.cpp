@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include <boost/assign/list_of.hpp>
 #include <hammer/core/obj_generator.h>
 #include <hammer/core/types.h>
 #include <hammer/core/engine.h>
@@ -7,18 +6,14 @@
 #include <hammer/core/basic_target.h>
 #include <hammer/core/target_type.h>
 
-using namespace boost::assign;
-
 namespace hammer
 {
 
 obj_generator::obj_generator(hammer::engine& e)
    : generator(e,
                "obj meta target generator",
-               list_of<consumable_type>(e.get_type_registry().get(types::OBJ))
-                                       (e.get_type_registry().get(types::LIB))
-                                       (e.get_type_registry().get(types::H)),
-               list_of<produced_type>(e.get_type_registry().get(types::OBJ)),
+               make_consume_types(e, {types::OBJ, types::LIB, types::H}),
+               make_product_types(e, {types::OBJ}),
                true,
                build_action_ptr{}),
      obj_type_(e.get_type_registry().get(types::OBJ))

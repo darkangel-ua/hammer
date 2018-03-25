@@ -20,6 +20,7 @@ namespace hammer
 
       public:
 			struct legal_value {
+            legal_value(const char* name) : value_(name) {}
 				legal_value(const std::string& name) : value_(name) {}
 				legal_value(const std::string& name, feature_value_ns_ptr ns) : value_(name), ns_(ns) {}
 

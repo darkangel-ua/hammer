@@ -15,7 +15,6 @@ lib hammer.core
     @/boost/filesystem/<version>1.58.0+1
     @/ext/boost/guid/<version>0.1+1
     /boost/regex/<version>1.58.0+1
-    /boost/assign/<version>1.58.0+1
     /ext/boost/process/<version>0.1+1
     /boost/format/<version>1.58.0+1
     @/boost/unordered/<version>1.58.0+1

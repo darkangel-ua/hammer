@@ -17,6 +17,7 @@ namespace hammer{ namespace ast{
 
 namespace hammer{ namespace parscore{
    class identifier;
+   class token;
    class source_location;
 }}
 
@@ -51,7 +52,7 @@ class actions
 
 		virtual
 		const ast::path*
-		on_path(const parscore::source_location root,
+		on_path(const parscore::token& root_name,
 				  const ast::expressions_t& elements) = 0;
 
 		virtual

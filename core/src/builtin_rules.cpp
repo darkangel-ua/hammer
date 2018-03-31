@@ -233,7 +233,7 @@ void use_project_rule(invocation_context& ctx,
       project_alias = id->id().to_string();
    } else if (const ast::path* p = ast::as<ast::path>(&alias)) {
       std::string s_path = p->to_string();
-      if (p->root().valid() ||
+      if (p->root_name().valid() ||
           s_path.find_first_of("?*") != std::string::npos ||
           has_dots(location))
       {
@@ -247,7 +247,7 @@ void use_project_rule(invocation_context& ctx,
          throw std::runtime_error("Sematic error");
       }
 
-      if (tr->target_path()->root().valid() && ctx.current_project_.is_root()) {
+      if (tr->target_path()->root_name().valid() && ctx.current_project_.is_root()) {
          ctx.diag_.error(alias.start_loc(), "Argument 'alias': Global aliases can be declared only in homroot file");
          throw std::runtime_error("Sematic error");
       }

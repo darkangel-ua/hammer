@@ -15,8 +15,13 @@ bool path::accept(visitor& v) const
 std::string path::to_string() const
 {
    std::stringstream s;
-   if (root_.valid())
-      s << '/';
+   if (root_name_.valid()) {
+      auto r = root_name_.to_string();
+      if (r == "/")
+         s << '/';
+      else
+         s << r << ":/";
+   }
 
    bool first = true;
    for (auto e : elements_) {

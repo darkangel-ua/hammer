@@ -11,7 +11,7 @@ namespace hammer{namespace parscore{
 class identifier;
 class source_location
 {
-	  friend class identifier;
+	  friend class token;
    public:
       source_location() : antlr_token_(NULL) {}
       source_location(const ANTLR3_COMMON_TOKEN_struct* antlr_token)

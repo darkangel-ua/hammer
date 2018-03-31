@@ -88,15 +88,15 @@ expression_a returns[const hammer::ast::expression* result]
 	;	
 path returns[const hammer::ast::path* result]
 @init { DECLARE_TYPE(hammer::ast::expressions_t, elements); 
-        hammer::parscore::source_location root; }
-	: ^(Path path_impl[&root, &elements]) { result = SEMA->on_path(root, elements); }
+        hammer::parscore::token root_name; }
+	: ^(Path path_root_name[root_name]? path_elements[elements]) { result = SEMA->on_path(root_name, elements); }
 	;	
-
-path_impl[hammer::parscore::source_location* root, hammer::ast::expressions_t* elements]
-	: Slash { *root = $Slash->getToken($Slash); } (path_element { elements->push_back($path_element.result); })+
-	| (path_element { elements->push_back($path_element.result); })+
+path_root_name[hammer::parscore::token& root_name]
+	: PathRootName { root_name = hammer::parscore::token($PathRootName->getToken($PathRootName)); }
 	;
-
+path_elements[hammer::ast::expressions_t& elements]
+	: (path_element { elements.push_back($path_element.result); })+
+	;
 path_element returns[const hammer::ast::expression* result]
 	: Id { result = SEMA->on_id($Id->getToken($Id)); }
 	| wildcard { result = $wildcard.result; }

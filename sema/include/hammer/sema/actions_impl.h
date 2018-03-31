@@ -36,7 +36,7 @@ class actions_impl : public actions
 		on_list_of(const ast::expressions_t& e) override;
 
 		const ast::path*
-		on_path(const parscore::source_location root,
+		on_path(const parscore::token& root_name,
 				  const ast::expressions_t& elements) override;
 
 		const ast::expression*

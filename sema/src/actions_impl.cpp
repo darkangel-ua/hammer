@@ -73,10 +73,10 @@ actions_impl::on_list_of(const ast::expressions_t& e)
 }
 
 const ast::path*
-actions_impl::on_path(const source_location root,
+actions_impl::on_path(const token& root_name,
                       const expressions_t& elements)
 {
-   return new (ctx_) ast::path(root, elements);
+   return new (ctx_) ast::path(root_name, elements);
 }
 
 const ast::expression*

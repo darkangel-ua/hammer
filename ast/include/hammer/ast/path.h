@@ -10,22 +10,22 @@ namespace hammer{ namespace ast{
 class path : public expression
 {
    public:
-		path(const parscore::source_location root,
+		path(const parscore::token root_name,
 			  const expressions_t& elements)
-			: root_(root),
+			: root_name_(root_name),
 			  elements_(elements)
 		{
 			assert(!elements_.empty());
 		}
 
-		const parscore::source_location& root() const { return root_; }
+		const parscore::token& root_name() const { return root_name_; }
 		const expressions_t& elements() const { return elements_; }
 		parscore::source_location start_loc() const override { return elements_.front()->start_loc(); }
 		bool accept(visitor& v) const override;
 		std::string to_string() const;
 
    private:
-	  const parscore::source_location root_;
+	  const parscore::token root_name_;
 	  // id_expr or list_of id_expr in case of wildcard element
 	  // TODO: make wildcard node
 	  const expressions_t elements_;

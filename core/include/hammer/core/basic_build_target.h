@@ -41,7 +41,10 @@ class basic_build_target : private boost::noncopyable
 
 		// FIXME: const here seams not good solution because after clean timestamp_info should return
 		// something different than before. But I leave this for future clean-up
-		virtual void clean(const build_environment& environment) const = 0;
+
+      // returns true if it actualy clean target and false if there ware nothing to clean
+      // implementation should not fail if target already cleaned up
+		virtual bool clean(const build_environment& environment) const = 0;
 
 		virtual
 		const std::vector<const feature*>&

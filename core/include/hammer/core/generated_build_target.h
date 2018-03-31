@@ -15,7 +15,7 @@ class generated_build_target : public file_build_target
 		                       const location_t* l = nullptr);
 		const location_t& location() const override { return location_; }
 		const std::string& hash() const override { return hash_; }
-		void clean(const build_environment& environment) const override;
+		bool clean(const build_environment& environment) const override;
 
 	private:
 		const std::string hash_;

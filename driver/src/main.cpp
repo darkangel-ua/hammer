@@ -578,8 +578,7 @@ namespace
    {
       cout << "...cleaning...";
       build_environment_impl build_environment(fs::current_path());
-      cleaner cleaner(e, build_environment);
-      cleaner::result r = cleaner.clean_all(nodes);
+      cleaner::result r = cleaner::clean_all(build_environment, nodes);
       cout << "Done.\n"
            << r.cleaned_target_count_ << " targets was cleaned.\n";
    }

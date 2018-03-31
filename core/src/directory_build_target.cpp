@@ -29,9 +29,13 @@ void directory_build_target::timestamp_info_impl() const
       timestamp_info_.timestamp_ = boost::posix_time::ptime(boost::date_time::neg_infin);
 }
 
-void directory_build_target::clean(const build_environment& environment) const
+bool directory_build_target::clean(const build_environment& environment) const
 {
-   environment.remove(location());
+   if (exists(location())) {
+      environment.remove(location());
+      return true;
+   } else
+      return false;
 }
 
 static

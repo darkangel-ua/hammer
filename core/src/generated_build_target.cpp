@@ -1,3 +1,4 @@
+#include <boost/filesystem/operations.hpp>
 #include <hammer/core/generated_build_target.h>
 #include <hammer/core/main_target.h>
 #include <hammer/core/build_environment.h>
@@ -16,9 +17,14 @@ generated_build_target::generated_build_target(const main_target* mt,
 {
 }
 
-void generated_build_target::clean(const build_environment& environment) const
+bool generated_build_target::clean(const build_environment& environment) const
 {
-   environment.remove(location() / name());
+   auto path = location() / name();
+   if (exists(path)) {
+      environment.remove(path);
+      return true;
+   } else
+      return false;
 }
 
 }

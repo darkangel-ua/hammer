@@ -13,7 +13,7 @@ class virtual_build_target : public basic_build_target
 		                     const bool exists);
 		const location_t& location() const override;
 		const std::string& hash() const override;
-		void clean(const build_environment& environment) const override {}
+		bool clean(const build_environment& environment) const override { return false; }
 
    protected:
       void timestamp_info_impl() const override;

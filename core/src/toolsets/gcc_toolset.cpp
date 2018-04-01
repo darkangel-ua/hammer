@@ -336,12 +336,12 @@ void gcc_toolset::use_toolset_rule(invocation_context& ctx,
       return;
    }
 
-   if (!version && !path_to_cxx_compiler && !path_to_linker && path_to_ar) {
+   if (!version && !path_to_cxx_compiler && !path_to_linker && !path_to_ar) {
       configure(*ctx.current_project_.get_engine(), "system");
       return;
    }
 
-   if (version && !path_to_cxx_compiler && !path_to_linker && path_to_ar) {
+   if (version && !path_to_cxx_compiler && !path_to_linker && !path_to_ar) {
       configure(*ctx.current_project_.get_engine(), version->to_string());
       return;
    }

@@ -396,7 +396,7 @@ void gcc_toolset::configure(engine& e,
       return;
    }
 
-   toolset_data td{"system", "/usr/bin/g++-" + version, "/usr/bin/g++-" + version, "/usr/bin/gcc-ar-" + version};
+   toolset_data td{version, "/usr/bin/g++-" + version, "/usr/bin/g++-" + version, "/usr/bin/gcc-ar-" + version};
    init_toolset(e, name(), td);
 }
 

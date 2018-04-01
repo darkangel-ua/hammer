@@ -3,7 +3,7 @@
 
 #include <unordered_map>
 #include <string>
-#include <set>
+#include <vector>
 
 namespace hammer{
 
@@ -13,7 +13,7 @@ class subfeature_def
 {
       friend class feature_def;
    public:
-      typedef std::set<std::string> legal_values_t;
+      typedef std::vector<std::string> legal_values_t;
 
       subfeature_def(const subfeature_def&) = delete;
       subfeature_def(subfeature_def&&) = delete;

@@ -34,7 +34,7 @@ bool subfeature_def::is_legal_value(const std::string& feature_value,
    if (i == all_legal_values_.end())
       return false;
 
-   return i->second.find(value) != i->second.end();
+   return find(i->second.begin(), i->second.end(), value) != i->second.end();
 }
 
 void subfeature_def::extend_legal_values(const std::string& feature_value,
@@ -49,11 +49,11 @@ void subfeature_def::extend_legal_values(const std::string& feature_value,
       return;
    }
 
-   auto ii = i->second.find(new_legal_value);
+   auto ii = find(i->second.begin(), i->second.end(), new_legal_value);
    if (ii != i->second.end())
       throw std::runtime_error("Feature '" + owner_->name() + "' subfeature '" + name_ + "' already has '" + new_legal_value + "' as legal value");
 
-   i->second.insert(new_legal_value);
+   i->second.push_back(new_legal_value);
 }
 
 }

@@ -107,6 +107,7 @@ namespace
       bool update_all_warehouse_packages_ = false;
       bool release_package_ = false;
       bool version_ = false;
+      bool list_toolsets_ = false;
    };
 
    po::positional_options_description build_request_options;
@@ -117,6 +118,7 @@ namespace
       po::options_description desc("General options");
       desc.add_options()
          ("help", "produce this help message")
+         ("list-toolsets", po::bool_switch(&opts.list_toolsets_), "Show configured toolsets end exit")
          ("instantiate,i", "instantiate/materialize targets only")
          ("generate,g", "instantiate/materialize + generate targets")
          ("up-to-date-check,c", po::bool_switch(&opts.only_up_to_date_check_), "instantiate/materialize + generate targets + up to date check")
@@ -636,6 +638,33 @@ namespace
       private:
          const unsigned max_package_name_lenght_;
    };
+
+void list_toolsets(engine& e,
+                   std::ostream& os) {
+   const feature_def* toolset_def = e.feature_registry().find_def("toolset");
+   if (!toolset_def)
+      return;
+
+   for (auto& legal_value : toolset_def->legal_values()) {
+      os << legal_value.value_;
+      if (toolset_def->defaults_contains(legal_value.value_))
+         os << " (default)\n";
+      else
+         os << "\n";
+
+      const subfeature_def& toolset_version_def = toolset_def->get_subfeature("version");
+      bool first = true;
+      for (const string& v : toolset_version_def.legal_values(legal_value.value_)) {
+         os << setw(4) << " " << v;
+         if (first) {
+            os << " (default)\n";
+            first = false;
+         } else
+            os << "\n";
+      }
+   }
+}
+
 }
 
 
@@ -659,7 +688,7 @@ int main(int argc, char** argv) {
          return 0;
       }
 
-      // fix concurrency level if user is dumb
+      // fix concurrency level if user are dumb
       if (opts.worker_count_ == 0)
          opts.worker_count_ = 1;
 
@@ -742,6 +771,11 @@ int main(int argc, char** argv) {
          }
 
          autoconfigure_toolsets(engine);
+
+         if (opts.list_toolsets_) {
+            list_toolsets(engine, cout);
+            return 0;
+         }
 
          if (!has_configured_toolsets(engine)) {
             cerr << "WARNING!!!WARNING!!!WARNING!!!WARNING!!!\n"

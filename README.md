@@ -4,12 +4,12 @@ Build system based on Boost.Build v2 ideas, but written in C++.
 
 ## How to try it
 
-1. Download release from Github.
-1. Unpack it somewhere in a PATH.
-1. [Create user-config.ham](#configuration)
-1. [Setup libs warehouse.](#warehouse)
-1. [Build examples.](#examples)
-1. [Build hammer using hammer.](#Building Hammer by Hammer)
+- Download release from Github.
+- Unpack it somewhere in a PATH.
+- [Create user-config.ham](#configuration)
+- [Setup libs warehouse](#warehouse)
+- [Building examples](#examples)
+- [Building Hammer by Hammer](#Building-Hammer-by-Hammer)
 
 ## Configuration
 When you run hammer it will try to load configuration file placed at:
@@ -33,12 +33,13 @@ Autoconfiguration will try to do the following:
 
 and configure msvc-11.0/msvc-12.0/msvc-14.0 respectively.
 
-If you have your toolset installed in some custom path you can show hammer where it is by writing one-liner in **user-config.ham**:
+If you have other **gcc** version in default location you can configure it by writing one-liner in **user-config.ham**:
 
-    use-toolset gcc : 10 : "/usr/local/bin/gcc-10" ;
-or
+    use-toolset-gcc : 5.4 ;
 
-    use-tooset msvc : 14.0 : "D:\\Development\\Microsoft Visual Studio 14.0\\VC" ;
+For **msvc** you need to instruct hammer like this
+
+    use-tooset-msvc : 27.0 : "D:\\Development\\Microsoft Visual Studio 27.0\\VC" ;
 
 ## Warehouse
 
@@ -48,7 +49,7 @@ To configure warehouse you should put this line into **user-config.ham**:
     setup-warehouse libs : "https://dl.bintray.com/darkangel-ua/hammer" ;
 
 This line will add a batch of Boost libraries plus some others.
-Because hammer uses external tools to download and unpack packages there is some additional dependencies you need to be able to use it:
+Because hammer use external tools to download and unpack packages there is some additional dependencies you need, to be able to use it:
 
 * **Linux**: tar, bunzip2, curl - probably **every** Linux distributions has installed by default.
 * **Windows**: Same here - tar.exe, bunzip2.exe and curl.exe. You need to download and put them (+dependencies) in a PATH. They can be downloaded from:
@@ -70,4 +71,25 @@ a batch of libs. Just press 'Y' and [Return] :)
 
 ## Building Hammer by Hammer
 
-If you was able to build examples/use-lib-from-warehouse than it's time to build Hammer using Hammer :)
+If you was able to build examples/use-lib-from-warehouse than it's time to build Hammer using Hammer :) You need one more thing - you have to create **hamroot** file alognside with **hammer** sources folder
+```
+   ├── hammer
+   │   ├── ast
+   │   ├── core
+   │   ├── core_objects
+   │   ├── doc
+   │   ├── driver
+   │   ├── examples
+   │   ├── hamfile
+   │   ├── parscore
+   │   ├── parser
+   │   ├── README.md
+   │   └── sema
+   └── hamroot
+```
+
+with one-liner:
+
+   use-project /hammer : ./hammer ;
+
+This will create global target alias */hammer* that needs to be somewhere defined because all build script references different part of hammer sources using global references like */hammer/core* or */hammer/parser*

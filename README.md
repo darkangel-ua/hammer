@@ -90,6 +90,6 @@ If you was able to build examples/use-lib-from-warehouse than it's time to build
 
 with one-liner:
 
-   use-project /hammer : ./hammer ;
+    use-project /hammer : ./hammer ;
 
-This will create global target alias */hammer* that needs to be somewhere defined because all build script references different part of hammer sources using global references like */hammer/core* or */hammer/parser*
+This will create global target alias */hammer* that needs to be somewhere defined because all build scripts references different part of hammer sources using global references like */hammer/core* or */hammer/parser*

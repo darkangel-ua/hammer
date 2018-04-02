@@ -35,11 +35,11 @@ and configure msvc-11.0/msvc-12.0/msvc-14.0 respectively.
 
 If you have other **gcc** version in default location you can configure it by writing one-liner in **user-config.ham**:
 
-    use-toolset-gcc : 5.4 ;
+    use-toolset-gcc 5.4 ;
 
 For **msvc** you need to instruct hammer like this
 
-    use-tooset-msvc : 27.0 : "D:\\Development\\Microsoft Visual Studio 27.0\\VC" ;
+    use-tooset-msvc 27.0 : "D:\\Development\\Microsoft Visual Studio 27.0\\VC" ;
 
 ## Warehouse
 

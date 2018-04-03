@@ -1,20 +1,23 @@
-#if !defined(h_c27ea7bd_f269_4661_90de_ab303948b91a)
-#define h_c27ea7bd_f269_4661_90de_ab303948b91a
+#pragma once
+#include <hammer/core/meta_target.h>
 
-#include "meta_target.h"
+namespace hammer {
 
-namespace hammer
-{
-   class copy_meta_target : public meta_target
-   {
-      public:
-         copy_meta_target(hammer::project* p, const std::string& name,
-                          const requirements_decl& props,
-                          const requirements_decl& usage_req);
-      protected:
-         main_target* construct_main_target(const main_target* owner,
-			                                   const feature_set* properties) const override;
-   };
+class copy_meta_target : public meta_target {
+   public:
+      copy_meta_target(hammer::project* p,
+                       const std::string& name,
+                       const location_t& destination,
+                       const std::vector<const target_type*>& types_to_copy,
+                       const bool recursive);
+   protected:
+      main_target*
+      construct_main_target(const main_target* owner,
+                            const feature_set* properties) const override;
+   public:
+      const location_t destination_; // full path
+      const std::vector<const target_type*> types_to_copy_;
+      const bool recursive_;
+};
+
 }
-
-#endif //h_c27ea7bd_f269_4661_90de_ab303948b91a

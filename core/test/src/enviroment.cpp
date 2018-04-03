@@ -5,7 +5,6 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/bind.hpp>
 #include <hammer/core/toolsets/msvc_toolset.h>
-#include <hammer/core/copy_generator.h>
 #include <hammer/core/obj_generator.h>
 #include <hammer/core/generator_registry.h>
 #include <hammer/core/testing_generators.h>
@@ -41,9 +40,6 @@ setuped_engine::setuped_engine(bool install_toolsets)
    }
 
    hammer::add_testing_generators(engine_, engine_.generators());
-
-   std::unique_ptr<hammer::generator> g(new hammer::copy_generator(engine_));
-   engine_.generators().insert(std::move(g));
 }
 
 complete_build_tests_environment::complete_build_tests_environment()

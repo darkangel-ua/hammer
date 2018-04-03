@@ -27,7 +27,7 @@ const type_tag SEARCHED_STATIC_LIB("SEARCHED_STATIC_LIB");
 const type_tag HEADER_LIB("HEADER_LIB");
 const type_tag EXE("EXE");
 const type_tag UNKNOWN("UNKNOWN");
-const type_tag COPIED("COPIED");
+const type_tag COPY("COPIED");
 const type_tag TESTING_OUTPUT("TESTING_OUTPUT");
 const type_tag TESTING_RUN_PASSED("TESTING_RUN_PASSED");
 const type_tag TESTING_COMPILE_FAIL("TESTING_COMPILE_FAIL");
@@ -84,7 +84,7 @@ void register_standart_types(type_registry& tr,
 
    tr.insert(target_type(EXE, exe_suffixes));
    tr.insert(target_type(UNKNOWN, ""));
-   tr.insert(target_type(COPIED, ""));
+   tr.insert(target_type(COPY, ""));
    tr.insert(target_type(TESTING_OUTPUT, ".test_output"));
    tr.insert(target_type(TESTING_RUN_PASSED, ".run_passed"));
    tr.insert(target_type(TESTING_COMPILE_FAIL, ""));

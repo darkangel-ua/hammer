@@ -35,9 +35,6 @@ feature.feature exception-handling : on off ;
 feature.feature asynch-exceptions : off on ;
 feature.feature extern-c-nothrow : off on ;
 feature.feature debug-symbols : on off ;
-feature.feature destination : : path no-checks incidental no-defaults ;       # for copy rule
-feature.feature recursive : on off : optional no-defaults ;                   # for copy rule
-feature.feature type-to-copy : : free no-defaults ;                           # for copy rule
 feature.feature pch : off create use : generated ;
 feature.feature mangling : md5 variant : optional incidental ;
 

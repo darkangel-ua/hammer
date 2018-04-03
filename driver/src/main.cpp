@@ -23,7 +23,6 @@
 #include <hammer/core/main_target.h>
 #include <hammer/core/meta_target.h>
 #include <hammer/core/project_generators/msvc_solution.h>
-#include <hammer/core/copy_generator.h>
 #include <hammer/core/testing_generators.h>
 #include <hammer/core/obj_generator.h>
 #include <hammer/core/build_environment_impl.h>
@@ -710,7 +709,6 @@ int main(int argc, char** argv) {
          if (opts.debug_level_ > 0)
             cout << "...Installing generators... " << flush;
 
-         engine.generators().insert(std::auto_ptr<generator>(new copy_generator(engine)));
          engine.generators().insert(std::auto_ptr<generator>(new obj_generator(engine)));
          add_testing_generators(engine, engine.generators());
          add_header_lib_generator(engine, engine.generators());

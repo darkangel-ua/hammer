@@ -1,4 +1,3 @@
-#include "builtin_rules.h"
 #include <hammer/core/rule_manager.h>
 #include <hammer/core/sources_decl.h>
 #include <hammer/core/requirements_decl.h>
@@ -30,6 +29,7 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/make_unique.hpp>
 #include <boost/regex.hpp>
+#include "builtin_rules.h"
 #include "wildcard.hpp"
 
 using namespace std;
@@ -526,18 +526,39 @@ static
 void copy_rule(target_invocation_context& ctx,
                const parscore::identifier& name,
                const sources_decl& sources,
-               const requirements_decl* requirements,
-               const feature_set* default_build,
-               const usage_requirements_decl* usage_requirements)
+               const location_t& destination,
+               const id_or_list_of_ids_t& ast_types_to_copy,
+               const parscore::identifier* ast_recursive)
 {
+   vector<const target_type*> types_to_copy;
+   const type_registry& tr = ctx.current_project_.get_engine()->get_type_registry();
+
+   for (const parscore::identifier& id : ast_types_to_copy) {
+      const target_type* type = tr.find(type_tag(id.to_string()));
+      if (!type) {
+         ctx.diag_.error(id.start_lok(), "Argument 'types': Unknown type '%s'") << id;
+         throw ast2objects_semantic_error();
+      } else
+         types_to_copy.push_back(type);
+   }
+
+   bool recursive = false;
+   if (ast_recursive) {
+      if (ast_recursive->to_string() != "true" && ast_recursive->to_string() != "false") {
+         ctx.diag_.error(ast_recursive->start_lok(), "Argument 'recursive': Use 'true' or 'false' constants");
+         throw ast2objects_semantic_error();
+      }
+
+      recursive = (ast_recursive->to_string() == "true");
+   }
+
    auto_ptr<basic_meta_target> mt(new copy_meta_target(&ctx.current_project_,
                                                        name.to_string(),
-                                                       requirements ? *requirements : requirements_decl(),
-                                                       usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl()));
+                                                       destination,
+                                                       types_to_copy,
+                                                       recursive));
 
    mt->sources(sources);
-   mt->set_local(ctx.local_);
-   mt->set_explicit(ctx.explicit_);
    ctx.current_project_.add_target(mt);
 }
 
@@ -796,7 +817,7 @@ void install_builtin_rules(rule_manager& rm)
    rm.add_target("prebuilt-lib", prebuilt_lib_rule, {"name", "sources", "filename", "requirements", "usage-requirements"});
    rm.add_target("searched-shared-lib", searched_shared_lib_rule, {"name", "sources", "libname", "requirements", "usage-requirements"});
    rm.add_target("searched-static-lib", searched_static_lib_rule, {"name", "sources", "libname", "requirements", "usage-requirements"});
-   rm.add_target("copy", copy_rule, {"name", "sources", "requirements", "default-build", "usage-requirements"});
+   rm.add_target("copy", copy_rule, {"name", "sources", "destination", "types", "recursive"});
    rm.add_target("obj", obj_rule, {"name", "sources", "requirements", "default-build", "usage-requirements"});
    rm.add_target("test-suite", test_suite_rule, {"name", "sources", "propagated-sources"});
    rm.add_target("testing.run", testing_run_rule, {"sources", "args", "input-files", "requirements", "target-name"});

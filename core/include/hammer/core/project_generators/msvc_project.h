@@ -149,7 +149,7 @@ namespace hammer
             const target_type& obj_type_;
             const target_type& pch_type_;
             const target_type& testing_run_passed_type_;
-            const target_type& copied_type_;
+            const target_type& copy_type_;
             const target_type& exe_type_;
             cmdline_builder configuration_options_;
             cmdline_builder compiller_options_;

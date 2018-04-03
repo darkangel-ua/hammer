@@ -108,7 +108,7 @@ msvc_project::msvc_project(engine& e,
     obj_type_(engine_->get_type_registry().get(types::OBJ)),
     pch_type_(engine_->get_type_registry().get(types::PCH)),
     testing_run_passed_type_(engine_->get_type_registry().get(types::TESTING_RUN_PASSED)),
-    copied_type_(engine_->get_type_registry().get(types::COPIED)),
+    copy_type_(engine_->get_type_registry().get(types::COPY)),
     exe_type_(engine_->get_type_registry().get(types::EXE)),
     configuration_options_(configuration_option_format_string),
     compiller_options_(compiller_option_format_string),
@@ -305,9 +305,9 @@ void msvc_project::fill_filters()
    header_types.push_back(&engine_->get_type_registry().get(types::H));
    files_.push_back(filter_t(header_types, "Header Files", "{93995380-89BD-4b04-88EB-625FBE52EBFB}"));
 
-   filter_t::types_t copied_types;
-   copied_types.push_back(&copied_type_);
-   files_.push_back(filter_t(copied_types, "Files to copy"));
+   filter_t::types_t copy_types;
+   copy_types.push_back(&copy_type_);
+   files_.push_back(filter_t(copy_types, "Files to copy"));
 
 }
 
@@ -361,7 +361,7 @@ configuration_types::value msvc_project::resolve_configuration_type(const varian
             return configuration_types::shared_lib;
          else
             if (v.target_->type().equal_or_derived_from(header_lib_type) ||
-                v.target_->type().equal_or_derived_from(copied_type_))
+                v.target_->type().equal_or_derived_from(copy_type_))
             {
                return configuration_types::utility;
             }

@@ -29,7 +29,7 @@ extern const type_tag SEARCHED_STATIC_LIB;
 extern const type_tag HEADER_LIB;
 extern const type_tag EXE;
 extern const type_tag UNKNOWN;
-extern const type_tag COPIED;
+extern const type_tag COPY;
 extern const type_tag TESTING_OUTPUT;
 extern const type_tag TESTING_RUN_PASSED;
 extern const type_tag TESTING_COMPILE_FAIL;

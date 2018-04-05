@@ -37,7 +37,8 @@ class actions_impl : public actions
 
 		const ast::path*
 		on_path(const parscore::token& root_name,
-				  const ast::expressions_t& elements) override;
+				  const ast::expressions_t& elements,
+              const parscore::token& trailing_slash) override;
 
 		const ast::expression*
 		on_id(const parscore::identifier& id) override;

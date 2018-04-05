@@ -1,6 +1,6 @@
 local exe executable : main.cpp ;
 copy test 
    : sources = executable 
-   : destination = ./.
+   : destination = ./
    : types = EXE
    ;

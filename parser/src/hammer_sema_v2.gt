@@ -88,8 +88,8 @@ expression_a returns[const hammer::ast::expression* result]
 	;	
 path returns[const hammer::ast::path* result]
 @init { DECLARE_TYPE(hammer::ast::expressions_t, elements); 
-        hammer::parscore::token root_name; }
-	: ^(Path path_root_name[root_name]? path_elements[elements]) { result = SEMA->on_path(root_name, elements); }
+        hammer::parscore::token root_name, trailing_slash; }
+	: ^(Path path_root_name[root_name]? path_elements[elements] path_trailing_slash[trailing_slash]?) { result = SEMA->on_path(root_name, elements, trailing_slash); }
 	;	
 path_root_name[hammer::parscore::token& root_name]
 	: PathRootName { root_name = hammer::parscore::token($PathRootName->getToken($PathRootName)); }
@@ -101,7 +101,9 @@ path_element returns[const hammer::ast::expression* result]
 	: Id { result = SEMA->on_id($Id->getToken($Id)); }
 	| wildcard { result = $wildcard.result; }
 	;
-
+path_trailing_slash[hammer::parscore::token& trailing_slash]
+	: PathTrailingSlash { trailing_slash = hammer::parscore::token($PathTrailingSlash->getToken($PathTrailingSlash)); }
+	;
 wildcard returns[const hammer::ast::expression* result]
 @init { DECLARE_TYPE(hammer::ast::expressions_t, elements); }
 	: ^(Wildcard (wildcard_elem { elements.push_back($wildcard_elem.result); })+ { result = SEMA->on_list_of(elements); } )
@@ -142,7 +144,7 @@ target_ref_impl[hammer::parscore::identifier* target_name,
 	    hammer::ast::features_t* build_request]
 returns[const hammer::ast::path* result]
 	: ^(TargetRef path target_ref_spec[target_name, build_request]?) { result = $path.result; }
-	| ^(TargetRef Id target_ref_spec[target_name, build_request]?) { DECLARE_TYPE(hammer::ast::expressions_t, elements); elements.push_back(SEMA->on_id($Id->getToken($Id))); result = SEMA->on_path({}, elements); }
+	| ^(TargetRef Id target_ref_spec[target_name, build_request]?) { DECLARE_TYPE(hammer::ast::expressions_t, elements); elements.push_back(SEMA->on_id($Id->getToken($Id))); result = SEMA->on_path({}, elements, {}); }
 	;
 	
 target_ref_spec[hammer::parscore::identifier* target_name, 

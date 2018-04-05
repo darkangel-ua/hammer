@@ -11,9 +11,11 @@ class path : public expression
 {
    public:
 		path(const parscore::token root_name,
-			  const expressions_t& elements)
+			  const expressions_t& elements,
+           const parscore::token& trailing_slash)
 			: root_name_(root_name),
-			  elements_(elements)
+			  elements_(elements),
+           trailing_slash_(trailing_slash)
 		{
 			assert(!elements_.empty());
 		}
@@ -29,6 +31,7 @@ class path : public expression
 	  // id_expr or list_of id_expr in case of wildcard element
 	  // TODO: make wildcard node
 	  const expressions_t elements_;
+     const parscore::token trailing_slash_;
 };
 
 }}

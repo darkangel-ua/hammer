@@ -53,7 +53,8 @@ class actions
 		virtual
 		const ast::path*
 		on_path(const parscore::token& root_name,
-				  const ast::expressions_t& elements) = 0;
+				  const ast::expressions_t& elements,
+              const parscore::token& trailing_slash) = 0;
 
 		virtual
 		const ast::expression*

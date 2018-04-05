@@ -41,6 +41,10 @@ parse(std::unique_ptr<parser_context> ctx,
    ctx->parser_ = hammer_v2ParserNew(ctx->tstream_);
    ctx->langAST_ = ctx->parser_->hamfile(ctx->parser_);
 //   pANTLR3_STRING s = langAST_.tree->toStringTree(langAST_.tree);
+   // FIXME: quick hack to be fixed later
+
+   if (ctx->parser_->pParser->rec->state->errorCount)
+      throw std::runtime_error("Parsing error");
 
    pANTLR3_COMMON_TREE_NODE_STREAM nodes;
    phammer_sema_v2          hammer_sema;

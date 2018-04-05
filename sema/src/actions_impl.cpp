@@ -74,9 +74,10 @@ actions_impl::on_list_of(const ast::expressions_t& e)
 
 const ast::path*
 actions_impl::on_path(const token& root_name,
-                      const expressions_t& elements)
+                      const expressions_t& elements,
+                      const token& trailing_slash)
 {
-   return new (ctx_) ast::path(root_name, elements);
+   return new (ctx_) ast::path(root_name, elements, trailing_slash);
 }
 
 const ast::expression*

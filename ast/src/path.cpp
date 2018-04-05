@@ -39,6 +39,9 @@ std::string path::to_string() const
       }
    }
 
+   if (trailing_slash_.valid())
+      s << '/';
+
    return s.str();
 }
 

@@ -22,6 +22,7 @@ Condition;
 RuleInvocation;
 Path;
 PathRootName;
+PathTrailingSlash;
 TargetRef;
 TargetRefSpec;
 TargetRefBuildRequest;
@@ -138,15 +139,15 @@ condition_result_elem
 	| feature
 	;	
 path
-	: path_non_uri
+	: path_without_root
 	| path_uri
 	;
-path_non_uri 
-	: path_element path_rest+ -> ^(Path path_element path_rest+) 
-	;	
 path_uri
 	: 'file://' path_with_root -> path_with_root
 	;
+path_without_root 
+	: path_element path_rest+ -> ^(Path path_element path_rest+) 
+	;	
 path_with_root
 	: path_root_name path_element path_rest* -> ^(Path path_root_name path_element path_rest*)
 	;
@@ -155,7 +156,8 @@ path_root_name
 	| r=Id ':' '/' -> PathRootName[$r, $r->getText($r)->chars]
 	;
 path_rest 
-	: '/' path_element -> path_element
+	: ('/' path_element) => '/' path_element -> path_element
+	| s='/' -> PathTrailingSlash[$s, $s->getText($s)->chars]
 	;
 path_element 
 	: wildcard
@@ -176,12 +178,12 @@ wildcard_s
 target_ref
 	: PublicTag WS* target_ref_impl -> ^(PublicTag target_ref_impl)
 	| ('/') => target_ref_root_path
-	| path_non_uri target_ref_spec -> ^(TargetRef path_non_uri target_ref_spec)
+	| path_without_root target_ref_spec -> ^(TargetRef path_without_root target_ref_spec)
 	| Id target_ref_spec -> ^(TargetRef Id target_ref_spec)
 	;	
 target_ref_impl 
 	: ('/') => target_ref_root_path
-	| path_non_uri target_ref_spec? -> ^(TargetRef path_non_uri target_ref_spec?)
+	| path_without_root target_ref_spec? -> ^(TargetRef path_without_root target_ref_spec?)
 	| Id target_ref_spec? -> ^(TargetRef Id target_ref_spec?)
 	;
 target_ref_root_path

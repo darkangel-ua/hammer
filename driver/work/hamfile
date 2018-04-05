@@ -3,6 +3,6 @@ feature.compose <all-static>on : <link>static <runtime-link>static ;
 
 copy install 
    : sources = ../build/<all-static>on
-   : destination = ./.
+   : destination = ./
    : types = EXE
    ;

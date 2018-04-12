@@ -1,0 +1,6 @@
+# advanced :) test
+testing.run  
+     name = test 
+   : sources = main.cpp 
+   : args = foo ./hamfile 'some string'
+   ;

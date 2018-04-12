@@ -45,6 +45,20 @@ std::string path::to_string() const
    return s.str();
 }
 
+bool path::has_wildcard() const
+{
+   for (const ast::expression* pe : elements()) {
+      if (const ast::id_expr* eid = ast::as<ast::id_expr>(pe)) {
+         auto v = eid->id().to_string();
+         if (v == "*" || v == "?")
+            return true;
+      } else
+         assert(false && "Only id_expr expected here");
+   }
+
+   return false;
+}
+
 template<>
 const path* as<path>(const node* v) { return dynamic_cast<const path*>(v); }
 

@@ -39,9 +39,7 @@ feature.feature pch : off create use : generated ;
 feature.feature mangling : md5 variant : optional incidental ;
 
 # testing support
-feature.feature testing.argument : : free ;
-feature.feature testing.input-file : : free path ;
-feature.feature testing.additional-source : : free dependency incidental ;
+feature.feature testing.additional-source : : free dependency propagated ; # can't get rid of this yet
 
 feature.feature warnings :
   on         # enable default/"reasonable" warning level for the tool

@@ -1,12 +1,9 @@
-testing.run
-    [ glob ../src/*.cpp ]
-    [ glob ../src/*.h ]
-    /hammer/parscore
-    /hammer/core_objects
-    /boost/test//utf/<version>1.58.0+1/<link>static 
-   :
-   :
-   :
-   :
-    hammer.core_objects.test
+testing.run 
+     name = hammer.core_objects.test
+   : sources =
+        [ glob ../src/*.cpp ]
+        [ glob ../src/*.h ]
+        /hammer/parscore
+        /hammer/core_objects
+        /boost/test//utf/<version>1.58.0+1/<link>static 
    ;

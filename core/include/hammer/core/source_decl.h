@@ -76,7 +76,7 @@ namespace hammer
          feature_set* properties_;
          bool public_;
 
-         // this is used internally, when passing around <source> feature that can posibly point on local target
+         // this is used internally, when passing around <source> feature that can possibly point on local target
          // sources from hamfile-s can't have this enabled
          bool locals_allowed_ = false;
    };

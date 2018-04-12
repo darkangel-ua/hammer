@@ -52,6 +52,8 @@ complete_build_tests_environment::complete_build_tests_environment()
    engine_.scanner_manager().register_scanner(engine_.get_type_registry().get(types::C), c_scaner);
    engine_.scanner_manager().register_scanner(engine_.get_type_registry().get(types::RC), c_scaner);
 
+   hammer::add_testing_generators(engine_, engine_.generators());
+
    // Simplest way is to specify /home/username/user-config.ham as toolset configuring script
    const char* toolset_setup_script = getenv("HAMMER_TOOLSET_SETUP_SCRIPT");
    BOOST_REQUIRE_MESSAGE(toolset_setup_script, "You MUST set HAMMER_TOOLSET_SETUP_SCRIPT environment variable to script with toolset configuring instructions");

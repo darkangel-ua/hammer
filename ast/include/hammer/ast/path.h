@@ -25,6 +25,7 @@ class path : public expression
 		parscore::source_location start_loc() const override { return elements_.front()->start_loc(); }
 		bool accept(visitor& v) const override;
 		std::string to_string() const;
+      bool has_wildcard() const;
 
    private:
 	  const parscore::token root_name_;

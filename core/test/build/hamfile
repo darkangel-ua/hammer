@@ -1,20 +1,16 @@
-testing.run
-    [ glob ../src/build/*.c ]
-    [ glob ../src/*.cpp ]
-    [ glob ../src/*.h ]
-    [ glob ../src/build/*.h ]
-    /hammer/core
-    /boost/test//utf/<version>1.58.0+1
-    /boost/format/<version>1.58.0+1
-    /boost/regex/<version>1.58.0+1
-    /libantlr3c/<version>3.1.1+3
-    /ext/boost/process/<version>0.1+1
-    /boost/spirit/<version>1.58.0+1
-   :
-    '--catch_system_errors=no'
-   :
-    '../tests_data/.'
-   :
-   :
-    hammer.core.test
+testing.run 
+     name = hammer.core.test
+   : sources = 
+         [ glob ../src/build/*.c ]
+         [ glob ../src/*.cpp ]
+         [ glob ../src/*.h ]
+         [ glob ../src/build/*.h ]
+         /hammer/core
+         /boost/test//utf/<version>1.58.0+1
+         /boost/format/<version>1.58.0+1
+         /boost/regex/<version>1.58.0+1
+         /libantlr3c/<version>3.1.1+3
+         /ext/boost/process/<version>0.1+1
+         /boost/spirit/<version>1.58.0+1
+   : args = '--catch_system_errors=no' ../tests_data
    ;

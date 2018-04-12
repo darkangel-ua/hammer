@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <hammer/core/sources_decl.h>
 #include <hammer/core/feature_set.h>
+#include <utility>
 
 namespace hammer{
 
@@ -41,11 +42,13 @@ sources_decl::const_iterator sources_decl::end() const
 
 sources_decl::iterator sources_decl::begin()
 {
+   clone_if_needed();
    return impl_->values_.begin();
 }
 
 sources_decl::iterator sources_decl::end()
 {
+   clone_if_needed();
    return impl_->values_.end();
 }
 
@@ -87,20 +90,12 @@ void sources_decl::clone_if_needed()
 void sources_decl::push_back(const std::string& v, const type_registry& tr)
 {
    clone_if_needed();
-
-   if (std::find(v.begin(), v.end(), '<') != v.end())
-      throw std::runtime_error("Feature signature found in sources");
-
    impl_->values_.push_back(source_decl(v, std::string(), tr.resolve_from_target_name(v), NULL));
 }
 
 void sources_decl::push_back(const source_decl& v)
 {
    clone_if_needed();
-
-   if (std::find(v.target_name().begin(), v.target_name().end(), '<') != v.target_name().end())
-      throw std::runtime_error("Feature signature found in sources");
-
    impl_->values_.push_back(v);
 }
 
@@ -114,12 +109,12 @@ void sources_decl::insert(const std::vector<std::string>& v, const type_registry
 void sources_decl::add_to_source_properties(const feature_set& props)
 {
    clone_if_needed();
-   // FIXME: feature_set should be ref counted to not doing stupid cloning
-   for(impl_t::values_t::iterator i = impl_->values_.begin(), last = impl_->values_.end(); i != last; ++i)
-      if (i->properties() == NULL)
-         i->properties(props.clone());
+   for (auto& v : impl_->values_) {
+      if (v.properties() == NULL)
+         v.properties(props.clone());
       else 
-         i->properties(const_cast<const feature_set*>(i->properties())->join(props)); 
+         v.properties(const_cast<const feature_set*>(v.properties())->join(props));
+   }
 }
 
 void sources_decl::transfer_from(sources_decl& s)

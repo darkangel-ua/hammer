@@ -1,0 +1,9 @@
+testing.suite test
+    : sources = 
+         [ testing.run main-1.cpp ]
+         [ testing.run main-2.cpp ]
+    : common-sources =
+         lib1
+    ;
+    
+local lib lib1 : lib1.cpp ;

@@ -25,6 +25,7 @@
 #include <hammer/core/feature.h>
 #include <hammer/core/ast2objects.h>
 #include <hammer/core/toolset_manager.h>
+#include <boost/guid.hpp>
 #include <boost/variant/get.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/make_unique.hpp>
@@ -581,31 +582,29 @@ void obj_rule(target_invocation_context& ctx,
 }
 
 static
-void test_suite_rule(target_invocation_context& ctx,
-                     const parscore::identifier& name,
-                     sources_decl& sources,
-                     const sources_decl* propagated_sources)
+void testing_suite_rule(target_invocation_context& ctx,
+                        const parscore::identifier& name,
+                        const sources_decl& sources,
+                        const sources_decl* common_sources)
 {
-   sources_decl empty_source;
-   const sources_decl& real_propagated_sources = (propagated_sources == NULL ? empty_source : *propagated_sources);
-   feature_set* additional_sources_set = ctx.current_project_.get_engine()->feature_registry().make_set();
-   for(sources_decl::const_iterator i = real_propagated_sources.begin(), last = real_propagated_sources.end(); i != last; ++i) {
-      feature* f = ctx.current_project_.get_engine()->feature_registry().create_feature("testing.additional-source", "");
-      f->set_dependency_data(*i, &ctx.current_project_);
-      additional_sources_set->join(f);
-   }
+   sources_decl modified_sources(sources);
 
-   for(auto s : sources)
-      if (s.properties() != NULL)
-         s.properties()->join(*additional_sources_set);
-      else
-         s.properties(additional_sources_set);
+   if (common_sources) {
+      feature_set& build_request = *ctx.current_project_.get_engine()->feature_registry().make_set();
+      for (auto& s : *common_sources) {
+         feature& f = *ctx.current_project_.get_engine()->feature_registry().create_feature("testing.additional-source", "");
+         f.set_dependency_data(s, &ctx.current_project_);
+         build_request.join(&f);
+      }
+
+      modified_sources.add_to_source_properties(build_request);
+   }
 
    auto_ptr<basic_meta_target> mt(new alias_meta_target(&ctx.current_project_,
                                                         name.to_string(),
-                                                        sources,
-                                                        requirements_decl(),
-                                                        requirements_decl()));
+                                                        modified_sources,
+                                                        {},
+                                                        {}));
 
    mt->set_local(ctx.local_);
    mt->set_explicit(ctx.explicit_);
@@ -613,67 +612,91 @@ void test_suite_rule(target_invocation_context& ctx,
 }
 
 static
+testing_intermediate_meta_target::args
+make_testing_run_args(target_invocation_context& ctx,
+                      const ast::expression* ast_args)
+{
+   testing_intermediate_meta_target::args result;
+
+   if (!ast_args)
+      return result;
+
+   auto handle_element = [&](const ast::expression* e) {
+      if (const ast::id_expr* id = ast::as<ast::id_expr>(e))
+         result.push_back(id->id().to_string());
+      else if (const ast::path* p = ast::as<ast::path>(e)) {
+         if (!p->has_wildcard())
+            result.push_back(fs::path(p->to_string()));
+         else {
+            ctx.diag_.error(p->start_loc(), "Paths with wildcard elements are not supported here");
+            throw ast2objects_semantic_error();
+         }
+      } else {
+         ctx.diag_.error(e->start_loc(), "Unexpected type");
+         throw ast2objects_semantic_error();
+      }
+   };
+
+   if (const ast::list_of* l = ast::as<ast::list_of>(ast_args)) {
+      for (const ast::expression* e : l->values())
+         handle_element(e);
+   } else
+      handle_element(ast_args);
+
+   return result;
+}
+
+static
 std::unique_ptr<sources_decl>
 testing_run_rule(target_invocation_context& ctx,
-                 const sources_decl* sources,
-                 const std::vector<parscore::identifier>* args,
-                 const std::vector<parscore::identifier>* input_files,
+                 const sources_decl& sources,
                  const requirements_decl* requirements,
-                 const parscore::identifier* target_name)
+                 const ast::expression* ast_args,
+                 const parscore::identifier* user_provided_target_name)
 {
-   feature_registry& fr = ctx.current_project_.get_engine()->feature_registry();
    type_registry& tr = ctx.current_project_.get_engine()->get_type_registry();
-   string real_target_name;
-   if (target_name != NULL)
-      real_target_name = target_name->to_string();
-   else
-      if (sources != NULL && !sources->empty())
-         real_target_name = location_t(sources->begin()->target_path()).stem().string();
-      else
-         throw std::runtime_error("Target must have either sources or target name");
+   string target_name;
+   if (user_provided_target_name)
+      target_name = user_provided_target_name->to_string();
+   else {
+      auto first_src = *sources.begin();
+      if (!fs::path(first_src.target_path()).has_extension() || !first_src.target_name().empty()) {
+         // ok, user doesn't need readable name
+         target_name = boost::guid::create().to_string();
+      } else
+         target_name = fs::path(first_src.target_path()).stem().string();
+   }
 
-   const string& exe_name = real_target_name;
+   const string exe_target_name = target_name + ".run";
    auto_ptr<basic_meta_target> intermediate_exe(
       new testing_intermediate_meta_target(&ctx.current_project_,
-                                           exe_name,
-                                           requirements != NULL ? *requirements
-                                                                : requirements_decl(),
-                                           requirements_decl(),
-                                           tr.get(types::EXE)));
+                                           exe_target_name,
+                                           requirements != NULL ? *requirements : requirements_decl(),
+                                           make_testing_run_args(ctx, ast_args)));
 
-   intermediate_exe->sources(sources == NULL ? sources_decl() : *sources);
+   intermediate_exe->sources(sources);
    intermediate_exe->set_local(true);
    intermediate_exe->set_explicit(true);
 
    ctx.current_project_.add_target(intermediate_exe);
 
-   requirements_decl run_requirements;
-
-   if (input_files != NULL)
-      for (auto f : *input_files)
-         run_requirements.add(*fr.create_feature("testing.input-file", f.to_string()));
-
-   if (args != NULL)
-      for(auto a : *args)
-         run_requirements.add(*fr.create_feature("testing.argument", a.to_string()));
-
-   auto_ptr<basic_meta_target> run_target(
+   auto_ptr<basic_meta_target> runner_target(
       new testing_meta_target(&ctx.current_project_,
-                              real_target_name + ".runner",
-                              run_requirements,
-                              requirements_decl(),
-                              tr.get(types::TESTING_RUN_PASSED)));
+                              target_name,
+                              {}));
 
    sources_decl run_sources;
-   run_sources.push_back(exe_name, tr);
-   run_target->sources(run_sources);
+   run_sources.push_back(exe_target_name, tr);
+   runner_target->sources(run_sources);
+   runner_target->set_local(ctx.local_);
+   runner_target->set_explicit(ctx.explicit_);
 
-   source_decl run_target_source(run_target->name(),
-                                 std::string(),
+   source_decl run_target_source(runner_target->name(),
+                                 {},
                                  NULL /*to signal that this is meta target*/,
                                  NULL);
 
-   ctx.current_project_.add_target(run_target);
+   ctx.current_project_.add_target(runner_target);
 
    auto result = boost::make_unique<sources_decl>();
    result->push_back(run_target_source);
@@ -819,8 +842,8 @@ void install_builtin_rules(rule_manager& rm)
    rm.add_target("searched-static-lib", searched_static_lib_rule, {"name", "sources", "libname", "requirements", "usage-requirements"});
    rm.add_target("copy", copy_rule, {"name", "sources", "destination", "types", "recursive"});
    rm.add_target("obj", obj_rule, {"name", "sources", "requirements", "default-build", "usage-requirements"});
-   rm.add_target("test-suite", test_suite_rule, {"name", "sources", "propagated-sources"});
-   rm.add_target("testing.run", testing_run_rule, {"sources", "args", "input-files", "requirements", "target-name"});
+   rm.add_target("testing.suite", testing_suite_rule, {"name", "sources", "common-sources"});
+   rm.add_target("testing.run", testing_run_rule, {"sources", "requirements", "args", "name"});
    rm.add_target("testing.compile-fail", testing_compile_fail_rule, {"sources", "requirements", "default-build", "usage-requirements"});
    rm.add_rule("setup-warehouse", setup_warehouse_rule, {"name", "url", "storage-dir"});
 }

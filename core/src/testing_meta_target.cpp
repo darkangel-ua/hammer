@@ -1,22 +1,16 @@
-#include "stdafx.h"
-#include <hammer/core/testing_meta_target.h>
-#include <hammer/core/testing_main_target.h>
 #include <hammer/core/project.h>
 #include <hammer/core/engine.h>
-#include <hammer/core/main_target.h>
-#include <hammer/core/feature_set.h>
-#include <hammer/core/feature.h>
+#include <hammer/core/types.h>
+#include <hammer/core/testing_main_target.h>
+#include <hammer/core/testing_meta_target.h>
 
-namespace hammer{
+namespace hammer {
 
-testing_meta_target::testing_meta_target(hammer::project* p, 
+testing_meta_target::testing_meta_target(hammer::project* p,
                                          const std::string& name,
-                                         const requirements_decl& req, 
-                                         const requirements_decl& usage_req,
-                                         const hammer::target_type& t)
-   : typed_meta_target(p, name, req, usage_req, t)
+                                         const requirements_decl& req)
+   : typed_meta_target(p, name, req, {}, p->get_engine()->get_type_registry().get(types::TESTING_RUN_PASSED))
 {
-
 }
 
 main_target* 

@@ -26,8 +26,7 @@ htmpl_rule(invocation_context& ctx,
 
    for (const source_decl& sd : sources) {
       const string target_name = "#unnamed::htmpl." + sd.target_path();
-      auto_ptr<basic_meta_target> mt(new htmpl_meta_target(&ctx.current_project_, target_name, sd));
-      ctx.current_project_.add_target(mt);
+      ctx.current_project_.add_target(boost::make_unique<htmpl_meta_target>(&ctx.current_project_, target_name, sd));
 
       result->push_back(source_decl(target_name, std::string(), nullptr, nullptr));
    }

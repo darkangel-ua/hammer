@@ -104,16 +104,16 @@ void exe_rule(target_invocation_context& ctx,
               const feature_set* default_build,
               const usage_requirements_decl* usage_requirements)
 {
-   auto_ptr<basic_meta_target> mt(new typed_meta_target(&ctx.current_project_,
-                                                        id.to_string(),
-                                                        requirements ? *requirements : requirements_decl(),
-                                                        usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl(),
-                                                        ctx.current_project_.get_engine()->get_type_registry().get(types::EXE)));
+   unique_ptr<basic_meta_target> mt(new typed_meta_target(&ctx.current_project_,
+                                                          id.to_string(),
+                                                          requirements ? *requirements : requirements_decl(),
+                                                          usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl(),
+                                                          ctx.current_project_.get_engine()->get_type_registry().get(types::EXE)));
    mt->sources(sources);
    mt->set_local(ctx.local_);
    mt->set_explicit(ctx.explicit_);
 
-   ctx.current_project_.add_target(mt);
+   ctx.current_project_.add_target(move(mt));
 }
 
 static
@@ -123,15 +123,15 @@ void alias_rule(target_invocation_context& ctx,
                 const requirements_decl* requirements,
                 const usage_requirements_decl* usage_requirements)
 {
-   auto_ptr<basic_meta_target> mt(new alias_meta_target(&ctx.current_project_,
-                                                        name.to_string(),
-                                                        sources ? *sources : sources_decl(),
-                                                        requirements ? *requirements : requirements_decl(),
-                                                        usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl()));
+   unique_ptr<basic_meta_target> mt(new alias_meta_target(&ctx.current_project_,
+                                                          name.to_string(),
+                                                          sources ? *sources : sources_decl(),
+                                                          requirements ? *requirements : requirements_decl(),
+                                                          usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl()));
    mt->set_local(ctx.local_);
    mt->set_explicit(ctx.explicit_);
 
-   ctx.current_project_.add_target(mt);
+   ctx.current_project_.add_target(move(mt));
 }
 
 static
@@ -142,15 +142,15 @@ void lib_rule(target_invocation_context& ctx,
               const feature_set* default_build,
               const usage_requirements_decl* usage_requirements)
 {
-   auto_ptr<basic_meta_target> mt(new lib_meta_target(&ctx.current_project_,
-                                                      id.to_string(),
-                                                      requirements ? *requirements : requirements_decl(),
-                                                      usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl()));
+   unique_ptr<basic_meta_target> mt(new lib_meta_target(&ctx.current_project_,
+                                                        id.to_string(),
+                                                        requirements ? *requirements : requirements_decl(),
+                                                        usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl()));
    mt->sources(sources);
    mt->set_local(ctx.local_);
    mt->set_explicit(ctx.explicit_);
 
-   ctx.current_project_.add_target(mt);
+   ctx.current_project_.add_target(move(mt));
 }
 
 static
@@ -161,17 +161,17 @@ void header_lib_rule(target_invocation_context& ctx,
                      const feature_set* default_build,
                      const usage_requirements_decl* usage_requirements)
 {
-   auto_ptr<basic_meta_target> mt(new header_lib_meta_target(&ctx.current_project_,
-                                                             id.to_string(),
-                                                             requirements ? *requirements : requirements_decl(),
-                                                             usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl()));
+   unique_ptr<basic_meta_target> mt(new header_lib_meta_target(&ctx.current_project_,
+                                                               id.to_string(),
+                                                               requirements ? *requirements : requirements_decl(),
+                                                               usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl()));
    if (sources)
       mt->sources(*sources);
 
    mt->set_local(ctx.local_);
    mt->set_explicit(ctx.explicit_);
 
-   ctx.current_project_.add_target(mt);
+   ctx.current_project_.add_target(move(mt));
 }
 
 static
@@ -184,14 +184,14 @@ void version_alias_rule(target_invocation_context& ctx,
    if (target_path)
       s_target_path = target_path->string();
 
-   auto_ptr<basic_meta_target> mt(new version_alias_meta_target(&ctx.current_project_,
-                                                                name.to_string(),
-                                                                version.to_string(),
-                                                                target_path ? &s_target_path : nullptr));
+   unique_ptr<basic_meta_target> mt(new version_alias_meta_target(&ctx.current_project_,
+                                                                  name.to_string(),
+                                                                  version.to_string(),
+                                                                  target_path ? &s_target_path : nullptr));
    mt->set_local(ctx.local_);
    mt->set_explicit(ctx.explicit_);
 
-   ctx.current_project_.add_target(mt);
+   ctx.current_project_.add_target(move(mt));
 }
 
 static
@@ -204,12 +204,12 @@ void target_version_alias_rule(target_invocation_context& ctx,
    if (target_path)
       s_target_path = target_path->string();
 
-   auto_ptr<basic_meta_target> mt(new target_version_alias_meta_target(&ctx.current_project_, id.to_string(), version.to_string(), target_path ? &s_target_path : nullptr));
+   unique_ptr<basic_meta_target> mt(new target_version_alias_meta_target(&ctx.current_project_, id.to_string(), version.to_string(), target_path ? &s_target_path : nullptr));
 
    mt->set_local(ctx.local_);
    // its explicit by design
 
-   ctx.current_project_.add_target(mt);
+   ctx.current_project_.add_target(move(mt));
 }
 
 
@@ -553,14 +553,14 @@ void copy_rule(target_invocation_context& ctx,
       recursive = (ast_recursive->to_string() == "true");
    }
 
-   auto_ptr<basic_meta_target> mt(new copy_meta_target(&ctx.current_project_,
-                                                       name.to_string(),
-                                                       destination,
-                                                       types_to_copy,
-                                                       recursive));
+   unique_ptr<basic_meta_target> mt(new copy_meta_target(&ctx.current_project_,
+                                                         name.to_string(),
+                                                         destination,
+                                                         types_to_copy,
+                                                         recursive));
 
    mt->sources(sources);
-   ctx.current_project_.add_target(mt);
+   ctx.current_project_.add_target(move(mt));
 }
 
 static
@@ -571,14 +571,14 @@ void obj_rule(target_invocation_context& ctx,
               const feature_set* default_build,
               const usage_requirements_decl* usage_requirements)
 {
-   auto_ptr<basic_meta_target> mt(new obj_meta_target(&ctx.current_project_,
-                                                      name.to_string(),
-                                                      requirements ? *requirements : requirements_decl(),
-                                                      usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl()));
+   unique_ptr<basic_meta_target> mt(new obj_meta_target(&ctx.current_project_,
+                                                        name.to_string(),
+                                                        requirements ? *requirements : requirements_decl(),
+                                                        usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl()));
    mt->sources(sources);
    mt->set_local(ctx.local_);
    mt->set_explicit(ctx.explicit_);
-   ctx.current_project_.add_target(mt);
+   ctx.current_project_.add_target(move(mt));
 }
 
 static
@@ -600,15 +600,15 @@ void testing_suite_rule(target_invocation_context& ctx,
       modified_sources.add_to_source_properties(build_request);
    }
 
-   auto_ptr<basic_meta_target> mt(new alias_meta_target(&ctx.current_project_,
-                                                        name.to_string(),
-                                                        modified_sources,
-                                                        {},
-                                                        {}));
+   unique_ptr<basic_meta_target> mt(new alias_meta_target(&ctx.current_project_,
+                                                          name.to_string(),
+                                                          modified_sources,
+                                                          {},
+                                                          {}));
 
    mt->set_local(ctx.local_);
    mt->set_explicit(ctx.explicit_);
-   ctx.current_project_.add_target(mt);
+   ctx.current_project_.add_target(move(mt));
 }
 
 static
@@ -668,7 +668,7 @@ testing_run_rule(target_invocation_context& ctx,
    }
 
    const string exe_target_name = target_name + ".run";
-   auto_ptr<basic_meta_target> intermediate_exe(
+   unique_ptr<basic_meta_target> intermediate_exe(
       new testing_intermediate_meta_target(&ctx.current_project_,
                                            exe_target_name,
                                            requirements != NULL ? *requirements : requirements_decl(),
@@ -678,9 +678,9 @@ testing_run_rule(target_invocation_context& ctx,
    intermediate_exe->set_local(true);
    intermediate_exe->set_explicit(true);
 
-   ctx.current_project_.add_target(intermediate_exe);
+   ctx.current_project_.add_target(move(intermediate_exe));
 
-   auto_ptr<basic_meta_target> runner_target(
+   unique_ptr<basic_meta_target> runner_target(
       new testing_meta_target(&ctx.current_project_,
                               target_name,
                               {}));
@@ -696,7 +696,7 @@ testing_run_rule(target_invocation_context& ctx,
                                  NULL /*to signal that this is meta target*/,
                                  NULL);
 
-   ctx.current_project_.add_target(runner_target);
+   ctx.current_project_.add_target(move(runner_target));
 
    auto result = boost::make_unique<sources_decl>();
    result->push_back(run_target_source);
@@ -713,10 +713,10 @@ testing_compile_fail_rule(target_invocation_context& ctx,
                           const usage_requirements_decl* usage_requirements)
 {
    const string target_name = location_t(sources.begin()->target_path()).stem().string();
-   auto_ptr<basic_meta_target> mt(new testing_compile_fail_meta_target(&ctx.current_project_,
-                                                                       target_name,
-                                                                       requirements ? *requirements : requirements_decl(),
-                                                                       usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl()));
+   unique_ptr<basic_meta_target> mt(new testing_compile_fail_meta_target(&ctx.current_project_,
+                                                                         target_name,
+                                                                         requirements ? *requirements : requirements_decl(),
+                                                                         usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl()));
    mt->sources(sources);
 
    const source_decl compile_source(mt->name(),
@@ -726,7 +726,7 @@ testing_compile_fail_rule(target_invocation_context& ctx,
 
    mt->set_local(ctx.local_);
    mt->set_explicit(ctx.explicit_);
-   ctx.current_project_.add_target(mt);
+   ctx.current_project_.add_target(move(mt));
 
    auto result = boost::make_unique<sources_decl>();
    result->push_back(compile_source);
@@ -742,17 +742,17 @@ void prebuilt_lib_rule(target_invocation_context& ctx,
                        const requirements_decl* requirements,
                        const usage_requirements_decl* usage_requirements)
 {
-   auto_ptr<basic_meta_target> mt(new prebuilt_lib_meta_target(&ctx.current_project_,
-                                                               name.to_string(),
-                                                               filename.string(),
-                                                               requirements ? *requirements : requirements_decl(),
-                                                               usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl()));
+   unique_ptr<basic_meta_target> mt(new prebuilt_lib_meta_target(&ctx.current_project_,
+                                                                 name.to_string(),
+                                                                 filename.string(),
+                                                                 requirements ? *requirements : requirements_decl(),
+                                                                 usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl()));
    if (sources)
       mt->sources(*sources);
 
    mt->set_local(ctx.local_);
    mt->set_explicit(ctx.explicit_);
-   ctx.current_project_.add_target(mt);
+   ctx.current_project_.add_target(move(mt));
 }
 
 static
@@ -763,18 +763,18 @@ void searched_shared_lib_rule(target_invocation_context& ctx,
                               const requirements_decl* requirements,
                               const usage_requirements_decl* usage_requirements)
 {
-   auto_ptr<basic_meta_target> mt(new searched_lib_meta_target(&ctx.current_project_,
-                                                               name.to_string(),
-                                                               libname.to_string(),
-                                                               requirements ? *requirements : requirements_decl(),
-                                                               usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl(),
-                                                               ctx.current_project_.get_engine()->get_type_registry().get(types::SEARCHED_SHARED_LIB)));
+   unique_ptr<basic_meta_target> mt(new searched_lib_meta_target(&ctx.current_project_,
+                                                                 name.to_string(),
+                                                                 libname.to_string(),
+                                                                 requirements ? *requirements : requirements_decl(),
+                                                                 usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl(),
+                                                                 ctx.current_project_.get_engine()->get_type_registry().get(types::SEARCHED_SHARED_LIB)));
    if (sources)
       mt->sources(*sources);
 
    mt->set_local(ctx.local_);
    mt->set_explicit(ctx.explicit_);
-   ctx.current_project_.add_target(mt);
+   ctx.current_project_.add_target(move(mt));
 }
 
 static
@@ -785,18 +785,18 @@ void searched_static_lib_rule(target_invocation_context& ctx,
                               const requirements_decl* requirements,
                               const usage_requirements_decl* usage_requirements)
 {
-   auto_ptr<basic_meta_target> mt(new searched_lib_meta_target(&ctx.current_project_,
-                                                               name.to_string(),
-                                                               libname.to_string(),
-                                                               requirements ? *requirements : requirements_decl(),
-                                                               usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl(),
-                                                               ctx.current_project_.get_engine()->get_type_registry().get(types::SEARCHED_STATIC_LIB)));
+   unique_ptr<basic_meta_target> mt(new searched_lib_meta_target(&ctx.current_project_,
+                                                                 name.to_string(),
+                                                                 libname.to_string(),
+                                                                 requirements ? *requirements : requirements_decl(),
+                                                                 usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl(),
+                                                                 ctx.current_project_.get_engine()->get_type_registry().get(types::SEARCHED_STATIC_LIB)));
    if (sources)
       mt->sources(*sources);
 
    mt->set_local(ctx.local_);
    mt->set_explicit(ctx.explicit_);
-   ctx.current_project_.add_target(mt);
+   ctx.current_project_.add_target(move(mt));
 }
 
 static

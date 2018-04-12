@@ -37,11 +37,9 @@ void project::location(const location_t& l)
 }
 
 
-void project::add_target(std::auto_ptr<basic_meta_target> t)
+void project::add_target(std::unique_ptr<basic_meta_target> t)
 {
-   targets_.insert(t->name(), t.get());
-
-   t.release();
+   targets_.insert(std::make_pair(t->name(), move(t)));
 }
 
 const basic_meta_target* project::find_target(const std::string& name) const
@@ -51,11 +49,11 @@ const basic_meta_target* project::find_target(const std::string& name) const
 
 basic_meta_target* project::find_target(const std::string& name)
 {
-   targets_t::iterator i = targets_.find(name);
+   auto i = targets_.find(name);
    if (i == targets_.end())
       return 0;
    else
-      return i->second;
+      return i->second.get();
 }
 
 // -1 == not suitable
@@ -169,7 +167,7 @@ project::try_select_best_alternative(const std::string& target_name,
       first->second->requirements().eval(build_request, fs);
       int rank = compute_alternative_rank(*fs, build_request);
       if (rank != -1)
-         selected_targets.push_back(selected_target(first->second, fs, rank));
+         selected_targets.push_back(selected_target(first->second.get(), fs, rank));
    }
 
    sort(selected_targets.begin(), selected_targets.end(), s_great);

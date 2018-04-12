@@ -9,6 +9,7 @@
 #include <hammer/core/rule_argument_types.h>
 #include <boost/unordered_set.hpp>
 #include <boost/bind.hpp>
+#include <boost/make_unique.hpp>
 #include <algorithm>
 
 using namespace std;
@@ -96,11 +97,9 @@ void add_traps(project& p,
                   installed_versions.begin(), installed_versions.end(),
                   back_inserter(not_installed_versions), pred());
 
-   for(const auto& v : not_installed_versions) {
-      for (const string& target_name : v.targets_) {
-         auto_ptr<basic_meta_target> trap_target(new warehouse_meta_target(p, target_name, v.version_));
-         p.add_target(trap_target);
-      }
+   for (const auto& v : not_installed_versions) {
+      for (const string& target_name : v.targets_)
+         p.add_target(boost::make_unique<warehouse_meta_target>(p, target_name, v.version_));
    }
 }
 

@@ -133,16 +133,16 @@ qt_uic_rule(invocation_context& ctx,
    std::stringstream s;
    sources.dump_for_hash(s);
 
-   auto_ptr<basic_meta_target> mt(new qt_uic_meta_target(&ctx.current_project_,
-                                                         "qt.uic." + boost::crypto::md5(s.str()).to_string(),
-                                                         sources,
-                                                         requirements_decl(),
-                                                         requirements_decl()));
+   unique_ptr<basic_meta_target> mt(new qt_uic_meta_target(&ctx.current_project_,
+                                                           "qt.uic." + boost::crypto::md5(s.str()).to_string(),
+                                                           sources,
+                                                           requirements_decl(),
+                                                           requirements_decl()));
 
    auto result = boost::make_unique<sources_decl>();
    result->push_back(source_decl("./", mt->name(), NULL, NULL));
 
-   ctx.current_project_.add_target(mt);
+   ctx.current_project_.add_target(std::move(mt));
 
    return result;
 }
@@ -188,15 +188,15 @@ void qt_moc_rule(target_invocation_context& ctx,
                  requirements_decl* usage_requirements)
 
 {
-   auto_ptr<basic_meta_target> mt(new qt_moc_meta_target(&ctx.current_project_,
-                                                         id.to_string(),
-                                                         sources,
-                                                         requirements ? *requirements : requirements_decl(),
-                                                         usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl()));
+   unique_ptr<basic_meta_target> mt(new qt_moc_meta_target(&ctx.current_project_,
+                                                           id.to_string(),
+                                                           sources,
+                                                           requirements ? *requirements : requirements_decl(),
+                                                           usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl()));
 
    mt->set_local(ctx.local_);
    mt->set_explicit(ctx.explicit_);
-   ctx.current_project_.add_target(mt);
+   ctx.current_project_.add_target(std::move(mt));
 }
 
 qt_toolset::qt_toolset()

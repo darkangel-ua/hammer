@@ -1,11 +1,10 @@
 #if !defined(h_939859ef_4910_49e0_b2b8_fac2a43ebd18)
 #define h_939859ef_4910_49e0_b2b8_fac2a43ebd18
 
-#include "location.h"
-#include <boost/noncopyable.hpp>
-#include <boost/ptr_container/ptr_map.hpp>
 #include <memory>
 #include <vector>
+#include <map>
+#include "location.h"
 #include "basic_meta_target.h"
 #include "feature_registry.h"
 
@@ -38,7 +37,7 @@ namespace hammer
             unsigned resolved_requirements_rank_;
          };
 
-         typedef boost::ptr_multimap<const std::string /* target name */, basic_meta_target> targets_t;
+         typedef std::multimap<std::string /* target name */, std::unique_ptr<basic_meta_target>> targets_t;
          typedef std::vector<selected_target> selected_targets_t;
 
          project(engine* e, 
@@ -53,7 +52,7 @@ namespace hammer
          
          const location_t& location() const override { return location_; }
          void location(const location_t& l);
-         void add_target(std::auto_ptr<basic_meta_target> t);
+         void add_target(std::unique_ptr<basic_meta_target> t);
          const targets_t& targets() const { return targets_; }
 
          // FIXME: there is can be many metatargets with same name

@@ -48,10 +48,8 @@ namespace hammer
                  const requirements_decl& usage_req
                  );
 
-         project(engine* e) : engine_(e), 
-                              is_root_(false), 
-                              add_targets_as_explicit_(false)
-         {};
+         project(engine* e) : engine_(e)
+         {}
          
          const location_t& location() const override { return location_; }
          void location(const location_t& l);
@@ -68,11 +66,6 @@ namespace hammer
          feature_registry& local_feature_registry() const { return local_feature_registry_; }
          bool is_root() const { return is_root_; }
          void set_root(bool v) { is_root_ = v; }
-         // FIXME: both functions are hacks. We should remove them after migrate to new parser
-         void add_targets_as_explicit(bool v);
-         void add_targets_as_local(bool v) { add_targets_as_local_ = v; }
-
-         void mark_as_explicit(const std::string& name);
 
          void instantiate(const std::string& target_name, 
                           const feature_set& build_request,
@@ -93,9 +86,7 @@ namespace hammer
          targets_t targets_;
          hammer::engine* engine_;
          location_t intermediate_dir_;
-         bool is_root_;
-         bool add_targets_as_explicit_;
-         bool add_targets_as_local_ = false;
+         bool is_root_ = false;
          mutable feature_registry local_feature_registry_;
 
 			void instantiate_impl(const main_target* owner,

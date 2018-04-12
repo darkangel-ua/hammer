@@ -18,9 +18,7 @@ project::project(hammer::engine* e,
                  const requirements_decl& usage_req)
    :
     basic_meta_target(this, name, req, usage_req),
-    engine_(e),
-    is_root_(false),
-    add_targets_as_explicit_(false)
+    engine_(e)
 {
    this->location(location);
 }
@@ -41,20 +39,9 @@ void project::location(const location_t& l)
 
 void project::add_target(std::auto_ptr<basic_meta_target> t)
 {
-   if (add_targets_as_explicit_)
-      t->set_explicit(true);
-
-   if (add_targets_as_local_)
-      t->set_local(true);
-
    targets_.insert(t->name(), t.get());
 
    t.release();
-}
-
-void project::add_targets_as_explicit(bool v)
-{
-   add_targets_as_explicit_ = v;
 }
 
 const basic_meta_target* project::find_target(const std::string& name) const
@@ -281,13 +268,6 @@ project::try_resolve_local_features(const feature_set& fs) const
    }
 
    return result;
-}
-
-void project::mark_as_explicit(const std::string& name)
-{
-   boost::iterator_range<targets_t::iterator> targets = targets_.equal_range(name);
-   for(targets_t::iterator i = targets.begin(); i != targets.end(); ++i)
-      i->second->set_explicit(true);
 }
 
 }

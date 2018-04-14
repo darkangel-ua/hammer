@@ -305,6 +305,30 @@ void engine::load_hammer_script(const string& script_body,
    load_hammer_script_v2(script_body, script_name);
 }
 
+static
+void load_hammer_script_impl(engine& e,
+                             ostringstream& s,
+                             diagnostic& diag,
+                             const location_t& project_location,
+                             const ast::hamfile& ast)
+{
+   if (diag.error_count())
+      throw parsing_error(s.str());
+
+   std::unique_ptr<project> loaded_project(new project(&e));
+   loaded_project->location(project_location);
+   invocation_context invc_ctx = { *loaded_project, diag, e.get_rule_manager() };
+
+   try {
+      ast2objects(invc_ctx, ast);
+   } catch (const ast2objects_semantic_error&) {
+      throw parsing_error(s.str());
+   }
+
+   e.insert(loaded_project.get());
+   loaded_project.release();
+}
+
 void engine::load_hammer_script_v2(location_t filepath)
 {
    ostringstream s;
@@ -313,21 +337,7 @@ void engine::load_hammer_script_v2(location_t filepath)
    sema::actions_impl actions(ast_ctx, *rule_manager_, diag);
    ast_hamfile_ptr ast = parse_hammer_script(filepath, actions);
 
-   if (diag.error_count())
-      throw parsing_error(s.str());
-
-   std::unique_ptr<project> loaded_project(new project(this));
-   loaded_project->location(filepath.branch_path());
-   invocation_context invc_ctx = { *loaded_project, diag, *rule_manager_ };
-
-   try {
-      ast2objects(invc_ctx, *ast);
-   } catch (const ast2objects_semantic_error&) {
-      throw parsing_error(s.str());
-   }
-
-   insert(loaded_project.get());
-   loaded_project.release();
+   load_hammer_script_impl(*this, s, diag, filepath.branch_path(), *ast);
 }
 
 void engine::load_hammer_script_v2(const std::string& script_body,
@@ -339,21 +349,7 @@ void engine::load_hammer_script_v2(const std::string& script_body,
    sema::actions_impl actions(ast_ctx, *rule_manager_, diag);
    ast_hamfile_ptr ast = parse_hammer_script(script_body, script_name, actions);
 
-   if (diag.error_count())
-      throw parsing_error(s.str());
-
-   std::unique_ptr<project> loaded_project(new project(this));
-   loaded_project->location(script_name);
-   invocation_context invc_ctx = { *loaded_project, diag, *rule_manager_ };
-
-   try {
-      ast2objects(invc_ctx, *ast);
-   } catch (const ast2objects_semantic_error&) {
-      throw parsing_error(s.str());
-   }
-
-   insert(loaded_project.get());
-   loaded_project.release();
+   load_hammer_script_impl(*this, s, diag, script_name, *ast);
 }
 
 std::unique_ptr<project>

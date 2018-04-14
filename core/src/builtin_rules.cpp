@@ -57,6 +57,11 @@ void process_project_id(invocation_context& ctx,
          ctx.current_project_.name(s_id);
       } // otherwise its empty id
    } else if (const ast::path* id = ast::as<ast::path>(e)) {
+      if (id->root_name().valid()) {
+         ctx.diag_.error(id->root_name().start_lok(), "project id cannot have root name");
+         throw ast2objects_semantic_error();
+      }
+
       for (const ast::expression* pe : id->elements()) {
          if (const ast::id_expr* e_id = ast::as<ast::id_expr>(pe)) {
             const string& s_id = e_id->id().to_string();

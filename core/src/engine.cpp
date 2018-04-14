@@ -308,13 +308,13 @@ void engine::load_hammer_script(const string& script_body,
 void engine::load_hammer_script_v2(location_t filepath)
 {
    ostringstream s;
-   streamed_diagnostic diag(filepath.string(), s);
+   streamed_diagnostic diag(filepath.string(), error_verbosity_, s);
    ast::context ast_ctx;
    sema::actions_impl actions(ast_ctx, *rule_manager_, diag);
    ast_hamfile_ptr ast = parse_hammer_script(filepath, actions);
 
    if (diag.error_count())
-      throw std::runtime_error("Parse errors: " + s.str());
+      throw parsing_error(s.str());
 
    std::unique_ptr<project> loaded_project(new project(this));
    loaded_project->location(filepath.branch_path());
@@ -323,7 +323,7 @@ void engine::load_hammer_script_v2(location_t filepath)
    try {
       ast2objects(invc_ctx, *ast);
    } catch (const ast2objects_semantic_error&) {
-      throw std::runtime_error(s.str());
+      throw parsing_error(s.str());
    }
 
    insert(loaded_project.get());
@@ -334,13 +334,13 @@ void engine::load_hammer_script_v2(const std::string& script_body,
                                    const std::string& script_name)
 {
    ostringstream s;
-   streamed_diagnostic diag(script_name, s);
+   streamed_diagnostic diag(script_name, error_verbosity_, s);
    ast::context ast_ctx;
    sema::actions_impl actions(ast_ctx, *rule_manager_, diag);
    ast_hamfile_ptr ast = parse_hammer_script(script_body, script_name, actions);
 
    if (diag.error_count())
-      throw std::runtime_error("Parse errors: " + s.str());
+      throw parsing_error(s.str());
 
    std::unique_ptr<project> loaded_project(new project(this));
    loaded_project->location(script_name);
@@ -349,7 +349,7 @@ void engine::load_hammer_script_v2(const std::string& script_body,
    try {
       ast2objects(invc_ctx, *ast);
    } catch (const ast2objects_semantic_error&) {
-      throw std::runtime_error(s.str());
+      throw parsing_error(s.str());
    }
 
    insert(loaded_project.get());
@@ -361,13 +361,13 @@ engine::load_project_v2(const location_t& project_path,
                         const project* upper_project)
 {
    ostringstream s;
-   streamed_diagnostic diag(project_path.string(), s);
+   streamed_diagnostic diag(project_path.string(), error_verbosity_, s);
    ast::context ast_ctx;
    sema::actions_impl actions(ast_ctx, *rule_manager_, diag);
    ast_hamfile_ptr ast = parse_hammer_script(project_path, actions);
 
    if (diag.error_count())
-      throw std::runtime_error("Parse errors: " + s.str());
+      throw parsing_error(s.str());
 
    std::unique_ptr<project> loaded_project(new project(this));
    loaded_project->location(project_path.branch_path());
@@ -381,7 +381,7 @@ engine::load_project_v2(const location_t& project_path,
    try {
       ast2objects(invc_ctx, *ast);
    } catch (const ast2objects_semantic_error&) {
-      throw std::runtime_error(s.str());
+      throw parsing_error(s.str());
    }
 
    return loaded_project;

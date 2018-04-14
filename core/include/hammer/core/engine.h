@@ -23,6 +23,11 @@ namespace hammer
    class warehouse;
 	class rule_manager;
 
+   class parsing_error : public std::runtime_error {
+      public:
+         using runtime_error::runtime_error;
+   };
+
    class engine : boost::noncopyable
    {
       public:
@@ -59,6 +64,9 @@ namespace hammer
 			                       const std::string& project_id_alias,
                                 const location_t& project_location,
 			                       feature_set* props);
+
+         void enable_error_verbosity() { error_verbosity_ = true; }
+         void disable_error_verbosity() { error_verbosity_ = false; }
 
       private:
          typedef boost::unordered_map<const location_t, 
@@ -130,6 +138,7 @@ namespace hammer
 
          use_project_data_t use_project_data_;
          boost::shared_ptr<hammer::warehouse> warehouse_;
+         bool error_verbosity_ = true;
 
 			void load_hammer_script_v2(location_t filepath);
          void load_hammer_script_v2(const std::string& script_body,

@@ -20,7 +20,9 @@ class source_location
 
       bool valid() const { return antlr_token_ != NULL; }
       std::string full_source_name() const;
+      std::string line_content() const;
       unsigned line() const;
+      unsigned char_pos() const;
 
    private:
       const ANTLR3_COMMON_TOKEN_struct* antlr_token_;

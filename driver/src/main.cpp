@@ -935,6 +935,9 @@ int main(int argc, char** argv) {
       }
 
       return 0;
+   } catch (const hammer::parsing_error& e) {
+      cout << e.what() << "\n";
+      return -1;
    } catch (const std::exception& e) {
       cout << "Error: " << e.what() << "\n";
       return -1;

@@ -1,11 +1,12 @@
-#include <hammer/parscore/source_location.h>
+#include <cassert>
 #include <antlr3commontoken.h>
 #include <antlr3input.h>
-#include <cassert>
+#include <hammer/parscore/source_location.h>
 
 namespace hammer{namespace parscore{
 
-std::string source_location::full_source_name() const
+std::string
+source_location::full_source_name() const
 {
    assert(antlr_token_);
 
@@ -17,11 +18,37 @@ std::string source_location::full_source_name() const
       return "unknown";
 }
 
-unsigned source_location::line() const
+unsigned
+source_location::line() const
 {
    assert(antlr_token_);
 
    return antlr_token_->line;
+}
+
+unsigned
+source_location::char_pos() const
+{
+   assert(antlr_token_);
+   return antlr_token_->charPosition;
+}
+
+std::string
+source_location::line_content() const
+{
+   std::string result;
+
+   if (!antlr_token_->lineStart)
+      return "Internal error: lineStart == nullptr";
+
+   const char* chars = static_cast<const char*>(antlr_token_->lineStart);
+
+   while (*chars && *chars != '\n') {
+      result.push_back(*chars);
+      ++chars;
+   }
+
+   return result;
 }
 
 }}

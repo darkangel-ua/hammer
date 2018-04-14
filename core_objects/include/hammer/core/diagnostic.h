@@ -17,11 +17,15 @@ class diagnostic
       struct type { enum value {error}; };
       struct arg_type { enum value{integer, chars, identifier}; };
 
-		diagnostic(const std::string& source_name);
+		diagnostic(const std::string& source_name,
+                 bool verbose);
 
       diagnostic_builder error(parscore::source_location loc, 
                                const char* message);
       int error_count() const { return error_count_; }
+
+   public:
+      const bool verbose_;
 
    protected:
       diagnostic::type::value type_;
@@ -30,13 +34,14 @@ class diagnostic
       std::vector<const void*> args_;
       std::vector<int> arg_types_;
       std::ostringstream stream_;
-      int error_count_;
+      int error_count_ = 0;
 
       virtual void report(const char* formated_message) = 0;
-      virtual void format_message();
    
    private:
       void format_location();
+      void format_message();
+      void add_source_snippet();
 
 		const std::string source_name_;
 };
@@ -76,8 +81,9 @@ class streamed_diagnostic : public diagnostic
 {
    public:
 		streamed_diagnostic(const std::string& source_name,
+                          bool verbose,
 								  std::ostream& os)
-			: diagnostic(source_name),
+			: diagnostic(source_name, verbose),
 			  os_(os)
 		{}
    

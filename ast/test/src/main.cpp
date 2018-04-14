@@ -125,7 +125,7 @@ class checked_diagnostic : public diagnostic
    public:               
       checked_diagnostic(const std::string& source_name,
                          const expected_diags_t& expected_diags)
-         : diagnostic(source_name),
+         : diagnostic(source_name, false),
            expected_diags_(expected_diags)
       {
       }
@@ -144,7 +144,7 @@ class checked_diagnostic : public diagnostic
 void checked_diagnostic::report(const char* formated_message)
 {
    boost::cmatch m;
-   if (regex_search(formated_message, m, boost::regex(".+?\\((\\d+)\\) : (\\w+): (.*)"))) {
+   if (regex_search(formated_message, m, boost::regex(R"(.+:(\d+):\d+: (\w+): (.*)\n)"))) {
       // m[1] line number
       // m[2] message type
       // m[3] message

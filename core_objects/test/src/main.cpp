@@ -115,7 +115,7 @@ BOOST_AUTO_TEST_CASE(invoke_test_1)
 
    hammer::project p;
    ostringstream s;
-   streamed_diagnostic diag("invoke_test_1", s);
+   streamed_diagnostic diag("invoke_test_1", true, s);
    invocation_context ctx = { p, diag, m };
    identifier id_1("foo");
    identifier* id_2 = nullptr;
@@ -162,7 +162,7 @@ BOOST_AUTO_TEST_CASE(invoke_test_2)
 
    hammer::project p;
    ostringstream s;
-   streamed_diagnostic diag("invoke_test_1", s);
+   streamed_diagnostic diag("invoke_test_1", true, s);
    target_invocation_context ctx = {p, diag, m, true, false};
    identifier id_1("foo");
 

@@ -1,13 +1,15 @@
 #include <hammer/core/diagnostic.h>
 #include <cassert>
 #include <string>
+#include <iomanip>
 
 using namespace std;
 
 namespace hammer{ 
 
-diagnostic::diagnostic(const std::string& source_name)
-	: error_count_(0),
+diagnostic::diagnostic(const std::string& source_name,
+                       bool verbose)
+	: verbose_(verbose),
 	  source_name_(source_name)
 {}
 
@@ -27,7 +29,7 @@ diagnostic_builder diagnostic::error(parscore::source_location loc,
 
 void diagnostic::format_location()
 {
-	stream_ << source_name_ << '(' << loc_.line() << ") : ";
+	stream_ << source_name_ << ':' << loc_.line() << ':' << loc_.char_pos() << ": ";
 }
 
 void diagnostic::format_message()
@@ -100,8 +102,19 @@ void diagnostic::format_message()
       ++message_;
    }
 
+   stream_ << std::endl;
+
+   if (verbose_)
+      add_source_snippet();
+
    report(stream_.str().c_str());
    message_ = NULL;
+}
+
+void diagnostic::add_source_snippet()
+{
+   stream_ << loc_.line_content() << std::endl
+           << std::setw(loc_.char_pos() + 1) << ' ' << '^' << std::endl;
 }
 
 void streamed_diagnostic::report(const char* formated_message)

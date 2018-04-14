@@ -58,7 +58,7 @@ void process_project_id(invocation_context& ctx,
       } // otherwise its empty id
    } else if (const ast::path* id = ast::as<ast::path>(e)) {
       if (id->root_name().valid()) {
-         ctx.diag_.error(id->root_name().start_lok(), "project id cannot have root name");
+         ctx.diag_.error(id->root_name().start_loc(), "project id cannot have root name");
          throw ast2objects_semantic_error();
       }
 
@@ -542,7 +542,7 @@ void copy_rule(target_invocation_context& ctx,
    for (const parscore::identifier& id : ast_types_to_copy) {
       const target_type* type = tr.find(type_tag(id.to_string()));
       if (!type) {
-         ctx.diag_.error(id.start_lok(), "Argument 'types': Unknown type '%s'") << id;
+         ctx.diag_.error(id.start_loc(), "Argument 'types': Unknown type '%s'") << id;
          throw ast2objects_semantic_error();
       } else
          types_to_copy.push_back(type);
@@ -551,7 +551,7 @@ void copy_rule(target_invocation_context& ctx,
    bool recursive = false;
    if (ast_recursive) {
       if (ast_recursive->to_string() != "true" && ast_recursive->to_string() != "false") {
-         ctx.diag_.error(ast_recursive->start_lok(), "Argument 'recursive': Use 'true' or 'false' constants");
+         ctx.diag_.error(ast_recursive->start_loc(), "Argument 'recursive': Use 'true' or 'false' constants");
          throw ast2objects_semantic_error();
       }
 

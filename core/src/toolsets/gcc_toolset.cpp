@@ -317,7 +317,7 @@ void gcc_toolset::use_toolset_rule(invocation_context& ctx,
                                    const parscore::identifier* link_flags)
 {
    if (!version && (path_to_cxx_compiler || path_to_linker || path_to_ar)) {
-      ctx.diag_.error(version->start_lok(), "Toolset version expected when you specify path to compiler/linker/...");
+      ctx.diag_.error(version->start_loc(), "Toolset version expected when you specify path to compiler/linker/...");
       return;
    }
 

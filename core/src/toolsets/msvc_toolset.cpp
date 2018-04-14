@@ -425,7 +425,7 @@ void msvc_toolset::use_toolset_rule(invocation_context& ctx,
 
    auto i = known_versions_m.find(version.to_string());
    if (i == known_versions_m.end()) {
-      ctx.diag_.error(version.start_lok(), "Don't know how to configure this version");
+      ctx.diag_.error(version.start_loc(), "Don't know how to configure this version");
       return;
    }
 

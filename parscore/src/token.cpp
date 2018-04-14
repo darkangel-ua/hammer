@@ -8,22 +8,22 @@ namespace hammer { namespace parscore {
 token::token(const char* v)
    : v_(v),
      length_(std::strlen(v)),
-     no_lok_(true)
+     no_loc_(true)
 {
 
 }
 
 token::token(const ANTLR3_COMMON_TOKEN_struct* v)
-   : lok_(v),
+   : loc_(v),
      v_(NULL),
      length_(v->stop - v->start + 1),
-     no_lok_(false)
+     no_loc_(false)
 {
 }
 
 token::token()
    : v_(NULL),
-     no_lok_(true)
+     no_loc_(true)
 {
 }
 
@@ -62,10 +62,10 @@ bool token::operator == (const char* rhs) const
 
 std::string token::to_string() const
 {
-   if (no_lok_)
+   if (no_loc_)
       return std::string(v_, v_ + length_);
    else {
-      const pANTLR3_STRING s = lok_.antlr_token_->getText(const_cast<pANTLR3_COMMON_TOKEN>(lok_.antlr_token_));
+      const pANTLR3_STRING s = loc_.antlr_token_->getText(const_cast<pANTLR3_COMMON_TOKEN>(loc_.antlr_token_));
       // because identifier stores quotes in case it was constructed from string we remove them on this conversion
       if (*s->chars == '"' || *s->chars == '\'')
          return std::string(s->chars + 1, s->chars + s->len - 1);

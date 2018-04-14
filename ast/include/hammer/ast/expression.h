@@ -40,7 +40,7 @@ class empty_expr : public expression
          : next_(next)
       {}
 
-      parscore::source_location start_loc() const override { return next_.start_lok(); }
+      parscore::source_location start_loc() const override { return next_.start_loc(); }
       bool accept(visitor& v) const override;
       const parscore::identifier& next_token() const { return next_; }
 
@@ -57,7 +57,7 @@ class id_expr : public expression
 
       const parscore::identifier& id() const { return id_; } 
 
-      parscore::source_location start_loc() const override { return id_.start_lok(); }
+      parscore::source_location start_loc() const override { return id_.start_loc(); }
       bool accept(visitor& v) const override;
 
    private:
@@ -76,7 +76,7 @@ class named_expr : public expression
    
       const parscore::identifier& name() const { return name_; }
       const expression* value() const { return value_; }
-      parscore::source_location start_loc() const override { return name_.start_lok(); }
+      parscore::source_location start_loc() const override { return name_.start_loc(); }
       bool accept(visitor& v) const override;
 
    private:
@@ -96,7 +96,7 @@ class public_expr : public expression
 	  const parscore::identifier& tag() const { return tag_; }
 	  const expression* value() const { return value_; }
 
-	  parscore::source_location start_loc() const override { return tag_.start_lok(); }
+	  parscore::source_location start_loc() const override { return tag_.start_loc(); }
 	  bool accept(visitor& v) const override;
 
    private:

@@ -16,7 +16,7 @@ class feature : public expression
 
       const parscore::identifier& name() const { return name_; }
       const expression* value() const { return value_; }
-      parscore::source_location start_loc() const override { return name_.start_lok(); }
+      parscore::source_location start_loc() const override { return name_.start_loc(); }
       bool accept(visitor& v) const override;
 
    private:

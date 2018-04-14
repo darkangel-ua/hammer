@@ -96,8 +96,8 @@ actions_impl::on_top_level_rule_invocation(const source_location explicit_tag,
    if (i != rule_manager_.end()) {
       if (!first_rule_in_file_) {
          if (rule_name == "project") {
-            diag_.error(rule_name.start_lok(), "Rule 'project' MUST be the first statement in the file");
-            return new (ctx_) expression_statement(new (ctx_) ast::error_expression(rule_name.start_lok()));
+            diag_.error(rule_name.start_loc(), "Rule 'project' MUST be the first statement in the file");
+            return new (ctx_) expression_statement(new (ctx_) ast::error_expression(rule_name.start_loc()));
          }
       } else
          first_rule_in_file_ = false;
@@ -117,8 +117,8 @@ actions_impl::on_top_level_rule_invocation(const source_location explicit_tag,
             return new (ctx_) expression_statement(ri);
       }
    } else {
-      diag_.error(rule_name.start_lok(), "Target or rule '%s' was not defined") << rule_name;
-      return new (ctx_) expression_statement(new (ctx_) ast::error_expression(rule_name.start_lok()));
+      diag_.error(rule_name.start_loc(), "Target or rule '%s' was not defined") << rule_name;
+      return new (ctx_) expression_statement(new (ctx_) ast::error_expression(rule_name.start_loc()));
    }
 }
 
@@ -406,7 +406,7 @@ actions_impl::process_one_arg(const rule_argument& ra,
                               const expression* arg)
 {
    if (!ra.is_optional() && is_a<empty_expr>(arg)) {
-      diag_.error(as<empty_expr>(arg)->next_token().start_lok(), "Required argument '%s' expected before '%s'")
+      diag_.error(as<empty_expr>(arg)->next_token().start_loc(), "Required argument '%s' expected before '%s'")
          << ra.name() 
          << as<empty_expr>(arg)->next_token();
 
@@ -476,7 +476,7 @@ actions_impl::process_arguments(const parscore::identifier& rule_name,
          const identifier& arg_name = as<named_expr>(**i).name();
          rule_declaration::const_iterator r = rule_decl.find(arg_name);
          if (r == rule_decl.end()) {
-            diag_.error(arg_name.start_lok(), "%s '%s' does not have named argument '%s'")
+            diag_.error(arg_name.start_loc(), "%s '%s' does not have named argument '%s'")
                << (rule_decl.is_target() ? "Target" : "Rule") 
                << rule_name 
                << arg_name;
@@ -484,7 +484,7 @@ actions_impl::process_arguments(const parscore::identifier& rule_name,
             result.push_back(new (ctx_) error_expression((**i).start_loc()));
          } else { // named argument founded
             if (used_named_args.find(&*r) != used_named_args.end()) {
-               diag_.error(arg_name.start_lok(), "%s '%s': argument '%s' used more than once")
+               diag_.error(arg_name.start_loc(), "%s '%s': argument '%s' used more than once")
                   << (rule_decl.is_target() ? "Target" : "Rule") 
                   << rule_name 
                   << arg_name;
@@ -531,12 +531,12 @@ actions_impl::process_arguments(const parscore::identifier& rule_name,
    
    int rac = required_argument_count(rule_decl);
    if (rac > required_argument_used) {
-      diag_.error(rule_name.start_lok(), "%s '%s': not enough arguments")
+      diag_.error(rule_name.start_loc(), "%s '%s': not enough arguments")
          << (rule_decl.is_target() ? "Target" : "Rule") << rule_name;
    }
 
    if (ra == rule_decl.end() && rac != required_argument_used) {
-      diag_.error(rule_name.start_lok(), "%s '%s': too many arguments")
+      diag_.error(rule_name.start_loc(), "%s '%s': too many arguments")
          << (rule_decl.is_target() ? "Target" : "Rule") << rule_name;
    }
 
@@ -551,14 +551,14 @@ actions_impl::on_rule_invocation(const parscore::identifier& rule_name,
    if (i != rule_manager_.end()) {
       if (!first_rule_in_file_) {
          if (rule_name == "project")
-            diag_.error(rule_name.start_lok(), "Rule 'project' MUST be the first statement in the file");
+            diag_.error(rule_name.start_loc(), "Rule 'project' MUST be the first statement in the file");
       } else
          first_rule_in_file_ = false;
 
       return new (ctx_) ast::rule_invocation(rule_name, process_arguments(rule_name, i->second, arguments));
    } else {
-      diag_.error(rule_name.start_lok(), "Target or rule '%s' was not defined") << rule_name;
-      return new (ctx_) ast::error_expression(rule_name.start_lok());
+      diag_.error(rule_name.start_loc(), "Target or rule '%s' was not defined") << rule_name;
+      return new (ctx_) ast::error_expression(rule_name.start_loc());
    }
 
    return new (ctx_) ast::rule_invocation(rule_name, arguments);

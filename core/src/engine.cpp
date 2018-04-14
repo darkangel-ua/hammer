@@ -325,8 +325,7 @@ void load_hammer_script_impl(engine& e,
       throw parsing_error(s.str());
    }
 
-   e.insert(loaded_project.get());
-   loaded_project.release();
+   e.insert(move(loaded_project));
 }
 
 void engine::load_hammer_script_v2(location_t filepath)
@@ -418,15 +417,14 @@ engine::loaded_projects_t engine::try_load_project(location_t project_path)
    if (is_top_level)
       loaded_project->set_root(true);
 
-   insert(loaded_project.get());
-   project* p = loaded_project.release();
-
-   return loaded_projects_t(p);
+   return loaded_projects_t(&insert(move(loaded_project)));
 }
 
-void engine::insert(project* p)
+project&
+engine::insert(std::unique_ptr<project> p)
 {
-   projects_.insert(make_pair(p->location(), boost::shared_ptr<project>(p)));
+   projects_.insert({p->location(), boost::shared_ptr<project>(p.get())});
+   return *p.release();
 }
 
 engine::~engine()

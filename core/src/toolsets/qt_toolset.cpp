@@ -460,9 +460,7 @@ void add_libs_and_generators(engine& e,
       add_lib(*qt_project, "QtGui", {"QtCore"}, e, include_tag, "QtGui", lib_tag);
    }
 
-   e.insert(qt_project.get());
-   e.use_project(*qt_project, "/Qt", "");
-   qt_project.release();
+   e.use_project(e.insert(std::move(qt_project)), "/Qt", "");
 }
 
 void qt_toolset::use_toolset_rule(invocation_context& ctx,

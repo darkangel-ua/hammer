@@ -41,7 +41,7 @@ namespace hammer
          void load_hammer_script(const std::string& script_body,
                                  const std::string& script_name);
 
-         void insert(project* p);
+         project& insert(std::unique_ptr<project> p);
          type_registry& get_type_registry() { return *type_registry_; }
          generator_registry& generators() const { return *generators_; }
          hammer::feature_registry& feature_registry() { return *feature_registry_; }

@@ -443,7 +443,10 @@ actions_impl::process_one_arg(const rule_argument& ra,
          return process_path_like_seq_arg(ra, arg);
 
       case rule_argument_type::ast_expression:
-         return arg;
+         if (ra.ast_transformer())
+            return ra.ast_transformer()(ctx_, diag_, arg);
+         else
+            return arg;
 
       case rule_argument_type::feature_or_feature_set:
          return process_feature_of_feature_set_arg(ra, arg);

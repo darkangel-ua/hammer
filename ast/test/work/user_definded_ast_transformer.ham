@@ -1,0 +1,3 @@
+user_definded_ast_transformer_test foo bar zoo ; #error: 'zoo' is not allowed here
+user_definded_ast_transformer_test /test ; #error: Only simple identifier or string expected here
+user_definded_ast_transformer_test ; #error: Rule 'user_definded_ast_transformer_test': not enough arguments

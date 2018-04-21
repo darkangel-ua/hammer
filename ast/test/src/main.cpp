@@ -9,6 +9,8 @@
 #include <hammer/ast/context.h>
 #include <hammer/ast/ast_xml_printer.h>
 #include <hammer/ast/hamfile.h>
+#include <hammer/ast/list_of.h>
+#include <hammer/ast/casts.h>
 #include <hammer/core/rule_manager.h>
 #include <hammer/core/diagnostic.h>
 #include <boost/regex.hpp>
@@ -118,6 +120,41 @@ void sources_test_rule(invocation_context& ctx,
 {
 }
 
+static
+const ast::expression*
+user_defined_ast_transformer_test_transformer(ast::context& ctx,
+                                              diagnostic& diag,
+                                              const ast::expression* e)
+{
+   auto handle_one = [&](const ast::expression* e) -> const::ast::expression* {
+      if (const ast::id_expr* id = ast::as<ast::id_expr>(e)) {
+         if (id->id().to_string() == "zoo") {
+            diag.error(id->start_loc(), "'zoo' is not allowed here");
+            return new (ctx) ast::error_expression(id);
+         } else
+            return e;
+      } else {
+         diag.error(e->start_loc(), "Only simple identifier or string expected here");
+         return new (ctx) ast::error_expression(e);
+      }
+   };
+
+   if (const ast::list_of* l = ast::as<ast::list_of>(e)) {
+      ast::expressions_t nvs(ast::expressions_t::allocator_type{ctx});
+      for (const ast::expression* v : l->values())
+         nvs.push_back(handle_one(v));
+
+      return new (ctx) ast::list_of(nvs);
+   } else
+      return handle_one(e);
+}
+
+static
+void user_defined_ast_transformer_test_rule(invocation_context& ctx,
+                                            const ast::expression& e)
+{
+}
+
 typedef map<int, pair<string, diagnostic::type::value> > expected_diags_t;
 
 class checked_diagnostic : public diagnostic
@@ -220,6 +257,7 @@ void test_function(const fs::path& hamfile)
    rule_manager.add_rule("feature_test", feature_test_rule, {"feature"});
    rule_manager.add_rule("feature_set_test", feature_set_test_rule, {"feature_set"});
    rule_manager.add_rule("sources_test", sources_test_rule, {"sources"});
+   rule_manager.add_rule("user_definded_ast_transformer_test", user_defined_ast_transformer_test_rule, {{"id-list", user_defined_ast_transformer_test_transformer}});
 
    ast::context ctx;
    sema::actions_impl actions(ctx, rule_manager, diag);

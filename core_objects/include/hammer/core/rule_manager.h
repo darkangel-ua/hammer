@@ -434,10 +434,10 @@ class rule_manager
 		rule_declaration
 		make_rule_declaration(const parscore::identifier& id,
 		                      FunctionPointer f,
-		                      const std::vector<parscore::identifier>& arg_names)
+		                      const rule_args_decl& args_decl)
 		{
 			typedef typename boost::remove_pointer<FunctionPointer>::type f_type;
-		   return make_rule_declaration(id, boost::function<f_type>(f), arg_names);
+		   return make_rule_declaration(id, boost::function<f_type>(f), args_decl);
 		}
 
    private:

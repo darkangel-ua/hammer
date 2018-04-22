@@ -30,6 +30,7 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/make_unique.hpp>
 #include <boost/regex.hpp>
+#include <boost/unordered_set.hpp>
 #include "builtin_rules.h"
 #include "wildcard.hpp"
 
@@ -41,6 +42,49 @@ namespace hammer { namespace details {
 static boost::regex project_id_pattern("[a-zA-Z0-9_.\\-]+");
 
 static
+const ast::expression*
+project_id_validator(ast::context& ctx,
+                     diagnostic& diag,
+                     const ast::expression* e)
+{
+   if (!e)
+      return e;
+
+   if (const ast::id_expr* id = ast::as<ast::id_expr>(e)) {
+      if (id->id().valid()) {
+         const string& s_id = id->id().to_string();
+         if (s_id == "." || s_id == ".." || !boost::regex_match(s_id, project_id_pattern)) {
+            diag.error(e->start_loc(), "project id should not be '.' or '..' and should match '%s' regex") << project_id_pattern.str().c_str();
+            return new (ctx) ast::error_expression(id);
+         }
+      } // otherwise its empty id
+   } else if (const ast::path* id = ast::as<ast::path>(e)) {
+      if (id->root_name().valid()) {
+         diag.error(id->root_name().start_loc(), "project id cannot have root name");
+         return new (ctx) ast::error_expression(id);
+      }
+
+      for (const ast::expression* pe : id->elements()) {
+         if (const ast::id_expr* e_id = ast::as<ast::id_expr>(pe)) {
+            const string& s_id = e_id->id().to_string();
+            if (s_id == "." || s_id == ".." || !boost::regex_match(s_id, project_id_pattern)) {
+               diag.error(e_id->start_loc(), "project id path element should not be '.' or '..' and should match '%s' regex") << project_id_pattern.str().c_str();
+               return new (ctx) ast::error_expression(id);
+            }
+         } else {
+            diag.error(pe->start_loc(), "project id path element should not contains wildcard elements");
+            return new (ctx) ast::error_expression(id);
+         }
+      }
+   } else {
+      diag.error(e->start_loc(), "project id must be simple ID or path with elements that matches '%s' regex") << project_id_pattern.str().c_str();
+      return new (ctx) ast::error_expression(e);
+   }
+
+   return e;
+}
+
+static
 void process_project_id(invocation_context& ctx,
                         const ast::expression* e)
 {
@@ -48,36 +92,12 @@ void process_project_id(invocation_context& ctx,
       return;
 
    if (const ast::id_expr* id = ast::as<ast::id_expr>(e)) {
-      if (id->id().valid()) {
-         const string& s_id = id->id().to_string();
-         if (s_id == "." || s_id == ".." || !boost::regex_match(s_id, project_id_pattern)) {
-            ctx.diag_.error(e->start_loc(), "project id should not be '.' or '..' and should match '%s' regex") << project_id_pattern.str().c_str();
-            throw ast2objects_semantic_error();
-         }
-         ctx.current_project_.name(s_id);
-      } // otherwise its empty id
-   } else if (const ast::path* id = ast::as<ast::path>(e)) {
-      if (id->root_name().valid()) {
-         ctx.diag_.error(id->root_name().start_loc(), "project id cannot have root name");
-         throw ast2objects_semantic_error();
-      }
-
-      for (const ast::expression* pe : id->elements()) {
-         if (const ast::id_expr* e_id = ast::as<ast::id_expr>(pe)) {
-            const string& s_id = e_id->id().to_string();
-            if (s_id == "." || s_id == ".." || !boost::regex_match(s_id, project_id_pattern)) {
-               ctx.diag_.error(e_id->start_loc(), "project id path element should not be '.' or '..' and should match '%s' regex") << project_id_pattern.str().c_str();
-               throw ast2objects_semantic_error();
-            }
-         } else {
-            ctx.diag_.error(pe->start_loc(), "project id path element should not contains wildcard elements");
-            throw ast2objects_semantic_error();
-         }
-      }
-      ctx.current_project_.name(id->to_string());
+      if (id->id().valid())
+         ctx.current_project_.name(id->id().to_string());
+      // otherwise its empty id
    } else {
-      ctx.diag_.error(e->start_loc(), "project id must be simple ID or path with elements that matches '%s' regex") << project_id_pattern.str().c_str();
-      throw ast2objects_semantic_error();
+      const ast::path* p = ast::as<ast::path>(e);
+      ctx.current_project_.name(p->to_string());
    }
 }
 
@@ -217,14 +237,46 @@ void target_version_alias_rule(target_invocation_context& ctx,
    ctx.current_project_.add_target(move(mt));
 }
 
+static
+const ast::expression*
+use_project_alias_validator(ast::context& ctx,
+                            diagnostic& diag,
+                            const ast::expression* alias)
+{
+   if (ast::as<ast::id_expr>(alias)) {
+      return alias;
+   } else if (const ast::path* p = ast::as<ast::path>(alias)) {
+      if (p->root_name().valid() || p->has_wildcard()) {
+         diag.error(alias->start_loc(), "Argument 'alias': Expected non-root path without wildcards and dots");
+         return new (ctx) ast::error_expression(alias);
+      }
+   } else if (const ast::target_ref* tr = ast::as<ast::target_ref>(alias)) {
+      if (tr->is_public() || !tr->build_request().empty() || tr->target_name().valid()) {
+         diag.error(tr->start_loc(), "Argument 'alias': Expected non-public target reference expression without target name and build request");
+         return new (ctx) ast::error_expression(alias);
+      }
+   } else {
+      diag.error(alias->start_loc(), "Argument 'alias': Expected target or id or path expression");
+      return new (ctx) ast::error_expression(alias);
+   }
+
+   return alias;
+}
 
 static
-bool has_dots(const location_t& l) {
-   for (auto e : l)
-      if (e == "..")
-         return true;
+const ast::expression*
+use_project_location_validator(ast::context& ctx,
+                               diagnostic& diag,
+                               const ast::expression* location)
+{
+   if (const ast::path* p = ast::as<ast::path>(location)) {
+      if (p->has_wildcard()) {
+         diag.error(location->start_loc(), "Argument 'location': wildcards not allowed");
+         return new (ctx) ast::error_expression(location);
+      }
+   }
 
-   return false;
+   return location;
 }
 
 static
@@ -235,83 +287,106 @@ void use_project_rule(invocation_context& ctx,
 {
    std::string project_alias;
 
-   if (const ast::id_expr* id = ast::as<ast::id_expr>(&alias)) {
+   if (const ast::id_expr* id = ast::as<ast::id_expr>(&alias))
       project_alias = id->id().to_string();
-   } else if (const ast::path* p = ast::as<ast::path>(&alias)) {
-      std::string s_path = p->to_string();
-      if (p->root_name().valid() ||
-          s_path.find_first_of("?*") != std::string::npos ||
-          has_dots(location))
-      {
-         // FIXME: How to inform user about correct location?
-         ctx.diag_.error({}, "Argument 'location': Expected non-root path without wildcards and ..");
-         throw std::runtime_error("Sematic error");
-      }
-   } else if (const ast::target_ref* tr = ast::as<ast::target_ref>(&alias)) {
-      if (tr->is_public() || !tr->build_request().empty() || tr->target_name().valid()) {
-         ctx.diag_.error(tr->start_loc(), "Argument 'alias': Expected non-public target reference expression without target name and build request");
-         throw std::runtime_error("Sematic error");
-      }
-
+   else if (const ast::path* p = ast::as<ast::path>(&alias))
+      project_alias = p->to_string();
+   else {
+      const ast::target_ref* tr = ast::as<ast::target_ref>(&alias);
+      // FIXME: we need a way to move this check upper, to ast processing
       if (tr->target_path()->root_name().valid() && ctx.current_project_.is_root()) {
          ctx.diag_.error(alias.start_loc(), "Argument 'alias': Global aliases can be declared only in homroot file");
          throw std::runtime_error("Sematic error");
       }
 
       project_alias = tr->target_path()->to_string();
-   } else {
-      ctx.diag_.error(alias.start_loc(), "Argument 'alias': Expected target or id or path expression");
-      throw std::runtime_error("Sematic error");
    }
 
    ctx.current_project_.get_engine()->add_project_alias(&ctx.current_project_, project_alias, location, props);
 }
 
 static
-feature_attributes
-resolve_attributes(const std::vector<std::string>& attributes)
-{
-   typedef std::vector<std::string>::const_iterator iter;
-   feature_attributes result = {0};
+boost::unordered_set<std::string>
+valid_feature_attributes = {
+   "propagated", "composite", "free", "path",
+  "incidental", "optional", "symmetric",
+  "dependency", "no-defaults", "no-checks",
+  "generated"
+};
 
-   iter i = find(attributes.begin(), attributes.end(), "propagated");
-   if (i != attributes.end())
+// FIXME: we need to create ast::error_expression instead of just diagnose errors
+// FIXME: handle duplicates
+static
+const ast::expression*
+feature_attributes_validator(ast::context& ctx,
+                             diagnostic& diag,
+                             const ast::expression* e)
+{
+   auto handle_one = [&](const ast::expression* e) {
+      if (const ast::id_expr* id = ast::as<ast::id_expr>(e)) {
+         if (valid_feature_attributes.find(id->id().to_string()) == valid_feature_attributes.end())
+            diag.error(id->start_loc(), "Invalid feature attribute");
+      }
+   };
+
+   if (const ast::list_of* l = ast::as<ast::list_of>(e)) {
+      for (const ast::expression* v : l->values())
+         handle_one(v);
+
+      return e;
+   } else
+      handle_one(e);
+
+   return e;
+}
+
+static
+feature_attributes
+resolve_attributes(const std::vector<parscore::identifier>* attributes)
+{
+
+   feature_attributes result = {0};
+   if (!attributes)
+      return result;
+
+   auto i = find(attributes->begin(), attributes->end(), "propagated");
+   if (i != attributes->end())
       result.propagated = true;
 
-   i = find(attributes.begin(), attributes.end(), "composite");
-   if (i != attributes.end())
+   i = find(attributes->begin(), attributes->end(), "composite");
+   if (i != attributes->end())
       result.composite = true;
 
-   i = find(attributes.begin(), attributes.end(), "free");
-   if (i != attributes.end())
+   i = find(attributes->begin(), attributes->end(), "free");
+   if (i != attributes->end())
       result.free = true;
 
-   i = find(attributes.begin(), attributes.end(), "path");
-   if (i != attributes.end())
+   i = find(attributes->begin(), attributes->end(), "path");
+   if (i != attributes->end())
       result.path = true;
 
-   i = find(attributes.begin(), attributes.end(), "incidental");
-   if (i != attributes.end())
+   i = find(attributes->begin(), attributes->end(), "incidental");
+   if (i != attributes->end())
       result.incidental = true;
 
-   i = find(attributes.begin(), attributes.end(), "optional");
-   if (i != attributes.end())
+   i = find(attributes->begin(), attributes->end(), "optional");
+   if (i != attributes->end())
       result.optional = true;
 
-   i = find(attributes.begin(), attributes.end(), "symmetric");
-   if (i != attributes.end())
+   i = find(attributes->begin(), attributes->end(), "symmetric");
+   if (i != attributes->end())
       result.symmetric = true;
 
-   i = find(attributes.begin(), attributes.end(), "dependency");
-   if (i != attributes.end())
+   i = find(attributes->begin(), attributes->end(), "dependency");
+   if (i != attributes->end())
       result.dependency = true;
 
-   i = find(attributes.begin(), attributes.end(), "no-defaults");
-   if (i != attributes.end())
+   i = find(attributes->begin(), attributes->end(), "no-defaults");
+   if (i != attributes->end())
       result.no_defaults = true;
 
-   i = find(attributes.begin(), attributes.end(), "no-checks");
-   if (i != attributes.end())
+   i = find(attributes->begin(), attributes->end(), "no-checks");
+   if (i != attributes->end())
       result.no_checks = true;
 
    return result;
@@ -319,28 +394,16 @@ resolve_attributes(const std::vector<std::string>& attributes)
 
 static
 std::vector<std::string>
-ast2list_of_ids(invocation_context& ctx,
-                const ast::expression* e)
+to_simple_ids(const id_or_list_of_ids_t* values)
 {
    std::vector<std::string> result;
-   if (!e)
+
+   if (!values)
       return result;
 
-   else if (const ast::id_expr* id = ast::as<ast::id_expr>(e)) {
-      result.push_back(id->id().to_string());
-   } else if (const ast::list_of* list = ast::as<ast::list_of>(e)) {
-      for (auto le : list->values()) {
-         if (const ast::id_expr* id = ast::as<ast::id_expr>(le))
-            result.push_back(id->id().to_string());
-         else {
-            ctx.diag_.error(le->start_loc(), "Expected id or list of ids expression");
-            throw std::runtime_error("Sematic error");
-         }
-      }
-   } else {
-      ctx.diag_.error(e->start_loc(), "Expected id or list of ids expression");
-      throw std::runtime_error("Sematic error");
-   }
+   transform(values->begin(), values->end(), back_inserter(result), [&](const parscore::identifier& v){
+      return v.to_string();
+   });
 
    return result;
 }
@@ -348,31 +411,30 @@ ast2list_of_ids(invocation_context& ctx,
 static
 void feature_feature_rule(invocation_context& ctx,
                           const parscore::identifier& name,
-                          const ast::expression* ast_values,
-                          const ast::expression* ast_attributes)
+                          const id_or_list_of_ids_t* values_,
+                          const id_or_list_of_ids_t* attributes)
 {
-   std::vector<std::string> values = ast2list_of_ids(ctx, ast_values);
+   std::vector<std::string> values = to_simple_ids(values_);
    feature_def::legal_values_t legal_values;
    transform(values.begin(), values.end(), back_inserter(legal_values), [](const string& v) -> feature_def::legal_value {
       return { v, {} };
    });
 
-   std::vector<std::string> attributes = ast2list_of_ids(ctx, ast_attributes);
    ctx.current_project_.get_engine()->feature_registry().add_feature_def(name.to_string(), legal_values, resolve_attributes(attributes));
 }
 
 static
 void feature_local_rule(invocation_context& ctx,
                         const parscore::identifier& name,
-                        const ast::expression* ast_values,
-                        const ast::expression* ast_attributes)
+                        const id_or_list_of_ids_t* values_,
+                        const id_or_list_of_ids_t* attributes)
 {
-   std::vector<std::string> values = ast2list_of_ids(ctx, ast_values);
+   std::vector<std::string> values = to_simple_ids(values_);
    feature_def::legal_values_t legal_values;
    transform(values.begin(), values.end(), back_inserter(legal_values), [](const string& v) -> feature_def::legal_value {
       return { v, {} };
    });
-   std::vector<std::string> attributes = ast2list_of_ids(ctx, ast_attributes);
+
    ctx.current_project_.local_feature_registry().add_feature_def(name.to_string(), legal_values, resolve_attributes(attributes));
 }
 
@@ -827,10 +889,10 @@ void setup_warehouse_rule(invocation_context& ctx,
 
 void install_builtin_rules(rule_manager& rm)
 {
-   rm.add_rule("project", project_rule, {"id", "requirements", "usage-requirements"});
-   rm.add_rule("use-project", use_project_rule, {"alias", "location", "requirements"});
-   rm.add_rule("feature.feature", feature_feature_rule, {"name", "values", "attributes"});
-   rm.add_rule("feature.local", feature_local_rule, {"name", "values", "attributes"});
+   rm.add_rule("project", project_rule, {{"id", project_id_validator}, "requirements", "usage-requirements"});
+   rm.add_rule("use-project", use_project_rule, {{"alias", use_project_alias_validator}, {"location", use_project_location_validator}, "requirements"});
+   rm.add_rule("feature.feature", feature_feature_rule, {"name", "values", {"attributes", feature_attributes_validator}});
+   rm.add_rule("feature.local", feature_local_rule, {"name", "values", {"attributes", feature_attributes_validator}});
    rm.add_rule("feature.compose", feature_compose_rule, {"feature", "components"});
    rm.add_rule("feature.subfeature", feature_subfeature_rule, {"feature-name", "subfeature-name"});
    rm.add_rule("variant", variant_rule, {"name", "base", "components"});

@@ -30,7 +30,7 @@ void lib_rule(target_invocation_context& ctx,
 BOOST_AUTO_TEST_CASE(lib_rule_test)
 {
    const identifier rule_id("lib");
-   vector<identifier> rule_arg_names = { "id" };
+   vector<rule_argument_decl> rule_arg_names = { "id" };
 
    rule_manager m;
    m.add_target(rule_id, lib_rule, rule_arg_names);
@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE(lib_rule_test)
    
    BOOST_REQUIRE_EQUAL(rd.arguments().size(), 2);
    BOOST_CHECK(rd.arguments()[1].type() == rule_argument_type::identifier);
-   BOOST_CHECK_EQUAL(rd.arguments()[1].name(), rule_arg_names[0]);
+   BOOST_CHECK_EQUAL(rd.arguments()[1].name(), rule_arg_names[0].name_);
    BOOST_CHECK_EQUAL(rd.arguments()[1].is_optional(), false);
 }
 
@@ -61,7 +61,7 @@ void exe_rule(invocation_context& ctx,
 BOOST_AUTO_TEST_CASE(exe_rule_test)
 {  
    const identifier rule_id("exe");
-   vector<identifier> rule_arg_names = { "id", "sources", "requirements" };
+   vector<rule_argument_decl> rule_arg_names = { "id", "sources", "requirements" };
 
    rule_manager m;
    m.add_rule(rule_id, exe_rule, rule_arg_names);
@@ -77,15 +77,15 @@ BOOST_AUTO_TEST_CASE(exe_rule_test)
    BOOST_REQUIRE_EQUAL(rd.arguments().size(), 4);
    
    BOOST_CHECK(rd.arguments()[1].type() == rule_argument_type::identifier);
-   BOOST_CHECK_EQUAL(rd.arguments()[1].name(), rule_arg_names[0]);
+   BOOST_CHECK_EQUAL(rd.arguments()[1].name(), rule_arg_names[0].name_);
    BOOST_CHECK_EQUAL(rd.arguments()[1].is_optional(), false);
 
    BOOST_CHECK(rd.arguments()[2].type() == rule_argument_type::sources);
-   BOOST_CHECK_EQUAL(rd.arguments()[2].name(), rule_arg_names[1]);
+   BOOST_CHECK_EQUAL(rd.arguments()[2].name(), rule_arg_names[1].name_);
    BOOST_CHECK_EQUAL(rd.arguments()[2].is_optional(), false);
 
    BOOST_CHECK(rd.arguments()[3].type() == rule_argument_type::feature_set);
-   BOOST_CHECK_EQUAL(rd.arguments()[3].name(), rule_arg_names[2]);
+   BOOST_CHECK_EQUAL(rd.arguments()[3].name(), rule_arg_names[2].name_);
    BOOST_CHECK_EQUAL(rd.arguments()[3].is_optional(), true);
 }
 
@@ -107,7 +107,7 @@ void invoke_function_1(invocation_context& ctx,
 BOOST_AUTO_TEST_CASE(invoke_test_1)
 {
    const identifier rule_id("invoke_function_1");
-   vector<identifier> rule_arg_names = { "id_1", "id_2", "id_3" };
+   vector<rule_argument_decl> rule_arg_names = { "id_1", "id_2", "id_3" };
 
    rule_manager m;
    m.add_rule(rule_id, invoke_function_1, rule_arg_names);
@@ -154,7 +154,7 @@ invoke_function_2(target_invocation_context& ctx,
 BOOST_AUTO_TEST_CASE(invoke_test_2)
 {
    const identifier rule_id("invoke_function_2");
-   vector<identifier> rule_arg_names = { "id_1" };
+   vector<rule_argument_decl> rule_arg_names = { "id_1" };
 
    rule_manager m;
    m.add_target(rule_id, invoke_function_2, rule_arg_names);

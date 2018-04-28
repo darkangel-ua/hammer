@@ -22,7 +22,7 @@ class path : public expression
 
 		const parscore::token& root_name() const { return root_name_; }
 		const expressions_t& elements() const { return elements_; }
-		parscore::source_location start_loc() const override { return elements_.front()->start_loc(); }
+		parscore::source_location start_loc() const override { return root_name_.valid() ? root_name_.start_loc() : elements_.front()->start_loc(); }
 		bool accept(visitor& v) const override;
 		std::string to_string() const;
       bool has_wildcard() const;

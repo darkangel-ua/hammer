@@ -31,6 +31,47 @@ struct parser_context
 
 }
 
+// this is our custom hackish version of createTokenFromToken method copied from antlr3 lib
+// FIXME: I don't really know is this correct or not.
+//        I need input & lineStart fields for source_location::line_content to work
+static
+pANTLR3_COMMON_TOKEN
+createTokenFromToken(pANTLR3_BASE_TREE_ADAPTOR adaptor,
+                     pANTLR3_COMMON_TOKEN fromToken)
+{
+    pANTLR3_COMMON_TOKEN    newToken;
+
+    newToken	= adaptor->tokenFactory->newToken(adaptor->tokenFactory);
+
+    if (newToken != NULL) {
+		// Create the text using our own string factory to avoid complicating
+		// commontoken.
+		//
+		pANTLR3_STRING	text;
+
+		newToken->toString  = fromToken->toString;
+
+		if	(fromToken->textState == ANTLR3_TEXT_CHARP) {
+			newToken->textState		= ANTLR3_TEXT_CHARP;
+			newToken->tokText.chars	= fromToken->tokText.chars;
+		} else {
+			text						= fromToken->getText(fromToken);
+			newToken->textState			= ANTLR3_TEXT_STRING;
+			newToken->tokText.text	    = adaptor->strFactory->newPtr(adaptor->strFactory, text->chars, text->len);
+		}
+
+		newToken->setLine				(newToken, fromToken->getLine(fromToken));
+		newToken->setTokenIndex			(newToken, fromToken->getTokenIndex(fromToken));
+		newToken->setCharPositionInLine	(newToken, fromToken->getCharPositionInLine(fromToken));
+		newToken->setChannel			(newToken, fromToken->getChannel(fromToken));
+		newToken->setType				(newToken, fromToken->getType(fromToken));
+      newToken->input = fromToken->input;
+      newToken->lineStart = fromToken->lineStart;
+    }
+
+    return  newToken;
+}
+
 static
 ast_hamfile_ptr
 parse(std::unique_ptr<parser_context> ctx,
@@ -39,6 +80,8 @@ parse(std::unique_ptr<parser_context> ctx,
    ctx->lexer_ = hammer_v2LexerNew(ctx->input_);
    ctx->tstream_ = antlr3CommonTokenStreamSourceNew(ANTLR3_SIZE_HINT, TOKENSOURCE(ctx->lexer_));
    ctx->parser_ = hammer_v2ParserNew(ctx->tstream_);
+   ctx->parser_->adaptor->createTokenFromToken = createTokenFromToken;
+
    ctx->langAST_ = ctx->parser_->hamfile(ctx->parser_);
 //   pANTLR3_STRING s = langAST_.tree->toStringTree(langAST_.tree);
    // FIXME: quick hack to be fixed later

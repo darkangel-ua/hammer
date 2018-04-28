@@ -1,0 +1,21 @@
+path_test ./test ;
+path_test ./*/foo ; #error: Wildcards not allowed here
+path_test /foo ; #error: Path expected
+
+paths_test ./test ;
+paths_test ./foo ./bar ;
+paths_test ./*.cpp ; #error: Wildcards not allowed here
+paths_test ./*.cpp ./bar ; #error: Wildcards not allowed here
+paths_test /foo ; #error: Argument 'paths': Path or list of paths expected
+paths_test ./test /foo ; #error: Path expected
+
+wcpath_test ./test ;
+wcpath_test ./*.cpp ;
+wcpath_test /bar ; #error: Argument 'path': Path expected
+
+wcpaths_test ./test ;
+wcpaths_test ./foo ./bar ;
+wcpaths_test ./*.cpp ; 
+wcpaths_test ./*.cpp ./bar ;
+wcpaths_test /foo ; #error: Argument 'paths': Path or list of paths expected
+wcpaths_test ./test /foo ; #error: Path expected

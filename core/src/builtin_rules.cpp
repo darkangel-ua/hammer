@@ -264,22 +264,6 @@ use_project_alias_validator(ast::context& ctx,
 }
 
 static
-const ast::expression*
-use_project_location_validator(ast::context& ctx,
-                               diagnostic& diag,
-                               const ast::expression* location)
-{
-   if (const ast::path* p = ast::as<ast::path>(location)) {
-      if (p->has_wildcard()) {
-         diag.error(location->start_loc(), "Argument 'location': wildcards not allowed");
-         return new (ctx) ast::error_expression(location);
-      }
-   }
-
-   return location;
-}
-
-static
 void use_project_rule(invocation_context& ctx,
                       const ast::expression& alias,
                       const location_t& location,
@@ -527,36 +511,51 @@ void rglob_impl(sources_decl& result,
 }
 
 static
+const ast::expression*
+glob_patterns_validator(ast::context& ctx,
+                        diagnostic& diag,
+                        const ast::expression* e)
+{
+   auto check_path = [&](const ast::expression* e) -> const ast::expression* {
+      if (const ast::path* p = ast::as<ast::path>(e)) {
+         if (!p->has_wildcard()) {
+            diag.error(e->start_loc(), "Path with wildcard expected");
+            return new (ctx) ast::error_expression(e);
+         }
+      }
+
+      return e;
+   };
+
+   if (const ast::list_of* l = ast::as<ast::list_of>(e)) {
+      ast::expressions_t values(ast::expressions_t::allocator_type{ctx});
+      for (const ast::expression* el : l->values())
+         values.push_back(check_path(el));
+
+      return new (ctx) ast::list_of(values);
+   }
+
+   return e;
+}
+
+static
 std::unique_ptr<sources_decl>
 glob_rule_impl(invocation_context& ctx,
-               const path_or_list_of_paths_t& patterns,
+               const wcpath_or_list_of_wcpaths_t& patterns,
                const path_or_list_of_paths_t* exceptions,
                const bool recursive)
 {
    auto result = boost::make_unique<sources_decl>();
    std::vector<std::string> s_exceptions;
-   if (exceptions) {
-      if (auto p = boost::get<location_t>(exceptions))
-         s_exceptions.push_back(p->string());
-      else {
-         const std::vector<location_t>& paths = *boost::get<std::vector<location_t>>(exceptions);
-         transform(paths.begin(), paths.end(), back_inserter(s_exceptions), [](const location_t& l) { return l.string(); });
-      }
-   }
+   if (exceptions)
+      transform(exceptions->begin(), exceptions->end(), back_inserter(s_exceptions), [](const location_t& l) { return l.string(); });
 
-   std::vector<location_t> s_patterns;
-   if (auto p = boost::get<location_t>(&patterns))
-      s_patterns.push_back(p->string());
-   else {
-      const std::vector<location_t>& paths = boost::get<std::vector<location_t>>(patterns);
-      transform(paths.begin(), paths.end(), back_inserter(s_patterns), [](const location_t& l) { return l.string(); });
-   }
+   std::vector<location_t> l_patterns;
+   transform(patterns.begin(), patterns.end(), back_inserter(l_patterns), [](const wcpath& p) { return p.to_location(); });
 
-   for (auto& l_pattern : s_patterns ) {
+   for (auto& l_pattern : l_patterns ) {
       const string pattern = l_pattern.string();
       string::size_type mask_pos = pattern.find_first_of("*?");
-      if (mask_pos == string::npos)
-         throw runtime_error("[glob] You must specify patterns to match");
       string::size_type separator_pos = pattern.find_last_of("/\\", mask_pos);
       fs::path relative_path(separator_pos == string::npos ? fs::path() : fs::path(pattern.begin(),
                                                                           pattern.begin() + separator_pos));
@@ -568,14 +567,13 @@ glob_rule_impl(invocation_context& ctx,
          glob_impl(*result, searching_path, relative_path, wildcard, &s_exceptions, ctx.current_project_.get_engine()->get_type_registry());
    }
 
-   result->unique();
    return result;
 }
 
 static
 std::unique_ptr<sources_decl>
 glob_rule(invocation_context& ctx,
-          const path_or_list_of_paths_t& patterns,
+          const wcpath_or_list_of_wcpaths_t& patterns,
           const path_or_list_of_paths_t* exceptions)
 {
    return glob_rule_impl(ctx, patterns, exceptions, false);
@@ -584,7 +582,7 @@ glob_rule(invocation_context& ctx,
 static
 std::unique_ptr<sources_decl>
 rglob_rule(invocation_context& ctx,
-           const path_or_list_of_paths_t& patterns,
+           const wcpath_or_list_of_wcpaths_t& patterns,
            const path_or_list_of_paths_t* exceptions)
 {
    return glob_rule_impl(ctx, patterns, exceptions, true);
@@ -890,14 +888,14 @@ void setup_warehouse_rule(invocation_context& ctx,
 void install_builtin_rules(rule_manager& rm)
 {
    rm.add_rule("project", project_rule, {{"id", project_id_validator}, "requirements", "usage-requirements"});
-   rm.add_rule("use-project", use_project_rule, {{"alias", use_project_alias_validator}, {"location", use_project_location_validator}, "requirements"});
+   rm.add_rule("use-project", use_project_rule, {{"alias", use_project_alias_validator}, "location", "requirements"});
    rm.add_rule("feature.feature", feature_feature_rule, {"name", "values", {"attributes", feature_attributes_validator}});
    rm.add_rule("feature.local", feature_local_rule, {"name", "values", {"attributes", feature_attributes_validator}});
    rm.add_rule("feature.compose", feature_compose_rule, {"feature", "components"});
    rm.add_rule("feature.subfeature", feature_subfeature_rule, {"feature-name", "subfeature-name"});
    rm.add_rule("variant", variant_rule, {"name", "base", "components"});
-   rm.add_rule("glob", glob_rule, {"patterns", "exceptions"});
-   rm.add_rule("rglob", rglob_rule, {"patterns", "exceptions"});
+   rm.add_rule("glob", glob_rule, {{"patterns", glob_patterns_validator}, "exceptions"});
+   rm.add_rule("rglob", rglob_rule, {{"patterns", glob_patterns_validator}, "exceptions"});
    rm.add_target("exe", exe_rule, {"name", "sources", "requirements", "default-build", "usage-requirements"});
    rm.add_target("lib", lib_rule, {"name", "sources", "requirements", "default-build", "usage-requirements"});
    rm.add_target("alias", alias_rule, {"name", "sources", "requirements", "usage-requirements"});

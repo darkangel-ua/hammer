@@ -357,13 +357,95 @@ actions_impl::process_usage_requirements_arg(const rule_argument& ra,
 }
 
 const expression*
-actions_impl::process_path_like_seq_arg(const rule_argument& ra,
-                                        const expression* arg)
+actions_impl::process_path_arg(const rule_argument& ra,
+                               const expression* arg)
 {
-   if (as<ast::path>(arg))
+   if (const path* p = as<path>(arg)) {
+      for (const expression* pe : p->elements()) {
+         if (ast::as<id_expr>(pe))
+            continue;
+         else { // its wildcard list_of
+            diag_.error(pe->start_loc(), "Wildcards not allowed here");
+            return new (ctx_) error_expression(arg);
+         }
+      }
+
+      return arg;
+   }
+
+   diag_.error(arg->start_loc(), "Path expected");
+   return new (ctx_) error_expression(arg);
+}
+
+const expression*
+actions_impl::process_path_or_list_of_paths(const rule_argument& ra,
+                                            const expression* arg)
+{
+   auto check_path = [&](const expression* e) -> const expression* {
+      if (const path* p = as<path>(e)) {
+         for (const expression* pe : p->elements()) {
+            if (ast::as<id_expr>(pe))
+               continue;
+            else { // its wildcard list_of
+               diag_.error(pe->start_loc(), "Wildcards not allowed here");
+               return new (ctx_) error_expression(e);
+            }
+         }
+
+         return e;
+      } else {
+         diag_.error(e->start_loc(), "Path expected");
+         return new (ctx_) error_expression(e);
+      }
+   };
+
+   if (const list_of* l = as<list_of>(arg)) {
+      expressions_t elements{expressions_t::allocator_type{ctx_}};
+      for (auto le : l->values())
+         elements.push_back(check_path(le));
+
+      return new (ctx_) list_of(elements);
+   } else if (as<path>(arg))
+      return check_path(arg);
+
+   diag_.error(arg->start_loc(), "Argument '%s': Path or list of paths expected") << ra.name();
+   return new (ctx_) error_expression(arg);
+}
+
+const expression*
+actions_impl::process_wcpath_arg(const rule_argument& ra,
+                                 const expression* arg)
+{
+   if (as<path>(arg))
       return arg;
 
-   diag_.error(arg->start_loc(), "Argument '%s': must be path like sequence") << ra.name();
+   diag_.error(arg->start_loc(), "Argument '%s': Path expected") << ra.name();
+   return new (ctx_) error_expression(arg);
+}
+
+const expression*
+actions_impl::process_wcpath_or_list_of_wcpaths(const rule_argument& ra,
+                                                const expression* arg)
+{
+   auto check_path = [&](const expression* e) -> const expression* {
+      if (as<path>(e))
+         return e;
+      else {
+         diag_.error(e->start_loc(), "Path expected");
+         return new (ctx_) error_expression(e);
+      }
+   };
+
+   if (const list_of* l = as<list_of>(arg)) {
+      expressions_t elements{expressions_t::allocator_type{ctx_}};
+      for (auto le : l->values())
+         elements.push_back(check_path(le));
+
+      return new (ctx_) list_of(elements);
+   } else if (as<path>(arg))
+      return check_path(arg);
+
+   diag_.error(arg->start_loc(), "Argument '%s': Path or list of paths expected") << ra.name();
    return new (ctx_) error_expression(arg);
 }
 
@@ -377,27 +459,6 @@ actions_impl::process_feature_of_feature_set_arg(const rule_argument& ra,
       return process_feature_set_arg(ra, arg);
 
    diag_.error(arg->start_loc(), "Argument '%s': expected feature or feature list") << ra.name();
-   return new (ctx_) error_expression(arg);
-}
-
-const expression*
-actions_impl::process_path_or_list_of_paths(const rule_argument& ra,
-                                            const expression* arg)
-{
-   if (as<ast::path>(arg))
-      return arg;
-   else if (const ast::list_of* l = ast::as<ast::list_of>(arg)) {
-      for (auto le : l->values()) {
-         if (!ast::as<path>(le)) {
-            diag_.error(le->start_loc(), "Expected path") << ra.name();
-            return new (ctx_) error_expression(arg);
-         }
-      }
-
-      return arg;
-   }
-
-   diag_.error(arg->start_loc(), "Argument '%s': expected path or list of paths") << ra.name();
    return new (ctx_) error_expression(arg);
 }
 
@@ -416,10 +477,12 @@ actions_impl::process_one_arg(const rule_argument& ra,
    if (ra.is_optional() && is_a<empty_expr>(arg))
       return arg;
 
+   const auto error_count = diag_.error_count();
    arg = ra.ast_transformer() ? ra.ast_transformer()(ctx_, diag_, arg) : arg;
+   if (error_count != diag_.error_count())
+      return arg;
 
-   switch(ra.type())
-   {
+   switch(ra.type()) {
       case rule_argument_type::identifier:
          return process_identifier_arg(ra, arg);
 
@@ -442,16 +505,22 @@ actions_impl::process_one_arg(const rule_argument& ra,
          return process_usage_requirements_arg(ra, arg);
 
       case rule_argument_type::path:
-         return process_path_like_seq_arg(ra, arg);
+         return process_path_arg(ra, arg);
+
+      case rule_argument_type::path_or_list_of_paths:
+         return process_path_or_list_of_paths(ra, arg);
+
+      case rule_argument_type::wcpath:
+         return process_wcpath_arg(ra, arg);
+
+      case rule_argument_type::wcpath_or_list_of_wcpaths:
+         return process_wcpath_or_list_of_wcpaths(ra, arg);
 
       case rule_argument_type::ast_expression:
          return arg;
 
       case rule_argument_type::feature_or_feature_set:
          return process_feature_of_feature_set_arg(ra, arg);
-
-      case rule_argument_type::path_or_list_of_paths:
-         return process_path_or_list_of_paths(ra, arg);
 
       default:
          assert(false && "Unknown argument type");

@@ -110,15 +110,20 @@ class actions_impl : public actions
 		process_usage_requirements_arg(const rule_argument& ra,
 												 const ast::expression* arg);
 		const ast::expression*
-		process_path_like_seq_arg(const rule_argument& ra,
-										  const ast::expression* arg);
-		const ast::expression*
-		process_feature_of_feature_set_arg(const rule_argument& ra,
-													  const ast::expression* arg);
+		process_path_arg(const rule_argument& ra,
+                       const ast::expression* arg);
 		const ast::expression*
 		process_path_or_list_of_paths(const rule_argument& ra,
  										      const ast::expression* arg);
-
+      const ast::expression*
+		process_wcpath_arg(const rule_argument& ra,
+                         const ast::expression* arg);
+		const ast::expression*
+		process_wcpath_or_list_of_wcpaths(const rule_argument& ra,
+ 										          const ast::expression* arg);
+      const ast::expression*
+		process_feature_of_feature_set_arg(const rule_argument& ra,
+													  const ast::expression* arg);
 };
 
 }}

@@ -41,8 +41,10 @@ enum class rule_argument_type {
 	sources,
 	requirement_set,
 	usage_requirements,
-	path,
+	path,  // wildcards not allowed
 	path_or_list_of_paths,
+   wcpath, // wildcards allowed
+   wcpath_or_list_of_wcpaths,
 	target_ref,
 	ast_expression
 };

@@ -314,18 +314,43 @@ ast2path(invocation_context& ctx,
 }
 
 static
+std::unique_ptr<wcpath>
+ast2wcpath(invocation_context& ctx,
+           const ast::path& path)
+{
+   return boost::make_unique<wcpath>(path.to_string());
+}
+
+static
 std::unique_ptr<path_or_list_of_paths_t>
 ast2path_or_list_of_paths(invocation_context& ctx,
                           const ast::expression& e)
 {
    if (const ast::path* p = ast::as<ast::path>(&e))
-      return boost::make_unique<path_or_list_of_paths_t>(*ast2path(ctx, *p));
+      return boost::make_unique<path_or_list_of_paths_t>(path_or_list_of_paths_t{*ast2path(ctx, *p)});
    else if (const ast::list_of* l = ast::as<ast::list_of>(&e)) {
       std::vector<location_t> paths;
       for (const ast::expression* le : l->values())
          paths.push_back(*ast2path(ctx, *ast::as<ast::path>(le)));
 
       return boost::make_unique<path_or_list_of_paths_t>(std::move(paths));
+   } else
+      throw std::runtime_error("ast2feature_or_feature_set: Unexpected AST node");
+}
+
+static
+std::unique_ptr<wcpath_or_list_of_wcpaths_t>
+ast2wcpath_or_list_of_wcpaths(invocation_context& ctx,
+                              const ast::expression& e)
+{
+   if (const ast::path* p = ast::as<ast::path>(&e))
+      return boost::make_unique<wcpath_or_list_of_wcpaths_t>(wcpath_or_list_of_wcpaths_t{*ast2wcpath(ctx, *p)});
+   else if (const ast::list_of* l = ast::as<ast::list_of>(&e)) {
+      std::vector<wcpath> paths;
+      for (const ast::expression* le : l->values())
+         paths.push_back(*ast2wcpath(ctx, *ast::as<ast::path>(le)));
+
+      return boost::make_unique<wcpath_or_list_of_wcpaths_t>(std::move(paths));
    } else
       throw std::runtime_error("ast2feature_or_feature_set: Unexpected AST node");
 }
@@ -410,6 +435,20 @@ void handle_one_arg(invocation_context& ctx,
 
          case rule_argument_type::path_or_list_of_paths: {
             rule_manager_arg_ptr arg(new rule_manager_arg<path_or_list_of_paths_t>(ast2path_or_list_of_paths(ctx, *e)));
+            args.push_back(move(arg));
+            break;
+         }
+
+         case rule_argument_type::wcpath: {
+            const ast::path* path = ast::as<ast::path>(e);
+            assert(path);
+            rule_manager_arg_ptr arg(new rule_manager_arg<wcpath>(ast2wcpath(ctx, *path)));
+            args.push_back(move(arg));
+            break;
+         }
+
+         case rule_argument_type::wcpath_or_list_of_wcpaths: {
+            rule_manager_arg_ptr arg(new rule_manager_arg<wcpath_or_list_of_wcpaths_t>(ast2wcpath_or_list_of_wcpaths(ctx, *e)));
             args.push_back(move(arg));
             break;
          }

@@ -28,6 +28,7 @@ class test_requirements;
 class test_sources{};
 class test_feature_set;
 class test_path;
+class test_wcpath;
 class test_usage_requirements;
 class test_feature;
 
@@ -42,6 +43,12 @@ namespace hammer {
    struct rule_argument_type_info<test_feature> { static const rule_argument_type ast_type = rule_argument_type::feature; };
    template<>
    struct rule_argument_type_info<test_path> { static const rule_argument_type ast_type = rule_argument_type::path; };
+   template<>
+   struct rule_argument_type_info<vector<test_path>> { static const rule_argument_type ast_type = rule_argument_type::path_or_list_of_paths; };
+   template<>
+   struct rule_argument_type_info<test_wcpath> { static const rule_argument_type ast_type = rule_argument_type::wcpath; };
+   template<>
+   struct rule_argument_type_info<vector<test_wcpath>> { static const rule_argument_type ast_type = rule_argument_type::wcpath_or_list_of_wcpaths; };
    template<>
    struct rule_argument_type_info<test_usage_requirements> { static const rule_argument_type ast_type = rule_argument_type::usage_requirements; };
 }
@@ -77,7 +84,7 @@ void exe_rule(target_invocation_context& ctx,
 static
 std::unique_ptr<test_sources>
 glob_rule(invocation_context& ctx,
-          const test_path& pattern)
+          const test_wcpath& pattern)
 {
    return {};
 }
@@ -85,7 +92,7 @@ glob_rule(invocation_context& ctx,
 static
 std::unique_ptr<test_sources>
 rglob_rule(invocation_context& ctx,
-           const test_path& pattern)
+           const test_wcpath& pattern)
 {
    return {};
 }
@@ -117,6 +124,30 @@ void feature_set_test_rule(invocation_context& ctx,
 static
 void sources_test_rule(invocation_context& ctx,
                        const test_sources&)
+{
+}
+
+static
+void path_test_rule(invocation_context& ctx,
+                    const test_path&)
+{
+}
+
+static
+void paths_test_rule(invocation_context& ctx,
+                     const vector<test_path>&)
+{
+}
+
+static
+void wcpath_test_rule(invocation_context& ctx,
+                      const test_wcpath&)
+{
+}
+
+static
+void wcpaths_test_rule(invocation_context& ctx,
+                       const vector<test_wcpath>&)
 {
 }
 
@@ -199,7 +230,7 @@ void checked_diagnostic::report(const char* formated_message)
       else {
          reported_lines_.insert({line_number, formated_message});
          BOOST_CHECK_EQUAL(i->second.second, type);
-         BOOST_CHECK_EQUAL(i->second.first, m[3]);
+         BOOST_CHECK_MESSAGE(i->second.first == m[3], "[" + i->second.first + "!=" + m[3] + "] line number " + to_string(line_number));
       }
    } else
       BOOST_CHECK(false && "Unknown diagnostic format");
@@ -211,7 +242,7 @@ void checked_diagnostic::report_unreported_diagnostics() const
 
    for (const auto& i : expected_diags_) {
       if (reported_lines_.find(i.first) == reported_lines_.end())
-         BOOST_CHECK_MESSAGE(false, string("Diagnostic '") + i.second.first + "' was not reported");
+         BOOST_CHECK_MESSAGE(false, string("Diagnostic '") + i.second.first + "' was not reported at line " + to_string(i.first));
       else
          covered_lines.insert(i.first);
    }
@@ -258,6 +289,10 @@ void test_function(const fs::path& hamfile)
    rule_manager.add_rule("feature_set_test", feature_set_test_rule, {"feature_set"});
    rule_manager.add_rule("sources_test", sources_test_rule, {"sources"});
    rule_manager.add_rule("user_definded_ast_transformer_test", user_defined_ast_transformer_test_rule, {{"id-list", user_defined_ast_transformer_test_transformer}});
+   rule_manager.add_rule("path_test", path_test_rule, {"path"});
+   rule_manager.add_rule("paths_test", paths_test_rule, {"paths"});
+   rule_manager.add_rule("wcpath_test", wcpath_test_rule, {"path"});
+   rule_manager.add_rule("wcpaths_test", wcpaths_test_rule, {"paths"});
 
    ast::context ctx;
    sema::actions_impl actions(ctx, rule_manager, diag);

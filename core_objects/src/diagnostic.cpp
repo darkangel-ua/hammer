@@ -113,8 +113,10 @@ void diagnostic::format_message()
 
 void diagnostic::add_source_snippet()
 {
-   stream_ << loc_.line_content() << std::endl
-           << std::setw(loc_.char_pos() + 1) << ' ' << '^' << std::endl;
+   stream_ << loc_.line_content() << std::endl;
+   if (loc_.char_pos())
+      stream_ << std::setw(loc_.char_pos()) << ' ';
+   stream_ << '^' << std::endl;
 }
 
 void streamed_diagnostic::report(const char* formated_message)

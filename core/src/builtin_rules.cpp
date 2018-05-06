@@ -393,10 +393,10 @@ to_simple_ids(const id_or_list_of_ids_t* values)
 }
 
 static
-void feature_feature_rule(invocation_context& ctx,
-                          const parscore::identifier& name,
-                          const id_or_list_of_ids_t* values_,
-                          const id_or_list_of_ids_t* attributes)
+void feature_rule(invocation_context& ctx,
+                  const parscore::identifier& name,
+                  const id_or_list_of_ids_t* values_,
+                  const id_or_list_of_ids_t* attributes)
 {
    std::vector<std::string> values = to_simple_ids(values_);
    feature_def::legal_values_t legal_values;
@@ -889,7 +889,7 @@ void install_builtin_rules(rule_manager& rm)
 {
    rm.add_rule("project", project_rule, {{"id", project_id_validator}, "requirements", "usage-requirements"});
    rm.add_rule("use-project", use_project_rule, {{"alias", use_project_alias_validator}, "location", "requirements"});
-   rm.add_rule("feature.feature", feature_feature_rule, {"name", "values", {"attributes", feature_attributes_validator}});
+   rm.add_rule("feature", feature_rule, {"name", "values", {"attributes", feature_attributes_validator}});
    rm.add_rule("feature.local", feature_local_rule, {"name", "values", {"attributes", feature_attributes_validator}});
    rm.add_rule("feature.compose", feature_compose_rule, {"feature", "components"});
    rm.add_rule("feature.subfeature", feature_subfeature_rule, {"feature-name", "subfeature-name"});

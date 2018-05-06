@@ -1,0 +1,3 @@
+#options: load-should-fail=true
+#unknown feature should leads to error
+exe test : main.cpp : <foo>bar ;

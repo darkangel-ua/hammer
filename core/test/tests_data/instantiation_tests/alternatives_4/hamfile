@@ -1,6 +1,6 @@
 # tests that we correctly choose between catch-all alternative and second one
 
-feature.feature bar : bar_1 bar_2 ;
+feature bar : bar_1 bar_2 ;
 
 exe test : main.cpp src/<bar>bar_1 ;
 

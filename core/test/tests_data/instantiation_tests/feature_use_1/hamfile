@@ -1,7 +1,7 @@
 #testing correct behavious of usage requirements calculation when
 #passing target build requirements
 
-feature.feature all-static : on : propagated composite no-defaults ;
+feature all-static : on : propagated composite no-defaults ;
 feature.compose <all-static>on : <link>static ;
 
 lib lib5 

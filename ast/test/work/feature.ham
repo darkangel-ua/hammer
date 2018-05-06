@@ -11,3 +11,11 @@ feature_test <library>(/boost/test) ;
 
 #public target
 feature_test <library>(@foo) ;
+
+feature_test <foo>bar ; #error: Argument 'feature': Unknown feature 'foo'
+
+#now define foo and try again
+feature foo ;
+feature_test <foo>bar ;
+
+feature foo; #error: Feature 'foo' already defined

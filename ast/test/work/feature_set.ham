@@ -1,2 +1,5 @@
 feature_set_test <link>static ;
 feature_set_test <link>static <define>foo ;
+
+feature_set_test <foo>bar ; #error: Argument 'feature_set': Unknown feature 'foo'
+feature_set_test <link>static <foo>bar ; #error: Argument 'feature_set': Unknown feature 'foo'

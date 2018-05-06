@@ -1,3 +1,4 @@
+# OK tests
 usage_requirements_test <define>FOO;
 usage_requirements_test <define>FOO <define>BAR;
 usage_requirements_test (<define>FOO -> <define>BAR);
@@ -6,3 +7,24 @@ usage_requirements_test (<define>FOO || <define>TTT -> <define>BAR);
 usage_requirements_test (<define>FOO && <define>TTT -> <define>BAR);
 usage_requirements_test (<define>TEST || <define>FOO && <define>TTT -> <define>BAR);
 usage_requirements_test (<define>FOO && <define>TTT || <define>TEST -> <define>BAR);
+
+# bad 'public' usage
+usage_requirements_test @<define>FFF; #error: Argument 'usage-requirements': Public expressions is not allowed here
+usage_requirements_test <define>FFF @<define>BBB; #error: Argument 'usage-requirements': Public expressions is not allowed here
+usage_requirements_test @(<define>FFF -> <define>BBB); #error: Argument 'usage-requirements': Public expressions is not allowed here
+usage_requirements_test (<define>FFF -> @<define>BBB); #error: Argument 'usage-requirements': Public expressions is not allowed here
+usage_requirements_test <source>(@test); #error: Argument 'usage-requirements': Public target is not allowed here
+usage_requirements_test (<define>FOO -> <source>(@foo)); #error: Argument 'usage-requirements': Public target is not allowed here
+
+# bad requirement
+usage_requirements_test /foo ; #error: Argument 'usage-requirements': Expected feature or condition
+usage_requirements_test ./test ; #error: Argument 'usage-requirements': Expected feature or condition
+
+# unknown feature usage
+usage_requirements_test <foo>FOO; #error: Argument 'usage-requirements': Unknown feature 'foo'
+usage_requirements_test <define>FOO <foo>BAR; #error: Argument 'usage-requirements': Unknown feature 'foo'
+usage_requirements_test (<foo>FOO -> <define>BAR); #error: Argument 'usage-requirements': Unknown feature 'foo'
+usage_requirements_test (<define>FOO -> <foo>BAR); #error: Argument 'usage-requirements': Unknown feature 'foo'
+usage_requirements_test (<define>FOO -> <define>BAR <foo>TTT); #error: Argument 'usage-requirements': Unknown feature 'foo'
+usage_requirements_test (<define>FOO || <foo>TTT -> <define>BAR); #error: Argument 'usage-requirements': Unknown feature 'foo'
+

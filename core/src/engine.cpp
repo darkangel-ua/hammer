@@ -328,12 +328,22 @@ void load_hammer_script_impl(engine& e,
    e.insert(move(loaded_project));
 }
 
+struct parser_environment : sema::actions_impl::environment {
+   parser_environment(const feature_registry& fr) : fr_(fr) {}
+   bool known_feature(const parscore::identifier& name) const override {
+      return fr_.find_def(name.to_string());
+   }
+
+   const feature_registry& fr_;
+};
+
 void engine::load_hammer_script_v2(location_t filepath)
 {
    ostringstream s;
    streamed_diagnostic diag(filepath.string(), error_verbosity_, s);
    ast::context ast_ctx;
-   sema::actions_impl actions(ast_ctx, *rule_manager_, diag);
+   parser_environment env(*feature_registry_);
+   sema::actions_impl actions(ast_ctx, env, *rule_manager_, diag);
    ast_hamfile_ptr ast = parse_hammer_script(filepath, actions);
 
    load_hammer_script_impl(*this, s, diag, filepath.branch_path(), *ast);
@@ -345,7 +355,8 @@ void engine::load_hammer_script_v2(const std::string& script_body,
    ostringstream s;
    streamed_diagnostic diag(script_name, error_verbosity_, s);
    ast::context ast_ctx;
-   sema::actions_impl actions(ast_ctx, *rule_manager_, diag);
+   parser_environment env(*feature_registry_);
+   sema::actions_impl actions(ast_ctx, env, *rule_manager_, diag);
    ast_hamfile_ptr ast = parse_hammer_script(script_body, script_name, actions);
 
    load_hammer_script_impl(*this, s, diag, script_name, *ast);
@@ -358,7 +369,8 @@ engine::load_project_v2(const location_t& project_path,
    ostringstream s;
    streamed_diagnostic diag(project_path.string(), error_verbosity_, s);
    ast::context ast_ctx;
-   sema::actions_impl actions(ast_ctx, *rule_manager_, diag);
+   parser_environment env(*feature_registry_);
+   sema::actions_impl actions(ast_ctx, env, *rule_manager_, diag);
    ast_hamfile_ptr ast = parse_hammer_script(project_path, actions);
 
    if (diag.error_count())

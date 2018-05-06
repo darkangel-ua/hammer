@@ -1,6 +1,6 @@
 # options: should-fail=1
 
-feature.feature bar : bar_1 bar_2 ;
+feature bar : bar_1 bar_2 ;
 
 lib test : src/<bar>bar_1 ;
 local alias src : bar_2.cpp : <bar>bar_2 ;

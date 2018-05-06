@@ -78,7 +78,7 @@ list
 	;
 expression
 	: (target_ref)=> target_ref
-	| '@' WS* expressions_a -> ^(PublicTag expressions_a)
+	| t='@' WS* expressions_a -> ^(PublicTag[$t, $t->getText($t)->chars] expressions_a)
 	| expressions_a
 	| expressions_b
 	| (path)=> path

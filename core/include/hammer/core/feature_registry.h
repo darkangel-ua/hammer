@@ -22,6 +22,10 @@ namespace hammer
                          const feature_def::legal_values_t& legal_values = feature_def::legal_values_t(),
                          feature_attributes attributes = feature_attributes());
          feature_def& get_def(const std::string& name);
+
+         const feature_def*
+         find_def(const std::string& name) const;
+
          feature_set* make_set();
          const feature_set& singleton() const;
          feature* create_feature(const std::string& name, const std::string& value);

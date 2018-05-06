@@ -98,6 +98,14 @@ rglob_rule(invocation_context& ctx,
 }
 
 static
+void
+feature_rule(invocation_context& ctx,
+             const parscore::identifier& name)
+{
+
+}
+
+static
 void requirements_test_rule(invocation_context& ctx,
                             const test_requirements& requirements)
 {
@@ -272,12 +280,19 @@ static expected_diags_t extract_expected_diags(const fs::path& hamfile)
    return result;
 }
 
+struct sema_env : sema::actions_impl::environment {
+   bool known_feature(const parscore::identifier& name) const override {
+      return name.to_string() != "foo";
+   }
+};
+
 void test_function(const fs::path& hamfile)
 {
    rule_manager rule_manager;
    checked_diagnostic diag(hamfile.string(), extract_expected_diags(hamfile));
 
    rule_manager.add_rule("project", project_rule, {"project-name", "requirements", "usage-requirements"});
+   rule_manager.add_rule("feature", feature_rule, {"name"});
    rule_manager.add_target("lib", lib_rule, {"target-name", "sources", "requirements", "default-build", "usage-requirements"});
    rule_manager.add_target("exe", exe_rule, {"target-name", "sources", "requirements", "default-build", "usage-requirements"});
 
@@ -295,7 +310,8 @@ void test_function(const fs::path& hamfile)
    rule_manager.add_rule("wcpaths_test", wcpaths_test_rule, {"paths"});
 
    ast::context ctx;
-   sema::actions_impl actions(ctx, rule_manager, diag);
+   sema_env env;
+   sema::actions_impl actions(ctx, env, rule_manager, diag);
    ast_hamfile_ptr ast_top = parse_hammer_script(hamfile, actions);
    
    BOOST_REQUIRE(ast_top);

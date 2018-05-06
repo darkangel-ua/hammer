@@ -1,5 +1,5 @@
 # test that we can correctly transfer and handle localy defined header-lib dependencies
 
-feature.feature bar : bar_1 bar_2 ;
+feature bar : bar_1 bar_2 ;
 
 exe test : main.cpp ./lib1 ;

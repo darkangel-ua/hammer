@@ -21,15 +21,18 @@ using namespace std;
 using namespace hammer::ast;
 using namespace hammer::parscore;
 
-namespace hammer{namespace sema{
+namespace hammer { namespace sema {
 
 actions_impl::actions_impl(ast::context& ctx,
+                           environment& env,
                            const hammer::rule_manager& rule_manager,
                            hammer::diagnostic& diag)
    : actions(ctx),
+     env_(env),
      rule_manager_(rule_manager),
      diag_(diag)
 {
+   assert(rule_manager.find("feature") != rule_manager.end() && "Feature rule must be defined");
 }
 
 const ast::hamfile* 
@@ -102,6 +105,7 @@ actions_impl::on_top_level_rule_invocation(const source_location explicit_tag,
       } else
          first_rule_in_file_ = false;
 
+      const auto error_count = diag_.error_count();
       const rule_declaration& rd = i->second;
       const ast::rule_invocation* ri = new (ctx_) ast::rule_invocation(rule_name, process_arguments(rule_name, i->second, arguments));
       if (rd.is_target())
@@ -113,8 +117,20 @@ actions_impl::on_top_level_rule_invocation(const source_location explicit_tag,
          } else if (local_tag.valid()) {
             diag_.error(local_tag, "Only target definition can be local");
             return new (ctx_) expression_statement(new (ctx_) ast::error_expression(local_tag));
-         } else
+         } else {
+            // add feature to set of defined features if no error occured in arguments processing
+            if (rule_name == "feature" && error_count == diag_.error_count()) {
+               assert(as<id_expr>(arguments[0]) && "First argument of feature rule should be id_expr");
+               const parscore::identifier& feature_name = as<id_expr>(arguments[0])->id();
+               if (known_feature(feature_name)) {
+                  diag_.error(rule_name.start_loc(), "Feature '%s' already defined") << feature_name;
+                  return new (ctx_) expression_statement(new (ctx_) ast::error_expression(ri));
+               } else
+                  features_.insert(feature_name.to_string());
+            }
+
             return new (ctx_) expression_statement(ri);
+         }
       }
    } else {
       diag_.error(rule_name.start_loc(), "Target or rule '%s' was not defined") << rule_name;
@@ -170,32 +186,42 @@ const expression*
 actions_impl::process_feature_set_arg(const rule_argument& ra,
                                       const expression* arg)
 {
-   if (is_a<ast::feature>(arg))
-      return new (ctx_) ast::feature_set(arg);
-
-   if (is_a<ast::list_of>(arg)) {
-      for (const expression* e : as<list_of>(arg)->values()) {
-         if (!is_a<ast::feature>(e)) {
-            diag_.error(e->start_loc(), "Element of feature set should be simple features");
-            return new (ctx_) error_expression(arg);
-         }
+   auto process_one = [&](const expression* e) -> const expression* {
+      if (const feature* f = as<feature>(e)) {
+         if (!known_feature(f->name())) {
+            diag_.error(f->start_loc(), "Argument '%s': Unknown feature '%s'") << ra.name() << f->name();
+            return new (ctx_) error_expression(e);
+         } else
+            return e;
+      } else {
+         diag_.error(e->start_loc(), "Argument '%s': Feature set elements are simple features") << ra.name();
+         return new (ctx_) error_expression(e);
       }
+   };
 
-      return new (ctx_) ast::feature_set(arg);
-   } else {
-      diag_.error(arg->start_loc(), "Argument '%s': must be a feature set") << ra.name();
-      return new (ctx_) error_expression(arg);
-   }
+   if (const list_of* l = as<list_of>(arg)) {
+      expressions_t elements{expressions_t::allocator_type{ctx_}};
+      for (const expression* le : l->values())
+         elements.push_back(process_one(le));
+
+      return new (ctx_) feature_set{new (ctx_) list_of{elements}};
+   } else
+      return new (ctx_) feature_set{process_one(arg)};
 }
 
 const expression*
 actions_impl::process_feature_arg(const rule_argument& ra,
                                   const expression* arg)
 {
-   if (is_a<ast::feature>(arg))
-      return arg;
+   if (const feature* f = ast::as<feature>(arg)) {
+      if (!known_feature(f->name())) {
+         diag_.error(arg->start_loc(), "Argument '%s': Unknown feature '%s'") << ra.name() << f->name();
+         return new (ctx_) error_expression(arg);
+      } else
+         return arg;
+   }
 
-   diag_.error(arg->start_loc(), "Argument '%s': must be a feature") << ra.name();
+   diag_.error(arg->start_loc(), "Argument '%s': feature expected") << ra.name();
    return new (ctx_) error_expression(arg);
 }
 
@@ -257,77 +283,92 @@ const expression*
 actions_impl::process_requirements_decl_arg(const rule_argument& ra,
                                             const expression* arg)
 {
-   auto good_req = [] (const expression* e) {
-      auto check = [] (const expression* e) { return is_a<ast::feature>(e) || is_a<condition_expr>(e); };
-      return check(e) || (is_a<public_expr>(e) && check(as<public_expr>(e)->value()));
-   };
-
-   auto check_public = [this](const expression* e) {
-      auto check_feature = [this] (const feature* f, bool is_public, bool in_condition) {
-         if (const target_ref* tr = as<target_ref>(f->value())) {
-            if (is_public && tr->public_tag().valid()) {
-               if (in_condition)
-                  diag_.error(tr->public_tag(), "Public conditional requirement result cannot contains feature with public target value");
-               else
-                  diag_.error(tr->public_tag(), "Public requirement feature cannot contains feature with public target value");
-               return false;
-            }
-         }
-
-         return true;
-      };
-
-      auto check = [this, &check_feature] (const expression* e, bool is_public) {
-         if (const feature* f = as<feature>(e))
-            return check_feature(f, is_public, false);
-         else { // condition
-            auto check_result_element = [this, &check_feature] (const expression* e, bool is_public) {
-               if (const public_expr* p = as<public_expr>(e)) {
-                  if (is_public) {
-                     diag_.error(p->start_loc(), "Public conditional requirement result cannot contains public feature");
-                     return false;
-                  } else
-                     return check_feature(as<feature>(p->value()), true, true);
-               } else
-                  return check_feature(as<feature>(e), is_public, true);
-            };
-
-            const condition_expr* c = as<condition_expr>(e);
-            if (const list_of* l = as<list_of>(c->result())) {
-               for (auto le : l->values()) {
-                  if (!check_result_element(le, is_public))
-                     return false;
-               }
-               return true;
-            } else
-               return check_result_element(c->result(), is_public);
-         }
-      };
-
-      if (const public_expr* p = as<public_expr>(e))
-         return check(p->value(), true);
+   auto wrap_public = [&](const expression* e,
+                          const public_expr* pe) -> const expression* {
+      if (pe)
+         return new (ctx_) public_expr{pe->tag(), e};
       else
-         return check(e, false);
+         return e;
    };
 
-   if (is_a<list_of>(arg)) {
-      for (const expression* e : as<list_of>(arg)->values()) {
-         if (!good_req(e)) {
-            diag_.error(e->start_loc(), "Requirement should be feature or condition");
-            return new (ctx_) error_expression(arg);
-         } else if (!check_public(e))
-            return new (ctx_) error_expression(arg);
+   auto process_result_element = [&](const expression* e,
+                                     const bool public_requirement) -> const expression* {
+      const public_expr* pe = as<public_expr>(e);
+      if (pe) {
+         if (public_requirement) {
+            diag_.error(e->start_loc(), "Argument '%s': Public feature is not allowed here") << ra.name();
+            return new (ctx_) error_expression(e);
+         } else
+            e = pe->value();
       }
 
-      return new (ctx_) requirement_set(arg);
-   } else if (good_req(arg)) {
-      if (check_public(arg))
-         return new (ctx_) requirement_set(arg);
-      else
-         return new (ctx_) error_expression(arg);
+      if (const feature* f = as<feature>(e)) {
+         if (!known_feature(f->name())) {
+            diag_.error(f->start_loc(), "Argument '%s': Unknown feature '%s'") << ra.name() << f->name();
+            return new (ctx_) error_expression(e);
+         } else if (const target_ref* tr = as<target_ref>(f->value())) {
+            if (tr->is_public() && public_requirement) {
+               diag_.error(f->value()->start_loc(), "Argument '%s': Public target is not allowed here") << ra.name();
+               return new (ctx_) error_expression(e);
+            }
+         }
+         return wrap_public(e, pe);
+      } else {
+         diag_.error(e->start_loc(), "Argument '%s': Expected feature or condition") << ra.name();
+         return new (ctx_) error_expression(e);
+      }
+   };
+
+   auto process_one_requirement = [&](const expression* e) -> const expression* {
+      bool public_requirement = false;
+      const public_expr* pe = as<public_expr>(e);
+      if (pe) {
+         e = pe->value();
+         public_requirement = true;
+      }
+
+      if (const condition_expr* ce = as<condition_expr>(e)) {
+         const expression* condition = process_condition(ra, ce->condition());
+         if (const list_of* l = as<list_of>(ce->result())) {
+            expressions_t values{expressions_t::allocator_type{ctx_}};
+            for (const expression* le : l->values())
+               values.push_back(process_result_element(le, public_requirement));
+
+            return wrap_public(new (ctx_) condition_expr(condition, new (ctx_) list_of(values)), pe);
+         } else
+            return wrap_public(new (ctx_) condition_expr(condition, process_result_element(ce->result(), public_requirement)), pe);
+      } else
+         return wrap_public(process_result_element(e, public_requirement), pe);
+   };
+
+   if (const list_of* l = as<list_of>(arg)) {
+      expressions_t values{expressions_t::allocator_type{ctx_}};
+      for (const expression* le : l->values())
+         values.push_back(process_one_requirement(le));
+
+      return new (ctx_) requirement_set{new (ctx_) list_of(values)};
+   } else
+      return new (ctx_) requirement_set(process_one_requirement(arg));
+}
+
+const ast::expression*
+actions_impl::process_condition(const rule_argument& ra,
+                                const ast::expression* e)
+{
+   if (const ast::logical_or* lo = as<ast::logical_or>(e))
+      return new (ctx_) ast::logical_or(process_condition(ra, lo->left()), process_condition(ra, lo->right()));
+   else if (const ast::logical_and* la = as<ast::logical_and>(e))
+      return new (ctx_) ast::logical_and(process_condition(ra, la->left()), process_condition(ra, la->right()));
+   else if (const feature* f = as<feature>(e)) {
+      if (!known_feature(f->name())) {
+         diag_.error(f->start_loc(), "Argument '%s': Unknown feature '%s'") << ra.name() << f->name();
+         return new (ctx_) error_expression(e);
+      }
+      return f;
    } else {
-      diag_.error(arg->start_loc(), "Requirement should be feature or condition");
-      return new (ctx_) error_expression(arg);
+      // this can't happens because parser will not allow this, but I added this just in case :)
+      diag_.error(e->start_loc(), "Argument '%s': Expected feature or condition expression");
+      return new (ctx_) error_expression(e);
    }
 }
 
@@ -335,25 +376,50 @@ const expression*
 actions_impl::process_usage_requirements_arg(const rule_argument& ra,
                                              const expression* arg)
 {
-   auto good_req = [] (const expression* e) {
-      return is_a<ast::feature>(e) || is_a<condition_expr>(e);
+   auto process_result_element = [&](const expression* e) -> const expression* {
+      if (as<public_expr>(e)) {
+         diag_.error(e->start_loc(), "Argument '%s': Public expressions is not allowed here") << ra.name();
+         return new (ctx_) error_expression(e);
+      } else if (const feature* f = as<feature>(e)) {
+         if (!known_feature(f->name())) {
+            diag_.error(f->start_loc(), "Argument '%s': Unknown feature '%s'") << ra.name() << f->name();
+            return new (ctx_) error_expression(e);
+         } else if (const target_ref* tr = as<target_ref>(f->value())) {
+            if (tr->is_public()) {
+               diag_.error(f->value()->start_loc(), "Argument '%s': Public target is not allowed here") << ra.name();
+               return new (ctx_) error_expression(e);
+            }
+         }
+         return e;
+      } else {
+         diag_.error(e->start_loc(), "Argument '%s': Expected feature or condition") << ra.name();
+         return new (ctx_) error_expression(e);
+      }
    };
 
-   if (is_a<list_of>(arg)) {
-      for (const expression* e : as<list_of>(arg)->values()) {
-         if (!good_req(e)) {
-            diag_.error(arg->start_loc(), "Usage requirement should be feature or condition");
-            return new (ctx_) error_expression(arg);
-         }
-      }
+   auto process_one_requirement = [&](const expression* e) -> const expression* {
+      if (const condition_expr* ce = as<condition_expr>(e)) {
+         const expression* condition = process_condition(ra, ce->condition());
+         if (const list_of* l = as<list_of>(ce->result())) {
+            expressions_t values{expressions_t::allocator_type{ctx_}};
+            for (const expression* le : l->values())
+               values.push_back(process_result_element(le));
 
-      return new (ctx_) ast::usage_requirements(arg);
-   } else if (good_req(arg))
-      return new (ctx_) ast::usage_requirements(arg);
-   else {
-      diag_.error(arg->start_loc(), "Usage requirement should be feature or condition");
-      return new (ctx_) error_expression(arg);
-   }
+            return new (ctx_) condition_expr(condition, new (ctx_) list_of(values));
+         } else
+            return new (ctx_) condition_expr(condition, process_result_element(ce->result()));
+      } else
+         return process_result_element(e);
+   };
+
+   if (const list_of* l = as<list_of>(arg)) {
+      expressions_t values{expressions_t::allocator_type{ctx_}};
+      for (const expression* le : l->values())
+         values.push_back(process_one_requirement(le));
+
+      return new (ctx_) usage_requirements{new (ctx_) list_of(values)};
+   } else
+      return new (ctx_) usage_requirements(process_one_requirement(arg));
 }
 
 const expression*
@@ -670,6 +736,14 @@ actions_impl::on_condition(const expression* condition,
                            const expression* result)
 {
    return new (ctx_) ast::condition_expr(condition, result);
+}
+
+bool actions_impl::known_feature(const parscore::identifier& name) const
+{
+   if (features_.find(name.to_string()) != features_.end())
+      return true;
+   else
+      return env_.known_feature(name);
 }
 
 }}

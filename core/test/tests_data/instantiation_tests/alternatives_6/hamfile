@@ -1,6 +1,6 @@
 # testing simple alternative selection with explicit feature request
 
-feature.feature bar : bar_1 bar_2 ;
+feature bar : bar_1 bar_2 ;
 
 exe test : src/<bar>bar_2 ;
 

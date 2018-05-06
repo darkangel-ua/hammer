@@ -1,24 +1,29 @@
-#if !defined(h_7858a0f2_780c_4919_9a5a_86104e12c129)
-#define h_7858a0f2_780c_4919_9a5a_86104e12c129
-
+#pragma once
+#include <unordered_set>
 #include <hammer/sema/actions.h>
 #include <hammer/ast/context.h>
 #include <hammer/core/rule_manager.h>
 
-namespace hammer{
+namespace hammer {
 	class diagnostic;
 }
 
-namespace hammer{ namespace sema{
+namespace hammer { namespace sema {
 
-class actions_impl : public actions
-{
+class actions_impl : public actions {
    public:
+      struct environment {
+         virtual bool known_feature(const parscore::identifier& name) const = 0;
+         virtual ~environment() {}
+      };
+
 		actions_impl(ast::context& ctx,
+                   environment& env,
 						 const hammer::rule_manager& rule_manager,
 						 hammer::diagnostic& diag);
       
-		const ast::hamfile*
+   private:
+      const ast::hamfile*
 		on_hamfile(const ast::statements_t& statements) override;
       
 		const ast::expression*
@@ -74,11 +79,8 @@ class actions_impl : public actions
 						  const ast::path* target_path,
 						  const parscore::identifier& target_name,
 						  const ast::features_t& build_request) override;
-	private:
-		const hammer::rule_manager& rule_manager_;
-		hammer::diagnostic& diag_;
-		bool first_rule_in_file_ = true;
 
+   private:
 		ast::expressions_t
 		process_arguments(const parscore::identifier& rule_name,
 								const rule_declaration& rule_decl,
@@ -124,8 +126,18 @@ class actions_impl : public actions
       const ast::expression*
 		process_feature_of_feature_set_arg(const rule_argument& ra,
 													  const ast::expression* arg);
+      const ast::expression*
+		process_condition(const rule_argument& ra,
+								const ast::expression* e);
+
+      bool known_feature(const parscore::identifier& id) const;
+
+   private:
+      const environment& env_;
+		const hammer::rule_manager& rule_manager_;
+		hammer::diagnostic& diag_;
+		bool first_rule_in_file_ = true;
+      std::unordered_set<std::string> features_;
 };
 
 }}
-
-#endif

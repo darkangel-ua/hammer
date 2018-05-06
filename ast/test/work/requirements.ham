@@ -1,5 +1,7 @@
+# OK tests
 requirements_test <define>FOO;
 requirements_test @<define>FOO;
+requirements_test <source>(@test);
 requirements_test <define>FOO <define>BAR;
 requirements_test (<define>FOO -> <define>BAR);
 requirements_test @(<define>FOO -> <define>BAR);
@@ -10,11 +12,17 @@ requirements_test (<define>FOO && <define>TTT -> <define>BAR);
 requirements_test (<define>TEST || <define>FOO && <define>TTT -> <define>BAR);
 requirements_test (<define>FOO && <define>TTT || <define>TEST -> <define>BAR);
 
-#public results can't be in public conditions
-requirements_test @(<define>FOO -> @<define>BAR); #error: Public conditional requirement result cannot contains public feature
+# bad 'public' usage
+requirements_test @(<define>FOO -> @<define>BAR); #error: Argument 'requirements': Public feature is not allowed here
+requirements_test @(<define>FOO -> <define>(@BAR)); #error: Argument 'requirements': Public target is not allowed here
+requirements_test @<define>(@FOO); #error: Argument 'requirements': Public target is not allowed here
 
-#public targets can't be in public conditions
-requirements_test @(<define>FOO -> <define>(@BAR)); #error: Public conditional requirement result cannot contains feature with public target value
-
-#public requirements with public target can't co-exists
-requirements_test @<define>(@FOO); #error: Public requirement feature cannot contains feature with public target value
+# unknown feature usage
+requirements_test <foo>bar; #error: Argument 'requirements': Unknown feature 'foo'
+requirements_test @<foo>bar; #error: Argument 'requirements': Unknown feature 'foo'
+requirements_test <define>FOO <foo>bar; #error: Argument 'requirements': Unknown feature 'foo'
+requirements_test (<foo>bar -> <define>BAR); #error: Argument 'requirements': Unknown feature 'foo'
+requirements_test (<define>FOO -> <foo>BAR); #error: Argument 'requirements': Unknown feature 'foo'
+requirements_test (<define>FOO -> <define>FOO <foo>BAR); #error: Argument 'requirements': Unknown feature 'foo'
+requirements_test (<define>FOO || <foo>TTT -> <define>BAR); #error: Argument 'requirements': Unknown feature 'foo'
+requirements_test (<define>FOO || <define>TTT -> <foo>BAR); #error: Argument 'requirements': Unknown feature 'foo'

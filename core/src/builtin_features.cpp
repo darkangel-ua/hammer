@@ -3,58 +3,58 @@
 namespace hammer {
 
 const char* g_builtin_features = R"(
-feature.feature undef : : free ;
-feature.feature define : : free ;
-feature.feature include : : free path ;
-feature.feature toolset : : propagated no-defaults no-checks ;
+feature undef : : free ;
+feature define : : free ;
+feature include : : free path ;
+feature toolset : : propagated no-defaults no-checks ;
 feature.subfeature toolset : version ;
-feature.feature link : shared static ;
-feature.feature runtime-link : shared static ;
-feature.feature runtime-debugging : on off ;
-feature.feature threading : multi single ;
+feature link : shared static ;
+feature runtime-link : shared static ;
+feature runtime-debugging : on off ;
+feature threading : multi single ;
 # force target name to be equal to this feature value
 # works only on composite targets
-feature.feature name : : no-defaults no-checks ;
-feature.feature search : : free path ;
-feature.feature file : : free path ;
-feature.feature cxxflags : : free ;
-feature.feature cflags : : free ;
-feature.feature asmflags : : free ;
-feature.feature linkflags : : free ;
-feature.feature archiveflags : : free ;
-feature.feature version : : no-defaults no-checks ;
-feature.feature library : : free dependency incidental ;
-feature.feature source : : free dependency incidental ;
-feature.feature use : : free dependency incidental ;
-feature.feature dependency : : free dependency incidental ;
-feature.feature optimization : off speed space ;
-feature.feature profiling : off on ;
-feature.feature inlining : off on full ;
-feature.feature rtti : on off : propagated ;
-feature.feature exception-handling : on off ;
-feature.feature asynch-exceptions : off on ;
-feature.feature extern-c-nothrow : off on ;
-feature.feature debug-symbols : on off ;
-feature.feature pch : off create use : generated ;
-feature.feature mangling : md5 variant : optional incidental ;
+feature name : : no-defaults no-checks ;
+feature search : : free path ;
+feature file : : free path ;
+feature cxxflags : : free ;
+feature cflags : : free ;
+feature asmflags : : free ;
+feature linkflags : : free ;
+feature archiveflags : : free ;
+feature version : : no-defaults no-checks ;
+feature library : : free dependency incidental ;
+feature source : : free dependency incidental ;
+feature use : : free dependency incidental ;
+feature dependency : : free dependency incidental ;
+feature optimization : off speed space ;
+feature profiling : off on ;
+feature inlining : off on full ;
+feature rtti : on off : propagated ;
+feature exception-handling : on off ;
+feature asynch-exceptions : off on ;
+feature extern-c-nothrow : off on ;
+feature debug-symbols : on off ;
+feature pch : off create use : generated ;
+feature mangling : md5 variant : optional incidental ;
 
 # testing support
-feature.feature testing.additional-source : : free dependency propagated ; # can't get rid of this yet
+feature testing.additional-source : : free dependency propagated ; # can't get rid of this yet
 
-feature.feature warnings :
+feature warnings :
   on         # enable default/"reasonable" warning level for the tool
   all        # enable all possible warnings issued by the tool
   off        # disable all warnings issued by the tool
 : incidental ;
 
-feature.feature warnings-as-errors :
+feature warnings-as-errors :
   off        # do not fail the compilation if there are warnings
   on         # fail the compilation if there are warnings
 : incidental propagated ;
-feature.feature def-file : : free dependency ;
-feature.feature target-os : linux windows : propagated;
-feature.feature address-model : 64 32 : propagated ;
-feature.feature architecture :
+feature def-file : : free dependency ;
+feature target-os : linux windows : propagated;
+feature address-model : 64 32 : propagated ;
+feature architecture :
   # x86 and x86-64
   x86
   # ia64
@@ -69,7 +69,7 @@ feature.feature architecture :
   : propagated optional ;
 
 # The specific instruction set in an architecture to compile.
-feature.feature instruction-set :
+feature instruction-set :
   # x86 and x86-64
   i386 i486 i586 i686
   pentium pentium-mmx pentiumpro pentium2 pentium3 pentium3m pentium-m pentium4 pentium4m
@@ -97,10 +97,10 @@ feature.feature instruction-set :
   vr4100 vr4111 vr4120 vr4130 vr4300 vr5000 vr5400 vr5500
   #
   : propagated optional ;
-feature.feature user-interface : console gui wince native auto ;
+feature user-interface : console gui wince native auto ;
 
-feature.feature variant : : propagated composite incidental ;
-feature.feature character-set : multi-byte unicode unknown : optional ; # toolset.msvc
+feature variant : : propagated composite incidental ;
+feature character-set : multi-byte unicode unknown : optional ; # toolset.msvc
 
 variant debug   : : <optimization>off   <debug-symbols>on  <inlining>off  <runtime-debugging>on ;
 variant release : : <optimization>speed <debug-symbols>off <inlining>full <runtime-debugging>off <define>NDEBUG ;

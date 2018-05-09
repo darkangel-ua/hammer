@@ -31,6 +31,7 @@ class test_path;
 class test_wcpath;
 class test_usage_requirements;
 class test_feature;
+class test_target_ref;
 
 namespace hammer {
    template<>
@@ -51,6 +52,8 @@ namespace hammer {
    struct rule_argument_type_info<vector<test_wcpath>> { static const rule_argument_type ast_type = rule_argument_type::wcpath_or_list_of_wcpaths; };
    template<>
    struct rule_argument_type_info<test_usage_requirements> { static const rule_argument_type ast_type = rule_argument_type::usage_requirements; };
+   template<>
+   struct rule_argument_type_info<test_target_ref> { static const rule_argument_type ast_type = rule_argument_type::target_ref; };
 }
 
 static
@@ -156,6 +159,12 @@ void wcpath_test_rule(invocation_context& ctx,
 static
 void wcpaths_test_rule(invocation_context& ctx,
                        const vector<test_wcpath>&)
+{
+}
+
+static
+void target_ref_test_rule(invocation_context& ctx,
+                          const test_target_ref&)
 {
 }
 
@@ -308,6 +317,7 @@ void test_function(const fs::path& hamfile)
    rule_manager.add_rule("paths_test", paths_test_rule, {"paths"});
    rule_manager.add_rule("wcpath_test", wcpath_test_rule, {"path"});
    rule_manager.add_rule("wcpaths_test", wcpaths_test_rule, {"paths"});
+   rule_manager.add_rule("target_ref_test", target_ref_test_rule, {"target_ref"});
 
    ast::context ctx;
    sema_env env;

@@ -226,71 +226,68 @@ actions_impl::process_feature_arg(const rule_argument& ra,
 }
 
 const expression*
+actions_impl::wrap_public(const expression* e,
+                          const public_expr* pe) {
+   if (pe)
+      return new (ctx_) public_expr{pe->tag(), e};
+   else
+      return e;
+}
+
+const expression*
 actions_impl::process_sources_arg(const rule_argument& ra,
                                   const expression* arg)
 {
-   auto good_source = [](const expression* e) {
-      return is_a<ast::id_expr>(e) || is_a<ast::target_ref>(e) || is_a<ast::path>(e) || is_a<ast::rule_invocation>(e);
+   auto process_one_source = [&](const expression* e) -> const expression* {
+      if (as<id_expr>(e))
+         return e;
+      else if (const path* p = as<path>(e)) {
+         if (p->has_wildcard()) {
+            diag_.error(e->start_loc(), "Argument '%s': Path with wildcards not allowed in sources") << ra.name();
+            return new (ctx_) error_expression(p);
+         } else
+            return e;
+      } else if (const target_ref* tr = as<target_ref>(e)) {
+         if (tr->target_path()->has_wildcard()) {
+            diag_.error(e->start_loc(), "Argument '%s': Wildcards not allowed in target reference") << ra.name();
+            return new (ctx_) error_expression(e);
+         } else
+            return e;
+      } else if (const rule_invocation* ri = as<rule_invocation>(e)) {
+         // cannot fail because rule has been checked previously
+         const rule_declaration& ri_rd = rule_manager_.find(ri->name())->second;
+         const rule_argument& rdr = ri_rd.result();
+         // we can deal only with return types that can be converted to sources
+         if (rdr.type() == rule_argument_type::identifier ||
+             rdr.type() == rule_argument_type::sources ||
+             rdr.type() == rule_argument_type::path ||
+             rdr.type() == rule_argument_type::target_ref)
+         {
+            return ri;
+         }
+
+         diag_.error(ri->start_loc(), "Argument '%s': Can't use result of rule '%s' as source") << ra.name() << ri->name();
+         return new (ctx_) error_expression(ri);
+      } else {
+         diag_.error(e->start_loc(), "Argument '%s': Expected id, path, target reference or rule invocation") << ra.name();
+         return new (ctx_) error_expression(e);
+      }
    };
 
-   auto process_rule_inv = [&](const ast::rule_invocation* ri) -> const expression* {
-      // cannot fail because rule has been checked previously
-      const rule_declaration& rd = rule_manager_.find(ri->name())->second;
-      const rule_argument& rdr = rd.result();
-      // we can deal only with return types that can be converted to sources
-      if (rdr.type() == rule_argument_type::identifier ||
-          rdr.type() == rule_argument_type::sources ||
-          rdr.type() == rule_argument_type::path ||
-          rdr.type() == rule_argument_type::target_ref)
-      {
-         return ri;
-      }
+   if (const list_of* l = as<list_of>(arg)) {
+      expressions_t values{expressions_t::allocator_type{ctx_}};
+      for (const expression* le : l->values())
+         values.push_back(process_one_source(le));
 
-      diag_.error(ri->start_loc(), "Can't use result of rule '%s' in sources") << rd.name();
-      return new (ctx_) error_expression(ri);
-   };
-
-   if (good_source(arg)) {
-      if (auto ri = as<ast::rule_invocation>(arg))
-         return new (ctx_) hammer::ast::sources(process_rule_inv(ri));
-       else
-         return new (ctx_) hammer::ast::sources(arg);
-   }
-
-   if (is_a<ast::public_expr>(arg) && good_source(as<ast::public_expr>(arg)->value()))
-      return new (ctx_) hammer::ast::sources(arg);
-
-   if (is_a<ast::list_of>(arg)) {
-      expressions_t elements(expressions_t::allocator_type{ctx_});
-      for (const expression* e : as<list_of>(arg)->values()) {
-         if (!good_source(e)) {
-            diag_.error(e->start_loc(), "Bad source element");
-            elements.push_back(new (ctx_) error_expression(arg));
-         } else if (auto ri = as<ast::rule_invocation>(e))
-            elements.push_back(process_rule_inv(ri));
-         else
-            elements.push_back(e);
-      }
-
-      return new (ctx_) hammer::ast::sources(new (ctx_) ast::list_of(elements));
-   }
-
-   diag_.error(arg->start_loc(), "Argument '%s': must meet sources specs") << ra.name();
-   return new (ctx_) error_expression(arg);
+      return new (ctx_) sources{new (ctx_) list_of(values)};
+   } else
+      return new (ctx_) sources(process_one_source(arg));
 }
 
 const expression*
 actions_impl::process_requirements_decl_arg(const rule_argument& ra,
                                             const expression* arg)
 {
-   auto wrap_public = [&](const expression* e,
-                          const public_expr* pe) -> const expression* {
-      if (pe)
-         return new (ctx_) public_expr{pe->tag(), e};
-      else
-         return e;
-   };
-
    auto process_result_element = [&](const expression* e,
                                      const bool public_requirement) -> const expression* {
       const public_expr* pe = as<public_expr>(e);
@@ -529,6 +526,22 @@ actions_impl::process_feature_of_feature_set_arg(const rule_argument& ra,
 }
 
 const expression*
+actions_impl::process_target_ref_arg(const rule_argument& ra,
+                                     const expression* arg)
+{
+   if (const target_ref* tr = as<target_ref>(arg)) {
+      if (tr->target_path()->has_wildcard()) {
+         diag_.error(tr->start_loc(), "Argument '%s': Wildcards not allowed in target reference") << ra.name();
+         return new (ctx_) error_expression(tr);
+      } else
+         return arg;
+   }
+
+   diag_.error(arg->start_loc(), "Argument '%s': Expected target reference") << ra.name();
+   return new (ctx_) error_expression(arg);
+}
+
+const expression*
 actions_impl::process_one_arg(const rule_argument& ra,
                               const expression* arg)
 {
@@ -587,6 +600,9 @@ actions_impl::process_one_arg(const rule_argument& ra,
 
       case rule_argument_type::feature_or_feature_set:
          return process_feature_of_feature_set_arg(ra, arg);
+
+      case rule_argument_type::target_ref:
+         return process_target_ref_arg(ra, arg);
 
       default:
          assert(false && "Unknown argument type");

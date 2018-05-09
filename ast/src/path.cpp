@@ -48,12 +48,8 @@ std::string path::to_string() const
 bool path::has_wildcard() const
 {
    for (const ast::expression* pe : elements()) {
-      if (const ast::id_expr* eid = ast::as<ast::id_expr>(pe)) {
-         auto v = eid->id().to_string();
-         if (v == "*" || v == "?")
-            return true;
-      } else
-         assert(false && "Only id_expr expected here");
+      if (!ast::as<ast::id_expr>(pe))
+         return true;
    }
 
    return false;

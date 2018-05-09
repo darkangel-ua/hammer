@@ -8,6 +8,10 @@ namespace hammer {
 	class diagnostic;
 }
 
+namespace hammer { namespace ast {
+   class public_expr;
+}}
+
 namespace hammer { namespace sema {
 
 class actions_impl : public actions {
@@ -127,8 +131,15 @@ class actions_impl : public actions {
 		process_feature_of_feature_set_arg(const rule_argument& ra,
 													  const ast::expression* arg);
       const ast::expression*
+      process_target_ref_arg(const rule_argument& ra,
+                             const ast::expression* arg);
+      const ast::expression*
 		process_condition(const rule_argument& ra,
 								const ast::expression* e);
+
+      const ast::expression*
+      wrap_public(const ast::expression* e,
+                  const ast::public_expr* pe);
 
       bool known_feature(const parscore::identifier& id) const;
 

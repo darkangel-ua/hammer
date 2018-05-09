@@ -10,3 +10,8 @@ sources_test id_one id_two /foo [ glob ./*.cpp ] ;
 sources_test file:///unix_rooted_source.cpp ;
 sources_test file://c:/win_rooted_source.cpp ;
 sources_test ./ ../ foo/ ; # they are all paths
+
+sources_test /test/* ; #error: Argument 'sources': Wildcards not allowed in target reference
+sources_test ./test/* ; #error: Argument 'sources': Path with wildcards not allowed in sources
+sources_test <define>FOO ; #error: Argument 'sources': Expected id, path, target reference or rule invocation
+sources_test [ feature_test <define>FOO ] ; #error: Argument 'sources': Can't use result of rule 'feature_test' as source

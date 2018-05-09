@@ -1,39 +1,40 @@
-project hammer.core : requirements =
-                         <library>(/boost/ptr_container/<version>1.58.0+1) 
-                    ;
+project hammer.core
+   : requirements =
+      <library>(/boost/ptr_container/<version>1.58.0+1)
+   ;
+
 lib hammer.core 
-   : 
-    [ rglob ../src/*.cpp ]
-    [ rglob ../src/*.h ]
-    [ rglob ../include/*.h ]
-    /hammer/parser
-    /libantlr3c/<version>3.1.1+3
-    @/boost/optional/<version>1.58.0+1
-    @/boost/date_time/<version>1.58.0+1
-    @/boost/function_types/<version>1.58.0+1
-    @/boost/smart_ptr/<version>1.58.0+1
-    @/boost/filesystem/<version>1.58.0+1
-    @/ext/boost/guid/<version>0.1+1
-    /boost/regex/<version>1.58.0+1
-    /ext/boost/process/<version>0.1+1
-    /boost/format/<version>1.58.0+1
-    @/boost/unordered/<version>1.58.0+1
-    /boost/spirit/<version>1.58.0+1
-    /ext/boost/crypto/<version>0.1+1
-    /boost/tokenizer/<version>1.58.0+1
-    /boost/multi_index/<version>1.58.0+1
-    /boost/iostreams/<version>1.58.0+1
-    /boost/serialization/<version>1.58.0+1
-    /boost/asio/<version>1.58.0+1
-    /boost/pool/<version>1.58.0+1
-    /boost/thread/<version>1.58.0+1
-    @/boost/logic/<version>1.58.0+1
-   :
-    @<include>../include
-    <include>../src
-    <link>static
-   :
-   :
-    <use>(/boost/ptr_container/<version>1.58.0+1)
-    <use>(/hammer/core_objects)
+   : sources =
+      [ rglob ../src/*.cpp ]
+      [ rglob ../src/*.h ]
+      [ rglob ../include/*.h ]
+      /hammer/parser
+      /libantlr3c/<version>3.1.1+3
+      @/boost/optional/<version>1.58.0+1
+      @/boost/date_time/<version>1.58.0+1
+      @/boost/function_types/<version>1.58.0+1
+      @/boost/smart_ptr/<version>1.58.0+1
+      @/boost/filesystem/<version>1.58.0+1
+      @/ext/boost/guid/<version>0.1+1
+      /boost/regex/<version>1.58.0+1
+      /ext/boost/process/<version>0.1+1
+      /boost/format/<version>1.58.0+1
+      @/boost/unordered/<version>1.58.0+1
+      /boost/spirit/<version>1.58.0+1
+      /ext/boost/crypto/<version>0.1+1
+      /boost/tokenizer/<version>1.58.0+1
+      /boost/multi_index/<version>1.58.0+1
+      /boost/iostreams/<version>1.58.0+1
+      /boost/serialization/<version>1.58.0+1
+      /boost/asio/<version>1.58.0+1
+      /boost/pool/<version>1.58.0+1
+      /boost/thread/<version>1.58.0+1
+      @/boost/logic/<version>1.58.0+1
+   : requirements =
+      @<include>../include
+      <include>../src
+      <link>static
+   : usage-requirements =
+      <use>(/boost/ptr_container/<version>1.58.0+1)
+      <use>(/hammer/core_objects)
    ;

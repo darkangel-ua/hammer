@@ -1,12 +1,13 @@
-exe hammer : 
-             [ glob ../src/*.cpp ]
-             [ glob ../src/*.h ]
-             /boost/program_options/<version>1.58.0+1
-             /boost/filesystem/<version>1.58.0+1
-             /boost/format/<version>1.58.0+1
-             /boost/regex/<version>1.58.0+1
-             /hammer/core
-           : 
-             (<target-os>linux && <variant>debug -> <name>dhammer)
-             (<target-os>windows && <variant>debug -> <name>dhammer.exe)
-           ;
+exe hammer
+   : sources =
+      [ glob ../src/*.cpp ]
+      [ glob ../src/*.h ]
+      /boost/program_options/<version>1.58.0+1
+      /boost/filesystem/<version>1.58.0+1
+      /boost/format/<version>1.58.0+1
+      /boost/regex/<version>1.58.0+1
+      /hammer/core
+   : requirements =
+      (<target-os>linux && <variant>debug -> <name>dhammer)
+      (<target-os>windows && <variant>debug -> <name>dhammer.exe)
+   ;

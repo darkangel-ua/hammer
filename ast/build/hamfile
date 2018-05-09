@@ -1,9 +1,9 @@
 lib hammer.ast
-  :
-   [ glob ../src/*.cpp ]
-   [ rglob ../include/*.h ]
-   @/hammer/parscore
-  :
-   @<include>../include
-   <link>static
-  ;
+   : sources =
+      [ glob ../src/*.cpp ]
+      [ rglob ../include/*.h ]
+      @/hammer/parscore
+   : requirements =
+      @<include>../include
+      <link>static
+   ;

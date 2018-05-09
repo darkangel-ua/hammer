@@ -1,10 +1,10 @@
 lib hammer.sema
-   :
-    [ glob ../src/*.cpp ]
-    [ rglob ../include/*.h ]
-    @/hammer/ast
-    @/hammer/core_objects
-   :
-    @<include>../include
-    <link>static
+   : sources =
+      [ glob ../src/*.cpp ]
+      [ rglob ../include/*.h ]
+      @/hammer/ast
+      @/hammer/core_objects
+   : requirements =
+      @<include>../include
+      <link>static
    ;

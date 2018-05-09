@@ -1,7 +1,7 @@
 lib static_lib 
-   : # sources
-      static_lib.cpp 
-   : # requirements
-     @<include>.    # @means 'public' requirement. It will appear in usage-requirements aswell 
-     <link>static
+   : sources =
+      static_lib.cpp
+   : requirements =
+      @<include>.    # @means 'public' requirement. It will appear in usage-requirements aswell
+      <link>static
    ;

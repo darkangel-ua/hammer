@@ -1,8 +1,8 @@
 lib shared_lib 
-   : # sources
-      shared_lib.cpp 
-   : # requirements
-     @<include>.    # @means 'public' requirement. It will appear in usage-requirements aswell 
+   : sources =
+      shared_lib.cpp
+   : requirements =
+      @<include>.    # @means 'public' requirement. It will appear in usage-requirements aswell
       <define>SHARED_LIB_EXPORTS
       <link>shared
    ;

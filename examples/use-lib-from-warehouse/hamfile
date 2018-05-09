@@ -1,6 +1,6 @@
 # will not work if you didn't setup warehouse !
 exe warehouse 
-   : #sources 
-    main.cpp
-    /boost/date_time/<version>1.58.0+1 # this one should be from warehouse
+   : sources =
+      main.cpp
+      /boost/date_time/<version>1.58.0+1 # this one should be from warehouse
    ;

@@ -12,6 +12,7 @@ namespace hammer { namespace types {
 
 extern const type_tag CPP;
 extern const type_tag C;
+extern const type_tag C_AS_CPP;
 extern const type_tag H;
 extern const type_tag RC;
 extern const type_tag RES;

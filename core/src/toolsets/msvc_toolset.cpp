@@ -161,7 +161,7 @@ void msvc_toolset::init_toolset(engine& e,
    // CPP -> OBJ
    {
       cmdline_builder obj_cmd(config_data.compiler_.string() +
-                              " /c /nologo $(cflags) $(cppflags) $(user_cxx_flags) $(includes) $(undefines) $(defines) $(use_pch_header) $(use_pch_product) $(cpp_input)"
+                              " /c /TP /nologo $(cflags) $(cppflags) $(user_cxx_flags) $(includes) $(undefines) $(defines) $(use_pch_header) $(use_pch_product) $(cpp_input)"
                               " /Fo\"$(obj_product)\" /FS /Fd\"$(output_dir)\\vc.pdb\"");
 
       cmdline_builder batched_obj_cmd(config_data.compiler_.string() +
@@ -203,7 +203,7 @@ void msvc_toolset::init_toolset(engine& e,
    // CPP + H -> PCH + OBJ
    {
       cmdline_builder obj_cmd(config_data.compiler_.string() +
-                              " /c /nologo $(create_pch_header) $(cflags) $(cppflags) $(user_cxx_flags) $(includes) $(undefines) $(defines) $(cpp_input)"
+                              " /c /TP /nologo $(create_pch_header) $(cflags) $(cppflags) $(user_cxx_flags) $(includes) $(undefines) $(defines) $(cpp_input)"
                               " /Fo\"$(obj_product)\" /Fp\"$(pch_product)\" /FS /Fd\"$(output_dir)\\vc.pdb\"");
       obj_cmd += cflags;
       obj_cmd += cppflags;

@@ -1,0 +1,3 @@
+test [ type = EXE; ] {
+   main.c [ type = CPP; ] {}
+}

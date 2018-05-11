@@ -1,0 +1,1 @@
+exe test : [ c-as-cpp [ glob ./*.c ] ] ;

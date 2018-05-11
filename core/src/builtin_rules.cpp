@@ -16,6 +16,7 @@
 #include <hammer/core/testing_compile_fail_meta_target.h>
 #include <hammer/core/testing_intermediate_meta_target.h>
 #include <hammer/core/testing_meta_target.h>
+#include <hammer/core/target_type.h>
 #include <hammer/ast/target_ref.h>
 #include <hammer/ast/path.h>
 #include <hammer/ast/list_of.h>
@@ -885,6 +886,24 @@ void setup_warehouse_rule(invocation_context& ctx,
    ctx.current_project_.get_engine()->setup_warehouse(name.to_string(), url.to_string(), storage_dir);
 }
 
+static
+std::unique_ptr<sources_decl>
+c_as_cpp_rule(invocation_context& ctx,
+              const sources_decl& sources)
+{
+   auto result = boost::make_unique<sources_decl>();
+   const target_type& c_as_cpp_type = ctx.current_project_.get_engine()->get_type_registry().get(types::C_AS_CPP);
+   const target_type& c_type = ctx.current_project_.get_engine()->get_type_registry().get(types::C);
+   for (const source_decl& s : sources) {
+      if (s.type() && s.type()->equal_or_derived_from(c_type))
+         result->push_back(source_decl{s.target_path(), s.target_name(), &c_as_cpp_type, s.properties() ? s.properties()->clone() : nullptr});
+      else
+         result->push_back(s);
+   }
+
+   return result;
+}
+
 void install_builtin_rules(rule_manager& rm)
 {
    rm.add_rule("project", project_rule, {{"id", project_id_validator}, "requirements", "usage-requirements"});
@@ -911,6 +930,7 @@ void install_builtin_rules(rule_manager& rm)
    rm.add_target("testing.run", testing_run_rule, {"sources", "requirements", "args", "name"});
    rm.add_target("testing.compile-fail", testing_compile_fail_rule, {"sources", "requirements", "default-build", "usage-requirements"});
    rm.add_rule("setup-warehouse", setup_warehouse_rule, {"name", "url", "storage-dir"});
+   rm.add_rule("c-as-cpp", c_as_cpp_rule, {"sources"});
 }
 
 }}

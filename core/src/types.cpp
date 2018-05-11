@@ -10,6 +10,7 @@ namespace hammer{ namespace types{
 
 const type_tag CPP("CPP");
 const type_tag C("C");
+const type_tag C_AS_CPP("C_AS_CPP");
 const type_tag H("H");
 const type_tag RC("RC");
 const type_tag RES("RES");
@@ -36,9 +37,10 @@ void register_standart_types(type_registry& tr,
                              feature_registry& fr)
 {
    target_type::suffixes_t cpp_suffixes = {".cpp", ".cc"};
-   tr.insert(target_type(CPP, cpp_suffixes));
+   const target_type& cpp_type = tr.insert(target_type(CPP, cpp_suffixes));
 
    tr.insert(target_type(C, ".c"));
+   tr.insert(target_type(C_AS_CPP, ".c", cpp_type));
 
    target_type::suffixes_t h_suffixes = {".h", ".hpp", ".H"};
    tr.insert(target_type(H, h_suffixes));

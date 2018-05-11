@@ -187,7 +187,7 @@ void init_toolset(engine& e,
 
       shared_ptr<source_argument_writer> cpp_input(new source_argument_writer("cpp_input", e.get_type_registry().get(types::CPP), /*exact_type=*/false, source_argument_writer::FULL_PATH));
       cmdline_builder obj_cmd(td.compiler_.string() +
-                              " -c -ftemplate-depth-128 $(cflags) $(cxxflags) $(user_cxx_flags) $(generated-includes) $(includes) $(defines) -o \"$(obj_product)\" $(cpp_input)");
+                              " -x c++ -c -ftemplate-depth-128 $(cflags) $(cxxflags) $(user_cxx_flags) $(generated-includes) $(includes) $(defines) -o \"$(obj_product)\" $(cpp_input)");
       obj_cmd += cflags;
       obj_cmd += cxxflags;
       obj_cmd += user_cxx_flags;

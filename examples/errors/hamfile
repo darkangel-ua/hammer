@@ -1,0 +1,7 @@
+exe test : main.cpp : <foo>bar ;
+feature link ;
+exe test : main.cpp : @<source>(@foo);
+exe test : main.cpp /boost/* ;
+
+local glob ./*.cpp ;
+explicit glob ./.cpp ;

@@ -123,7 +123,7 @@ actions_impl::on_top_level_rule_invocation(const source_location explicit_tag,
                assert(as<id_expr>(arguments[0]) && "First argument of feature rule should be id_expr");
                const parscore::identifier& feature_name = as<id_expr>(arguments[0])->id();
                if (known_feature(feature_name)) {
-                  diag_.error(rule_name.start_loc(), "Feature '%s' already defined") << feature_name;
+                  diag_.error(feature_name.start_loc(), "Feature '%s' already defined") << feature_name;
                   return new (ctx_) expression_statement(new (ctx_) ast::error_expression(ri));
                } else
                   features_.insert(feature_name.to_string());

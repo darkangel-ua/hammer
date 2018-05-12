@@ -1,6 +1,49 @@
 # Hammer
 
-Build system based on Boost.Build v2 ideas, but written in C++.
+Build system based on Boost.Build v2 ideas, but written in C++ and trying to be user and tools friendly as much as possible. It uses similar to
+BBv2 script language, but without any control flow instructions + **named arguments** for rule invocations. Second, major, deference is that things like
+- sources
+- requirements
+- usage requirements
+- conditions in requirements and usage requirements
+- features
+- paths
+- target definitions
+- target references
+
+are first class objects in language and therefore generated error messages *are* (can be, work in progress :) ) very descriptive and precise:
+
+Example file
+```
+exe test : main.cpp : <foo>bar ;
+feature link ;
+exe test : main.cpp : @<source>(@foo);
+exe test : main.cpp /boost/* ;
+
+local glob ./*.cpp ;
+explicit glob ./.cpp ;
+```
+Output
+```
+hammer/examples/errors/hamfile:1:24: error: Argument 'requirements': Unknown feature 'foo'
+exe test : main.cpp : <foo>bar ;
+                       ^
+hammer/examples/errors/hamfile:2:9: error: Feature 'link' already defined
+feature link ;
+        ^
+hammer/examples/errors/hamfile:3:33: error: Argument 'requirements': Public target is not allowed here
+exe test : main.cpp : @<source>(@foo);
+                                ^
+hammer/examples/errors/hamfile:4:21: error: Argument 'sources': Wildcards not allowed in target reference
+exe test : main.cpp /boost/* ;
+                    ^
+hammer/examples/errors/hamfile:6:1: error: Only target definition can be local
+local glob ./*.cpp ;
+^
+hammer/examples/errors/hamfile:7:1: error: Only target definition can be explicit
+explicit glob ./.cpp ;
+^
+```
 
 ## How to try it
 

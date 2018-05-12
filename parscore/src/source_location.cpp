@@ -30,7 +30,7 @@ unsigned
 source_location::char_pos() const
 {
    assert(antlr_token_);
-   return antlr_token_->charPosition;
+   return antlr_token_->charPosition + 1 + (antlr_token_->line == 1);
 }
 
 std::string

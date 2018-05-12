@@ -1,16 +1,13 @@
-#if !defined(h_f7fe3cf9_e23b_4943_85bc_0046ca024c58)
-#define h_f7fe3cf9_e23b_4943_85bc_0046ca024c58
-
-#include <hammer/parscore/identifier.h>
+#pragma once
 #include <sstream>
 #include <vector>
+#include <hammer/parscore/identifier.h>
 
-namespace hammer{ 
+namespace hammer {
 
 class diagnostic_builder;
 
-class diagnostic
-{
+class diagnostic {
    public:
       friend class diagnostic_builder;
       
@@ -46,8 +43,7 @@ class diagnostic
 		const std::string source_name_;
 };
 
-class diagnostic_builder
-{
+class diagnostic_builder {
    public:
       diagnostic_builder(diagnostic* d) : d_(d) {}
       ~diagnostic_builder() { d_->format_message(); }
@@ -77,8 +73,7 @@ class diagnostic_builder
       diagnostic* d_;
 };
 
-class streamed_diagnostic : public diagnostic
-{
+class streamed_diagnostic : public diagnostic {
    public:
 		streamed_diagnostic(const std::string& source_name,
                           bool verbose,
@@ -95,5 +90,3 @@ class streamed_diagnostic : public diagnostic
 };
 
 }
-
-#endif //h_f7fe3cf9_e23b_4943_85bc_0046ca024c58

@@ -1,6 +1,6 @@
 #include <hammer/ast/context.h>
 
-namespace hammer{ namespace ast{
+namespace hammer { namespace ast {
 
 context::context()
 {

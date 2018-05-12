@@ -1,11 +1,11 @@
-#include <hammer/ast/path.h>
+#include <sstream>
+#include <cassert>
 #include <hammer/ast/visitor.h>
 #include <hammer/ast/casts.h>
 #include <hammer/ast/list_of.h>
-#include <sstream>
-#include <cassert>
+#include <hammer/ast/path.h>
 
-namespace hammer{ namespace ast{
+namespace hammer { namespace ast {
 
 bool path::accept(visitor& v) const
 {

@@ -1,17 +1,14 @@
-#if !defined(h_bd428576_c9b2_4eb5_8a5a_1fe3dd0e85cb)
-#define h_bd428576_c9b2_4eb5_8a5a_1fe3dd0e85cb
-
+#pragma once
 #include <hammer/ast/expression.h>
 #include <hammer/parscore/identifier.h>
 #include <hammer/ast/types.h>
 
-namespace hammer{ namespace ast{
+namespace hammer { namespace ast {
 
 class path;
 class requirement_set;
 
-class target_ref : public expression
-{
+class target_ref : public expression {
    public:
 		target_ref(parscore::source_location public_tag,
 					  const path* target_path,
@@ -37,5 +34,3 @@ class target_ref : public expression
 };
 
 }}
-
-#endif

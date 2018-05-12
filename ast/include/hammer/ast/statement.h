@@ -1,16 +1,12 @@
-#if !defined(h_b334fba6_7c3c_4ba6_b1ac_7178bcecb812)
-#define h_b334fba6_7c3c_4ba6_b1ac_7178bcecb812
-
+#pragma once
 #include <hammer/ast/expression.h>
 
-namespace hammer{ namespace ast{
+namespace hammer { namespace ast {
 
-class statement : public expression
-{
+class statement : public expression {
 };
 
-class expression_statement : public statement
-{
+class expression_statement : public statement {
 	public:
 		expression_statement(const expression* e) : content_(e) {}
 		const expression* content() const { return content_; }
@@ -22,5 +18,3 @@ class expression_statement : public statement
 };
 
 }}
-
-#endif

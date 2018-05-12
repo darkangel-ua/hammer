@@ -1,8 +1,8 @@
-#include <hammer/ast/sources.h>
 #include <hammer/ast/visitor.h>
 #include <hammer/ast/casts.h>
+#include <hammer/ast/sources.h>
 
-namespace hammer{namespace ast{
+namespace hammer { namespace ast {
 
 bool sources::accept(visitor& v) const
 { 

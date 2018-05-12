@@ -1,8 +1,8 @@
-#include <hammer/ast/feature.h>
 #include <hammer/ast/visitor.h>
 #include <hammer/ast/casts.h>
+#include <hammer/ast/feature.h>
 
-namespace hammer{namespace ast{
+namespace hammer { namespace ast {
 
 bool feature::accept(visitor& v) const
 {

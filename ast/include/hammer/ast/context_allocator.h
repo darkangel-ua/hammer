@@ -1,15 +1,12 @@
-#ifndef HAMMER_AST_CONTEXT_ALLOCATOR_H
-#define HAMMER_AST_CONTEXT_ALLOCATOR_H
-
-#include <hammer/ast/context.h>
+#pragma once
 #include <limits>
 #include <utility>
+#include <hammer/ast/context.h>
 
-namespace hammer{ namespace ast {
+namespace hammer { namespace ast {
 
 template<typename T>
-class context_allocator
-{
+class context_allocator {
       template<typename U>
       friend class context_allocator;
 
@@ -39,6 +36,3 @@ class context_allocator
 };
 
 }}
-
-
-#endif

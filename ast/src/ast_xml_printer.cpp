@@ -1,4 +1,5 @@
-#include <hammer/ast/ast_xml_printer.h>
+#include <iostream>
+#include <iomanip>
 #include <hammer/ast/path.h>
 #include <hammer/ast/requirement_set.h>
 #include <hammer/ast/usage_requirements.h>
@@ -11,10 +12,9 @@
 #include <hammer/ast/hamfile.h>
 #include <hammer/ast/condition.h>
 #include <hammer/ast/target_def.h>
-#include <iostream>
-#include <iomanip>
+#include <hammer/ast/ast_xml_printer.h>
 
-namespace hammer{namespace ast{
+namespace hammer { namespace ast {
 
 ast_xml_printer::ast_xml_printer(std::ostream& os,
                                  bool write_header) 

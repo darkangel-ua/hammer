@@ -3,7 +3,7 @@
 #include <antlr3input.h>
 #include <hammer/parscore/source_location.h>
 
-namespace hammer{namespace parscore{
+namespace hammer { namespace parscore {
 
 std::string
 source_location::full_source_name() const

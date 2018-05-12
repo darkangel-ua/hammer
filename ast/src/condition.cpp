@@ -1,8 +1,8 @@
-#include <hammer/ast/condition.h>
 #include <hammer/ast/casts.h>
 #include <hammer/ast/visitor.h>
+#include <hammer/ast/condition.h>
 
-namespace hammer{namespace ast{
+namespace hammer { namespace ast {
 
 template<>
 bool is_a<condition_expr>(const node& v) { return dynamic_cast<const condition_expr*>(&v); }

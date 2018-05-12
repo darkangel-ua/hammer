@@ -1,9 +1,7 @@
-#if !defined(h_484613f1_a4c9_4315_8c2d_b4bb1421f61b)
-#define h_484613f1_a4c9_4315_8c2d_b4bb1421f61b
-
+#pragma once
 #include <hammer/ast/types.h>
 
-namespace hammer{ namespace ast{
+namespace hammer { namespace ast {
 
 class hamfile;
 class project_def;
@@ -28,8 +26,7 @@ class logical_or;
 class logical_and;
 class expression_statement;
 
-class visitor
-{
+class visitor {
    public:
       virtual bool visit(const hamfile& v) { return true; }
       virtual bool visit(const project_def& v) { return true; }
@@ -55,5 +52,3 @@ class visitor
 };
 
 }}
-
-#endif

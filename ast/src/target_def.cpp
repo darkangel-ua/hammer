@@ -1,9 +1,9 @@
-#include <hammer/ast/target_def.h>
-#include <hammer/ast/rule_invocation.h>
 #include <hammer/ast/casts.h>
 #include <hammer/ast/visitor.h>
+#include <hammer/ast/rule_invocation.h>
+#include <hammer/ast/target_def.h>
 
-namespace hammer{ namespace ast{
+namespace hammer { namespace ast {
 
 parscore::source_location
 target_def::start_loc() const

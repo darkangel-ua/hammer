@@ -1,15 +1,12 @@
-#if !defined(h_392947bd_0bce_4d6c_9796_24d72580e72e)
-#define h_392947bd_0bce_4d6c_9796_24d72580e72e
-
+#pragma once
 #include <vector>
 #include <hammer/ast/context_allocator.h>
 
-namespace hammer{ namespace parscore{
-
-class identifier;
+namespace hammer { namespace parscore {
+   class identifier;
 }}
 
-namespace hammer{ namespace ast{
+namespace hammer { namespace ast {
 
 class expression;
 class statement;
@@ -21,5 +18,3 @@ typedef std::vector<const statement*, context_allocator<const statement*> > stat
 typedef std::vector<const feature*, context_allocator<const feature*> > features_t;
    
 }}
-
-#endif

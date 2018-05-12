@@ -1,11 +1,11 @@
-#include <hammer/core/diagnostic.h>
 #include <cassert>
 #include <string>
 #include <iomanip>
+#include <hammer/core/diagnostic.h>
 
 using namespace std;
 
-namespace hammer{ 
+namespace hammer {
 
 diagnostic::diagnostic(const std::string& source_name,
                        bool verbose)

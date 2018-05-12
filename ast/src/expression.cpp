@@ -1,8 +1,8 @@
-#include <hammer/ast/expression.h>
 #include <hammer/ast/visitor.h>
 #include <hammer/ast/casts.h>
+#include <hammer/ast/expression.h>
 
-namespace hammer{ namespace ast{
+namespace hammer { namespace ast {
 
 bool error_expression::accept(visitor& v) const
 {

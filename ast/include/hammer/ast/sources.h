@@ -1,11 +1,9 @@
 #pragma once
-
 #include <hammer/ast/expression.h>
 
-namespace hammer{ namespace ast{
+namespace hammer { namespace ast {
 
-class sources : public expression
-{
+class sources : public expression {
    public:
 		sources(const expression* content)
 			: content_(content)

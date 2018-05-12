@@ -1,4 +1,4 @@
-#include <hammer/sema/actions_impl.h>
+#include <set>
 #include <hammer/ast/hamfile.h>
 #include <hammer/ast/expression.h>
 #include <hammer/ast/list_of.h>
@@ -15,7 +15,7 @@
 #include <hammer/ast/condition.h>
 #include <hammer/ast/target_def.h>
 #include <hammer/core/diagnostic.h>
-#include <set>
+#include <hammer/sema/actions_impl.h>
 
 using namespace std;
 using namespace hammer::ast;

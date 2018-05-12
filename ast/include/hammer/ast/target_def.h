@@ -1,13 +1,11 @@
 #pragma once
-
 #include <hammer/ast/statement.h>
 
-namespace hammer{ namespace ast{
+namespace hammer { namespace ast {
 
 class rule_invocation;
 
-class target_def : public statement
-{
+class target_def : public statement {
    public:
 		target_def(const parscore::source_location explicit_tag,
 					  const parscore::source_location local_tag,

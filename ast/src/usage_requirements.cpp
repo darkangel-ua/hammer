@@ -1,8 +1,8 @@
-#include <hammer/ast/usage_requirements.h>
 #include <hammer/ast/visitor.h>
 #include <hammer/ast/casts.h>
+#include <hammer/ast/usage_requirements.h>
 
-namespace hammer{ namespace ast{
+namespace hammer { namespace ast {
 
 usage_requirements::usage_requirements(const expression* requirements)
    : requirements_(requirements)

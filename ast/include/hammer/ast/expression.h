@@ -1,13 +1,10 @@
-#if !defined(h_8babae10_1ba8_479f_ae25_e20b77eb41dc)
-#define h_8babae10_1ba8_479f_ae25_e20b77eb41dc
-
+#pragma once
 #include <hammer/ast/node.h>
 #include <hammer/parscore/identifier.h>
 
-namespace hammer{ namespace ast{
+namespace hammer { namespace ast {
 
-class expression : public node
-{
+class expression : public node {
    public:
       virtual parscore::source_location start_loc() const = 0;
 
@@ -15,8 +12,7 @@ class expression : public node
       parscore::source_location loc_;
 };
 
-class error_expression : public expression
-{
+class error_expression : public expression {
    public:
       error_expression(const parscore::source_location& loc) 
          : loc_(loc) 
@@ -33,8 +29,7 @@ class error_expression : public expression
       parscore::source_location loc_;
 };
 
-class empty_expr : public expression
-{
+class empty_expr : public expression {
    public:
       empty_expr(const parscore::identifier& next)
          : next_(next)
@@ -48,8 +43,7 @@ class empty_expr : public expression
       parscore::identifier next_;
 };
 
-class id_expr : public expression
-{
+class id_expr : public expression {
    public:
       id_expr(const parscore::identifier& id) 
          : id_(id) 
@@ -64,8 +58,7 @@ class id_expr : public expression
       parscore::identifier id_;
 };
 
-class named_expr : public expression
-{
+class named_expr : public expression {
    public:
       named_expr(const parscore::identifier& name,
                  const expression* value)
@@ -84,8 +77,7 @@ class named_expr : public expression
       const expression* value_;
 };
 
-class public_expr : public expression
-{
+class public_expr : public expression {
    public:
 	  public_expr(const parscore::identifier& tag,
 				  const expression* value)
@@ -107,5 +99,3 @@ class public_expr : public expression
 bool is_error_expr(const expression* e);
 
 }}
-
-#endif

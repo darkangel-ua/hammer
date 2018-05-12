@@ -1,13 +1,10 @@
-#if !defined(h_e2a33649_39e9_4f1b_ba94_b28252b20183)
-#define h_e2a33649_39e9_4f1b_ba94_b28252b20183
-
+#pragma once
 #include <hammer/ast/expression.h>
 #include <hammer/ast/types.h>
 
-namespace hammer{ namespace ast{
+namespace hammer { namespace ast {
 
-class list_of : public expression
-{
+class list_of : public expression {
    public:
       list_of(const expressions_t& values)
          : values_(values)
@@ -22,5 +19,3 @@ class list_of : public expression
 };
 
 }}
-
-#endif

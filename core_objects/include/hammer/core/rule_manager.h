@@ -1,7 +1,6 @@
-#if !defined(h_7511b8bd_5dcc_4be4_94ca_7d6c633fa1d2)
-#define h_7511b8bd_5dcc_4be4_94ca_7d6c633fa1d2
-
-#include <hammer/parscore/identifier.h>
+#pragma once
+#include <map>
+#include <vector>
 #include <boost/function.hpp>
 #include <boost/function_types/result_type.hpp>
 #include <boost/function_types/function_arity.hpp>
@@ -15,8 +14,7 @@
 #include <boost/mpl/copy.hpp>
 #include <boost/mpl/front.hpp>
 #include <boost/mpl/empty.hpp>
-#include <vector>
-#include <map>
+#include <hammer/parscore/identifier.h>
 
 namespace hammer {
 
@@ -94,8 +92,7 @@ struct rule_argument_type_info<target_invocation_context> { static const rule_ar
 template<>
 struct rule_argument_type_info<ast::expression> { static const rule_argument_type ast_type = rule_argument_type::ast_expression; };
 
-class rule_argument
-{
+class rule_argument {
    public:   
       using raw_ast_transformer_t = const ast::expression*(*)(ast::context& ctx, diagnostic& diag, const ast::expression*);
       using ast_transformer_t = boost::function<const ast::expression*(ast::context& ctx, diagnostic& diag, const ast::expression*)>;
@@ -149,8 +146,7 @@ class rule_manager_arg_base {
 };
 
 template<typename T>
-class rule_manager_arg : public rule_manager_arg_base
-{
+class rule_manager_arg : public rule_manager_arg_base {
    public:
       rule_manager_arg(T* v) : rule_manager_arg_base(v), owned_(true) {}
 		rule_manager_arg(std::unique_ptr<T> v) : rule_manager_arg_base(v.release()), owned_(true) {}
@@ -165,15 +161,13 @@ class rule_manager_arg : public rule_manager_arg_base
 typedef std::unique_ptr<rule_manager_arg_base> rule_manager_arg_ptr;
 typedef std::vector<rule_manager_arg_ptr> rule_manager_arguments_t;
 
-struct rule_manager_invoker_base
-{
+struct rule_manager_invoker_base {
    virtual rule_manager_arg_ptr invoke(rule_manager_arguments_t& args) const = 0;
    virtual ~rule_manager_invoker_base() {}
 };
 
 template<typename Function>
-class rule_manager_invoker : public rule_manager_invoker_base
-{
+class rule_manager_invoker : public rule_manager_invoker_base {
    public:
       rule_manager_invoker(boost::function<Function> f) : f_(f) {}
 
@@ -271,8 +265,7 @@ class rule_manager_invoker : public rule_manager_invoker_base
 
 };
 
-class rule_declaration
-{
+class rule_declaration {
    public:
       typedef rule_arguments::const_iterator const_iterator;
 
@@ -372,8 +365,7 @@ make_args(const rule_args_decl& args_decl)
 }
 
 // FIXME: ast_expression can't be optional
-class rule_manager
-{
+class rule_manager {
    public:
       typedef std::map<parscore::identifier, rule_declaration> rules_t;
       typedef rules_t::const_iterator const_iterator;
@@ -489,5 +481,3 @@ class rule_manager
 };
 
 }
-
-#endif

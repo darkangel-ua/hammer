@@ -1,9 +1,7 @@
-#if !defined(h_56170038_85be_461a_817e_733c4bb21a2b)
-#define h_56170038_85be_461a_817e_733c4bb21a2b
-
+#pragma once
 #include <hammer/ast/types.h>
 
-namespace hammer{ namespace ast{
+namespace hammer { namespace ast {
    class hamfile;
    class project_def;
    class rule_invocation;
@@ -15,16 +13,15 @@ namespace hammer{ namespace ast{
 	class condition_expr;
 }}
 
-namespace hammer{ namespace parscore{
+namespace hammer { namespace parscore {
    class identifier;
    class token;
    class source_location;
 }}
 
-namespace hammer{ namespace sema{
+namespace hammer { namespace sema {
 
-class actions
-{
+class actions {
 	public:
 		actions(ast::context& ctx) : ctx_(ctx) {}
 
@@ -107,5 +104,3 @@ class actions
 };
 
 }}
-
-#endif

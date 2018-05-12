@@ -1,8 +1,8 @@
-#include <hammer/ast/requirement_set.h>
 #include <hammer/ast/visitor.h>
 #include <hammer/ast/casts.h>
+#include <hammer/ast/requirement_set.h>
 
-namespace hammer{ namespace ast{
+namespace hammer { namespace ast {
 
 requirement_set::requirement_set(const expression* requirements)
    : requirements_(requirements) 

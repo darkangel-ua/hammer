@@ -1,11 +1,9 @@
 #pragma once
-
 #include <hammer/ast/expression.h>
 
-namespace hammer{ namespace ast{
+namespace hammer { namespace ast {
 
-class binary_op : public expression
-{
+class binary_op : public expression {
 	public:
 		binary_op(const expression* left,
 					 const expression* right)
@@ -22,8 +20,7 @@ class binary_op : public expression
 		const expression* right_;
 };
 
-class logical_or : public binary_op
-{
+class logical_or : public binary_op {
 	public:
 		logical_or(const expression* left,
 					  const expression* right)
@@ -32,8 +29,7 @@ class logical_or : public binary_op
 		bool accept(visitor& v) const override;
 };
 
-class logical_and : public binary_op
-{
+class logical_and : public binary_op {
 	public:
 		logical_and(const expression* left,
 						const expression* right)
@@ -42,8 +38,7 @@ class logical_and : public binary_op
 		bool accept(visitor& v) const override;
 };
 
-class condition_expr : public expression
-{
+class condition_expr : public expression {
    public:
 		condition_expr(const expression* condition,
 							const expression* result)

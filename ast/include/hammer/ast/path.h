@@ -1,14 +1,11 @@
-#if !defined(h_bfff9dfc_78a7_4dd6_94c5_9033e1fd6b33)
-#define h_bfff9dfc_78a7_4dd6_94c5_9033e1fd6b33
-
+#pragma once
 #include <cassert>
 #include <hammer/ast/expression.h>
 #include <hammer/ast/types.h>
 
-namespace hammer{ namespace ast{
+namespace hammer { namespace ast {
 
-class path : public expression
-{
+class path : public expression {
    public:
 		path(const parscore::token root_name,
 			  const expressions_t& elements,
@@ -36,5 +33,3 @@ class path : public expression
 };
 
 }}
-
-#endif

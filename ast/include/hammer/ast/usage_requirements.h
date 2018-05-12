@@ -1,11 +1,9 @@
 #pragma once
-
 #include <hammer/ast/expression.h>
 
-namespace hammer{ namespace ast{
+namespace hammer { namespace ast {
 
-class usage_requirements : public expression
-{
+class usage_requirements : public expression {
    public:
 		usage_requirements(const expression* requirements);
 

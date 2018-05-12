@@ -1,13 +1,10 @@
-#if !defined(h_3afdbfac_9e89_47b9_840a_f08a75ea6aa5)
-#define h_3afdbfac_9e89_47b9_840a_f08a75ea6aa5
-
+#pragma once
 #include <hammer/ast/types.h>
 #include <hammer/ast/expression.h>
 
-namespace hammer{ namespace ast{
+namespace hammer { namespace ast {
 
-class requirement_set : public expression
-{
+class requirement_set : public expression {
 	public:
 		requirement_set(const expression* requirements);
 
@@ -20,5 +17,3 @@ class requirement_set : public expression
 };
 
 }}
-
-#endif

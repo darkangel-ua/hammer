@@ -1,16 +1,13 @@
-#if !defined(h_885e1bfd_edcb_4c2e_a805_f246b6d45c50)
-#define h_885e1bfd_edcb_4c2e_a805_f246b6d45c50
-
+#pragma once
 #include <cstddef>
 #include <string>
 
 struct ANTLR3_COMMON_TOKEN_struct;
 
-namespace hammer{namespace parscore{
+namespace hammer { namespace parscore {
 
 class identifier;
-class source_location
-{
+class source_location {
 	  friend class token;
    public:
       source_location() : antlr_token_(NULL) {}
@@ -29,5 +26,3 @@ class source_location
 };
 
 }}
-
-#endif

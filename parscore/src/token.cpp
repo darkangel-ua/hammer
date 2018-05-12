@@ -1,7 +1,7 @@
-#include <hammer/parscore/token.h>
 #include <cstring>
 #include <cassert>
 #include <antlr3.h>
+#include <hammer/parscore/token.h>
 
 namespace hammer { namespace parscore {
 

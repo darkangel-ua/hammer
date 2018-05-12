@@ -1,13 +1,10 @@
-#if !defined(h_15d0fd11_4781_476f_8b3d_693e36a98ae5)
-#define h_15d0fd11_4781_476f_8b3d_693e36a98ae5
-
-#include <hammer/ast/visitor.h>
+#pragma once
 #include <iosfwd>
+#include <hammer/ast/visitor.h>
 
-namespace hammer{ namespace ast{
+namespace hammer { namespace ast {
 
-class ast_xml_printer : public visitor
-{
+class ast_xml_printer : public visitor {
    public:
       ast_xml_printer(std::ostream& os, 
                       bool write_header = true);
@@ -38,5 +35,3 @@ class ast_xml_printer : public visitor
 };
 
 }}
-
-#endif

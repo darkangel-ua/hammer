@@ -1,9 +1,9 @@
-#include <hammer/ast/target_ref.h>
 #include <hammer/ast/visitor.h>
 #include <hammer/ast/path.h>
 #include <hammer/ast/casts.h>
+#include <hammer/ast/target_ref.h>
 
-namespace hammer{namespace ast{
+namespace hammer { namespace ast {
 
 target_ref::target_ref(parscore::source_location public_tag,
                        const path* head,

@@ -1,8 +1,8 @@
-#include <hammer/ast/list_of.h>
 #include <hammer/ast/visitor.h>
 #include <hammer/ast/casts.h>
+#include <hammer/ast/list_of.h>
 
-namespace hammer{ namespace ast{
+namespace hammer { namespace ast {
 
 bool list_of::accept(visitor& v) const
 {

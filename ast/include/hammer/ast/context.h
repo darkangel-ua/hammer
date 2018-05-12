@@ -1,13 +1,9 @@
-#if !defined(h_0483f3e2_249b_44b1_b048_e8bbbf8ba158)
-#define h_0483f3e2_249b_44b1_b048_e8bbbf8ba158
-
+#pragma once
 #include <vector>
 
-namespace hammer{ namespace ast{
+namespace hammer { namespace ast {
 
-
-class context
-{
+class context {
    public:
 		context();
 		context(const context&) = delete;
@@ -33,5 +29,3 @@ inline
 void operator delete(void* p,
                      hammer::ast::context& c)
 {}
-
-#endif

@@ -1,17 +1,16 @@
-#include <hammer/parser/parser.h>
 #include <boost/filesystem/operations.hpp>
+#include <hammer/parser/parser.h>
 #include "hammer_v2Lexer.h"
 #include "hammer_v2Parser.h"
 #include "hammer_sema_v2.h"
 #include <hammer/ast/context.h>
 #include <hammer/ast/hamfile.h>
 
-namespace hammer{
+namespace hammer {
 
 namespace {
 
-struct parser_context
-{
+struct parser_context {
    ~parser_context()
    {
       if (input_) {

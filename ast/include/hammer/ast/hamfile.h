@@ -1,16 +1,13 @@
-#if !defined(h_f169f8f8_dd1c_4f6a_9071_3a123619437f)
-#define h_f169f8f8_dd1c_4f6a_9071_3a123619437f
-
+#pragma once
 #include <vector>
 #include <hammer/ast/node.h>
 #include <hammer/ast/types.h>
 
-namespace hammer{ namespace ast{
+namespace hammer { namespace ast {
 
 class rule_invocation;
 
-class hamfile : public node
-{
+class hamfile : public node {
    public:
       hamfile(const rule_invocation* project_def,
               const statements_t& s)
@@ -29,5 +26,3 @@ class hamfile : public node
 };
 
 }}
-
-#endif

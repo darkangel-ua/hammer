@@ -1,0 +1,8 @@
+feature all-static : on : propagated composite no-defaults ;
+feature.compose <all-static>on : <link>static <runtime-link>static ;
+
+copy install 
+   : sources = ../<all-static>on
+   : destination = ./
+   : types = EXE
+   ;

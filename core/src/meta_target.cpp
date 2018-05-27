@@ -69,8 +69,6 @@ void remove_duplicates(deduplicator_t& deduplicator,
                             const requirements_decl& usage_req) 
                            : basic_meta_target(p, name, props, usage_req)
    {
-      requirements().insert_infront(p->requirements());
-      usage_requirements().insert_infront(p->usage_requirements());
    }
 
    static

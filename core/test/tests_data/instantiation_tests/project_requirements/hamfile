@@ -1,0 +1,8 @@
+# test that project requirements propagates to targets
+
+project test 
+   : requirements = 
+         <define>FOO 
+   ;
+
+exe test : main.cpp ;

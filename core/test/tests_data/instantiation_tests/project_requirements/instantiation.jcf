@@ -1,0 +1,1 @@
+test [ features = <define>FOO; ] {}

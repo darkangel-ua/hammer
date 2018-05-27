@@ -39,6 +39,8 @@ void project::location(const location_t& l)
 
 void project::add_target(std::unique_ptr<basic_meta_target> t)
 {
+   t->requirements().insert_infront(requirements());
+   t->usage_requirements().insert_infront(usage_requirements());
    targets_.insert(std::make_pair(t->name(), move(t)));
 }
 

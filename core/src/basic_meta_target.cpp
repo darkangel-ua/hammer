@@ -26,8 +26,8 @@ basic_meta_target::basic_meta_target(hammer::project* p,
                                      usage_requirements_(usage_req),
                                      is_explicit_(false)
 {
-   requirements_.setup_path_data(this);
-   usage_requirements_.setup_path_data(this);
+   requirements_.setup_path_data(p);
+   usage_requirements_.setup_path_data(p);
 }
 
 void basic_meta_target::sources(const sources_decl& s)
@@ -220,7 +220,7 @@ void adjust_dependency_features_sources(feature_set& set_to_adjust,
          adjusted_source.target_path("./", nullptr);
          adjusted_source.target_name(source.target_path());
 
-         f->set_dependency_data(adjusted_source, &relative_to_target);
+         f->set_dependency_data(adjusted_source, relative_to_target.get_project());
       }
    }
 }

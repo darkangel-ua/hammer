@@ -14,6 +14,7 @@ namespace hammer
    class basic_target;
    class main_target;
    class type_registry;
+   class basic_meta_target;
 
    typedef std::vector<std::pair<const basic_meta_target* /* target */,
                                  const feature_set* /* requested build properties*/> > meta_targets_t;

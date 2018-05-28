@@ -26,7 +26,7 @@ void testing_compile_fail_meta_target::instantiate_impl(const main_target* owner
    for (const feature* f : build_request) {
       if (f->name() == "testing.additional-source") {
          feature* source = get_engine()->feature_registry().create_feature("use", "");
-         source->set_dependency_data(f->get_dependency_data().source_, f->get_path_data().target_);
+         source->set_dependency_data(f->get_dependency_data().source_, f->get_path_data().project_);
          new_build_request->join(source);
       } else {
          feature* f_copy = get_engine()->feature_registry().clone_feature(*f);

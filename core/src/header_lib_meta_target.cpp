@@ -54,7 +54,7 @@ void header_lib_meta_target::instantiate_impl(const main_target* owner,
       if (looks_like_local_target_ref(sd))
          new_sd.set_locals_allowed(true);
 
-      f->set_dependency_data(new_sd, this);
+      f->set_dependency_data(new_sd, get_project());
 
       sources_as_features.join(f);
    }

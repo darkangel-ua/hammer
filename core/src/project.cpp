@@ -1,15 +1,14 @@
-#include "stdafx.h"
+#include <sstream>
+#include <boost/format.hpp>
 #include <hammer/core/project.h>
 #include <hammer/core/engine.h>
 #include <hammer/core/feature_registry.h>
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature.h>
-#include <boost/format.hpp>
-#include <sstream>
 
 using namespace std;
 
-namespace hammer{
+namespace hammer {
 
 project::project(hammer::engine* e,
                  const std::string& name,
@@ -17,10 +16,16 @@ project::project(hammer::engine* e,
                  const requirements_decl& req,
                  const requirements_decl& usage_req)
    :
-    basic_meta_target(this, name, req, usage_req),
-    engine_(e)
+    engine_(e),
+    name_(name),
+    requirements_(req),
+    usage_requirements_(usage_req)
 {
    this->location(location);
+}
+
+project::~project() {
+
 }
 
 void project::location(const location_t& l)
@@ -210,14 +215,6 @@ void project::instantiate(const std::string& target_name,
    selected_target best_target = select_best_alternative(target_name, build_request);
    feature_set* usage_requirements = engine_->feature_registry().make_set();
    best_target.target_->instantiate(0, build_request, result, usage_requirements);
-}
-
-void project::instantiate_impl(const main_target* owner,
-                               const feature_set& build_request,
-                               std::vector<basic_target*>* result,
-                               feature_set* usage_requirements) const
-{
-   assert(false && "not implemented.");
 }
 
 bool project::operator == (const project& rhs) const

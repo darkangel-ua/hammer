@@ -40,11 +40,11 @@ bool feature::equal_without_subfeatures(const feature& rhs) const
    if (attributes().dependency)
       return get_dependency_data().source_ == rhs.get_dependency_data().source_ &&
              (get_dependency_data().source_.target_path_is_global() ||
-              get_path_data().target_ == rhs.get_path_data().target_);
+              get_path_data().project_ == rhs.get_path_data().project_);
 
    if (attributes().path)
       return value() == rhs.value() &&
-             get_path_data().target_ == rhs.get_path_data().target_;
+             get_path_data().project_ == rhs.get_path_data().project_;
    if (attributes().generated)
       return value() == rhs.value() &&
              get_generated_data().target_ == rhs.get_generated_data().target_;

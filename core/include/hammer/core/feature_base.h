@@ -10,17 +10,16 @@ namespace hammer
 {
    class basic_meta_target;
    class basic_target;
+   class project;
 
    class feature_base : public boost::noncopyable
    {
       public:
          struct path_data
          {
-            path_data() : target_(NULL) {}
-
-            const basic_meta_target* target_;
-            bool operator < (const path_data& rhs) const { return target_ < rhs.target_; }
-            bool operator != (const path_data& rhs) const { return target_ != rhs.target_; } 
+            const project* project_ = nullptr;
+            bool operator < (const path_data& rhs) const { return project_ < rhs.project_; }
+            bool operator != (const path_data& rhs) const { return project_ != rhs.project_; }
          };
 
          struct dependency_data
@@ -51,10 +50,10 @@ namespace hammer
          const dependency_data& get_dependency_data() const { return dependency_data_; }
          // dependency data ALWAYS has target relative to which source_decl.target_path was calculated
          void set_dependency_data(const source_decl& sd,
-                                  const basic_meta_target* relative_to_target)
+                                  const project* relative_to_project)
          {
             dependency_data_.source_ = sd;
-            path_data_.target_ = relative_to_target;
+            path_data_.project_ = relative_to_project;
          }
 
          const generated_data& get_generated_data() const { return generated_data_; }

@@ -169,7 +169,7 @@ void remove_duplicates(deduplicator_t& deduplicator,
       for (const source_decl& source : sources) {
          if (source.is_public()) {
             feature* f = fr.create_feature("use", "");
-            f->set_dependency_data(source, &relative_to_target);
+            f->set_dependency_data(source, relative_to_target.get_project());
 
             uses.join(f);
          }

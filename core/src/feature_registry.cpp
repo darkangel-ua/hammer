@@ -488,7 +488,7 @@ namespace hammer{
    {
       feature* result = create_feature(f.name(), f.value());
       if (f.attributes().dependency)
-         result->set_dependency_data(f.get_dependency_data().source_, f.get_path_data().target_);
+         result->set_dependency_data(f.get_dependency_data().source_, f.get_path_data().project_);
 
       if (f.attributes().path)
          result->get_path_data() = f.get_path_data();

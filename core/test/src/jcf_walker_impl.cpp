@@ -116,7 +116,7 @@ void check_feature(void* e, void* t, void* features, const pANTLR3_COMMON_TOKEN 
          return;
       }
 
-      location_t p1((**f).get_path_data().target_->location() / (**f).value());
+      location_t p1((**f).get_path_data().project_->location() / (**f).value());
       location_t p2(bt->get_main_target()->location());
       p1.normalize();
       p2.normalize();

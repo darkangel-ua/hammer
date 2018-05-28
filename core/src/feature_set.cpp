@@ -183,16 +183,6 @@ feature_set::contains(const feature& f) const
    return end();
 }
 
-void set_path_data(feature_set* f, const basic_meta_target* t)
-{
-   typedef feature_set::iterator iter;
-   for(iter i = f->begin(), last = f->end(); i != last; ++i)
-   {
-      if ((**i).attributes().path)
-         (**i).get_path_data().target_ = t;
-   }
-}
-
 static
 void extract_dependency_like_sources(sources_decl& result,
                                      const feature_set& fs,
@@ -205,9 +195,9 @@ void extract_dependency_like_sources(sources_decl& result,
 
       if (!sd_copy.target_path().empty() &&
           !sd_copy.target_path_is_global() &&
-          relative_to_target.get_project() != (**i).get_path_data().target_->get_project())
+          relative_to_target.get_project() != (**i).get_path_data().project_)
       {
-         const location_t full_target_path = ((**i).get_path_data().target_->location() / sd_copy.target_path()).normalize();
+         const location_t full_target_path = ((**i).get_path_data().project_->location() / sd_copy.target_path()).normalize();
          const boost::filesystem::path p = relative_path(full_target_path, relative_to_target.location());
          sd_copy.target_path(p.string(), sd_copy.type());
       }
@@ -349,7 +339,7 @@ static void dump_value(std::ostream& s, const feature& f)
          const feature::path_data& pd = f.get_path_data();
          location_t l(f.value());
          if (!l.has_root_name()) {
-            l = pd.target_->location() / l;
+            l = pd.project_->location() / l;
             l.normalize();
          }
 
@@ -361,8 +351,8 @@ static void dump_value(std::ostream& s, const feature& f)
       if (!dd.source_.target_name().empty())
          s << "//" << dd.source_.target_name();
 
-      if (f.get_path_data().target_ != NULL)
-         s << " " << f.get_path_data().target_->location();
+      if (f.get_path_data().project_ != NULL)
+         s << " " << f.get_path_data().project_->location();
    } else
       s << f.value();
 }
@@ -483,7 +473,7 @@ void apply_build_request(feature_set& dest,
       {
          const source_decl old = (**i).get_dependency_data().source_;
          feature_set& new_props = old.properties() == NULL ? *build_request.clone() : old.properties()->clone()->join(build_request);
-         (**i).set_dependency_data(source_decl(old.target_path(), old.target_name(), old.type(), &new_props), (**i).get_path_data().target_);
+         (**i).set_dependency_data(source_decl(old.target_path(), old.target_name(), old.type(), &new_props), (**i).get_path_data().project_);
       }
 }
 

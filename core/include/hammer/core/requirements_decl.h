@@ -9,7 +9,7 @@ namespace hammer
    class feature_set;
    class feature;
    class feature_registry;
-   class basic_meta_target;
+   class project;
 
    class requirement_base
    {
@@ -19,7 +19,7 @@ namespace hammer
                            feature_set* result,
                            feature_set* public_result) const = 0;
          virtual requirement_base* clone() const = 0;
-         virtual void setup_path_data(const basic_meta_target* t) = 0;
+         virtual void setup_path_data(const project* p) = 0;
          virtual ~requirement_base() {}
          void set_public(bool v) { public_ = v; } 
          bool is_public() const { return public_; }
@@ -36,7 +36,7 @@ namespace hammer
 			          feature_set* result,
 			          feature_set* public_result) const override;
 			requirement_base* clone() const override { return new just_feature_requirement(*this); }
-         void setup_path_data(const basic_meta_target* t) override;
+         void setup_path_data(const project* p) override;
       
       private:
          feature* f_;
@@ -51,7 +51,7 @@ namespace hammer
 			          feature_set* result,
 			          feature_set* public_result) const override;
 			requirement_base* clone() const override { return new linear_and_condition(*this); }
-         void setup_path_data(const basic_meta_target* t) override;
+         void setup_path_data(const project* p) override;
       
       private:
          typedef std::vector<const feature*> features_t;
@@ -157,7 +157,7 @@ namespace hammer
 			          feature_set* result,
 			          feature_set* public_result) const override;
 			requirement_base* clone() const override;
-         void setup_path_data(const basic_meta_target* t) override;
+         void setup_path_data(const project* p) override;
 
       private:
          std::unique_ptr<requirement_condition_op_base> cond_;
@@ -175,7 +175,7 @@ namespace hammer
          void eval(const feature_set& build_request, 
                    feature_set* result,
                    feature_set* public_result = NULL) const;
-         void setup_path_data(const basic_meta_target* t);
+         void setup_path_data(const project* p);
          void insert_infront(const requirements_decl& v);
          void insert(const requirements_decl& v); // insert in the end
          virtual ~requirements_decl();

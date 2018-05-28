@@ -42,7 +42,7 @@ void alias_meta_target::instantiate_impl(const main_target* owner,
          else
             new_sd.properties(build_request.clone());
 
-         f->set_dependency_data(new_sd, this);
+         f->set_dependency_data(new_sd, get_project());
 
          sources_as_features.join(f);
       }

@@ -81,7 +81,7 @@ void qt_uic_meta_target::compute_usage_requirements(feature_set& result,
 
    // making dependency on self :)
    feature* dependency = result.owner().create_feature("dependency", "");
-   dependency->set_dependency_data(source_decl(name(), std::string(), nullptr, nullptr), this);
+   dependency->set_dependency_data(source_decl(name(), std::string(), nullptr, nullptr), get_project());
 
    result.join(uic_inc).join(dependency);
 }
@@ -322,7 +322,7 @@ void add_lib(project& qt_project,
                                "./lib/" + lib_name + lib_tag + ".lib", profile_req, requirements_decl()));
 #else
    feature* search_feature = e.feature_registry().create_feature("search", "./lib/");
-   search_feature->get_path_data().target_ = &qt_project;
+   search_feature->get_path_data().project_ = &qt_project;
    {
       auto_ptr<just_feature_requirement> search_req(new just_feature_requirement(search_feature));
       debug_req.add(auto_ptr<requirement_base>(search_req));

@@ -72,7 +72,7 @@ void pch_meta_target::compute_usage_requirements(feature_set& result,
       if (i->type() == NULL && // that meta target
           i->target_path() == name()) // FIXME: skip self - should be more intelligent logic
       {
-         self_dependency_feature->set_dependency_data(*i, this);
+         self_dependency_feature->set_dependency_data(*i, get_project());
          break;
       }
 

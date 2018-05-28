@@ -43,7 +43,7 @@ make_usage_requirements(feature_registry& fr,
 
    // making dependency on self :) because this will build this target before any targets that belongs to owner
    feature* dependency = fr.create_feature("dependency", "");
-   dependency->set_dependency_data(source_decl(target_name, string(), nullptr, nullptr), this_);
+   dependency->set_dependency_data(source_decl(target_name, string(), nullptr, nullptr), this_->get_project());
    result.add(*dependency);
 
    return result;

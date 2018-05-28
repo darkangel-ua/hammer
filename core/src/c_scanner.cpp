@@ -29,6 +29,7 @@
 #include <hammer/core/c_scanner.h>
 #include <hammer/core/scaner_context.h>
 #include <hammer/core/main_target.h>
+#include <hammer/core/project.h>
 
 using namespace std;
 using namespace boost::posix_time;
@@ -645,7 +646,7 @@ c_scanner_context::get_include_dirs(const build_node& node,
       }
 
       for(feature_set::const_iterator i = properties.find("include"), last = properties.end(); i != last; i = properties.find(++i, "include")) {
-         location_t l = (**i).get_path_data().target_->location() / (**i).value() / ".";
+         location_t l = (**i).get_path_data().project_->location() / (**i).value() / ".";
          l.normalize();
          pair<const hashed_location*, bool> r = get_cached_location(l);
          load_directory(*r.first);

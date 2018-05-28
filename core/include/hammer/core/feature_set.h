@@ -71,7 +71,6 @@ namespace hammer
          void add_composites(const feature_def& def);
    };
 
-   void set_path_data(feature_set* f, const basic_meta_target* t);
    // relative_to_target - target relative to which we adjust sources_decl path
    void extract_sources(sources_decl& result,
                         const feature_set& fs,

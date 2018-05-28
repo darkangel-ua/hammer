@@ -116,10 +116,10 @@ void linear_and_condition::eval(const feature_set& build_request,
    }
 }
 
-void linear_and_condition::setup_path_data(const basic_meta_target* t)
+void linear_and_condition::setup_path_data(const project* p)
 {
    if (result_->attributes().path || result_->attributes().dependency)
-      result_->get_path_data().target_ = t;
+      result_->get_path_data().project_ = p;
 }
 
 void just_feature_requirement::eval(const feature_set& build_request,
@@ -132,10 +132,10 @@ void just_feature_requirement::eval(const feature_set& build_request,
       public_result->join(f_);
 }
 
-void just_feature_requirement::setup_path_data(const basic_meta_target* t)
+void just_feature_requirement::setup_path_data(const project* p)
 {
    if (f_->attributes().path || f_->attributes().dependency)
-      f_->get_path_data().target_ = t;
+      f_->get_path_data().project_ = p;
 }
 
 void linear_and_condition::add(feature* c)
@@ -143,10 +143,10 @@ void linear_and_condition::add(feature* c)
    features_.push_back(c);
 }
 
-void requirements_decl::setup_path_data(const basic_meta_target* t)
+void requirements_decl::setup_path_data(const project* p)
 {
    for(impl_t::iterator i = impl_->requirements_.begin(), last = impl_->requirements_.end(); i != last; ++i)
-      i->setup_path_data(t);
+      i->setup_path_data(p);
 }
 
 void requirements_decl::insert_infront(const requirements_decl& v)
@@ -189,11 +189,11 @@ requirement_condition::clone() const
    return new requirement_condition( std::unique_ptr<requirement_condition_op_base>(cond_->clone()), result_, is_public());
 }
 
-void requirement_condition::setup_path_data(const basic_meta_target* t)
+void requirement_condition::setup_path_data(const project* p)
 {
    for (result_element& re : result_) {
       if (re.f_->attributes().path || re.f_->attributes().dependency)
-         re.f_->get_path_data().target_ = t;
+         re.f_->get_path_data().project_ = p;
    }
 }
 

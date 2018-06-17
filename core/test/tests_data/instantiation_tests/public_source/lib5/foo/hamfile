@@ -1,1 +1,1 @@
-version-alias foo : 1.0 ;
+use-project location = ./1.0/build ;

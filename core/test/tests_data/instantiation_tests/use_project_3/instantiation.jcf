@@ -1,0 +1,6 @@
+test {
+    main.cpp {}
+    lib1 [ features = <define>RIGHT_LIB1; ] { 
+        lib1.cpp {} 
+    }
+}

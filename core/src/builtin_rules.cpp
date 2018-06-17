@@ -9,8 +9,6 @@
 #include <hammer/core/lib_meta_target.h>
 #include <hammer/core/header_lib_meta_target.h>
 #include <hammer/core/prebuilt_lib_meta_target.h>
-#include <hammer/core/version_alias_meta_target.h>
-#include <hammer/core/target_version_alias_meta_target.h>
 #include <hammer/core/copy_meta_target.h>
 #include <hammer/core/obj_meta_target.h>
 #include <hammer/core/testing_compile_fail_meta_target.h>
@@ -201,49 +199,14 @@ void header_lib_rule(target_invocation_context& ctx,
 }
 
 static
-void version_alias_rule(target_invocation_context& ctx,
-                        const parscore::identifier& name,
-                        const parscore::identifier& version,
-                        const location_t* target_path)
-{
-   string s_target_path;
-   if (target_path)
-      s_target_path = target_path->string();
-
-   unique_ptr<basic_meta_target> mt(new version_alias_meta_target(&ctx.current_project_,
-                                                                  name.to_string(),
-                                                                  version.to_string(),
-                                                                  target_path ? &s_target_path : nullptr));
-   mt->set_local(ctx.local_);
-   mt->set_explicit(ctx.explicit_);
-
-   ctx.current_project_.add_target(move(mt));
-}
-
-static
-void target_version_alias_rule(target_invocation_context& ctx,
-                               const parscore::identifier& id,
-                               const parscore::identifier& version,
-                               const location_t* target_path)
-{
-   string s_target_path;
-   if (target_path)
-      s_target_path = target_path->string();
-
-   unique_ptr<basic_meta_target> mt(new target_version_alias_meta_target(&ctx.current_project_, id.to_string(), version.to_string(), target_path ? &s_target_path : nullptr));
-
-   mt->set_local(ctx.local_);
-   // its explicit by design
-
-   ctx.current_project_.add_target(move(mt));
-}
-
-static
 const ast::expression*
 use_project_alias_validator(ast::context& ctx,
                             diagnostic& diag,
                             const ast::expression* alias)
 {
+   if (!alias)
+      return alias;
+
    if (ast::as<ast::id_expr>(alias)) {
       return alias;
    } else if (const ast::path* p = ast::as<ast::path>(alias)) {
@@ -266,28 +229,33 @@ use_project_alias_validator(ast::context& ctx,
 
 static
 void use_project_rule(invocation_context& ctx,
-                      const ast::expression& alias,
+                      const ast::expression* alias,
                       const location_t& location,
                       feature_set* props)
 {
-   std::string project_alias;
+   location_t project_alias;
 
-   if (const ast::id_expr* id = ast::as<ast::id_expr>(&alias))
-      project_alias = id->id().to_string();
-   else if (const ast::path* p = ast::as<ast::path>(&alias))
-      project_alias = p->to_string();
-   else {
-      const ast::target_ref* tr = ast::as<ast::target_ref>(&alias);
-      // FIXME: we need a way to move this check upper, to ast processing
-      if (tr->target_path()->root_name().valid() && ctx.current_project_.is_root()) {
-         ctx.diag_.error(alias.start_loc(), "Argument 'alias': Global aliases can be declared only in homroot file");
-         throw std::runtime_error("Sematic error");
+   if (alias) {
+      if (const ast::id_expr* id = ast::as<ast::id_expr>(alias))
+         project_alias = location_t{id->id().to_string()};
+      else if (const ast::path* p = ast::as<ast::path>(alias))
+         project_alias = location_t{p->to_string()};
+      else {
+         const ast::target_ref* tr = ast::as<ast::target_ref>(alias);
+         // FIXME: we need a way to move this check upper, to ast processing
+         if (tr->target_path()->root_name().valid() && ctx.current_project_.is_root()) {
+            ctx.diag_.error(alias->start_loc(), "Argument 'alias': Global aliases can be declared only in homroot file");
+            throw std::runtime_error("Sematic error");
+         }
+
+         project_alias = location_t{tr->target_path()->to_string()};
       }
-
-      project_alias = tr->target_path()->to_string();
    }
 
-   ctx.current_project_.get_engine()->add_project_alias(&ctx.current_project_, project_alias, location, props);
+   if (project_alias.has_root_path())
+      ctx.current_project_.get_engine()->add_alias(project_alias, ctx.current_project_.location() / location, props);
+   else
+      ctx.current_project_.add_alias(project_alias, location, props);
 }
 
 static
@@ -918,8 +886,6 @@ void install_builtin_rules(rule_manager& rm)
    rm.add_target("exe", exe_rule, {"name", "sources", "requirements", "default-build", "usage-requirements"});
    rm.add_target("lib", lib_rule, {"name", "sources", "requirements", "default-build", "usage-requirements"});
    rm.add_target("alias", alias_rule, {"name", "sources", "requirements", "usage-requirements"});
-   rm.add_target("version-alias", version_alias_rule, {"name", "version", "target-path"});
-   rm.add_target("target-version-alias", target_version_alias_rule, {"name", "version", "target-path"});
    rm.add_target("header-lib", header_lib_rule, {"name", "sources", "requirements", "default-build", "usage-requirements"});
    rm.add_target("prebuilt-lib", prebuilt_lib_rule, {"name", "sources", "filename", "requirements", "usage-requirements"});
    rm.add_target("searched-shared-lib", searched_shared_lib_rule, {"name", "sources", "libname", "requirements", "usage-requirements"});

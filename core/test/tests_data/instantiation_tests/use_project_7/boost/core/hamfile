@@ -1,0 +1,6 @@
+project boost/core 
+   : requirements =
+        <version>1.60.0
+   ;
+
+header-lib boost.core ;

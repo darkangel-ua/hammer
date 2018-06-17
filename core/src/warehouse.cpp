@@ -48,33 +48,12 @@ find_all_warehouse_unresolved_targets(const vector<basic_target*>& targets)
    return result;
 }
 
-static
-vector<string>
-collect_installed_versions(const project& p)
-{
-   vector<string> result;
-
-   const feature_set& build_request = *p.get_engine()->feature_registry().make_set();
-   for(const auto& t : p.targets()) {
-      feature_set& requirements = *p.get_engine()->feature_registry().make_set();
-      t.second->requirements().eval(build_request, &requirements);
-      auto i = requirements.find("version");
-      if (i != requirements.end())
-         result.push_back((**i).value());
-   }
-
-   sort(result.begin(), result.end());
-   result.erase(unique(result.begin(), result.end()), result.end());
-
-   return result;
-}
-
 void add_traps(project& p,
                const std::string& public_id)
 {
    warehouse& wh = p.get_engine()->warehouse();
    warehouse::versions_t all_versions = wh.get_package_versions(public_id);
-   vector<string> installed_versions = collect_installed_versions(p);
+   vector<string> installed_versions = p.get_engine()->warehouse().get_installed_versions(public_id);
 
    warehouse::versions_t not_installed_versions;
 
@@ -108,7 +87,7 @@ void warehouse_trap_rule(invocation_context& ctx,
                          const parscore::identifier& public_id)
 {
    warehouse& wh = ctx.current_project_.get_engine()->warehouse();
-   if (!wh.has_project("/" / location_t(public_id.to_string()), warehouse::any_version))
+   if (!wh.has_project(location_t(public_id.to_string()), warehouse::any_version))
       throw std::runtime_error("Can't find '" + public_id.to_string() + "' in warehouse");
 
    add_traps(ctx.current_project_, public_id.to_string());

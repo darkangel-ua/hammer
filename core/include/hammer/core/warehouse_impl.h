@@ -20,13 +20,8 @@ class warehouse_impl : public warehouse
                      const std::string& url,
                      const boost::filesystem::path& storage_dir = boost::filesystem::path());
       ~warehouse_impl();
-      bool project_from_warehouse(const project& p) const override;
       bool has_project(const location_t& project_path,
                        const std::string& version) const override;
-
-      boost::shared_ptr<project>
-      load_project(engine& e,
-                   const location_t& project_path) override;
 
       std::vector<package_info>
       get_unresoved_targets_info(engine& e,
@@ -39,6 +34,10 @@ class warehouse_impl : public warehouse
                            const location_t& packages_db_root_ = location_t()) override;
       versions_t get_package_versions(const std::string& public_id) const override;
 
+      std::vector<std::string>
+      get_installed_versions(const std::string& public_id) const override;
+
+      bool already_materialized(const location_t& public_id) const;
 
    protected:
       package_infos_t update_impl() override;
@@ -94,10 +93,10 @@ class warehouse_impl : public warehouse
                               engine& e,
                               const dependency_t& d,
                               const project& repository_project) const;
-      static warehouse::package_info to_package_info(const package_t& p);
-      bool resolves_to_real_project(engine& e,
-                                    const std::string& public_id,
-                                    const project& repository_project);
+      static
+      warehouse::package_info
+      to_package_info(const package_t& p);
+
       static
       void write_packages(const location_t& packages_db_path,
                           const packages_t& packages);

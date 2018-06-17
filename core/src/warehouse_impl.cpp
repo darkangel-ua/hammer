@@ -17,11 +17,14 @@
 #include <boost/iostreams/device/null.hpp>
 #include <boost/iostreams/copy.hpp>
 #include <boost/crypto/md5.hpp>
+#include <boost/make_unique.hpp>
+#include <boost/regex.hpp>
 #include <hammer/core/warehouse_project.h>
 #include <hammer/core/warehouse_meta_target.h>
 #include <hammer/core/warehouse_target.h>
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature.h>
+#include <hammer/core/virtual_project.h>
 #include <cassert>
 #include <unordered_set>
 #include <unordered_map>
@@ -171,6 +174,47 @@ void download_file(const fs::path& working_dir,
       throw std::runtime_error("Failed to download '" + url + "'");
 }
 
+class trap_wh_project : public virtual_project {
+   public:
+      trap_wh_project(engine& e,
+                      warehouse_impl& wh)
+         : virtual_project(&e),
+           warehouse_(wh)
+      {}
+
+      loaded_projects
+      load_project(const location_t& path) const override;
+
+   private:
+      using traps = boost::unordered_map<location_t, std::unique_ptr<project>>;
+      mutable traps traps_;
+      warehouse_impl& warehouse_;
+};
+
+loaded_projects
+trap_wh_project::load_project(const location_t& path) const
+{
+   if (!warehouse_.has_project(path, {}))
+      return {};
+
+   // if it's already materialized we already installed traps so we don't need to do anything
+   if (warehouse_.already_materialized(path))
+      return {};
+
+   // aha, it doesn't - we need to create one, that contains traps
+   auto i = traps_.find(path);
+   if (i != traps_.end())
+      return loaded_projects{i->second.get()};
+   else {
+      auto trap_project = boost::make_unique<virtual_project>(get_engine(), path.string());
+      project* raw_trap_project = trap_project.get();
+      add_traps(*trap_project, path.string());
+      traps_.insert({path, std::move(trap_project)}) ;
+
+      return loaded_projects{raw_trap_project};
+   }
+}
+
 warehouse_impl::warehouse_impl(engine& e,
                                const std::string& name,
                                const std::string& url,
@@ -204,6 +248,7 @@ warehouse_impl::warehouse_impl(engine& e,
 
    packages_ = load_packages(packages_full_filename);
    e.load_project(repository_path_);
+   e.add_alias(location_t{"/"}, e.insert(std::unique_ptr<project>(new trap_wh_project(e, *this))).location(), nullptr);
 }
 
 static
@@ -315,17 +360,16 @@ warehouse_impl::find_package(const std::string& public_id,
 bool warehouse_impl::has_project(const location_t& project_path,
                                  const string& version) const
 {
-   if (!project_path.has_root_path())
-      return false;
+   assert(!project_path.has_root_directory());
 
-   const string name = project_path.relative_path().string();
+   const string name = project_path.string();
 
    auto packages = packages_.equal_range(name);
    if (packages.first == packages_.end())
       return false;
 
    if (version.empty())
-      return packages.first != packages.second;
+      return packages.first != packages_.end();
 
    for(; packages.first != packages.second; ++packages.first)
       if (packages.first->second.version_ == version)
@@ -334,42 +378,9 @@ bool warehouse_impl::has_project(const location_t& project_path,
    return false;
 }
 
-boost::shared_ptr<project>
-warehouse_impl::load_project(engine& e,
-                             const location_t& project_path)
-{
-   const string public_id = package_id_from_location(project_path);
-
-   boost::shared_ptr<project> wproject(new warehouse_project(e, public_id, repository_path_ / "libs" / public_id));
-   add_traps(*wproject, public_id);
-
-   return wproject;
-}
-
 warehouse_impl::~warehouse_impl()
 {
 
-}
-
-bool warehouse_impl::project_from_warehouse(const project& p) const
-{
-   // For some misterious reason this doesn't work with gcc
-   // Some bug in boost::iterator? or path iterator?
-   // FIXME
-
-   // return std::search(p.location().begin(), p.location().end(), repository_path_.begin(), repository_path_.end()) == p.location().begin();
-
-   auto pi = p.location().begin();
-   auto plast = p.location().end();
-   auto ri = repository_path_.begin();
-   auto rlast = repository_path_.end();
-
-   for ( ;pi != plast && ri != rlast; ++pi, ++ri) {
-      if (*pi != *ri)
-         return false;
-   }
-
-   return true;
 }
 
 warehouse::package_info
@@ -394,7 +405,7 @@ void warehouse_impl::resolve_dependency(unresolved_packages_t& packages,
    if (i != packages.end())
       return;
 
-   engine::loaded_projects_t loaded_projects = e.try_load_project("/" + d.public_id_, repository_project);
+   loaded_projects loaded_projects = e.load_project(engine::global_project_ref{"/" + d.public_id_});
    feature_set* build_request = e.feature_registry().make_set();
    build_request->join("version", d.version_.c_str());
    project::selected_targets_t targets = loaded_projects.select_best_alternative(*build_request);
@@ -517,25 +528,9 @@ void add_new_target(const fs::path& filename,
 }
 
 static
-string make_package_alias_line(const string& package_public_id,
-                               const string& package_version,
-                               const vector<string>& targets)
+string make_package_proxy_line(const string& package_version)
 {
-   stringstream s;
-   for (const string& target : targets) {
-      if (target[0] == '@')
-         s << "version-alias ";
-      else
-         s << "target-version-alias ";
-
-      if (target[0] != '@')
-         s << target;
-      else
-         s << target.substr(1);
-      s << " : " << package_version << ";\n";
-   }
-
-   return s.str();
+   return "use-project location = ./" + package_version + "/build : requirements = <version>" + package_version + ";";
 }
 
 void warehouse_impl::install_package(const package_t& p,
@@ -569,23 +564,7 @@ void warehouse_impl::install_package(const package_t& p,
       f.close();
    }
 
-   add_new_target(package_hamfile, make_package_alias_line(p.public_id_, p.version_, p.targets_));
-}
-
-bool warehouse_impl::resolves_to_real_project(engine& e,
-                                              const string& public_id,
-                                              const project& repository_project)
-{
-   engine::loaded_projects_t loaded_projects = e.try_load_project("/" + public_id, repository_project);
-   if (loaded_projects.empty())
-      return true;
-
-   for (const project* p : loaded_projects) {
-      if (project_from_warehouse(*p))
-         return dynamic_cast<const warehouse_project*>(p) == nullptr;
-   }
-
-   return true;
+   add_new_target(package_hamfile, make_package_proxy_line(p.version_));
 }
 
 void warehouse_impl::download_and_install(engine& e,
@@ -595,8 +574,6 @@ void warehouse_impl::download_and_install(engine& e,
    fs::path working_dir = repository_path_ / "downloads";
    if (!exists(working_dir))
       create_directory(working_dir);
-
-   const project& repository_project = e.load_project(repository_path_);
 
    size_t index = 0;
    for(std::vector<package_info>::const_iterator i = packages.begin(), last = packages.end(); i != last; ++i, ++index) {
@@ -614,11 +591,13 @@ void warehouse_impl::download_and_install(engine& e,
       if (!notifier.on_install_begin(index, bpi))
          return;
 
+      const bool project_already_materilized = fs::exists(repository_path_ / "libs" / pi->second.public_id_);
       install_package(pi->second, repository_path_);
-      if (!resolves_to_real_project(e, pi->second.public_id_, repository_project)) {
+      if (!project_already_materilized) {
          const fs::path repository_hamroot = repository_path_ / "hamroot";
          append_line(repository_hamroot, "use-project /" + pi->second.public_id_ + " : ./libs/" + pi->second.public_id_ + ";");
       }
+
       notifier.on_install_end(index, bpi);
    }
 }
@@ -865,6 +844,34 @@ warehouse_impl::get_package_versions(const string& public_id) const
    return result;
 }
 
+std::vector<std::string>
+warehouse_impl::get_installed_versions(const std::string& public_id) const
+{
+   static const boost::regex pattern("^use-project.*<version>(.*);");
+
+   vector<string> result;
+   const fs::path project_root = repository_path_ / "libs" / public_id / "hamfile";
+   if (!exists(project_root))
+      return result;
+
+   fs::ifstream f{project_root};
+   string line;
+   boost::smatch m;
+   while (getline(f, line)) {
+      if (boost::regex_match(line, m, pattern))
+         result.push_back(m[1]);
+   }
+
+   sort(result.begin(), result.end());
+
+   return result;
+}
+
+bool warehouse_impl::already_materialized(const location_t& public_id) const
+{
+   return fs::exists(repository_path_ / "libs" / public_id);
+}
+
 static
 void remove_alias_from_package_hamfile(const string& package_public_id,
                                        const string& package_version,
@@ -879,7 +886,7 @@ void remove_alias_from_package_hamfile(const string& package_public_id,
    fs::ifstream current_f(path_to_hamfile);
 
    string line;
-   const string alias_line = make_package_alias_line(package_public_id, package_version, package_targets);
+   const string alias_line = make_package_proxy_line(package_version);
    while(getline(current_f, line)) {
       if (line != alias_line)
          tmp_f << line << endl;

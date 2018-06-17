@@ -1,0 +1,4 @@
+test {
+    main.cpp {}
+    lib1 { lib1.cpp {} }
+}

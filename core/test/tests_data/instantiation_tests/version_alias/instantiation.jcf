@@ -1,8 +1,0 @@
-test [ features = <define>USE_2_0 !<define>USE_1_0; ]
-{
-   main.cpp {}
-   lib1 [ features = <version>2.0; ]
-   {
-     lib1.cpp {}
-   }
-}

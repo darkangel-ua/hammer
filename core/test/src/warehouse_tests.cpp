@@ -24,13 +24,11 @@ struct warehouse_test : complete_build_tests_environment
                   const bool remove_installed_packages = true);
 
    void add_all_libs();
-   void setup_engine_warehouse();
 
    const fs::path packages_path_;
    const fs::path installed_packages_path_;
    const fs::path tests_path_;
    const fs::path libs_path_;
-   unique_ptr<warehouse> warehouse_;
 };
 
 warehouse_test::warehouse_test(const bool remove_packages,
@@ -53,41 +51,24 @@ warehouse_test::warehouse_test(const bool remove_packages,
    if (remove_installed_packages)
       fs::remove_all(installed_packages_path_);
 
-   warehouse_.reset(new warehouse_impl(engine_, "test", "file://" + packages_path_.string(), installed_packages_path_));
-}
-
-void warehouse_test::add_all_libs()
-{
-   warehouse_->add_to_packages(engine_.load_project(libs_path_ / "lib1/1.0/build"));
-   warehouse_->add_to_packages(engine_.load_project(libs_path_ / "lib1/2.0/build"));
-   warehouse_->add_to_packages(engine_.load_project(libs_path_ / "lib2/1.0/build"));
-   warehouse_->add_to_packages(engine_.load_project(libs_path_ / "lib2/2.0/build"));
-}
-
-void warehouse_test::setup_engine_warehouse()
-{
    engine_.setup_warehouse("test", "file://" + packages_path_.string(), installed_packages_path_);
    install_warehouse_rules(engine_);
 }
 
+void warehouse_test::add_all_libs()
+{
+   engine_.warehouse().add_to_packages(engine_.load_project(libs_path_ / "lib1/1.0/build"));
+   engine_.warehouse().add_to_packages(engine_.load_project(libs_path_ / "lib1/2.0/build"));
+   engine_.warehouse().add_to_packages(engine_.load_project(libs_path_ / "lib2/1.0/build"));
+   engine_.warehouse().add_to_packages(engine_.load_project(libs_path_ / "lib2/2.0/build"));
 }
 
-BOOST_AUTO_TEST_SUITE(warehouse_manual)
-
-//BOOST_FIXTURE_TEST_CASE(double_push, warehouse_test)
-//{
-//   project& p = engine_.load_project(libs_path_ / "lib1/1.0/build");
-//   BOOST_REQUIRE_NO_THROW(warehouse_->add_to_packages(p));
-//   BOOST_REQUIRE_THROW(warehouse_->add_to_packages(p), std::exception);
-//}
-
-BOOST_AUTO_TEST_SUITE_END()
+}
 
 static
 void test_function_phase_1(const fs::path& test_data_path)
 {
    warehouse_test env(false, false);
-   env.setup_engine_warehouse();
 
    options opts(test_data_path / "hamfile");
    if (opts.exists("skip"))
@@ -130,7 +111,6 @@ void test_function_phase_2(const fs::path& test_data_path)
 {
    // Phase 2
    warehouse_test env_2(false, false);
-   env_2.setup_engine_warehouse();
 
    project& p = env_2.engine_.load_project(test_data_path);
 
@@ -163,7 +143,7 @@ void test_function(const fs::path& test_data_path)
    {
       warehouse_test test;
       test.add_all_libs();
-      test.warehouse_->update();
+      test.engine_.warehouse().update();
    }
 
    test_function_phase_1(test_data_path);
@@ -178,7 +158,7 @@ void test_step(const fs::path& test_data_path,
    if (step == 1) {
       warehouse_test test;
       test.add_all_libs();
-      test.warehouse_->update();
+      test.engine_.warehouse().update();
    }
 
    test_function_phase_1(test_data_path);

@@ -1,5 +1,2 @@
-target-version-alias foo : 1.0 ;
-target-version-alias bar : 1.0 ;
-
-target-version-alias foo : 2.0 ;
-target-version-alias bar : 2.0 ;
+use-project location = ./1.0/build ;
+use-project location = ./2.0/build ;

@@ -1,4 +1,0 @@
-explicit 
-lib lib3 : lib3.cpp : <version>1.0 ;
-
-alias lib4 : lib3/<version>1.0 ;

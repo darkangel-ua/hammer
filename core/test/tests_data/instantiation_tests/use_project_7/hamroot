@@ -1,0 +1,11 @@
+# test that we can find correct version of boost.core using direct global alias and 
+# /boost + local aliases
+
+# this is <version>1.58.0 - direct alias
+use-project /boost/core : ./boost_1_58_0/boost.core ;
+
+# this is <version>1.60.0 - local alias inside ./boost project
+use-project /boost : ./boost ;
+
+exe test : main.cpp /boost/core/<version>1.60.0 ;
+

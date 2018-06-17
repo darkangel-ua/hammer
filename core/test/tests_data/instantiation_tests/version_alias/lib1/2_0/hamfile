@@ -1,1 +1,0 @@
-lib lib1 : lib1.cpp : <version>2.0 : : <define>USE_2_0 ;

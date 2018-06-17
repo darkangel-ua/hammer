@@ -1,0 +1,4 @@
+# testing transparent project proxing
+use-project location = ./lib1 ;
+
+exe test : main.cpp .//lib1 ;

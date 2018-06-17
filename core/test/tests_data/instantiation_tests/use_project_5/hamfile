@@ -1,0 +1,6 @@
+# path sources never resolves to project targets
+
+use-project lib1 : ./lib1 ;
+
+exe test : main.cpp ./lib1 ;
+lib lib1 : lib1.cpp : <define>BAD_LIB1 ;

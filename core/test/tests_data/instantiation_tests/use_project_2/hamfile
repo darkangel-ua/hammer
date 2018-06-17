@@ -1,0 +1,5 @@
+# testing project composite aliasing
+# path always resolves to alias or fs
+use-project foo/lib1 : ./lib1 ;
+
+exe test : main.cpp foo/lib1 ;

@@ -1,0 +1,4 @@
+test {
+    main.cpp {}
+    boost.core [ features = <version>1.60.0; ] {}
+}

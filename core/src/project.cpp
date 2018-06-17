@@ -1,5 +1,7 @@
 #include <sstream>
 #include <boost/format.hpp>
+#include <boost/make_unique.hpp>
+#include <boost/filesystem/path_traits.hpp>
 #include <hammer/core/project.h>
 #include <hammer/core/engine.h>
 #include <hammer/core/feature_registry.h>
@@ -10,6 +12,52 @@ using namespace std;
 
 namespace hammer {
 
+struct project::aliases {
+   struct node;
+   using node_ptr = std::unique_ptr<node>;
+   using path_element = boost::filesystem::path;
+   using nodes = boost::unordered_multimap<path_element, node_ptr>;
+
+   struct node {
+      const feature_set* properties_;
+      nodes nodes_;
+      location_t full_fs_path_;
+   };
+
+   // return false on failure - same alias used twice
+   bool add_alias(nodes& nodes,
+                  boost::filesystem::path::const_iterator first,
+                  boost::filesystem::path::const_iterator last,
+                  const location_t& fs_path,
+                  const feature_set* properties);
+   void load_project(loaded_projects& result,
+                     engine& e,
+                     boost::filesystem::path::const_iterator first,
+                     boost::filesystem::path::const_iterator last);
+   void load_project(loaded_projects& result,
+                     nodes& nodes,
+                     engine& e,
+                     boost::filesystem::path::const_iterator first,
+                     boost::filesystem::path::const_iterator last);
+
+   nodes nodes_;
+};
+
+// FIXME: Need to figure out why all projects have to end on dot
+static
+location_t
+normalize_project_location(const location_t& l)
+{
+   // all project paths must end on dot
+   std::string path = l.string();
+   if (!path.empty() && *path.rbegin() != '.') {
+      location_t location_{l / "."};
+      location_.normalize();
+      return location_;
+   } else
+      return l;
+}
+
 project::project(hammer::engine* e,
                  const std::string& name,
                  const location_t& location,
@@ -19,28 +67,23 @@ project::project(hammer::engine* e,
     engine_(e),
     name_(name),
     requirements_(req),
-    usage_requirements_(usage_req)
+    usage_requirements_(usage_req),
+    location_(normalize_project_location(location)),
+    aliases_(new aliases)
 {
-   this->location(location);
+}
+
+project::project(engine* e,
+                 const location_t& l)
+   : engine_(e),
+     location_(normalize_project_location(l)),
+     aliases_(new aliases)
+{
 }
 
 project::~project() {
 
 }
-
-void project::location(const location_t& l)
-{
-   // all project paths must end on dot
-   std::string path = l.string();
-   if (!path.empty() && *path.rbegin() != '.')
-   {
-      location_ = l / ".";
-      location_.normalize();
-   }
-   else
-      location_ = l;
-}
-
 
 void project::add_target(std::unique_ptr<basic_meta_target> t)
 {
@@ -61,6 +104,54 @@ basic_meta_target* project::find_target(const std::string& name)
       return 0;
    else
       return i->second.get();
+}
+
+void project::add_alias(const location_t& alias,
+                        const location_t& fs_path,
+                        const feature_set* properties)
+{
+   if (alias.has_root_path())
+      throw std::runtime_error("[project::add_alias]: alias can be only relative");
+
+   auto ia2 = find_if(alias.begin(), alias.end(), [](const location_t& e) {
+      return e == ".";
+   });
+   auto ia = find_if(alias.begin(), alias.end(), [](const location_t& e) {
+      return e == "..";
+   });
+   auto ifp = find_if(fs_path.begin(), fs_path.end(), [](const location_t& e) {
+      return e == "..";
+   });
+
+   if (ia2 != alias.end())
+      throw std::runtime_error("[project::add_alias]: alias can't contain . elements");
+
+   if (ia != alias.end() || ifp != fs_path.end())
+      throw std::runtime_error("[project::add_alias]: alias/fs_path can't contain .. elements");
+
+   if (!aliases_->add_alias(aliases_->nodes_, alias.begin(), alias.end(), fs_path.has_root_path() ? fs_path : location() / fs_path, properties))
+      throw std::runtime_error("Alias path '" + alias.string() + "' already added" );
+}
+
+loaded_projects
+project::load_project(const location_t& path) const
+{
+   if (path.has_root_path())
+      return get_engine()->load_project(engine::global_project_ref{path});
+
+   loaded_projects result;
+   // load projects that matches aliases
+   aliases_->load_project(result, *get_engine(), path.begin(), path.end());
+   if (result.empty()) {
+      // load project from filesystem
+      result = get_engine()->try_load_project(location() / path);
+      if (!result.empty()) {
+         // project path has been fully resolved, but we need to include transparent proxies from final project
+         result.front().aliases_->load_project(result, *get_engine(), path.begin(), path.end());
+      }
+   }
+
+   return result;
 }
 
 // -1 == not suitable
@@ -162,7 +253,7 @@ project::try_select_best_alternative(const std::string& target_name,
    boost::iterator_range<targets_t::const_iterator> r = targets_.equal_range(target_name);
 
    if (r.empty())
-      throw std::runtime_error("Can't find target '" + target_name + "'");
+      return {};
 
    vector<selected_target> selected_targets;
 
@@ -265,6 +356,238 @@ project::try_resolve_local_features(const feature_set& fs) const
    }
 
    return result;
+}
+
+bool project::aliases::add_alias(nodes& nodes,
+                                 location_t::const_iterator first,
+                                 location_t::const_iterator last,
+                                 const location_t& fs_path,
+                                 const feature_set* properties)
+{
+   auto has_same_fs_path = [&]() {
+      for (auto& n : nodes) {
+         if (n.second->full_fs_path_ == fs_path)
+            return true;
+      }
+
+      return false;
+   };
+
+   if (first == last) {
+      // special case for transparent proxies - they don't have alias
+      std::unique_ptr<node> new_node{ new node{ properties ? properties->clone() : nullptr, aliases::nodes{}, fs_path } };
+      if (has_same_fs_path())
+         return false;
+      else {
+         nodes.insert({ {}, std::move(new_node) });
+         return true;
+      }
+   }
+
+   auto sfirst = first;
+   auto i = nodes.find(*first);
+   if (i == nodes.end()) {
+      if (++first == last) {
+         if (has_same_fs_path())
+            return false;
+         else {
+            std::unique_ptr<node> new_node{ new node{ properties ? properties->clone() : nullptr, aliases::nodes{}, fs_path } };
+            nodes.insert({ *sfirst, std::move(new_node) });
+            return true;
+         }
+      } else {
+         if (has_same_fs_path())
+            return false;
+         else {
+            std::unique_ptr<node> new_node{ new node{ nullptr, aliases::nodes{}, {} } };
+            i = nodes.insert({ *sfirst, std::move(new_node) });
+            return add_alias(i->second->nodes_, first, last, fs_path, properties);
+         }
+      }
+   } else {
+      if (++first == last) {
+         node& n = *i->second;
+         if (n.full_fs_path_.empty()) {
+            if (properties)
+               n.properties_ = properties->clone();
+            n.full_fs_path_ = fs_path;
+
+            return true;
+         } else {
+            // node has been found and path already set - we need one more node to describe alternative
+            if (has_same_fs_path())
+               return false;
+            else {
+               std::unique_ptr<node> new_node{ new node{ properties ? properties->clone() : nullptr, aliases::nodes{}, fs_path } };
+               nodes.insert({ *sfirst, std::move(new_node) });
+               return true;
+            }
+         }
+      } else
+         return add_alias(i->second->nodes_, first, last, fs_path, properties);
+   }
+}
+
+void project::aliases::load_project(loaded_projects& result,
+                                    engine& e,
+                                    boost::filesystem::path::const_iterator first,
+                                    boost::filesystem::path::const_iterator last)
+{
+   // first of all add transparent proxied projects
+   auto ri = nodes_.equal_range({});
+   for (auto i = ri.first; i != ri.second; ++i) {
+      project& p = e.load_project(i->second->full_fs_path_);
+      result.push_back(&p);
+      if (first != last) {
+         // FIXME: stupid boost::filesystem::path can't be constructed from two iterators
+         boost::filesystem::path pp;
+         for (auto f = first; f != last; ++f)
+            pp /= *f;
+         result += p.load_project(pp);
+      }
+   }
+
+   return load_project(result, nodes_, e, first, last);
+}
+
+void project::aliases::load_project(loaded_projects& result,
+                                    nodes& nodes,
+                                    engine& e,
+                                    boost::filesystem::path::const_iterator first,
+                                    boost::filesystem::path::const_iterator last)
+{
+   // ignore dots if any
+   while (first != last && *first == ".")
+      ++first;
+
+   if (first == last)
+      return;
+
+   auto ri = nodes.equal_range(*first);
+   for (auto i = ri.first; i != ri.second; ++i) {
+      node& n = *i->second;
+
+      if (!n.full_fs_path_.empty()) {
+         auto first_copy = first;
+         project& p = e.load_project(n.full_fs_path_);
+         if (++first_copy == last) {
+            result.push_back(&p);
+            // project path has been fully resolved, but we need to include transparent proxies from final project
+            p.aliases_->load_project(result, e, last, last);
+            continue;
+         } else
+            p.aliases_->load_project(result, e, first_copy, last);
+      }
+
+      auto first_copy = first;
+      if (++first_copy == last)
+         return;
+
+      load_project(result, n.nodes_, e, first_copy, last);
+   }
+}
+
+void loaded_projects::push_back(project* v)
+{
+   // no duplicates allowed, but project::load_project will try to add some projects multiple times
+   // so we need to be prepared
+   if (find(projects_.begin(), projects_.end(), v) == projects_.end())
+      projects_.push_back(v);
+}
+
+loaded_projects&
+loaded_projects::operator +=(const loaded_projects& rhs) {
+   for (project* v : rhs)
+      push_back(v);
+
+   return *this;
+}
+
+project::selected_targets_t
+loaded_projects::select_best_alternative(const feature_set& build_request) const
+{
+   project::selected_targets_t result;
+   for(projects_t::const_iterator i = projects_.begin(), last = projects_.end(); i != last; ++i)
+   {
+      project::selected_targets_t targets((**i).select_best_alternative(build_request));
+      for(project::selected_targets_t::const_iterator t = targets.begin(), t_last = targets.end(); t != t_last; ++t)
+         if (!t->target_->is_explicit())
+            result.push_back(*t);
+   }
+
+   if (result.empty()) {
+      stringstream s;
+      dump_for_hash(s, build_request);
+      throw std::runtime_error("Can't select best alternative - no one founded\n"
+                               "Build request: " + s.str());
+   }
+
+   // Check for targets with same name. They already have same symbolic names so we should check names.
+   sort(result.begin(), result.end(), [](const project::selected_target& lhs, const project::selected_target& rhs) {
+      return lhs.target_->name() < rhs.target_->name();
+   });
+
+   auto first = result.begin();
+   auto second = ++result.begin();
+   for(; second != result.end();) {
+      if (first->target_->name() == second->target_->name()) {
+         stringstream s;
+         dump_for_hash(s, build_request);
+         throw std::runtime_error("Can't select best alternative for target '"+ first->target_->name() + "' from projects:\n"
+                                  "1) '" + first->target_->location().string() + "' \n"
+                                  "2) '" + second->target_->location().string() + "' \n"
+                                  "Build request: " + s.str());
+      } else {
+         ++first;
+         ++second;
+      }
+   }
+
+   return result;
+}
+
+project::selected_target
+loaded_projects::select_best_alternative(const std::string& target_name,
+                                         const feature_set& build_request,
+                                         bool allow_locals) const
+{
+   project::selected_targets_t result;
+   for(projects_t::const_iterator i = projects_.begin(), last = projects_.end(); i != last; ++i)
+   {
+      project::selected_target st = (**i).try_select_best_alternative(target_name, build_request, allow_locals);
+      if (st.target_ != NULL)
+         result.push_back(st);
+   }
+
+   if (result.empty()) {
+      stringstream s;
+      s << "Can't select best alternative for target '"+ target_name + "' - no one founded. \n"
+           "Projects to search are:\n";
+      for (const project* p : projects_)
+         s << "'" << p->location().string() << "'\n";
+      s << "Build request: ";
+      dump_for_hash(s, build_request);
+
+      throw std::runtime_error(s.str());
+   }
+
+   if (result.size() == 1)
+      return result.front();
+
+   sort(result.begin(), result.end(), [](const project::selected_target& lhs, const project::selected_target& rhs) {
+      return lhs.resolved_requirements_rank_ > rhs.resolved_requirements_rank_;
+   });
+
+   if (result[0].resolved_requirements_rank_ != result[1].resolved_requirements_rank_)
+      return result.front();
+   else {
+      stringstream s;
+      dump_for_hash(s, build_request);
+      throw std::runtime_error("Can't select best alternative for target '"+ result[0].target_->name() + "' from projects:\n"
+                               "1) '" + result[0].target_->location().string() + "' \n"
+                               "2) '" + result[1].target_->location().string() + "' \n"
+                               "Build request: " + s.str());
+   }
 }
 
 }

@@ -1,2 +1,2 @@
-version-alias lib1 : 1.0 ;
-version-alias lib1 : 2.0 ;
+use-project location = ./1.0/build ;
+use-project location = ./2.0/build ;

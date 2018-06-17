@@ -119,7 +119,7 @@ void basic_meta_target::resolve_meta_target_source(const source_decl& source,
    }
 
 	// source has target_name_ only when it was explicitly requested (./foo//bar) where target_name_ == "bar"
-   engine::loaded_projects_t suitable_projects = get_engine()->load_project(source.target_path(), *project_);
+   loaded_projects suitable_projects = get_project()->load_project(source.target_path());
    if (source.target_name().empty()) {
       try {
          hammer::project::selected_targets_t selected_targets(suitable_projects.select_best_alternative(*build_request_with_source_properties));

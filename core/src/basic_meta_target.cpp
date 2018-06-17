@@ -97,7 +97,7 @@ void basic_meta_target::split_one_source(sources_decl* simple_targets,
 void basic_meta_target::split_sources(sources_decl* simple_targets, meta_targets_t* meta_targets,
                                       const sources_decl& sources, const feature_set& build_request) const
 {
-   const type_registry& tr = get_engine()->get_type_registry();
+   const type_registry& tr = get_engine().get_type_registry();
    for(sources_decl::const_iterator i = sources.begin(), last = sources.end(); i != last; ++i)
       split_one_source(simple_targets, meta_targets, *i, build_request, tr);
 }
@@ -170,7 +170,7 @@ void basic_meta_target::instantiate(const main_target* owner,
 
       cached_instantiation_data_t cache_item;
       cache_item.build_request_ = &build_request;
-      cache_item.computed_usage_requirements_ = get_engine()->feature_registry().make_set();
+      cache_item.computed_usage_requirements_ = get_engine().feature_registry().make_set();
 
       instantiate_impl(owner,
                        build_request,
@@ -190,7 +190,7 @@ void basic_meta_target::instantiate(const main_target* owner,
                     usage_requirements);
 }
 
-engine* basic_meta_target::get_engine() const
+engine& basic_meta_target::get_engine() const
 {
    return project_->get_engine();
 }

@@ -417,7 +417,7 @@ void msvc_toolset::use_toolset_rule(invocation_context& ctx,
                                     const parscore::identifier& version,
                                     const parscore::identifier* path_to_vc_folder)
 {
-   engine& e = *ctx.current_project_.get_engine();
+   engine& e = ctx.current_project_.get_engine();
    if (path_to_vc_folder) {
       init_toolset(e, version.to_string(), path_to_vc_folder->to_string());
       return;

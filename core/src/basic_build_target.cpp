@@ -30,7 +30,7 @@ basic_build_target::get_project() const
    return get_main_target()->get_project();
 }
 
-engine*
+engine&
 basic_build_target::get_engine() const
 {
    return get_main_target()->get_engine();

@@ -54,7 +54,7 @@ class qt_uic_meta_target : public typed_meta_target
                          const sources_decl& sources,
                          const requirements_decl& req,
                          const requirements_decl& usage_req)
-                         : typed_meta_target(p, name, req, usage_req, p->get_engine()->get_type_registry().get(qt_uiced_h))
+                         : typed_meta_target(p, name, req, usage_req, p->get_engine().get_type_registry().get(qt_uiced_h))
       {
          add_sources(sources);
          set_explicit(true);
@@ -150,8 +150,8 @@ qt_uic_rule(invocation_context& ctx,
 static sources_decl convert_H_to_MOCABLE(const sources_decl& src, hammer::project& p)
 {
    sources_decl result;
-   const target_type& h_type = p.get_engine()->get_type_registry().get(types::H);
-   const target_type& qt_mocable_type = p.get_engine()->get_type_registry().get(qt_mocable);
+   const target_type& h_type = p.get_engine().get_type_registry().get(types::H);
+   const target_type& qt_mocable_type = p.get_engine().get_type_registry().get(qt_mocable);
    for(sources_decl::const_iterator i = src.begin(), last = src.end(); i != last; ++i)
    {
       if (i->type() != NULL &&
@@ -450,7 +450,7 @@ void add_libs_and_generators(engine& e,
    }
 
    // register qt libs
-   auto_ptr<project> qt_project(new project(&e, "Qt", *toolset_home, requirements_decl(), requirements_decl()));
+   auto_ptr<project> qt_project(new project(e, "Qt", *toolset_home, requirements_decl(), requirements_decl()));
    if (qt5) {
       add_lib(*qt_project, "Qt5Core", vector<string>(), e, include_tag, "QtCore", lib_tag);
       add_lib(*qt_project, "Qt5Gui", {"Qt5Core"}, e, include_tag, "QtGui", lib_tag);
@@ -467,7 +467,7 @@ void qt_toolset::use_toolset_rule(invocation_context& ctx,
                                   const parscore::identifier& version,
                                   const location_t& root_folder)
 {
-   engine& e = *ctx.current_project_.get_engine();
+   engine& e = ctx.current_project_.get_engine();
 
    feature_def& toolset_def = e.feature_registry().get_def("toolset");
    if (!toolset_def.is_legal_value("qt")) {

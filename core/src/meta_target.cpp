@@ -82,7 +82,7 @@ void remove_duplicates(deduplicator_t& deduplicator,
                                  const feature_set& build_request,
                                  const main_target& owner_for_new_targets)
    {
-      feature_set& local_usage_requirements = *this_.get_engine()->feature_registry().make_set();
+      feature_set& local_usage_requirements = *this_.get_engine().feature_registry().make_set();
       instantiate_meta_targets(meta_targets, build_request, &owner_for_new_targets,
                                &instantiated_meta_targets, &local_usage_requirements);
 
@@ -119,7 +119,7 @@ void remove_duplicates(deduplicator_t& deduplicator,
       this_.split_sources(&ignored_simple_targets, &ignored_meta_targets, sources_from_usage, build_request);
       remove_duplicates(sources_deduplicator, ignored_meta_targets);
       std::vector<basic_target*> ignored_instantiated_meta_targets;
-      feature_set* local_usage_requirements = this_.get_engine()->feature_registry().make_set();
+      feature_set* local_usage_requirements = this_.get_engine().feature_registry().make_set();
       instantiate_meta_targets(ignored_meta_targets, build_request, &owner_for_new_targets,
                                &ignored_instantiated_meta_targets, local_usage_requirements);
 
@@ -139,7 +139,7 @@ void remove_duplicates(deduplicator_t& deduplicator,
          remove_duplicates(sources_deduplicator, meta_targets);
          if (!meta_targets.empty())
          {
-            feature_set* local_usage_requirements = this_.get_engine()->feature_registry().make_set();
+            feature_set* local_usage_requirements = this_.get_engine().feature_registry().make_set();
             instantiate_meta_targets(simple_targets, instantiated_meta_targets, sources_deduplicator, ignored_additional_sources,
                                      *local_usage_requirements, this_, meta_targets,
                                      build_request, owner_for_new_targets);
@@ -191,8 +191,8 @@ void remove_duplicates(deduplicator_t& deduplicator,
       feature_set* mt_fs = build_request.clone();
       requirements().eval(build_request, mt_fs, usage_requirements);
 
-      feature_set* local_usage_requirements = get_engine()->feature_registry().make_set();
-      feature_set* build_request_for_dependencies = get_engine()->feature_registry().make_set();
+      feature_set* local_usage_requirements = get_engine().feature_registry().make_set();
+      feature_set* build_request_for_dependencies = get_engine().feature_registry().make_set();
       build_request_for_dependencies->copy_propagated(build_request);
       build_request_for_dependencies->copy_propagated(*mt_fs);
 
@@ -217,7 +217,7 @@ void remove_duplicates(deduplicator_t& deduplicator,
       deduplicator_t sources_deduplicator;
       remove_duplicates(sources_deduplicator, meta_targets);
 
-      get_engine()->feature_registry().add_defaults(*mt_fs);
+      get_engine().feature_registry().add_defaults(*mt_fs);
       get_project()->local_feature_registry().add_defaults(*mt_fs);
 
       main_target* mt = construct_main_target(owner, mt_fs); // construct_main_target may construct main_target with different properties PCH is example
@@ -234,7 +234,7 @@ void remove_duplicates(deduplicator_t& deduplicator,
 
       deduplicator_t dependency_sources_deduplicator;
       remove_duplicates(dependency_sources_deduplicator, dependency_meta_targets);
-      feature_set* ignored_dependencies_usage_requirements = get_engine()->feature_registry().make_set();
+      feature_set* ignored_dependencies_usage_requirements = get_engine().feature_registry().make_set();
       if (!dependency_meta_targets.empty())
          instantiate_meta_targets(simple_targets, instantiated_dependency_meta_targets, dependency_sources_deduplicator, sources_from_features,
                                  *ignored_dependencies_usage_requirements, *this, dependency_meta_targets,
@@ -259,7 +259,7 @@ void remove_duplicates(deduplicator_t& deduplicator,
       sources_decl all_sources = sources();
       all_sources.insert(sources_from_requirements);
       all_sources.insert(sources_from_features);
-      transfer_public_sources(*usage_requirements, all_sources, *build_request_for_dependencies, get_engine()->feature_registry(), *this);
+      transfer_public_sources(*usage_requirements, all_sources, *build_request_for_dependencies, get_engine().feature_registry(), *this);
       compute_usage_requirements(*usage_requirements, *mt, *build_request_for_dependencies, *local_usage_requirements, owner);
 
       // we need to transform references in dependency features to local meta-targets to './/foo' form
@@ -278,7 +278,7 @@ void remove_duplicates(deduplicator_t& deduplicator,
       // when transferring public sources we should make <use> with current build request applied
       // because this is the only way to produce correct usage requirements in dependent targets
       // same as in transfer_public_sources
-      feature_set& tmp = *get_engine()->feature_registry().make_set();
+      feature_set& tmp = *get_engine().feature_registry().make_set();
       this->usage_requirements().eval(constructed_target.properties(), &tmp);
       apply_build_request(tmp, build_request);
       result.join(tmp);

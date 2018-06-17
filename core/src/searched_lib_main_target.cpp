@@ -20,7 +20,7 @@ searched_lib_main_target::searched_lib_main_target(const basic_meta_target* mt,
                                                    const feature_set* props,
                                                    const target_type& t)
    : 
-    main_target(mt, name, &mt->get_engine()->get_type_registry().get(types::SEARCHED_LIB), props),
+    main_target(mt, name, &mt->get_engine().get_type_registry().get(types::SEARCHED_LIB), props),
     type_(&t),
     lib_name_(lib_name)
 {
@@ -31,7 +31,7 @@ searched_lib_main_target::generate() const
 {
    build_node_ptr result{new hammer::build_node{*this, true, build_action_ptr{}}};
    basic_build_target* t;
-   if (type_->equal_or_derived_from(get_engine()->get_type_registry().get(types::SEARCHED_LIB)))
+   if (type_->equal_or_derived_from(get_engine().get_type_registry().get(types::SEARCHED_LIB)))
       t = new virtual_build_target(this, lib_name_, type_, &properties(), true);
    else {
       location_t l(lib_name_);

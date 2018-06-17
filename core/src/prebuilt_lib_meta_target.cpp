@@ -28,7 +28,7 @@ prebuilt_lib_meta_target::prebuilt_lib_meta_target(hammer::project* p,
                              lib_file_path, 
                              props, 
                              usage_req, 
-                             resolve_type(lib_file_path, p->get_engine()->get_type_registry()))
+                             resolve_type(lib_file_path, p->get_engine().get_type_registry()))
 {
 }
 

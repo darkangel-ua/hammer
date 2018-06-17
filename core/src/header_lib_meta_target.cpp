@@ -26,7 +26,7 @@ void header_lib_meta_target::instantiate_impl(const main_target* owner,
                                               std::vector<basic_target*>* result,
                                               feature_set* usage_requirements) const
 {
-   feature_set* build_request_for_sourses = get_engine()->feature_registry().make_set();
+   feature_set* build_request_for_sourses = get_engine().feature_registry().make_set();
    build_request_for_sourses->copy_propagated(build_request);
 
    // now we split meta-targets from simple targets
@@ -40,9 +40,9 @@ void header_lib_meta_target::instantiate_impl(const main_target* owner,
    }
 
    // and push non-simple as <source> to usage requirements same as alias target do
-   feature_set& sources_as_features = *get_engine()->feature_registry().make_set();
+   feature_set& sources_as_features = *get_engine().feature_registry().make_set();
    for (const source_decl& sd : non_simple_targets) {
-      feature* f = get_engine()->feature_registry().create_feature("source", "");
+      feature* f = get_engine().feature_registry().create_feature("source", "");
       source_decl new_sd = sd;
 
       // apply build request to a target
@@ -67,7 +67,7 @@ void header_lib_meta_target::instantiate_impl(const main_target* owner,
 
    main_target* mt = new header_lib_main_target(this,
                                                 name(),
-                                                &get_engine()->get_type_registry().get(types::HEADER_LIB),
+                                                &get_engine().get_type_registry().get(types::HEADER_LIB),
                                                 mt_fs);
    mt_fs = mt->properties().clone();
 

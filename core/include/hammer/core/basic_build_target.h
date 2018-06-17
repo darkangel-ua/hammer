@@ -33,7 +33,7 @@ class basic_build_target : private boost::noncopyable
       const main_target* get_main_target() const { return main_target_; }
       const basic_meta_target* get_meta_target() const;
       const project* get_project() const;
-      engine* get_engine() const;
+      engine& get_engine() const;
 
 		const timestamp_info_t& timestamp_info() const;
 		virtual const location_t& location() const = 0;

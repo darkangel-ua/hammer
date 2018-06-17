@@ -25,7 +25,7 @@ file_meta_target::construct_main_target(const main_target* owner,
                                           name(), 
                                           filename_,
                                           properties,
-                                          get_engine()->get_type_registry().soft_resolve_from_target_name(filename_));
+                                          get_engine().get_type_registry().soft_resolve_from_target_name(filename_));
    return mt;
 }
 

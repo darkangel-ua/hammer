@@ -60,7 +60,7 @@ main_target::generate() const
    if (generate_cache_filled_)
       return generate_cache_;
    else {
-      build_nodes_t result = get_engine()->generators().construct(this);
+      build_nodes_t result = get_engine().generators().construct(this);
 
       build_nodes_t owned_nodes;
       for (auto& node : result)
@@ -155,7 +155,7 @@ void main_target::add_this_target_dependency(hammer::build_node& node,
 
 location_t main_target::intermediate_dir_impl() const
 {
-   return get_engine()->output_location_strategy().compute_output_location(*this);
+   return get_engine().output_location_strategy().compute_output_location(*this);
 }
 
 const location_t& main_target::intermediate_dir() const

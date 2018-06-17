@@ -337,12 +337,12 @@ void gcc_toolset::use_toolset_rule(invocation_context& ctx,
    }
 
    if (!version && !path_to_cxx_compiler && !path_to_linker && !path_to_ar) {
-      configure(*ctx.current_project_.get_engine(), "system");
+      configure(ctx.current_project_.get_engine(), "system");
       return;
    }
 
    if (version && !path_to_cxx_compiler && !path_to_linker && !path_to_ar) {
-      configure(*ctx.current_project_.get_engine(), version->to_string());
+      configure(ctx.current_project_.get_engine(), version->to_string());
       return;
    }
 
@@ -364,7 +364,7 @@ void gcc_toolset::use_toolset_rule(invocation_context& ctx,
    else
       td.librarian_ = "/usr/bin/gcc-ar-" + td.version_;
 
-   feature_registry& fr = ctx.current_project_.get_engine()->feature_registry();
+   feature_registry& fr = ctx.current_project_.get_engine().feature_registry();
 
    if (c_flags) {
       td.c_flags_ = fr.make_set();
@@ -384,7 +384,7 @@ void gcc_toolset::use_toolset_rule(invocation_context& ctx,
    } else
       td.link_flags_ = nullptr;
 
-   init_toolset(*ctx.current_project_.get_engine(), name(), td);
+   init_toolset(ctx.current_project_.get_engine(), name(), td);
 }
 
 void gcc_toolset::configure(engine& e,

@@ -55,8 +55,8 @@ htmpl_meta_target::htmpl_meta_target(project* p,
    : typed_meta_target(p,
                        name,
                        requirements_decl(),
-                       make_usage_requirements(p->get_engine()->feature_registry(), name, this),
-                       resolve_target_type(src.target_path(), *p->get_engine()))
+                       make_usage_requirements(p->get_engine().feature_registry(), name, this),
+                       resolve_target_type(src.target_path(), p->get_engine()))
 {
    set_explicit(true);
    set_local(true);
@@ -88,7 +88,7 @@ void htmpl_meta_target::compute_usage_requirements(feature_set& result,
 {
    if (type().equal_or_derived_from(types::H)) {
       // generated include dir should apear first, so generated includes will be found earlier
-      feature* generated_include = get_engine()->feature_registry().create_feature("__generated-include", "");
+      feature* generated_include = get_engine().feature_registry().create_feature("__generated-include", "");
       generated_include->get_generated_data().target_ = &constructed_target;
       result.join(generated_include);
    }

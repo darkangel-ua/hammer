@@ -43,19 +43,19 @@ ast2feature(invocation_context& ctx,
    feature_registry* fr = &ctx.current_project_.local_feature_registry();
    const feature_def* fdef = fr->find_def(f.name().to_string().c_str());
    if (!fdef) {
-      fr = &ctx.current_project_.get_engine()->feature_registry();
+      fr = &ctx.current_project_.get_engine().feature_registry();
       fdef = fr->find_def(f.name().to_string().c_str());
    }
 
    if (fdef && fdef->attributes().dependency) {
       feature* result = fr->create_feature(f.name().to_string(), {});
-      result->set_dependency_data(handle_one_source(ctx, ctx.current_project_.get_engine()->get_type_registry(), f.value()), nullptr);
+      result->set_dependency_data(handle_one_source(ctx, ctx.current_project_.get_engine().get_type_registry(), f.value()), nullptr);
       return result;
    } else if (const ast::id_expr* id = ast::as<ast::id_expr>(f.value()))
       return fr->create_feature(f.name().to_string(), id->id().to_string());
    else if (ast::is_a<ast::target_ref>(f.value())) {
       feature* result = fr->create_feature(f.name().to_string(), {});
-      result->set_dependency_data(handle_one_source(ctx, ctx.current_project_.get_engine()->get_type_registry(), f.value()), nullptr);
+      result->set_dependency_data(handle_one_source(ctx, ctx.current_project_.get_engine().get_type_registry(), f.value()), nullptr);
       return result;
    } else if (const ast::path* p = ast::as<ast::path>(f.value())) {
       feature* result = fr->create_feature(f.name().to_string(), p->to_string());
@@ -69,7 +69,7 @@ feature_set*
 ast2feature_set(invocation_context& ctx,
                 const ast::features_t& features)
 {
-   feature_set* result = ctx.current_project_.get_engine()->feature_registry().make_set();
+   feature_set* result = ctx.current_project_.get_engine().feature_registry().make_set();
 
    for (auto f : features)
       result->join(ast2feature(ctx, *f));
@@ -82,7 +82,7 @@ feature_set*
 ast2feature_set(invocation_context& ctx,
                 const ast::list_of& features)
 {
-   feature_set* result = ctx.current_project_.get_engine()->feature_registry().make_set();
+   feature_set* result = ctx.current_project_.get_engine().feature_registry().make_set();
 
    for (auto le : features.values()) {
       if (const ast::feature* f = ast::as<ast::feature>(le))
@@ -100,7 +100,7 @@ ast2feature_set(invocation_context& ctx,
                 const ast::feature_set& fs)
 {
    if (const ast::feature* f = ast::as<ast::feature>(fs.values())) {
-      feature_set* result = ctx.current_project_.get_engine()->feature_registry().make_set();
+      feature_set* result = ctx.current_project_.get_engine().feature_registry().make_set();
       result->join(ast2feature(ctx, *f));
       return result;
    } else if (const ast::list_of* l = ast::as<ast::list_of>(fs.values()))
@@ -181,7 +181,7 @@ ast2sources_decl(invocation_context& ctx,
                  const ast::sources& sources)
 {
    std::unique_ptr<sources_decl> result(new sources_decl);
-   const type_registry& tr = ctx.current_project_.get_engine()->get_type_registry();
+   const type_registry& tr = ctx.current_project_.get_engine().get_type_registry();
 
    if (const ast::list_of* v = ast::as<ast::list_of>(sources.content())) {
       for (const ast::expression* e : v->values())

@@ -4,12 +4,12 @@
 
 namespace hammer {
 
-virtual_project::virtual_project(engine* e)
+virtual_project::virtual_project(engine& e)
    : project(e, "/virtual_projects/" + to_string(boost::uuids::random_generator()()))
 {
 }
 
-virtual_project::virtual_project(engine* e,
+virtual_project::virtual_project(engine& e,
                                  const std::string& name)
    : virtual_project(e)
 {

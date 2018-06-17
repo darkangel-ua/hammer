@@ -6,7 +6,7 @@ namespace hammer {
 warehouse_project::warehouse_project(engine& e,
                                      const std::string& name,
                                      const location_t& location)
-   : project(&e, name, location, requirements_decl(), requirements_decl())
+   : project(e, name, location, requirements_decl(), requirements_decl())
 {
 
 }

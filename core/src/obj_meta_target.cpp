@@ -15,7 +15,7 @@ obj_meta_target::obj_meta_target(hammer::project* p,
                        name, 
                        req, 
                        usage_req, 
-                       p->get_engine()->get_type_registry().get(types::OBJ))
+                       p->get_engine().get_type_registry().get(types::OBJ))
 {
 }
 

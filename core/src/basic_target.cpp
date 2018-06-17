@@ -51,7 +51,7 @@ const project* basic_target::get_project() const
    return main_target_->get_meta_target()->get_project();
 }
 
-engine* basic_target::get_engine() const
+engine& basic_target::get_engine() const
 {
    return main_target_->get_meta_target()->get_engine();
 }

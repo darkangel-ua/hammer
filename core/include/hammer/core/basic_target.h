@@ -39,7 +39,7 @@ namespace hammer
          const main_target* get_main_target() const { return main_target_; }
          const basic_meta_target* get_meta_target() const;
          const project* get_project() const;
-         engine* get_engine() const;
+         engine& get_engine() const;
          
          virtual build_nodes_t generate() const = 0;
          virtual const location_t& location() const;

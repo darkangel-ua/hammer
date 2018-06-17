@@ -28,10 +28,10 @@ pch_main_target::pch_main_target(const basic_meta_target* mt,
 build_nodes_t 
 pch_main_target::generate() const
 {
-   const hammer::target_type& cpp_type = get_engine()->get_type_registry().get(types::CPP);
-   const hammer::target_type& c_type = get_engine()->get_type_registry().get(types::C);
-   const hammer::target_type& h_type = get_engine()->get_type_registry().get(types::H);
-   const hammer::target_type& pch_type = get_engine()->get_type_registry().get(types::PCH);
+   const hammer::target_type& cpp_type = get_engine().get_type_registry().get(types::CPP);
+   const hammer::target_type& c_type = get_engine().get_type_registry().get(types::C);
+   const hammer::target_type& h_type = get_engine().get_type_registry().get(types::H);
+   const hammer::target_type& pch_type = get_engine().get_type_registry().get(types::PCH);
    
    typedef std::vector<boost::intrusive_ptr<hammer::build_node> > result_t; 
 
@@ -64,7 +64,7 @@ pch_main_target::generate() const
 
 location_t pch_main_target::intermediate_dir_impl() const
 {
-   return get_engine()->output_location_strategy().compute_output_location(owner_);
+   return get_engine().output_location_strategy().compute_output_location(owner_);
 }
 
 }

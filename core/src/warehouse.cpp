@@ -51,9 +51,9 @@ find_all_warehouse_unresolved_targets(const vector<basic_target*>& targets)
 void add_traps(project& p,
                const std::string& public_id)
 {
-   warehouse& wh = p.get_engine()->warehouse();
+   warehouse& wh = p.get_engine().warehouse();
    warehouse::versions_t all_versions = wh.get_package_versions(public_id);
-   vector<string> installed_versions = p.get_engine()->warehouse().get_installed_versions(public_id);
+   vector<string> installed_versions = p.get_engine().warehouse().get_installed_versions(public_id);
 
    warehouse::versions_t not_installed_versions;
 
@@ -86,7 +86,7 @@ static
 void warehouse_trap_rule(invocation_context& ctx,
                          const parscore::identifier& public_id)
 {
-   warehouse& wh = ctx.current_project_.get_engine()->warehouse();
+   warehouse& wh = ctx.current_project_.get_engine().warehouse();
    if (!wh.has_project(location_t(public_id.to_string()), warehouse::any_version))
       throw std::runtime_error("Can't find '" + public_id.to_string() + "' in warehouse");
 

@@ -13,7 +13,7 @@ testing_intermediate_meta_target::testing_intermediate_meta_target(hammer::proje
                                                                    const std::string& name,
                                                                    const requirements_decl& req,
                                                                    const args& args)
-   : typed_meta_target(p, name, req, {}, p->get_engine()->get_type_registry().get(types::EXE)),
+   : typed_meta_target(p, name, req, {}, p->get_engine().get_type_registry().get(types::EXE)),
      args_(args)
 {
 }

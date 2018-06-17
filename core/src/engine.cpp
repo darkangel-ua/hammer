@@ -34,7 +34,7 @@ namespace fs = boost::filesystem;
 namespace hammer {
 
 engine::engine()
-   :  global_project_(new project(this, {})),
+   :  global_project_(new project(*this, {})),
       feature_registry_(new hammer::feature_registry),
       rule_manager_(new rule_manager)
 {
@@ -158,7 +158,7 @@ void load_hammer_script_impl(engine& e,
    if (diag.error_count())
       throw parsing_error(s.str());
 
-   std::unique_ptr<project> loaded_project(new project(&e, project_location));
+   std::unique_ptr<project> loaded_project(new project(e, project_location));
    invocation_context invc_ctx = { *loaded_project, diag, e.get_rule_manager() };
 
    try {
@@ -218,7 +218,7 @@ engine::load_project_v2(const location_t& project_path,
    if (diag.error_count())
       throw parsing_error(s.str());
 
-   std::unique_ptr<project> loaded_project(new project(this, project_path.branch_path()));
+   std::unique_ptr<project> loaded_project(new project(*this, project_path.branch_path()));
    if (upper_project) {
       loaded_project->requirements().insert_infront(upper_project->requirements());
       loaded_project->usage_requirements().insert_infront(upper_project->usage_requirements());

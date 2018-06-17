@@ -35,13 +35,13 @@ class project : public boost::noncopyable {
       typedef std::multimap<std::string /* target name */, std::unique_ptr<basic_meta_target>> targets_t;
       typedef std::vector<selected_target> selected_targets_t;
 
-      project(engine* e,
+      project(engine& e,
               const std::string& name,
               const location_t& location,
               const requirements_decl& req,
               const requirements_decl& usage_req);
 
-      project(engine* e,
+      project(engine& e,
               const location_t& l);
       virtual ~project();
 
@@ -64,7 +64,7 @@ class project : public boost::noncopyable {
       // FIXME: there is can be many metatargets with same name
       basic_meta_target* find_target(const std::string& name);
 
-      hammer::engine* get_engine() const { return engine_; }
+      hammer::engine& get_engine() const { return engine_; }
       const location_t& intermediate_dir() const { return intermediate_dir_; }
       feature_registry& local_feature_registry() const { return local_feature_registry_; }
       bool is_root() const { return is_root_; }
@@ -97,7 +97,7 @@ class project : public boost::noncopyable {
       struct aliases;
       friend struct aliases;
 
-      hammer::engine* engine_;
+      hammer::engine& engine_;
       std::string name_;
       requirements_decl requirements_;
       requirements_decl usage_requirements_;

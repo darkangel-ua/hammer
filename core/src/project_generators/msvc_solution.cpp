@@ -37,7 +37,7 @@ struct msvc_solution::impl_t
           generation_mode::value mode) 
       : owner_(owner), 
         source_project_(source_project),
-        engine_(*source_project.get_engine()), 
+        engine_(source_project.get_engine()),
         output_location_(output_path),
         generation_mode_(mode)
    {

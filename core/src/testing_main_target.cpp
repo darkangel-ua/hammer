@@ -16,7 +16,7 @@ testing_main_target::testing_main_target(const basic_meta_target* mt,
 location_t testing_main_target::intermediate_dir_impl() const
 {
    assert(!sources().empty());
-   return get_engine()->output_location_strategy().compute_output_location(dynamic_cast<const main_target&>(*sources().front()));
+   return get_engine().output_location_strategy().compute_output_location(dynamic_cast<const main_target&>(*sources().front()));
 }
 
 }

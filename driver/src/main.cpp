@@ -259,8 +259,8 @@ namespace
       typedef hammer::project::selected_targets_t selected_targets_t;
 
       vector<basic_target*> result;
-      feature_set* usage_requirements = project.get_engine()->feature_registry().make_set();
-      const feature_set* build_request_with_defs = &project.get_engine()->feature_registry().add_defaults(*build_request.clone());
+      feature_set* usage_requirements = project.get_engine().feature_registry().make_set();
+      const feature_set* build_request_with_defs = &project.get_engine().feature_registry().add_defaults(*build_request.clone());
       for(vector<string>::const_iterator i = targets.begin(), last = targets.end(); i != last; ++i)
       {
          if (is_looks_like_project(*i))
@@ -271,7 +271,7 @@ namespace
             const hammer::loaded_projects p = project.load_project(target_path);
             selected_targets_t st = target_name.empty() ? p.select_best_alternative(*build_request_with_defs) :
                                                           selected_targets_t(1, p.select_best_alternative(target_name, *build_request_with_defs, false));
-            feature_set* usage_requirements = project.get_engine()->feature_registry().make_set();
+            feature_set* usage_requirements = project.get_engine().feature_registry().make_set();
             for(selected_targets_t::const_iterator t = st.begin(), t_last = st.end(); t != t_last; ++t)
             {
                t->target_->instantiate(NULL, build_request, &result, usage_requirements);

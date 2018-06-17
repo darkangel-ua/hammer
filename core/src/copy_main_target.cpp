@@ -97,7 +97,7 @@ void copy_action::clean_on_fail(const build_node& node,
 copy_main_target::copy_main_target(const basic_meta_target* mt,
                                    const std::string& name,
                                    const feature_set* props)
-   : main_target(mt, name, &mt->get_engine()->get_type_registry().get(types::COPY), props)
+   : main_target(mt, name, &mt->get_engine().get_type_registry().get(types::COPY), props)
 {
    assert(dynamic_cast<const copy_meta_target*>(mt));
 }

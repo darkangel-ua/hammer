@@ -58,7 +58,7 @@ normalize_project_location(const location_t& l)
       return l;
 }
 
-project::project(hammer::engine* e,
+project::project(hammer::engine& e,
                  const std::string& name,
                  const location_t& location,
                  const requirements_decl& req,
@@ -73,7 +73,7 @@ project::project(hammer::engine* e,
 {
 }
 
-project::project(engine* e,
+project::project(engine& e,
                  const location_t& l)
    : engine_(e),
      location_(normalize_project_location(l)),
@@ -137,17 +137,17 @@ loaded_projects
 project::load_project(const location_t& path) const
 {
    if (path.has_root_path())
-      return get_engine()->load_project(engine::global_project_ref{path});
+      return get_engine().load_project(engine::global_project_ref{path});
 
    loaded_projects result;
    // load projects that matches aliases
-   aliases_->load_project(result, *get_engine(), path.begin(), path.end());
+   aliases_->load_project(result, get_engine(), path.begin(), path.end());
    if (result.empty()) {
       // load project from filesystem
-      result = get_engine()->try_load_project(location() / path);
+      result = get_engine().try_load_project(location() / path);
       if (!result.empty()) {
          // project path has been fully resolved, but we need to include transparent proxies from final project
-         result.front().aliases_->load_project(result, *get_engine(), path.begin(), path.end());
+         result.front().aliases_->load_project(result, get_engine(), path.begin(), path.end());
       }
    }
 
@@ -261,7 +261,7 @@ project::try_select_best_alternative(const std::string& target_name,
       if (!allow_locals && first->second->is_local())
          continue;
 
-      feature_set* fs = engine_->feature_registry().make_set();
+      feature_set* fs = engine_.feature_registry().make_set();
       first->second->requirements().eval(build_request, fs);
       int rank = compute_alternative_rank(*fs, build_request);
       if (rank != -1)
@@ -304,7 +304,7 @@ void project::instantiate(const std::string& target_name,
                           std::vector<basic_target*>* result) const
 {
    selected_target best_target = select_best_alternative(target_name, build_request);
-   feature_set* usage_requirements = engine_->feature_registry().make_set();
+   feature_set* usage_requirements = engine_.feature_registry().make_set();
    best_target.target_->instantiate(0, build_request, result, usage_requirements);
 }
 
@@ -340,7 +340,7 @@ project::select_best_alternative(const feature_set& build_request) const
 feature_set*
 project::try_resolve_local_features(const feature_set& fs) const
 {
-   feature_set* result = engine_->feature_registry().make_set();
+   feature_set* result = engine_.feature_registry().make_set();
    for(feature_set::const_iterator i = fs.begin(), last = fs.end(); i != last; ++i)
    {
       if ((**i).attributes().undefined_)

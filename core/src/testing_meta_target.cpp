@@ -9,7 +9,7 @@ namespace hammer {
 testing_meta_target::testing_meta_target(hammer::project* p,
                                          const std::string& name,
                                          const requirements_decl& req)
-   : typed_meta_target(p, name, req, {}, p->get_engine()->get_type_registry().get(types::TESTING_RUN_PASSED))
+   : typed_meta_target(p, name, req, {}, p->get_engine().get_type_registry().get(types::TESTING_RUN_PASSED))
 {
 }
 

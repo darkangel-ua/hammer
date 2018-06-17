@@ -132,7 +132,7 @@ void exe_rule(target_invocation_context& ctx,
                                                           id.to_string(),
                                                           requirements ? *requirements : requirements_decl(),
                                                           usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl(),
-                                                          ctx.current_project_.get_engine()->get_type_registry().get(types::EXE)));
+                                                          ctx.current_project_.get_engine().get_type_registry().get(types::EXE)));
    mt->sources(sources);
    mt->set_local(ctx.local_);
    mt->set_explicit(ctx.explicit_);
@@ -253,7 +253,7 @@ void use_project_rule(invocation_context& ctx,
    }
 
    if (project_alias.has_root_path())
-      ctx.current_project_.get_engine()->add_alias(project_alias, ctx.current_project_.location() / location, props);
+      ctx.current_project_.get_engine().add_alias(project_alias, ctx.current_project_.location() / location, props);
    else
       ctx.current_project_.add_alias(project_alias, location, props);
 }
@@ -373,7 +373,7 @@ void feature_rule(invocation_context& ctx,
       return { v, {} };
    });
 
-   ctx.current_project_.get_engine()->feature_registry().add_feature_def(name.to_string(), legal_values, resolve_attributes(attributes));
+   ctx.current_project_.get_engine().feature_registry().add_feature_def(name.to_string(), legal_values, resolve_attributes(attributes));
 }
 
 static
@@ -396,7 +396,7 @@ void feature_compose_rule(invocation_context& ctx,
                           const feature& f,
                           const feature_or_feature_set_t& components)
 {
-   feature_registry& fr = ctx.current_project_.get_engine()->feature_registry();
+   feature_registry& fr = ctx.current_project_.get_engine().feature_registry();
    feature_set* cc;
    if (auto f = boost::get<const feature*>(&components)) {
       cc = fr.make_set();
@@ -412,7 +412,7 @@ void feature_subfeature_rule(invocation_context& ctx,
                              const parscore::identifier& feature_name,
                              const parscore::identifier& subfeature_name)
 {
-   feature_def& def = ctx.current_project_.get_engine()->feature_registry().get_def(feature_name.to_string());
+   feature_def& def = ctx.current_project_.get_engine().feature_registry().get_def(feature_name.to_string());
    def.add_subfeature(subfeature_name.to_string());
 }
 
@@ -422,7 +422,7 @@ void variant_rule(invocation_context& ctx,
                   const parscore::identifier* base,
                   feature_set& components)
 {
-   engine& e = *ctx.current_project_.get_engine();
+   engine& e = ctx.current_project_.get_engine();
    feature_def& def = e.feature_registry().get_def("variant");
    def.extend_legal_values(variant_name.to_string(), {});
 
@@ -531,9 +531,9 @@ glob_rule_impl(invocation_context& ctx,
       fs::path searching_path(ctx.current_project_.location() / relative_path);
       boost::dos_wildcard wildcard(string(pattern.begin() + mask_pos, pattern.end()));
       if (recursive)
-         rglob_impl(*result, searching_path, relative_path, wildcard, &s_exceptions, ctx.current_project_.get_engine()->get_type_registry());
+         rglob_impl(*result, searching_path, relative_path, wildcard, &s_exceptions, ctx.current_project_.get_engine().get_type_registry());
       else
-         glob_impl(*result, searching_path, relative_path, wildcard, &s_exceptions, ctx.current_project_.get_engine()->get_type_registry());
+         glob_impl(*result, searching_path, relative_path, wildcard, &s_exceptions, ctx.current_project_.get_engine().get_type_registry());
    }
 
    return result;
@@ -566,7 +566,7 @@ void copy_rule(target_invocation_context& ctx,
                const parscore::identifier* ast_recursive)
 {
    vector<const target_type*> types_to_copy;
-   const type_registry& tr = ctx.current_project_.get_engine()->get_type_registry();
+   const type_registry& tr = ctx.current_project_.get_engine().get_type_registry();
 
    for (const parscore::identifier& id : ast_types_to_copy) {
       const target_type* type = tr.find(type_tag(id.to_string()));
@@ -624,9 +624,9 @@ void testing_suite_rule(target_invocation_context& ctx,
    sources_decl modified_sources(sources);
 
    if (common_sources) {
-      feature_set& build_request = *ctx.current_project_.get_engine()->feature_registry().make_set();
+      feature_set& build_request = *ctx.current_project_.get_engine().feature_registry().make_set();
       for (auto& s : *common_sources) {
-         feature& f = *ctx.current_project_.get_engine()->feature_registry().create_feature("testing.additional-source", "");
+         feature& f = *ctx.current_project_.get_engine().feature_registry().create_feature("testing.additional-source", "");
          f.set_dependency_data(s, &ctx.current_project_);
          build_request.join(&f);
       }
@@ -688,7 +688,7 @@ testing_run_rule(target_invocation_context& ctx,
                  const ast::expression* ast_args,
                  const parscore::identifier* user_provided_target_name)
 {
-   type_registry& tr = ctx.current_project_.get_engine()->get_type_registry();
+   type_registry& tr = ctx.current_project_.get_engine().get_type_registry();
    string target_name;
    if (user_provided_target_name)
       target_name = user_provided_target_name->to_string();
@@ -802,7 +802,7 @@ void searched_shared_lib_rule(target_invocation_context& ctx,
                                                                  libname.to_string(),
                                                                  requirements ? *requirements : requirements_decl(),
                                                                  usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl(),
-                                                                 ctx.current_project_.get_engine()->get_type_registry().get(types::SEARCHED_SHARED_LIB)));
+                                                                 ctx.current_project_.get_engine().get_type_registry().get(types::SEARCHED_SHARED_LIB)));
    if (sources)
       mt->sources(*sources);
 
@@ -824,7 +824,7 @@ void searched_static_lib_rule(target_invocation_context& ctx,
                                                                  libname.to_string(),
                                                                  requirements ? *requirements : requirements_decl(),
                                                                  usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl(),
-                                                                 ctx.current_project_.get_engine()->get_type_registry().get(types::SEARCHED_STATIC_LIB)));
+                                                                 ctx.current_project_.get_engine().get_type_registry().get(types::SEARCHED_STATIC_LIB)));
    if (sources)
       mt->sources(*sources);
 
@@ -851,7 +851,7 @@ void setup_warehouse_rule(invocation_context& ctx,
       }
    }
 
-   ctx.current_project_.get_engine()->setup_warehouse(name.to_string(), url.to_string(), storage_dir);
+   ctx.current_project_.get_engine().setup_warehouse(name.to_string(), url.to_string(), storage_dir);
 }
 
 static
@@ -860,8 +860,8 @@ c_as_cpp_rule(invocation_context& ctx,
               const sources_decl& sources)
 {
    auto result = boost::make_unique<sources_decl>();
-   const target_type& c_as_cpp_type = ctx.current_project_.get_engine()->get_type_registry().get(types::C_AS_CPP);
-   const target_type& c_type = ctx.current_project_.get_engine()->get_type_registry().get(types::C);
+   const target_type& c_as_cpp_type = ctx.current_project_.get_engine().get_type_registry().get(types::C_AS_CPP);
+   const target_type& c_type = ctx.current_project_.get_engine().get_type_registry().get(types::C);
    for (const source_decl& s : sources) {
       if (s.type() && s.type()->equal_or_derived_from(c_type))
          result->push_back(source_decl{s.target_path(), s.target_name(), &c_as_cpp_type, s.properties() ? s.properties()->clone() : nullptr});

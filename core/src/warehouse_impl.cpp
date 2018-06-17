@@ -178,7 +178,7 @@ class trap_wh_project : public virtual_project {
    public:
       trap_wh_project(engine& e,
                       warehouse_impl& wh)
-         : virtual_project(&e),
+         : virtual_project(e),
            warehouse_(wh)
       {}
 
@@ -802,8 +802,8 @@ void warehouse_impl::add_to_packages(const project& p,
    }
 
    packages_t packages = load_packages(packages_db_full_path);
-   const feature_set* build_request = p.get_engine()->feature_registry().make_set();
-   feature_set* project_requirements  = p.get_engine()->feature_registry().make_set();
+   const feature_set* build_request = p.get_engine().feature_registry().make_set();
+   feature_set* project_requirements  = p.get_engine().feature_registry().make_set();
    p.requirements().eval(*build_request, project_requirements);
    feature_set::const_iterator i_version = project_requirements->find("version");
    if (i_version == project_requirements->end())

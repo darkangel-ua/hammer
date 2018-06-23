@@ -31,8 +31,8 @@ handle_one_source(invocation_context& ctx,
                   const ast::expression* e);
 static
 rule_manager_arg_ptr
-process_rule_invocation(invocation_context& ctx,
-                        const ast::rule_invocation& ri);
+process_implicit_target_def_or_rule_invocation(invocation_context& ctx,
+                                               const ast::rule_invocation& ri);
 
 static
 feature*
@@ -139,7 +139,7 @@ void handle_one_source(invocation_context& ctx,
                        sources_decl& result)
 {
    if (const ast::rule_invocation* ri = ast::as<ast::rule_invocation>(e)) {
-      auto invocation_result = process_rule_invocation(ctx, *ri);
+      auto invocation_result = process_implicit_target_def_or_rule_invocation(ctx, *ri);
       assert(invocation_result);
       const rule_declaration& rd = ctx.rule_manager_.find(ri->name())->second;
       if (rd.result().type() == rule_argument_type::sources);
@@ -524,6 +524,29 @@ rule_invocation_impl(invocation_context& ctx,
    }
 
    return rd.invoke(args);
+}
+
+static
+rule_manager_arg_ptr
+process_implicit_target_def_or_rule_invocation(invocation_context& ctx,
+                                               const ast::rule_invocation& ri)
+{
+   rule_manager_arguments_t args;
+
+   auto i = ctx.rule_manager_.find(ri.name());
+   if (i->second.is_target()) {
+      // targets defined in rule invokation context always explicit and local
+      target_invocation_context tctx = { ctx.current_project_, ctx.diag_, ctx.rule_manager_, true, true };
+      rule_manager_arg_ptr ctx_arg(new rule_manager_arg<target_invocation_context>(tctx));
+      args.push_back(move(ctx_arg));
+
+      return rule_invocation_impl(ctx, args, ri);
+   } else {
+      rule_manager_arg_ptr ctx_arg(new rule_manager_arg<invocation_context>(ctx));
+      args.push_back(move(ctx_arg));
+
+      return rule_invocation_impl(ctx, args, ri);
+   }
 }
 
 static

@@ -213,7 +213,7 @@ namespace
    {
       for(hammer::project::targets_t::const_iterator i = project.targets().begin(), last = project.targets().end(); i != last; ++i)
       {
-         if (!i->second->is_explicit())
+         if (!i->second->is_explicit() && !i->second->is_local())
             targets.push_back(i->first);
       }
 

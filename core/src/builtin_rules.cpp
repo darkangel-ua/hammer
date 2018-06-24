@@ -740,6 +740,32 @@ testing_run_rule(target_invocation_context& ctx,
 
 static
 std::unique_ptr<sources_decl>
+testing_run_many_rule(invocation_context& ctx,
+                      const sources_decl& sources,
+                      const sources_decl* common_sources,
+                      const requirements_decl* requirements,
+                      const ast::expression* ast_args)
+{
+   auto result = boost::make_unique<sources_decl>();
+
+   target_invocation_context tctx{ ctx, true, true };
+   for (const source_decl& sd : sources) {
+      sources_decl src;
+      src.push_back(sd);
+      if (common_sources)
+         src.insert(*common_sources);
+
+      auto sd_run = testing_run_rule(tctx, src, requirements, ast_args, nullptr);
+      assert(sd_run->size() == 1);
+
+      result->insert(*sd_run);
+   }
+
+   return result;
+}
+
+static
+std::unique_ptr<sources_decl>
 testing_compile_fail_rule(target_invocation_context& ctx,
                           const sources_decl& sources,
                           const requirements_decl* requirements,
@@ -894,6 +920,7 @@ void install_builtin_rules(rule_manager& rm)
    rm.add_target("obj", obj_rule, {"name", "sources", "requirements", "default-build", "usage-requirements"});
    rm.add_target("testing.suite", testing_suite_rule, {"name", "sources", "common-sources"});
    rm.add_target("testing.run", testing_run_rule, {"sources", "requirements", "args", "name"});
+   rm.add_rule("testing.run-many", testing_run_many_rule, {"sources", "common-sources", "requirements", "args"});
    rm.add_target("testing.compile-fail", testing_compile_fail_rule, {"sources", "requirements", "default-build", "usage-requirements"});
    rm.add_rule("setup-warehouse", setup_warehouse_rule, {"name", "url", "storage-dir"});
    rm.add_rule("c-as-cpp", c_as_cpp_rule, {"sources"});

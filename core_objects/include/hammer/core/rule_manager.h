@@ -76,6 +76,14 @@ struct target_invocation_context : invocation_context {
 	     explicit_(explicit_tag)
 	{}
 
+   target_invocation_context(invocation_context& ctx,
+                             bool local_tag,
+	                          bool explicit_tag)
+      : invocation_context(ctx),
+        local_(local_tag),
+	     explicit_(explicit_tag)
+	{}
+
 	bool local_;
 	bool explicit_;
 };

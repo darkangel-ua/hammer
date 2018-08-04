@@ -120,6 +120,9 @@ namespace hammer
    generator::consumable_types_t
    make_consume_types(engine& e,
                       const std::vector<type_tag>& types);
+
+   generator::consumable_types_t
+   make_consume_types(const generator::producable_types_t& types);
 }
 
 #endif //h_9b0699bd_cc04_4e19_874b_45c95b909551

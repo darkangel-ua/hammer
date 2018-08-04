@@ -1,5 +1,6 @@
-#include <boost/filesystem/operations.hpp>
 #include <boost/bind.hpp>
+#include <boost/filesystem/operations.hpp>
+#include <boost/make_unique.hpp>
 #include <hammer/core/toolsets/gcc_toolset.h>
 #include <hammer/core/feature_def.h>
 #include <hammer/core/engine.h>
@@ -16,7 +17,7 @@
 #include <hammer/core/exe_and_shared_lib_generator.h>
 #include <hammer/core/static_lib_generator.h>
 #include <hammer/core/unix_libraries_argument_writer.h>
-#include <hammer/core/compile_fail_generator.h>
+#include <hammer/core/testing_generators.h>
 #include <hammer/core/rule_manager.h>
 #include <hammer/core/diagnostic.h>
 #include <hammer/core/rule_argument_types.h>
@@ -172,12 +173,10 @@ void init_toolset(engine& e,
       generator::producable_types_t target;
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::C), 1, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::OBJ)));
-      unique_ptr<generator> g(new gcc_generator(e, generator_prefix + ".compiler.c", source, target, false, obj_action, generator_condition, td.c_flags_));
-      e.generators().insert(std::move(g));
 
-      auto failing_compile_action = std::make_shared<compile_fail_build_action>(e, obj_action);
-      std::unique_ptr<generator> failing_compile_generator(new gcc_generator(e, generator_prefix + ".compiler.c", source, target, false, failing_compile_action, generator_condition, td.c_flags_));
-      add_compile_fail_generator(e, std::move(failing_compile_generator));
+      add_compile_generators(e, obj_action, [&](const build_action_ptr& compile_action) {
+         return make_unique<gcc_generator>(e, generator_prefix + ".compiler.c", source, target, false, compile_action, generator_condition, td.c_flags_);
+      });
    }
 
    // CPP -> OBJ
@@ -202,12 +201,10 @@ void init_toolset(engine& e,
       generator::producable_types_t target;
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::CPP), 1, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::OBJ)));
-      unique_ptr<generator> g(new gcc_generator(e, generator_prefix + ".compiler.cpp", source, target, false, obj_action, generator_condition, td.cxx_flags_));
-      e.generators().insert(std::move(g));
 
-      auto failing_compile_action = std::make_shared<compile_fail_build_action>(e, obj_action);
-      std::unique_ptr<generator> failing_compile_generator(new gcc_generator(e, generator_prefix + ".compiler.cpp", source, target, false, failing_compile_action, generator_condition, td.cxx_flags_));
-      add_compile_fail_generator(e, std::move(failing_compile_generator));
+      add_compile_generators(e, obj_action, [&](const build_action_ptr& compile_action) {
+         return make_unique<gcc_generator>(e, generator_prefix + ".compiler.cpp", source, target, false, compile_action, generator_condition, td.cxx_flags_);
+      });
    }
 
    // ... -> SHARED_LIB
@@ -276,8 +273,10 @@ void init_toolset(engine& e,
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::SEARCHED_SHARED_LIB), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::HEADER_LIB), 0, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::EXE)));
-      unique_ptr<generator> g(new exe_and_shared_lib_generator(e, generator_prefix + ".linker.exe", source, target, true, exe_action, generator_condition, td.link_flags_));
-      e.generators().insert(std::move(g));
+
+      add_link_generators(e, exe_action, [&](const build_action_ptr& link_action) {
+         return make_unique<exe_and_shared_lib_generator>(e, generator_prefix + ".linker.exe", source, target, true, link_action, generator_condition, td.link_flags_);
+      });
    }
 
    // ... -> STATIC_LIB

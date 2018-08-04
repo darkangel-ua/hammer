@@ -1,0 +1,3 @@
+#options: should-fail=yes
+testing.compile-fail test.cpp;
+

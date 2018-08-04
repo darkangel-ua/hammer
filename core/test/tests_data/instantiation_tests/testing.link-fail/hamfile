@@ -1,0 +1,1 @@
+testing.link-fail name = test : sources = main.cpp;

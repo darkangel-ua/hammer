@@ -471,6 +471,12 @@ namespace
             dump_targets_to_update(f, nodes, build_environment);
          }
 
+         if (opts.write_build_graph_) {
+            ofstream f("build-graph.dot", std::ios_base::trunc);
+            builder::generate_graphviz(f, nodes);
+            return;
+         }
+
          if (opts.only_up_to_date_check_)
             return;
 
@@ -489,13 +495,6 @@ namespace
 
          cout << "...updating " << target_to_update_count << " targets...\n";
          builder builder(build_environment, interrupt_flag, opts.worker_count_, false);
-         if (opts.write_build_graph_)
-         {
-            ofstream f("build-graph.dot", std::ios_base::trunc);
-            builder.generate_graphviz(f, nodes);
-            return;
-         }
-
          builder::result build_result = builder.build(nodes);
          cout << "...updated " << build_result.updated_targets_ << " targets...\n";
 

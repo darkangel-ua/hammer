@@ -1,0 +1,5 @@
+test1 [ type = TESTING_COMPILE_SUCCESSFUL; ] {  
+}
+
+test2 [ type = TESTING_COMPILE_SUCCESSFUL; ] {
+}

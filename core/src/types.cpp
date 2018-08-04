@@ -32,6 +32,9 @@ const type_tag COPY("COPIED");
 const type_tag TESTING_OUTPUT("TESTING_OUTPUT");
 const type_tag TESTING_RUN_PASSED("TESTING_RUN_PASSED");
 const type_tag TESTING_COMPILE_FAIL("TESTING_COMPILE_FAIL");
+const type_tag TESTING_COMPILE_SUCCESSFUL("TESTING_COMPILE_SUCCESSFUL");
+const type_tag TESTING_LINK_FAIL("TESTING_LINK_FAIL");
+const type_tag TESTING_LINK_SUCCESSFUL("TESTING_LINK_SUCCESSFUL");
 
 void register_standart_types(type_registry& tr,
                              feature_registry& fr)
@@ -89,7 +92,10 @@ void register_standart_types(type_registry& tr,
    tr.insert(target_type(COPY, ""));
    tr.insert(target_type(TESTING_OUTPUT, ".test_output"));
    tr.insert(target_type(TESTING_RUN_PASSED, ".run_passed"));
-   tr.insert(target_type(TESTING_COMPILE_FAIL, ""));
+   tr.insert(target_type(TESTING_COMPILE_FAIL, ".compile_failed"));
+   tr.insert(target_type(TESTING_COMPILE_SUCCESSFUL, ".compile_successful"));
+   tr.insert(target_type(TESTING_LINK_FAIL, ".link_failed"));
+   tr.insert(target_type(TESTING_LINK_SUCCESSFUL, ".link_successful"));
 }
 
 }}

@@ -243,6 +243,16 @@ make_consume_types(engine& e,
    return result;
 }
 
+generator::consumable_types_t
+make_consume_types(const generator::producable_types_t& types)
+{
+   generator::consumable_types_t result;
+   for(const generator::produced_type& t : types)
+      result.push_back(*t.type_);
+
+   return result;
+}
+
 feature_set*
 generator::make_valuable_properties(const feature_set& target_props,
                                     const std::vector<const feature*>& target_type_valuable_features,

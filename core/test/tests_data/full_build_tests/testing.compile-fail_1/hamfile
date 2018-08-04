@@ -1,0 +1,2 @@
+testing.compile-fail test.cpp;
+

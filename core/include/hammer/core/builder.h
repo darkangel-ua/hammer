@@ -25,6 +25,7 @@ class builder {
                    const project* bounds = nullptr);
       result build(build_node& node,
                    const project* bounds = nullptr);
+      static
       void generate_graphviz(std::ostream& os,
                              const build_nodes_t& nodes,
                              const project* bounds = nullptr);

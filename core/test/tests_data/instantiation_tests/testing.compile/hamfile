@@ -1,0 +1,2 @@
+# test that name is formed correctly 
+testing.compile name = test : sources = main.cpp;

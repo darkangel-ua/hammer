@@ -1,3 +1,0 @@
-#options: should-fail=yes
-alias test : [ testing.compile-fail main.cpp ] ;
-

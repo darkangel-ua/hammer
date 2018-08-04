@@ -1,4 +1,5 @@
 #include <boost/make_shared.hpp>
+#include <boost/make_unique.hpp>
 #include <hammer/core/testing_generators.h>
 #include <hammer/core/types.h>
 #include <hammer/core/engine.h>
@@ -9,12 +10,21 @@
 #include <hammer/core/shared_lib_dirs_writer.h>
 #include <hammer/core/main_target.h>
 #include <hammer/core/testing_intermediate_meta_target.h>
+#include <hammer/core/testing_compile_action.h>
+#include <hammer/core/testing_compile_generator.h>
+#include <hammer/core/testing_compile_fail_action.h>
+#include <hammer/core/testing_compile_fail_generator.h>
+#include <hammer/core/testing_link_action.h>
+#include <hammer/core/testing_link_generator.h>
+#include <hammer/core/testing_link_fail_action.h>
+#include <hammer/core/testing_link_fail_generator.h>
 #include <hammer/core/target_type.h>
 #include <boost/variant/get.hpp>
 
 using std::unique_ptr;
 using boost::shared_ptr;
 using boost::make_shared;
+using boost::make_unique;
 namespace fs = boost::filesystem;
 using std::string;
 
@@ -93,6 +103,32 @@ void add_testing_generators(engine& e,
    unique_ptr<generator> g(new generator(e, "testing.run", sources, products, true, action));
    g->include_composite_generators(true);
    gr.insert(std::move(g));
+}
+
+void add_compile_generators(engine& e,
+                            const build_action_ptr& compile_action,
+                            std::function<std::unique_ptr<generator>(const build_action_ptr& action)> compile_generator_creator)
+{
+   e.generators().insert(compile_generator_creator(compile_action));
+
+   auto a1 = std::make_shared<testing_compile_action>(compile_action);
+   e.generators().insert(make_unique<testing_compile_generator>(e, move(compile_generator_creator(a1))));
+
+   auto a2 = std::make_shared<testing_compile_fail_action>(e, compile_action);
+   e.generators().insert(make_unique<testing_compile_fail_generator>(e, move(compile_generator_creator(a2))));
+}
+
+void add_link_generators(engine& e,
+                         const build_action_ptr& link_action,
+                         std::function<std::unique_ptr<generator>(const build_action_ptr& action)> link_generator_creator)
+{
+   e.generators().insert(link_generator_creator(link_action));
+
+   auto a1 = std::make_shared<testing_link_action>(link_action);
+   e.generators().insert(make_unique<testing_link_generator>(e, move(link_generator_creator(a1))));
+
+   auto a2 = std::make_shared<testing_link_fail_action>(e, link_action);
+   e.generators().insert(make_unique<testing_link_fail_generator>(e, move(link_generator_creator(a2))));
 }
 
 }

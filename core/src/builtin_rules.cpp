@@ -12,6 +12,9 @@
 #include <hammer/core/copy_meta_target.h>
 #include <hammer/core/obj_meta_target.h>
 #include <hammer/core/testing_compile_fail_meta_target.h>
+#include <hammer/core/testing_compile_meta_target.h>
+#include <hammer/core/testing_link_fail_meta_target.h>
+#include <hammer/core/testing_link_meta_target.h>
 #include <hammer/core/testing_intermediate_meta_target.h>
 #include <hammer/core/testing_meta_target.h>
 #include <hammer/core/target_type.h>
@@ -769,14 +772,125 @@ std::unique_ptr<sources_decl>
 testing_compile_fail_rule(target_invocation_context& ctx,
                           const sources_decl& sources,
                           const requirements_decl* requirements,
-                          const requirements_decl* default_build,
-                          const usage_requirements_decl* usage_requirements)
+                          const parscore::identifier* user_provided_target_name)
 {
-   const string target_name = location_t(sources.begin()->target_path()).stem().string();
+   const string target_name = user_provided_target_name ? user_provided_target_name->to_string()
+                                                        :  location_t(sources.begin()->target_path()).stem().string();
    unique_ptr<basic_meta_target> mt(new testing_compile_fail_meta_target(&ctx.current_project_,
                                                                          target_name,
-                                                                         requirements ? *requirements : requirements_decl(),
-                                                                         usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl()));
+                                                                         requirements ? *requirements : requirements_decl()));
+   mt->sources(sources);
+
+   const source_decl compile_source(mt->name(),
+                                    std::string(),
+                                    NULL /*to signal that this is meta target*/,
+                                    NULL);
+
+   mt->set_local(ctx.local_);
+   mt->set_explicit(ctx.explicit_);
+   ctx.current_project_.add_target(move(mt));
+
+   auto result = boost::make_unique<sources_decl>();
+   result->push_back(compile_source);
+
+   return result;
+}
+
+static
+std::unique_ptr<sources_decl>
+testing_compile_rule(target_invocation_context& ctx,
+                     const sources_decl& sources,
+                     const requirements_decl* requirements,
+                     const parscore::identifier* user_provided_target_name)
+{
+   const string target_name = user_provided_target_name ? user_provided_target_name->to_string()
+                                                        :  location_t(sources.begin()->target_path()).stem().string();
+   unique_ptr<basic_meta_target> mt(new testing_compile_meta_target(&ctx.current_project_,
+                                                                    target_name,
+                                                                    requirements ? *requirements : requirements_decl{}));
+   mt->sources(sources);
+
+   const source_decl compile_source(mt->name(),
+                                    std::string(),
+                                    NULL /*to signal that this is meta target*/,
+                                    NULL);
+
+   mt->set_local(ctx.local_);
+   mt->set_explicit(ctx.explicit_);
+   ctx.current_project_.add_target(move(mt));
+
+   auto result = boost::make_unique<sources_decl>();
+   result->push_back(compile_source);
+
+   return result;
+}
+
+static
+std::unique_ptr<sources_decl>
+testing_compile_many_rule(invocation_context& ctx,
+                          const sources_decl& sources,
+                          const sources_decl* common_sources,
+                          const requirements_decl* requirements)
+{
+   auto result = boost::make_unique<sources_decl>();
+
+   target_invocation_context tctx{ ctx, true, true };
+   for (const source_decl& sd : sources) {
+      sources_decl src;
+      src.push_back(sd);
+      if (common_sources)
+         src.insert(*common_sources);
+
+      auto sd_run = testing_compile_rule(tctx, src, requirements, nullptr);
+      assert(sd_run->size() == 1);
+
+      result->insert(*sd_run);
+   }
+
+   return result;
+}
+
+static
+std::unique_ptr<sources_decl>
+testing_link_fail_rule(target_invocation_context& ctx,
+                       const sources_decl& sources,
+                       const requirements_decl* requirements,
+                       const parscore::identifier* user_provided_target_name)
+{
+   const string target_name = user_provided_target_name ? user_provided_target_name->to_string()
+                                                        :  location_t(sources.begin()->target_path()).stem().string();
+   unique_ptr<basic_meta_target> mt(new testing_link_fail_meta_target(&ctx.current_project_,
+                                                                      target_name,
+                                                                      requirements ? *requirements : requirements_decl()));
+   mt->sources(sources);
+
+   const source_decl compile_source(mt->name(),
+                                    std::string(),
+                                    NULL /*to signal that this is meta target*/,
+                                    NULL);
+
+   mt->set_local(ctx.local_);
+   mt->set_explicit(ctx.explicit_);
+   ctx.current_project_.add_target(move(mt));
+
+   auto result = boost::make_unique<sources_decl>();
+   result->push_back(compile_source);
+
+   return result;
+}
+
+static
+std::unique_ptr<sources_decl>
+testing_link_rule(target_invocation_context& ctx,
+                  const sources_decl& sources,
+                  const requirements_decl* requirements,
+                  const parscore::identifier* user_provided_target_name)
+{
+   const string target_name = user_provided_target_name ? user_provided_target_name->to_string()
+                                                        :  location_t(sources.begin()->target_path()).stem().string();
+   unique_ptr<basic_meta_target> mt(new testing_link_meta_target(&ctx.current_project_,
+                                                                 target_name,
+                                                                 requirements ? *requirements : requirements_decl{}));
    mt->sources(sources);
 
    const source_decl compile_source(mt->name(),
@@ -921,7 +1035,11 @@ void install_builtin_rules(rule_manager& rm)
    rm.add_target("testing.suite", testing_suite_rule, {"name", "sources", "common-sources"});
    rm.add_target("testing.run", testing_run_rule, {"sources", "requirements", "args", "name"});
    rm.add_rule("testing.run-many", testing_run_many_rule, {"sources", "common-sources", "requirements", "args"});
-   rm.add_target("testing.compile-fail", testing_compile_fail_rule, {"sources", "requirements", "default-build", "usage-requirements"});
+   rm.add_target("testing.compile-fail", testing_compile_fail_rule, {"sources", "requirements", "name"});
+   rm.add_target("testing.compile", testing_compile_rule, {"sources", "requirements", "name"});
+   rm.add_rule("testing.compile-many", testing_compile_many_rule, {"sources", "common-sources", "requirements"});
+   rm.add_target("testing.link-fail", testing_link_fail_rule, {"sources", "requirements", "name"});
+   rm.add_target("testing.link", testing_link_rule, {"sources", "requirements", "name"});
    rm.add_rule("setup-warehouse", setup_warehouse_rule, {"name", "url", "storage-dir"});
    rm.add_rule("c-as-cpp", c_as_cpp_rule, {"sources"});
 }

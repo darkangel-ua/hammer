@@ -219,7 +219,7 @@ void builder::generate_graphviz(std::ostream& os,
                                 const project* bounds)
 {
    // we know that const_cast is safe here
-   details::build_queue build_queue{const_cast<build_nodes_t&>(nodes), impl_->unconditional_build_, bounds};
+   details::build_queue build_queue{const_cast<build_nodes_t&>(nodes), true, bounds};
 
    os << "digraph g{graph [rankdir = \"LR\"];\n";
 

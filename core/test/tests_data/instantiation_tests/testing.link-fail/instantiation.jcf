@@ -1,0 +1,4 @@
+test [ type = TESTING_LINK_FAIL; ]
+{  
+   main.cpp [ type = CPP; ] {}
+}

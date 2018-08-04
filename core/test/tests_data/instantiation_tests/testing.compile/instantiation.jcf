@@ -1,0 +1,4 @@
+test [ type = TESTING_COMPILE_SUCCESSFUL; ]
+{  
+   main.cpp [ type = CPP; ] {}
+}

@@ -1,0 +1,5 @@
+test1_m [ type = TESTING_RUN_PASSED; ] {  
+}
+
+test2_m [ type = TESTING_RUN_PASSED; ] {
+}

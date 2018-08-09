@@ -33,6 +33,8 @@
 #include <boost/make_unique.hpp>
 #include <boost/regex.hpp>
 #include <boost/unordered_set.hpp>
+#include <boost/optional.hpp>
+#include <boost/algorithm/string/replace.hpp>
 #include "builtin_rules.h"
 #include "wildcard.hpp"
 
@@ -684,26 +686,29 @@ make_testing_run_args(target_invocation_context& ctx,
 }
 
 static
-std::unique_ptr<sources_decl>
-testing_run_rule(target_invocation_context& ctx,
-                 const sources_decl& sources,
-                 const requirements_decl* requirements,
-                 const ast::expression* ast_args,
-                 const parscore::identifier* user_provided_target_name)
-{
-   type_registry& tr = ctx.current_project_.get_engine().get_type_registry();
-   string target_name;
+std::string testing_make_target_name(const sources_decl& sources,
+                                     const parscore::identifier* user_provided_target_name) {
    if (user_provided_target_name)
-      target_name = user_provided_target_name->to_string();
+      return user_provided_target_name->to_string();
    else {
       auto first_src = *sources.begin();
       if (!fs::path(first_src.target_path()).has_extension() || !first_src.target_name().empty()) {
          // ok, user doesn't need readable name
-         target_name = boost::guid::create().to_string();
+         return boost::guid::create().to_string();
       } else
-         target_name = fs::path(first_src.target_path()).stem().string();
+         return fs::path(first_src.target_path()).stem().string();
    }
+}
 
+static
+std::unique_ptr<sources_decl>
+testing_run_rule_impl(target_invocation_context& ctx,
+                      const sources_decl& sources,
+                      const requirements_decl* requirements,
+                      const ast::expression* ast_args,
+                      const string& target_name)
+{
+   type_registry& tr = ctx.current_project_.get_engine().get_type_registry();
    const string exe_target_name = target_name + ".run";
    unique_ptr<basic_meta_target> intermediate_exe(
       new testing_intermediate_meta_target(&ctx.current_project_,
@@ -743,14 +748,25 @@ testing_run_rule(target_invocation_context& ctx,
 
 static
 std::unique_ptr<sources_decl>
+testing_run_rule(target_invocation_context& ctx,
+                 const sources_decl& sources,
+                 const requirements_decl* requirements,
+                 const ast::expression* ast_args,
+                 const parscore::identifier* user_provided_target_name)
+{
+   return testing_run_rule_impl(ctx, sources, requirements, ast_args, testing_make_target_name(sources, user_provided_target_name));
+}
+
+static
+std::unique_ptr<sources_decl>
 testing_run_many_rule(invocation_context& ctx,
                       const sources_decl& sources,
                       const sources_decl* common_sources,
                       const requirements_decl* requirements,
-                      const ast::expression* ast_args)
+                      const ast::expression* ast_args,
+                      const parscore::identifier* name_template)
 {
    auto result = boost::make_unique<sources_decl>();
-
    target_invocation_context tctx{ ctx, true, true };
    for (const source_decl& sd : sources) {
       sources_decl src;
@@ -758,7 +774,15 @@ testing_run_many_rule(invocation_context& ctx,
       if (common_sources)
          src.insert(*common_sources);
 
-      auto sd_run = testing_run_rule(tctx, src, requirements, ast_args, nullptr);
+      const string target_name = [&](){
+         const string tn = testing_make_target_name(src, nullptr);
+         if (name_template)
+            return boost::replace_all_copy(name_template->to_string(), "${name}", tn);
+         else
+            return tn;
+      }();
+
+      auto sd_run = testing_run_rule_impl(tctx, src, requirements, ast_args, target_name);
       assert(sd_run->size() == 1);
 
       result->insert(*sd_run);
@@ -798,13 +822,11 @@ testing_compile_fail_rule(target_invocation_context& ctx,
 
 static
 std::unique_ptr<sources_decl>
-testing_compile_rule(target_invocation_context& ctx,
-                     const sources_decl& sources,
-                     const requirements_decl* requirements,
-                     const parscore::identifier* user_provided_target_name)
+testing_compile_rule_impl(target_invocation_context& ctx,
+                          const sources_decl& sources,
+                          const requirements_decl* requirements,
+                          const string& target_name)
 {
-   const string target_name = user_provided_target_name ? user_provided_target_name->to_string()
-                                                        :  location_t(sources.begin()->target_path()).stem().string();
    unique_ptr<basic_meta_target> mt(new testing_compile_meta_target(&ctx.current_project_,
                                                                     target_name,
                                                                     requirements ? *requirements : requirements_decl{}));
@@ -827,10 +849,21 @@ testing_compile_rule(target_invocation_context& ctx,
 
 static
 std::unique_ptr<sources_decl>
+testing_compile_rule(target_invocation_context& ctx,
+                     const sources_decl& sources,
+                     const requirements_decl* requirements,
+                     const parscore::identifier* user_provided_target_name)
+{
+   return testing_compile_rule_impl(ctx, sources, requirements, testing_make_target_name(sources, user_provided_target_name));
+}
+
+static
+std::unique_ptr<sources_decl>
 testing_compile_many_rule(invocation_context& ctx,
                           const sources_decl& sources,
                           const sources_decl* common_sources,
-                          const requirements_decl* requirements)
+                          const requirements_decl* requirements,
+                          const parscore::identifier* name_template)
 {
    auto result = boost::make_unique<sources_decl>();
 
@@ -841,7 +874,15 @@ testing_compile_many_rule(invocation_context& ctx,
       if (common_sources)
          src.insert(*common_sources);
 
-      auto sd_run = testing_compile_rule(tctx, src, requirements, nullptr);
+      const string target_name = [&](){
+         const string tn = testing_make_target_name(src, nullptr);
+         if (name_template)
+            return boost::replace_all_copy(name_template->to_string(), "${name}", tn);
+         else
+            return tn;
+      }();
+
+      auto sd_run = testing_compile_rule_impl(tctx, src, requirements, target_name);
       assert(sd_run->size() == 1);
 
       result->insert(*sd_run);
@@ -1034,10 +1075,10 @@ void install_builtin_rules(rule_manager& rm)
    rm.add_target("obj", obj_rule, {"name", "sources", "requirements", "default-build", "usage-requirements"});
    rm.add_target("testing.suite", testing_suite_rule, {"name", "sources", "common-sources"});
    rm.add_target("testing.run", testing_run_rule, {"sources", "requirements", "args", "name"});
-   rm.add_rule("testing.run-many", testing_run_many_rule, {"sources", "common-sources", "requirements", "args"});
+   rm.add_rule("testing.run-many", testing_run_many_rule, {"sources", "common-sources", "requirements", "args", "name-template"});
    rm.add_target("testing.compile-fail", testing_compile_fail_rule, {"sources", "requirements", "name"});
    rm.add_target("testing.compile", testing_compile_rule, {"sources", "requirements", "name"});
-   rm.add_rule("testing.compile-many", testing_compile_many_rule, {"sources", "common-sources", "requirements"});
+   rm.add_rule("testing.compile-many", testing_compile_many_rule, {"sources", "common-sources", "requirements", "name-template"});
    rm.add_target("testing.link-fail", testing_link_fail_rule, {"sources", "requirements", "name"});
    rm.add_target("testing.link", testing_link_rule, {"sources", "requirements", "name"});
    rm.add_rule("setup-warehouse", setup_warehouse_rule, {"name", "url", "storage-dir"});

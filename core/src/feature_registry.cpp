@@ -394,19 +394,20 @@ namespace hammer{
       tokenizer tok(value.c_str(), value.c_str() + value.size(), 
                     boost::char_separator<char>("-"));
       tokenizer::const_iterator first = tok.begin(), last = tok.end();
-      if (first != last)
-      {
+      if (first != last) {
          feature* result = simply_create_feature(name, *first);
          const string feature_value = *first;
          ++first;
 
-         for(; first != last; ++first)
-         {
+         for(; first != last; ++first) {
             const subfeature_def* sdef = result->definition().find_subfeature_for_value(feature_value, *first);
-            if (sdef == NULL)
-               throw std::runtime_error("Can't find subfeature with legal value '" + *first + "' for feature '" + name + "'.");
-
-            result = create_feature(*result, sdef->name(), *first);
+            if (!sdef) {
+               if (result->attributes().no_checks)
+                  return simply_create_feature(name, value);
+               else
+                  throw std::runtime_error("Can't find subfeature with legal value '" + *first + "' for feature <" + name + ">" + result->value());
+            } else
+               result = create_feature(*result, sdef->name(), *first);
          }
 
          return result;

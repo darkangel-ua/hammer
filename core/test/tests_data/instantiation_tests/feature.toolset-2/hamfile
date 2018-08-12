@@ -1,0 +1,5 @@
+# unknown toolsets + subfeatures should be ok, because they are declared as no-check
+exe test : main.cpp a ;
+
+local lib a : bad.cpp : <toolset>foo-4.5 ;
+local lib a : good.cpp ;

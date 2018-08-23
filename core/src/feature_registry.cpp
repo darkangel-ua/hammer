@@ -11,6 +11,7 @@
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/multi_index/identity.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
+#include <boost/algorithm/string/join.hpp>
 #include <hammer/core/feature_registry.h>
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature.h>
@@ -487,7 +488,22 @@ namespace hammer{
 
    feature* feature_registry::clone_feature(const feature& f)
    {
-      feature* result = create_feature(f.name(), f.value());
+      feature* result;
+
+      if (f.subfeatures().empty())
+         result = create_feature(f.name(), f.value());
+      else {
+         std::vector<string> subfeatures{f.value()};
+
+         std::transform(f.subfeatures().begin(), f.subfeatures().end(),
+                        std::back_inserter(subfeatures),
+                        [](const subfeature* sf) {
+            return sf->value();
+         });
+
+         result = create_feature(f.name(), boost::join(subfeatures, "-"));
+      }
+
       if (f.attributes().dependency)
          result->set_dependency_data(f.get_dependency_data().source_, f.get_path_data().project_);
 

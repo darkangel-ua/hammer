@@ -1,4 +1,8 @@
-project hammer ;
+project hammer 
+   : requirements =
+      <cxxflags>"-std=c++11"                                                                                                                                                                                                
+      (<toolset>gcc -> <cxxflags>"-Wno-deprecated-declarations")
+   ;
 
 use-project core : core/build ;
 use-project core_objects : core_objects/build ;

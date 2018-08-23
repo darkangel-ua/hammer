@@ -20,6 +20,14 @@ void generator_registry::insert(std::unique_ptr<generator> g)
       throw std::runtime_error("Generator '" + g_name + "' already registered.");
 }
 
+// build request: <toolset>gcc
+// constraints:   <toolset>gcc-6
+// should fail because constraints is more specific
+// and for
+// build request: <toolset>gcc-6
+// constraints:   <toolset>gcc
+// should match because constraints is wider than build request
+
 static
 int compute_rank(const feature& from_build_request,
                  const feature& from_constraints)
@@ -29,12 +37,12 @@ int compute_rank(const feature& from_build_request,
 
    int rank = 100;
 
-   auto br_first = from_build_request.subfeatures().begin();
-   auto br_last = from_build_request.subfeatures().end();
+   auto c_first = from_constraints.subfeatures().begin();
+   auto c_last = from_constraints.subfeatures().end();
 
-   for (; br_first != br_last; ++br_first) {
-      const subfeature* cs = from_constraints.find_subfeature((**br_first).name());
-      if (!cs || cs->value() != (**br_first).value())
+   for (; c_first != c_last; ++c_first) {
+      const subfeature* cs = from_build_request.find_subfeature((**c_first).name());
+      if (!cs || cs->value() != (**c_first).value())
          return -1;
 
       rank += 1;
@@ -93,8 +101,8 @@ generator_registry::find_viable_generators(const target_type& t,
 
       for(generator::producable_types_t::const_iterator j = i->second->producable_types().begin(), j_last = i->second->producable_types().end(); j != j_last; ++j)
       {
-         if (!full_match && j->type_->equal_or_derived_from(t) ||
-              full_match && *j->type_ == t)
+         if ((!full_match && j->type_->equal_or_derived_from(t)) ||
+             (full_match && *j->type_ == t))
          {
             int generator_rank = i->second->constraints() != NULL ? compute_rank(build_properties, *i->second->constraints())
                                                                   : 0;

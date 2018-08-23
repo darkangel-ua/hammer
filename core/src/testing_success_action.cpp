@@ -21,7 +21,13 @@ bool testing_success_action::execute_impl(const build_node& node,
 {
    testing_build_environment env(environment);
 
-   return success_action_->execute(node, env);
+   const bool result = success_action_->execute(node, env);
+   if (!result) {
+      environment.output_stream() << env.output_stream_.str();
+      environment.error_stream() << env.error_stream_.str();
+   }
+
+   return result;
 }
 
 }

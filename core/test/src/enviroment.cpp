@@ -75,11 +75,17 @@ void complete_build_tests_environment::run_test(const boost::filesystem::path& w
    project& p = engine_.load_project(working_dir);
 
    feature_set* build_request = engine_.feature_registry().make_set();
-#ifdef _WIN32
-   build_request->join("toolset", "msvc");
+#if defined(_WIN32)
+   const string default_toolset_name = "msvc";
 #else
-   build_request->join("toolset", "gcc");
+   const string default_toolset_name = "gcc";
 #endif
+   const feature_def& toolset_definition = engine_.feature_registry().get_def("toolset");
+   const subfeature_def& toolset_version_def = toolset_definition.get_subfeature("version");
+   // peek first configured as default
+   const string& default_toolset_version = *toolset_version_def.legal_values(default_toolset_name).begin();
+   build_request->join("toolset", (default_toolset_name + "-" + default_toolset_version).c_str());
+
    build_request->join("variant", "debug");
 
    vector<basic_target*> instantiated_targets;

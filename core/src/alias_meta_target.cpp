@@ -42,6 +42,9 @@ void alias_meta_target::instantiate_impl(const main_target* owner,
          else
             new_sd.properties(build_request.clone());
 
+         if (looks_like_local_target_ref(sd))
+            new_sd.set_locals_allowed(true);
+
          f->set_dependency_data(new_sd, get_project());
 
          sources_as_features.join(f);

@@ -767,7 +767,7 @@ testing_run_many_rule(invocation_context& ctx,
                       const parscore::identifier* name_template)
 {
    auto result = boost::make_unique<sources_decl>();
-   target_invocation_context tctx{ ctx, true, true };
+   target_invocation_context tctx{ ctx, false, false };
    for (const source_decl& sd : sources) {
       sources_decl src;
       src.push_back(sd);
@@ -867,7 +867,7 @@ testing_compile_many_rule(invocation_context& ctx,
 {
    auto result = boost::make_unique<sources_decl>();
 
-   target_invocation_context tctx{ ctx, true, true };
+   target_invocation_context tctx{ ctx, false, false };
    for (const source_decl& sd : sources) {
       sources_decl src;
       src.push_back(sd);

@@ -49,6 +49,7 @@
 #include "user_config_location.h"
 #include "dump_targets_to_update.h"
 #include "version.h"
+#include "testing_report.h"
 
 using namespace std;
 using namespace hammer;
@@ -107,6 +108,7 @@ namespace
       bool release_package_ = false;
       bool version_ = false;
       bool list_toolsets_ = false;
+      std::string testing_report_filename_;
    };
 
    po::positional_options_description build_request_options;
@@ -138,6 +140,7 @@ namespace
          ("path-to-packages", po::value<std::string>(&opts.path_to_packages_), "path to packages database")
          ("release-package", po::bool_switch(&opts.release_package_), "add (release) package current to configured warehouse")
          ("version", po::bool_switch(&opts.version_), "print version information")
+         ("write-test-report", po::value<string>(&opts.testing_report_filename_), "write testing report")
          ;
 
       return desc;
@@ -481,28 +484,28 @@ namespace
             return;
 
          if (target_to_update_count == 0)
-         {
             cout << "...nothing to update...\n";
-            return;
+         else {
+            if (!opts.disable_batcher_) {
+               cout << "...running batcher... " << flush;
+               generic_batcher::process(nodes, opts.worker_count_);
+               cout << "Done.\n";
+            }
+
+            cout << "...updating " << target_to_update_count << " targets...\n";
+            builder builder(build_environment, interrupt_flag, opts.worker_count_, false);
+            builder::result build_result = builder.build(nodes);
+            cout << "...updated " << build_result.updated_targets_ << " targets...\n";
+
+            if (build_result.failed_to_build_targets_)
+               cout << "...failed updating " << build_result.failed_to_build_targets_ << " targets...\n";
+
+            if (build_result.skipped_targets_)
+               cout << "...skipped " << build_result.skipped_targets_ << " targets...\n";
          }
 
-         if (!opts.disable_batcher_)
-         {
-            cout << "...running batcher... " << flush;
-            generic_batcher::process(nodes, opts.worker_count_);
-            cout << "Done.\n";
-         }
-
-         cout << "...updating " << target_to_update_count << " targets...\n";
-         builder builder(build_environment, interrupt_flag, opts.worker_count_, false);
-         builder::result build_result = builder.build(nodes);
-         cout << "...updated " << build_result.updated_targets_ << " targets...\n";
-
-         if (build_result.failed_to_build_targets_)
-            cout << "...failed updating " << build_result.failed_to_build_targets_ << " targets...\n";
-
-         if (build_result.skipped_targets_)
-            cout << "...skipped " << build_result.skipped_targets_ << " targets...\n";
+         if (!opts.testing_report_filename_.empty())
+            generate_testing_report(opts.testing_report_filename_, nodes);
       }
       else
       {

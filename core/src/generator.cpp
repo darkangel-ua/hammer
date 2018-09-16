@@ -125,12 +125,16 @@ generator::make_product_name_and_hash(const build_node::sources_t& sources,
       return std::string(source_target.name().begin(), source_target.name().begin() + (source_target.name().size() - source_suffix.size()));
    }();
 
-   const std::string& product_name = [&]()  -> std::string {
+   const std::string& product_name = [&]() -> std::string {
       if (p_name == product_properties.end()) {
          std::string result = product_type.type_->prefix_for(product_properties) + pure_name;
          if (product_type.need_tag_ && p_name == product_properties.end()) {
-            add_version(result, product_properties);
-            result += '-' + hash;
+            const std::string& mangling = (**product_properties.find("mangling")).value();
+            if (mangling != "none") {
+               add_version(result, product_properties);
+               if (mangling == "full")
+                  result += '-' + hash;
+            }
          }
          result += product_type.type_->suffix_for(product_properties);
 
@@ -265,7 +269,12 @@ generator::make_valuable_properties(const feature_set& target_props,
    merge(all_valuable_features, generator_valuable_features_);
    merge(all_valuable_features, target_type_valuable_features);
    merge(all_valuable_features, source_target_valuable_features);
+   // FIXME: this two should be valuable only for specific target types not for all.
+   // OBJ shouldn't be versioned of mangled because it is intermediate thing, but all final artifacts should
    append_valuable_feature(all_valuable_features, *result->owner().create_feature("version", ""), result->owner());
+   append_valuable_feature(all_valuable_features, *result->owner().create_feature("mangling", "full"), result->owner());
+   append_valuable_feature(all_valuable_features, *result->owner().create_feature("mangling", "version"), result->owner());
+   append_valuable_feature(all_valuable_features, *result->owner().create_feature("mangling", "none"), result->owner());
 
    auto process_one = [&](const feature* f) {
       if (f->attributes().free || f->attributes().no_checks) {

@@ -1,2 +1,0 @@
-# options: output_dir=user_dir
-exe test : main.cpp : <include>./ ;

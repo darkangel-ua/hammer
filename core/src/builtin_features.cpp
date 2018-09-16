@@ -36,7 +36,7 @@ feature asynch-exceptions : off on ;
 feature extern-c-nothrow : off on ;
 feature debug-symbols : on off ;
 feature pch : off create use : generated ;
-feature mangling : md5 variant : optional incidental ;
+feature mangling : full version none ;
 
 # testing support
 feature testing.additional-source : : free dependency propagated ; # can't get rid of this yet

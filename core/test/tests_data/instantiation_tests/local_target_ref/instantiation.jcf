@@ -6,5 +6,7 @@ test {
       lib1 { lib1-external.cpp {} }
    }
    lib3 { lib3-local.cpp {} }
-   lib5 { lib5-local.cpp {} }
+   lib4 {
+      lib5 { lib5-local.cpp {} }
+   }
 }

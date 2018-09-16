@@ -1,2 +1,0 @@
-lib static_lib : l.cpp : <link>static ;
-exe test : main.cpp static_lib ;

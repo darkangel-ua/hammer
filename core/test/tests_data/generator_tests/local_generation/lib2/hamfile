@@ -1,1 +1,0 @@
-lib lib2 : ../lib1 lib.cpp ;

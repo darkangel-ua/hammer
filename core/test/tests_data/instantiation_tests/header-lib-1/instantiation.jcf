@@ -1,0 +1,6 @@
+test [ features = <define>LIB1; ]{
+    main.cpp {}
+    lib1 [ type = HEADER_LIB; features = <define>LIB1; ] {
+       lib1.h {}
+    }
+}

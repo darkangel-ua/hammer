@@ -1,0 +1,6 @@
+# <define>LIB1 & <define>LIB2 should apears in test target as usage-requirement
+exe test : main.cpp lib1 ;
+
+#lib1 use lib2 as source
+header-lib lib1 : lib1.h lib2 : @<include>./lib1 @<define>LIB1 ;
+header-lib lib2 : lib2.h      : @<include>./lib2 @<define>LIB2 ;

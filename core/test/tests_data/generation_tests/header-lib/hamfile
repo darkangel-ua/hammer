@@ -1,0 +1,11 @@
+# lib2 should be tranferred through lib1 up to test executable + lib1 should be always up-to-date
+project 
+   : requirements =
+      <mangling>none
+   ;
+
+exe test : main.cpp lib1 ;
+
+#lib1 use lib2 as source
+header-lib lib1 : lib1.h lib2 ;
+lib lib2 : lib2.cpp lib2.h ;

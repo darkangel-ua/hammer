@@ -8,6 +8,7 @@
 #include <hammer/core/obj_generator.h>
 #include <hammer/core/generator_registry.h>
 #include <hammer/core/testing_generators.h>
+#include <hammer/core/header_lib_generator.h>
 #include <hammer/core/toolset_manager.h>
 #include <hammer/core/types.h>
 #include <hammer/core/basic_target.h>
@@ -40,6 +41,7 @@ setuped_engine::setuped_engine(bool install_toolsets)
    }
 
    hammer::add_testing_generators(engine_, engine_.generators());
+   hammer::add_header_lib_generator(engine_, engine_.generators());
 }
 
 complete_build_tests_environment::complete_build_tests_environment()
@@ -53,6 +55,7 @@ complete_build_tests_environment::complete_build_tests_environment()
    engine_.scanner_manager().register_scanner(engine_.get_type_registry().get(types::RC), c_scaner);
 
    hammer::add_testing_generators(engine_, engine_.generators());
+   hammer::add_header_lib_generator(engine_, engine_.generators());
 
    // Simplest way is to specify /home/username/user-config.ham as toolset configuring script
    const char* toolset_setup_script = getenv("HAMMER_TOOLSET_SETUP_SCRIPT");

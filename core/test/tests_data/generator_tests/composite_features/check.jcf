@@ -1,8 +1,0 @@
-test [ type = EXE; ]
-{
-   main.cpp [ type = CPP; features = <define>WIN32; ] {}
-   a [ type = STATIC_LIB; ]
-   {
-      a.cpp [ type = CPP; features = <define>WIN32; ] {}
-   }
-}

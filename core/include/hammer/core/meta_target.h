@@ -24,6 +24,15 @@ namespace hammer
 			                      std::vector<basic_target*>* result,
 			                      feature_set* usage_requirements) const override;
 
+         // this is actual instantiation implementation for most meta targets
+         // some of them can invoke this function multiple times with different sources
+         // header_lib and alias does this
+         void instantiate_impl(const main_target* owner,
+                               const sources_decl& sources,
+			                      const feature_set& build_request_,
+			                      std::vector<basic_target*>* result,
+			                      feature_set* usage_requirements) const;
+
          // Now used for PCH support. PCH meta target import meta target sources from owner to reduce typing for msvc pch support
          // pch stdafx : stdafx.cpp stdafx.h ;
          // test a : main.cpp stdafx /boost/regex ;

@@ -1,5 +1,0 @@
-lib lib1 : lib1.cpp ;
-lib lib2 : lib1/<link>static lib2.cpp : <link>shared ;
-lib lib3 : lib3.cpp ;
-lib lib4 : lib3/<link>shared lib4.cpp : <link>static ;
-exe test : lib2 lib4 main.cpp ;

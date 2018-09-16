@@ -1,4 +1,5 @@
-header-lib lib1 : lib1-deps ;
+local
+lib lib1.lib1 : lib1_lib1.cpp ;
 
-local lib lib1-deps : catch-all.cpp ;
-local lib lib1-deps : bar_2.cpp : <bar>bar_2 ;
+explicit alias lib1 : lib1.lib1 ;
+

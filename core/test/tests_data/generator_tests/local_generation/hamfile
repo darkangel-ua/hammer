@@ -1,2 +1,0 @@
-# options: local
-exe test : lib2 main.cpp ;

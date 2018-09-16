@@ -1,5 +1,4 @@
 test {
    main.cpp {}
-   lib1 {}
-   lib1-deps { catch-all.cpp {} }
+   lib1.lib1 { lib1_lib1.cpp {} }
 }

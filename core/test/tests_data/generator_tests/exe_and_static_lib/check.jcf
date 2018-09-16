@@ -1,8 +1,0 @@
-test [ type = EXE; ]
-{  
-   main.cpp [ type = CPP; ] {}
-   static_lib [ type = STATIC_LIB; ]
-   {
-      l.cpp [ type = CPP; ] {}
-   }
-}

@@ -6,17 +6,19 @@
 #include <hammer/core/virtual_build_target.h>
 #include <hammer/core/generator_registry.h>
 
-namespace hammer{
+namespace hammer {
 
 header_lib_generator::header_lib_generator(hammer::engine& e,
                                            const std::string& name,
                                            const consumable_types_t& source_types,
-                                           const producable_types_t& target_types,
-                                           const feature_set* c)
+                                           const producable_types_t& target_types)
    :
     generator(e, name, source_types, 
-              target_types, true, build_action_ptr{}, c),
-    header_type_(e.get_type_registry().get(types::H))
+              target_types, true, build_action_ptr{}),
+    header_type_(e.get_type_registry().get(types::H)),
+    shared_lib_(e.get_type_registry().get(types::SHARED_LIB)),
+    static_lib_(e.get_type_registry().get(types::STATIC_LIB)),
+    searched_lib_(e.get_type_registry().get(types::SEARCHED_LIB))
 {
 
 }
@@ -29,27 +31,26 @@ header_lib_generator::construct(const target_type& type_to_construct,
                                 const std::string* composite_target_name,
                                 const main_target& owner) const
 {
-   typedef std::vector<boost::intrusive_ptr<build_node> > build_sources_t;
-   build_sources_t result;
-
-   // add HEADER_LIB node to result
-   boost::intrusive_ptr<build_node> header_lib_node(new build_node(owner, true, build_action_ptr{}));
-   header_lib_node->targeting_type_ = &type_to_construct;
-   result.push_back(header_lib_node);
-   std::auto_ptr<virtual_build_target> header_lib_product(new virtual_build_target(&owner, *composite_target_name, &type_to_construct, &props, true));
-   header_lib_node->products_.push_back(header_lib_product.get());
-   header_lib_product.release();
+   // just lift libs up
+   build_nodes_t result;
+   for (const auto& s : sources) {
+      if (s->targeting_type_->equal_or_derived_from(shared_lib_) ||
+          s->targeting_type_->equal_or_derived_from(static_lib_) ||
+          s->targeting_type_->equal_or_derived_from(searched_lib_))
+      {
+         result.push_back(s);
+      }
+   }
 
    return result;
 }
 
-void add_header_lib_generator(engine& e, generator_registry& gr)
+void add_header_lib_generator(engine& e,
+                              generator_registry& gr)
 {
-   generator::consumable_types_t source;
-   generator::producable_types_t target;
-   source.push_back(generator::consumable_type(e.get_type_registry().get(types::H), 0, 0));
-   target.push_back(generator::produced_type(e.get_type_registry().get(types::HEADER_LIB), 1));
-   std::unique_ptr<generator> g(new header_lib_generator(e, "header_lib.linker", source, target));
+   const auto sources = make_consume_types(e, {types::H, types::SHARED_LIB, types::STATIC_LIB, types::SEARCHED_LIB});
+   const auto products = make_product_types(e, {types::HEADER_LIB});
+   std::unique_ptr<generator> g(new header_lib_generator(e, "header_lib", sources, products));
    gr.insert(std::move(g));
 }
 

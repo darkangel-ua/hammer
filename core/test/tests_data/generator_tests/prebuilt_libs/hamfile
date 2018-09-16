@@ -1,3 +1,0 @@
-searched-static-lib winsock : : winsock.lib : <search>dummydir ;
-lib lib1 : lib1.cpp winsock lib2 : <link>static ;
-exe test : main.cpp lib1 ;

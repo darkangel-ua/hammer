@@ -3,9 +3,9 @@
 
 #include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
-#include "build_node.h"
-#include "timestamp_info.h"
-#include "location.h"
+#include <hammer/core/build_node.h>
+#include <hammer/core/timestamp_info.h>
+#include <hammer/core/location.h>
 
 namespace hammer
 {
@@ -20,8 +20,6 @@ namespace hammer
    class basic_target : public boost::noncopyable
    {
       public:
-         typedef std::vector<boost::intrusive_ptr<build_node> > build_nodes_t;
-
 			basic_target(const main_target* mt,
 			             const std::string& name,
 			             const target_type* t,

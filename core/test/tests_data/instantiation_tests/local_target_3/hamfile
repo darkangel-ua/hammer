@@ -1,5 +1,3 @@
-# test that we can correctly transfer and handle localy defined header-lib dependencies
+# test that we can correctly handle reference on aliased local target
 
-feature bar : bar_1 bar_2 ;
-
-exe test : main.cpp ./lib1 ;
+exe test : main.cpp ./lib1//lib1 ;

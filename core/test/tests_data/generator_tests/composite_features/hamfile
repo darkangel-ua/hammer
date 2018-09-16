@@ -1,7 +1,0 @@
-import feature ;
-
-feature.feature win32_define : on off : composite propagated ;
-feature.compose <win32_define>on : <define>WIN32 ;
-
-lib a : a.cpp : <link>static ;
-exe test : a main.cpp : <win32_define>on ;

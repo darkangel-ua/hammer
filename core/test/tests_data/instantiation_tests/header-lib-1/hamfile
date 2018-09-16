@@ -1,0 +1,3 @@
+#simple header-lib. <define>LIB1 should apears in test target as usage-requirement
+exe test : main.cpp lib1 ;
+header-lib lib1 : lib1.h : @<include>./ @<define>LIB1 ;

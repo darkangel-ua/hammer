@@ -11,7 +11,7 @@ using namespace std;
 namespace fs = boost::filesystem;
 
 void init_instantiation_tests(const fs::path& test_data_root);
-void init_generators_tests(const fs::path& test_data_path);
+void init_generation_tests(const fs::path& test_data_path);
 void init_warehouse_auto_tests(const fs::path& test_data_path);
 
 static
@@ -37,7 +37,7 @@ init_unit_test_suite( int argc, char* argv[] )
    }
 
    init_instantiation_tests(test_data_path);
-//   init_generators_tests(test_data_path);
+   init_generation_tests(test_data_path);
    init_warehouse_auto_tests(test_data_path);
 
    add_tests_from_filesystem(test_data_path / "htmpl", "htmpl", bind(complete_build_test_function, placeholders::_1));

@@ -67,7 +67,8 @@ main_target::generate() const
          if (&node->products_owner() == this)
             owned_nodes.push_back(node);
 
-      build_node_ = result.front();
+      if (!result.empty())
+         build_node_ = result.front();
       generate_and_add_dependencies(owned_nodes);
       add_additional_dependencies(owned_nodes);
       generate_cache_ = result;

@@ -286,12 +286,7 @@ generator_registry::construct(const main_target* mt) const
       throw runtime_error((boost::format("Can't find transformation 'sources' -> '%s'.")
                               % mt->type().tag().name()).str());
 
-   build_nodes_t r(choosed_generator->generator_->construct(mt->type(), mt->properties(), choosed_generator->transformed_sources_, 0, &mt->name(), *mt));
-   if (!r.empty())
-      return r;
-
-   // FIXME: error messages
-   throw std::runtime_error("No viable generator found.");
+   return choosed_generator->generator_->construct(mt->type(), mt->properties(), choosed_generator->transformed_sources_, 0, &mt->name(), *mt);
 }
 
 }

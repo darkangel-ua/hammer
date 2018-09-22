@@ -1,0 +1,3 @@
+# test that header-lib without sources can be generated
+exe test : main.cpp lib1 ;
+header-lib lib1 ;

@@ -1,0 +1,8 @@
+build-request: 
+- toolset: gcc-6
+nodes:
+- test: EXE
+  sources:
+  - main.o: OBJ
+    sources:
+    - main.cpp: CPP

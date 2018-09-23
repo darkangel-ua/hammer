@@ -3,8 +3,7 @@
 
 namespace hammer {
 
-class virtual_build_target : public basic_build_target
-{
+class virtual_build_target : public basic_build_target {
    public:
 		virtual_build_target(const main_target* mt,
 		                     const std::string& name,

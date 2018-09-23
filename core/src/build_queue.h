@@ -7,17 +7,14 @@
 #include <boost/pool/object_pool.hpp>
 #include <hammer/core/build_node.h>
 
-namespace hammer {
-   class project;
-}
+namespace hammer { class project; }
 
 namespace hammer { namespace details {
 
 struct build_queue_node_t;
 typedef boost::unordered_set<build_queue_node_t*> build_queue_nodes_t;
 
-struct build_queue_node_t
-{
+struct build_queue_node_t {
    build_queue_node_t(build_node* node)
       : node_(node)
    {}
@@ -28,8 +25,7 @@ struct build_queue_node_t
    build_queue_nodes_t uses_nodes_;
 };
 
-struct build_queue_dependency_key_extractor
-{
+struct build_queue_dependency_key_extractor {
    typedef unsigned int result_type;
    result_type operator()(const build_queue_node_t* v) const { return v->dependencies_count_; }
 };
@@ -41,8 +37,7 @@ using build_queue_internals =
                                                                            >
                                             >;
 
-class build_queue : private build_queue_internals
-{
+class build_queue : private build_queue_internals {
    public:
       using build_queue_internals::get;
       using build_queue_internals::empty;

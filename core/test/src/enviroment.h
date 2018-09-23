@@ -1,21 +1,17 @@
-#if !defined(h_fb0a94cd_1c6c_486d_9d05_0442af28116e)
-#define h_fb0a94cd_1c6c_486d_9d05_0442af28116e
-
+#pragma once
 #include <functional>
 #include <boost/filesystem/path.hpp>
 #include <hammer/core/engine.h>
 
 extern boost::filesystem::path test_data_path;
 
-struct setuped_engine
-{
+struct setuped_engine {
    setuped_engine(bool install_toolsets = true);
 
    hammer::engine engine_;
 };
 
-struct complete_build_tests_environment
-{
+struct complete_build_tests_environment {
    complete_build_tests_environment();
    void install_toolsets();
 
@@ -29,5 +25,3 @@ struct complete_build_tests_environment
 void add_tests_from_filesystem(const boost::filesystem::path& test_data_path,
                                const std::string& test_suite_name,
                                std::function<void (const boost::filesystem::path& working_dir)> test_function);
-
-#endif

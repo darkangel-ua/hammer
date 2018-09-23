@@ -1,13 +1,10 @@
-#if !defined(h_ab5e0642_d07a_4fde_9332_972f2306020d)
-#define h_ab5e0642_d07a_4fde_9332_972f2306020d
-
+#pragma once
 #include <memory>
-#include "build_environment.h"
+#include <hammer/core/build_environment.h>
 
-namespace hammer{
+namespace hammer {
 
-class build_environment_impl : public build_environment
-{
+class build_environment_impl : public build_environment {
    public:
       build_environment_impl(const location_t& cur_dir,
                              const bool print_shell_commands = false);
@@ -58,5 +55,3 @@ class build_environment_impl : public build_environment
 };
 
 }
-
-#endif //h_ab5e0642_d07a_4fde_9332_972f2306020d

@@ -1,14 +1,11 @@
-#if !defined(h_33a5604a_4dc7_4db3_a49d_6e49e5c11d3d)
-#define h_33a5604a_4dc7_4db3_a49d_6e49e5c11d3d
-
-#include "argument_writer.h"
+#pragma once
+#include <hammer/core/argument_writer.h>
 
 namespace hammer {
 
 class target_type;
 
-class shared_lib_dirs_writer : public argument_writer
-{
+class shared_lib_dirs_writer : public argument_writer {
 	public:
 		shared_lib_dirs_writer(const std::string& name,
 									  const target_type& shared_lib_type)
@@ -28,5 +25,3 @@ class shared_lib_dirs_writer : public argument_writer
 };
 
 }
-
-#endif //h_33a5604a_4dc7_4db3_a49d_6e49e5c11d3d

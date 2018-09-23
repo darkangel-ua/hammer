@@ -4,9 +4,11 @@
 #include <hammer/core/location.h>
 #include <hammer/core/rule_argument_types.h>
 
-namespace hammer{ namespace ast{
-	class hamfile;
-	class expression;
+namespace hammer { namespace ast {
+
+class hamfile;
+class expression;
+
 }}
 
 namespace hammer {
@@ -14,8 +16,7 @@ namespace hammer {
 class project;
 class invocation_context;
 
-class ast2objects_semantic_error : public std::exception
-{
+class ast2objects_semantic_error : public std::exception {
 	public:
 		ast2objects_semantic_error() {}
 };

@@ -2,21 +2,25 @@
 #include <hammer/ast/types.h>
 
 namespace hammer { namespace ast {
-   class hamfile;
-   class project_def;
-   class rule_invocation;
-   class parser_context;
-	class path;
-   class requirement_set;
-	class logical_or;
-	class logical_and;
-	class condition_expr;
+
+class hamfile;
+class project_def;
+class rule_invocation;
+class parser_context;
+class path;
+class requirement_set;
+class logical_or;
+class logical_and;
+class condition_expr;
+
 }}
 
 namespace hammer { namespace parscore {
-   class identifier;
-   class token;
-   class source_location;
+
+class identifier;
+class token;
+class source_location;
+
 }}
 
 namespace hammer { namespace sema {

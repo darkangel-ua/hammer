@@ -1,14 +1,11 @@
-#if !defined(h_85f86c30_04b2_4778_838d_12e9b607ed32)
-#define h_85f86c30_04b2_4778_838d_12e9b607ed32
-
+#pragma once
 #include <string>
 
-namespace hammer{
+namespace hammer {
 
 class subfeature_def;
 
-class subfeature
-{
+class subfeature {
    public:
       subfeature(const subfeature_def& def,
                  const std::string& value);
@@ -28,5 +25,3 @@ class subfeature
 };
 
 }
-
-#endif

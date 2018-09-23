@@ -1,14 +1,10 @@
-#if !defined(h_65ecc706_d1d8_4208_a8ce_4e372daffafa)
-#define h_65ecc706_d1d8_4208_a8ce_4e372daffafa
+#pragma once
+#include <hammer/core/generator.h>
 
-#include "generator.h"
-
-namespace hammer
-{
+namespace hammer {
 
 // this is generator for obj meta target. Consume all input and transfer only obj types to result products
-class obj_generator : public generator
-{
+class obj_generator : public generator {
    public:
       obj_generator(hammer::engine& e);
 
@@ -24,5 +20,3 @@ class obj_generator : public generator
 };
 
 }
-
-#endif //h_65ecc706_d1d8_4208_a8ce_4e372daffafa

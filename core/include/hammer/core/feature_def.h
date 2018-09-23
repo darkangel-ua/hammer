@@ -1,97 +1,93 @@
-#if !defined(h_87310eb0_8b93_49c6_9804_55a01ca2f7a0)
-#define h_87310eb0_8b93_49c6_9804_55a01ca2f7a0
-
+#pragma once
 #include <map>
 #include <memory>
 #include <vector>
-#include "feature_attributes.h"
-#include "subfeature_def.h"
+#include <hammer/core/feature_attributes.h>
+#include <hammer/core/subfeature_def.h>
 #include <hammer/core/feature_value_ns_fwd.h>
 
-namespace hammer
-{
-   class feature_set;
-   class feature_registry;
+namespace hammer {
 
-   class feature_def
-   {
-         // needs to use constructor
-         friend class feature_registry;
+class feature_set;
+class feature_registry;
 
-      public:
-			struct legal_value {
-            legal_value(const char* name) : value_(name) {}
-				legal_value(const std::string& name) : value_(name) {}
-				legal_value(const std::string& name, feature_value_ns_ptr ns) : value_(name), ns_(ns) {}
+class feature_def {
+      // needs to use constructor
+      friend class feature_registry;
 
-				std::string value_;
-				feature_value_ns_ptr ns_;
-			};
+   public:
+      struct legal_value {
+         legal_value(const char* name) : value_(name) {}
+         legal_value(const std::string& name) : value_(name) {}
+         legal_value(const std::string& name, feature_value_ns_ptr ns) : value_(name), ns_(ns) {}
 
-         typedef std::vector<legal_value> legal_values_t;
+         std::string value_;
+         feature_value_ns_ptr ns_;
+      };
 
-         feature_def(const feature_def&) = delete;
-         feature_def(feature_def&&) = delete;
-         feature_def& operator = (const feature_def&) = delete;
+      typedef std::vector<legal_value> legal_values_t;
 
-         const std::string& name() const { return name_; }
+      feature_def(const feature_def&) = delete;
+      feature_def(feature_def&&) = delete;
+      feature_def& operator = (const feature_def&) = delete;
 
-			void set_default(const std::string& v);
-         const legal_values_t& get_defaults() const { return defaults_; }
-			bool defaults_contains(const std::string& value) const;
+      const std::string& name() const { return name_; }
 
-         feature_attributes attributes() const { return attributes_; }
-         feature_attributes& attributes() { return attributes_; }
-         void extend_legal_values(const std::string& new_legal_value,
-			                         feature_value_ns_ptr ns);
-         const legal_values_t& legal_values() const { return legal_values_; }
-         bool is_legal_value(const std::string& v) const;
+      void set_default(const std::string& v);
+      const legal_values_t& get_defaults() const { return defaults_; }
+      bool defaults_contains(const std::string& value) const;
 
-			const feature_value_ns_ptr&
-			get_legal_value_ns(const std::string& value) const;
+      feature_attributes attributes() const { return attributes_; }
+      feature_attributes& attributes() { return attributes_; }
+      void extend_legal_values(const std::string& new_legal_value,
+                               feature_value_ns_ptr ns);
+      const legal_values_t& legal_values() const { return legal_values_; }
+      bool is_legal_value(const std::string& v) const;
 
-         void compose(const std::string& value, feature_set* c); // FIXME: take ownership of c
-         void expand_composites(const std::string value, feature_set* fs) const;
-         subfeature_def& add_subfeature(const std::string& name);
-         const subfeature_def* find_subfeature(const std::string& name) const;
-         const subfeature_def& get_subfeature(const std::string& name) const;
-         subfeature_def& get_subfeature(const std::string& name);
+      const feature_value_ns_ptr&
+      get_legal_value_ns(const std::string& value) const;
 
-         const subfeature_def*
-         find_subfeature_for_value(const std::string& feature_value,
-                                   const std::string& value) const;
+      void compose(const std::string& value, feature_set* c); // FIXME: take ownership of c
+      void expand_composites(const std::string value, feature_set* fs) const;
+      subfeature_def& add_subfeature(const std::string& name);
+      const subfeature_def* find_subfeature(const std::string& name) const;
+      const subfeature_def& get_subfeature(const std::string& name) const;
+      subfeature_def& get_subfeature(const std::string& name);
 
-         ~feature_def(); 
-         bool operator ==(const feature_def& rhs) const { return this == &rhs; }
+      const subfeature_def*
+      find_subfeature_for_value(const std::string& feature_value,
+                                const std::string& value) const;
 
-      private:
-         struct component_t
-         {
-            component_t(){}
-            component_t(feature_set* c, size_t s) : components_(c), size_(s) {}
-            feature_set* components_;
-            size_t size_;
-         };
+      ~feature_def();
+      bool operator ==(const feature_def& rhs) const { return this == &rhs; }
 
-         typedef std::map<std::string /*feature value*/, component_t> components_t;
-         typedef std::map<std::string /*subfeature name*/, std::unique_ptr<subfeature_def> > subfeatures_t;
+   private:
+      struct component_t
+      {
+         component_t(){}
+         component_t(feature_set* c, size_t s) : components_(c), size_(s) {}
+         feature_set* components_;
+         size_t size_;
+      };
 
-         // only used by feature_registry
-         feature_def(const std::string& name,
-                     const legal_values_t& legal_values,
-                     feature_attributes attributes);
+      typedef std::map<std::string /*feature value*/, component_t> components_t;
+      typedef std::map<std::string /*subfeature name*/, std::unique_ptr<subfeature_def> > subfeatures_t;
 
-         std::string name_;
-         legal_values_t legal_values_;
-         feature_attributes attributes_;
-         legal_values_t defaults_;
+      // only used by feature_registry
+      feature_def(const std::string& name,
+                  const legal_values_t& legal_values,
+                  feature_attributes attributes);
 
-         components_t components_;
-         subfeatures_t subfeatures_;
+      std::string name_;
+      legal_values_t legal_values_;
+      feature_attributes attributes_;
+      legal_values_t defaults_;
 
-			legal_values_t::const_iterator
-			find_legal_value(const std::string& value) const;
-   };
+      components_t components_;
+      subfeatures_t subfeatures_;
+
+      legal_values_t::const_iterator
+      find_legal_value(const std::string& value) const;
+};
+
 }
-
-#endif //h_87310eb0_8b93_49c6_9804_55a01ca2f7a0

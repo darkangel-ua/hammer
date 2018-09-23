@@ -1,12 +1,9 @@
-#if !defined(h_4600a2af_9f05_4199_bb10_2b42d6ca6b22)
-#define h_4600a2af_9f05_4199_bb10_2b42d6ca6b22
-
+#pragma once
 #include <hammer/core/toolset.h>
 
 namespace hammer {
 
-class msvc_toolset : public toolset
-{
+class msvc_toolset : public toolset {
 	public:
 		msvc_toolset();
 		void autoconfigure(engine& e) const override;
@@ -23,5 +20,3 @@ class msvc_toolset : public toolset
 };
 
 }
-
-#endif

@@ -1,11 +1,9 @@
-#if !defined(h_ae72613c_b54f_43a4_ad8c_274cf2fdf589)
-#define h_ae72613c_b54f_43a4_ad8c_274cf2fdf589
-
+#pragma once
 #include <hammer/core/argument_writer.h>
 
 namespace hammer {
-class pch_argument_writer : public argument_writer
-{
+
+class pch_argument_writer : public argument_writer {
 	public:
 		struct part { enum value { header, product}; };
 
@@ -32,5 +30,3 @@ class pch_argument_writer : public argument_writer
 };
 
 }
-
-#endif //h_ae72613c_b54f_43a4_ad8c_274cf2fdf589

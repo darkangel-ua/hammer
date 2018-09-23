@@ -1,49 +1,46 @@
-#if !defined(h_2c15e695_c37e_498d_b12a_5bd65ba5e645)
-#define h_2c15e695_c37e_498d_b12a_5bd65ba5e645
-
+#pragma once
 #include <string>
 #include <vector>
 #include <iosfwd>
 
-namespace hammer
-{
-   class build_node;
-   class build_environment; 
-	class feature;
+namespace hammer {
 
-   class argument_writer
-   {
-      public:
-         argument_writer(const std::string& name)
-            : name_(name)
-         {}
+class build_node;
+class build_environment;
+class feature;
 
-         const std::string& name() const { return name_; }
-         void write(std::ostream& output,
-			           const build_node& node,
-			           const build_environment& environment) const
-         {
-            write_impl(output, node, environment);
-         }
+class argument_writer {
+   public:
+      argument_writer(const std::string& name)
+         : name_(name)
+      {}
 
-         virtual argument_writer* clone() const = 0;
-			virtual std::vector<const feature*> valuable_features() const = 0;
+      const std::string& name() const { return name_; }
+      void write(std::ostream& output,
+                 const build_node& node,
+                 const build_environment& environment) const
+      {
+         write_impl(output, node, environment);
+      }
 
-         virtual ~argument_writer() {}
-      
-      protected:   
-         virtual void write_impl(std::ostream& output,
-			                        const build_node& node,
-			                        const build_environment& environment) const = 0;
-      
-      private:
-         std::string name_;
-   };
+      virtual argument_writer* clone() const = 0;
+      virtual std::vector<const feature*> valuable_features() const = 0;
 
-   inline argument_writer* new_clone(const argument_writer& v)
-   {
-      return v.clone();
-   }
+      virtual ~argument_writer() {}
+
+   protected:
+      virtual void write_impl(std::ostream& output,
+                              const build_node& node,
+                              const build_environment& environment) const = 0;
+
+   private:
+      std::string name_;
+};
+
+inline
+argument_writer*
+new_clone(const argument_writer& v) {
+   return v.clone();
 }
 
-#endif //h_2c15e695_c37e_498d_b12a_5bd65ba5e645
+}

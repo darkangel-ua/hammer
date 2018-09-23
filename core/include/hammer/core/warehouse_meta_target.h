@@ -1,14 +1,11 @@
-#ifndef WAREHOUSE_META_TARGET_H
-#define WAREHOUSE_META_TARGET_H
-
+#pragma once
 #include <hammer/core/meta_target.h>
 
 namespace hammer {
 
 // FIXME: we should inherit from basic_meta_target but
 // main_target take meta_target istead of basic_meta_target
-class warehouse_meta_target : public meta_target
-{
+class warehouse_meta_target : public meta_target {
    public:
       warehouse_meta_target(project& p,
                             const std::string& name,
@@ -26,5 +23,3 @@ class warehouse_meta_target : public meta_target
 };
 
 }
-
-#endif // WAREHOUSE_META_TARGET_H

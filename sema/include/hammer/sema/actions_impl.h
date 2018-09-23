@@ -5,11 +5,15 @@
 #include <hammer/core/rule_manager.h>
 
 namespace hammer {
-	class diagnostic;
+
+class diagnostic;
+
 }
 
 namespace hammer { namespace ast {
-   class public_expr;
+
+class public_expr;
+
 }}
 
 namespace hammer { namespace sema {

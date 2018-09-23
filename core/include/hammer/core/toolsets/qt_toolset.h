@@ -3,8 +3,7 @@
 
 namespace hammer {
 
-class qt_toolset : public toolset
-{
+class qt_toolset : public toolset {
 	public:
     	qt_toolset();
     	void autoconfigure(engine& e) const override;

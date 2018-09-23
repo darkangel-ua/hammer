@@ -4,8 +4,7 @@
 
 namespace hammer {
 
-class generated_build_target : public file_build_target
-{
+class generated_build_target : public file_build_target {
 	public:
 		generated_build_target(const main_target* mt,
 		                       const std::string& target_name,

@@ -3,8 +3,7 @@
 
 namespace hammer {
 
-class htmpl_build_target : public source_build_target
-{
+class htmpl_build_target : public source_build_target {
    public:
       htmpl_build_target(const main_target* mt,
                          const std::string& name,

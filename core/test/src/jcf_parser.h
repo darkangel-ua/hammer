@@ -1,18 +1,16 @@
-#if !defined(h_38a1b5fc_c4b5_443f_9fe8_8099d3855f65)
-#define h_38a1b5fc_c4b5_443f_9fe8_8099d3855f65
-
+#pragma once
 #include <boost/noncopyable.hpp>
 #include <boost/filesystem/path.hpp>
 #include <vector>
 
-namespace hammer
-{
-   class basic_target;
-   class engine;
+namespace hammer {
+
+class basic_target;
+class engine;
+
 }
 
-class jcf_parser : public boost::noncopyable
-{
+class jcf_parser : public boost::noncopyable {
    public:
       jcf_parser();
       bool parse(const char* file_name);
@@ -26,5 +24,3 @@ class jcf_parser : public boost::noncopyable
 
       void reset();
 };
-
-#endif //h_38a1b5fc_c4b5_443f_9fe8_8099d3855f65

@@ -1,8 +1,7 @@
 #pragma once
-
-#include <boost/noncopyable.hpp>
 #include <string>
 #include <vector>
+#include <boost/noncopyable.hpp>
 #include <hammer/core/location.h>
 #include <hammer/core/timestamp_info.h>
 #include <hammer/core/build_node.h>
@@ -18,8 +17,7 @@ class project;
 class engine;
 class build_environment;
 
-class basic_build_target : private boost::noncopyable
-{
+class basic_build_target : private boost::noncopyable {
    public:
 		basic_build_target(const main_target* mt,
 		                   const std::string& name,

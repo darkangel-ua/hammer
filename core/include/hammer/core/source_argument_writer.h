@@ -1,39 +1,35 @@
-#if !defined(h_ab2aca5e_e63f_423c_b6da_5ac29570cf00)
-#define h_ab2aca5e_e63f_423c_b6da_5ac29570cf00
+#pragma once
+#include <hammer/core/targets_argument_writer.h>
 
-#include "targets_argument_writer.h"
+namespace hammer {
 
-namespace hammer
-{
-   class basic_build_target;
+class basic_build_target;
 
-   class source_argument_writer : public targets_argument_writer
-   {
-      public:
-         enum output_strategy{RELATIVE_TO_MAIN_TARGET, FULL_PATH, RELATIVE_TO_WORKING_DIR, WITHOUT_PATH};
+class source_argument_writer : public targets_argument_writer {
+   public:
+      enum output_strategy{RELATIVE_TO_MAIN_TARGET, FULL_PATH, RELATIVE_TO_WORKING_DIR, WITHOUT_PATH};
 
-         source_argument_writer(const std::string& name, 
-                                const target_type& t,
-                                bool exact_type = true,
-                                output_strategy os = RELATIVE_TO_MAIN_TARGET,
-                                const std::string& quoting_string = "\"",
-                                const std::string& prefix = std::string());
-         argument_writer* clone() const override;
+      source_argument_writer(const std::string& name,
+                             const target_type& t,
+                             bool exact_type = true,
+                             output_strategy os = RELATIVE_TO_MAIN_TARGET,
+                             const std::string& quoting_string = "\"",
+                             const std::string& prefix = std::string());
+      argument_writer* clone() const override;
 
-      protected:
-         void write_impl(std::ostream& output,
-			                const build_node& node,
-			                const build_environment& environment) const override;
-         
-         // return true if source type is accepted for output
-         bool accept(const basic_build_target& source) const;
+   protected:
+      void write_impl(std::ostream& output,
+                      const build_node& node,
+                      const build_environment& environment) const override;
 
-      private:
-         bool exact_type_;
-         output_strategy output_strategy_;
-         std::string quoting_string_;
-         std::string prefix_;
-   };
+      // return true if source type is accepted for output
+      bool accept(const basic_build_target& source) const;
+
+   private:
+      bool exact_type_;
+      output_strategy output_strategy_;
+      std::string quoting_string_;
+      std::string prefix_;
+};
+
 }
-
-#endif //h_ab2aca5e_e63f_423c_b6da_5ac29570cf00

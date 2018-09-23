@@ -1,6 +1,6 @@
 #pragma once
 #include <iosfwd>
-#include "build_node.h"
+#include <hammer/core/build_node.h>
 
 namespace hammer {
 

@@ -1,10 +1,8 @@
-#ifndef a84a0ac54_505f_4a03_bb2d_bb33db380037
-#define a84a0ac54_505f_4a03_bb2d_bb33db380037
-
-#include <hammer/core/warehouse.h>
+#pragma once
+#include <map>
 #include <boost/filesystem/path.hpp>
 #include <boost/unordered_map.hpp>
-#include <map>
+#include <hammer/core/warehouse.h>
 
 namespace hammer {
 
@@ -12,8 +10,7 @@ class main_target;
 class feature_set;
 class basic_target;
 
-class warehouse_impl : public warehouse
-{
+class warehouse_impl : public warehouse {
    public:
       warehouse_impl(engine& e,
                      const std::string& name,
@@ -45,14 +42,12 @@ class warehouse_impl : public warehouse
 
    private:
       struct gramma;
-      struct dependency_t
-      {
+      struct dependency_t {
          std::string version_;
          std::string public_id_;
       };
 
-      struct package_t
-      {
+      struct package_t {
          std::string filename_;
          unsigned long filesize_ = 0;
          std::string md5_;
@@ -106,5 +101,3 @@ class warehouse_impl : public warehouse
 };
 
 }
-
-#endif

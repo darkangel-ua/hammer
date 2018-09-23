@@ -1,11 +1,8 @@
-#if !defined(h_82225d39_86ef_4560_a63e_08466d9599bc)
-#define h_82225d39_86ef_4560_a63e_08466d9599bc
-
+#pragma once
 #include <antlr3.h>
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
    void check_target(const char* target_name);
    void* get_target(const char* id, void* t, int is_top);
@@ -18,5 +15,3 @@ extern "C"
 #ifdef __cplusplus
 };
 #endif
-
-#endif //h_82225d39_86ef_4560_a63e_08466d9599bc

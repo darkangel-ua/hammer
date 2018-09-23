@@ -6,8 +6,7 @@ namespace hammer {
 
 class feature_registry;
 
-class feature_value_ns : public boost::noncopyable
-{
+class feature_value_ns : public boost::noncopyable {
 		friend class feature_registry;
 
 	public:

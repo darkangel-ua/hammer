@@ -1,6 +1,4 @@
-#if !defined(h_7097ba14_7e00_4e62_88d3_9e89be1c6b41)
-#define h_7097ba14_7e00_4e62_88d3_9e89be1c6b41
-
+#pragma once
 #include <string>
 #include <hammer/core/location.h>
 #include <hammer/core/rule_manager.h>
@@ -9,8 +7,7 @@ namespace hammer {
 
 class engine;
 
-class toolset
-{
+class toolset {
 	public:
 		toolset(const std::string& name,
 		        const rule_declaration& use_rule);
@@ -31,5 +28,3 @@ class toolset
 };
 
 }
-
-#endif

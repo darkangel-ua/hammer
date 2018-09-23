@@ -1,20 +1,15 @@
-#if !defined(h_7b291f21_f482_4c1a_be16_3d16119ed90a)
-#define h_7b291f21_f482_4c1a_be16_3d16119ed90a
-
-#include <hammer/core/build_environment.h>
-#include <hammer/core/proxied_build_environment.h>
+#pragma once
 #include <boost/iostreams/filter/line.hpp>
 #include <boost/iostreams/filtering_stream.hpp>
+#include <hammer/core/build_environment.h>
+#include <hammer/core/proxied_build_environment.h>
 
-namespace hammer{namespace details{
+namespace hammer { namespace details {
 
-class buffered_output_environment : public proxied_build_environment
-{
-      struct one_line_pusher : boost::iostreams::line_filter
-      {
+class buffered_output_environment : public proxied_build_environment {
+      struct one_line_pusher : boost::iostreams::line_filter {
          private:
-            string_type do_filter(const string_type& s) override
-            {
+            string_type do_filter(const string_type& s) override {
                return s;
             }
       };
@@ -45,5 +40,3 @@ class buffered_output_environment : public proxied_build_environment
 };
 
 }}
-
-#endif //h_7b291f21_f482_4c1a_be16_3d16119ed90a

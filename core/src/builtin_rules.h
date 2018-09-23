@@ -1,7 +1,9 @@
 #pragma once
 
 namespace hammer {
-	class rule_manager;
+
+class rule_manager;
+
 }
 
 namespace hammer { namespace details {

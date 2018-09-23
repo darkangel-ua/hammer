@@ -3,8 +3,7 @@
 
 namespace hammer {
 
-class htmpl_source_target : public source_target
-{
+class htmpl_source_target : public source_target {
    public:
       htmpl_source_target(const main_target* mt,
                           const location_t& l,

@@ -1,10 +1,9 @@
 #pragma once
 #include <hammer/core/typed_meta_target.h>
 
-namespace hammer{
+namespace hammer {
 
-class htmpl_meta_target : public typed_meta_target
-{
+class htmpl_meta_target : public typed_meta_target {
    public:
       htmpl_meta_target(hammer::project* p,
                         const std::string& name,

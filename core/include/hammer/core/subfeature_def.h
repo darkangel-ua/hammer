@@ -1,16 +1,13 @@
-#if !defined(h_295945d1_c56e_43fa_ad45_659b96d6bd21)
-#define h_295945d1_c56e_43fa_ad45_659b96d6bd21
-
+#pragma once
 #include <unordered_map>
 #include <string>
 #include <vector>
 
-namespace hammer{
+namespace hammer {
 
 class feature_def;
 
-class subfeature_def
-{
+class subfeature_def {
       friend class feature_def;
    public:
       typedef std::vector<std::string> legal_values_t;
@@ -39,5 +36,3 @@ class subfeature_def
 };
 
 }
-
-#endif

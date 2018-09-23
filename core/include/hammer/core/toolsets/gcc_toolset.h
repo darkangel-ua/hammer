@@ -1,12 +1,9 @@
-#if !defined(h_dbbb68bd_8832_4d6c_aa77_baeb28bdbc79)
-#define h_dbbb68bd_8832_4d6c_aa77_baeb28bdbc79
-
+#pragma once
 #include <hammer/core/toolset.h>
 
 namespace hammer {
 
-class gcc_toolset : public toolset
-{
+class gcc_toolset : public toolset {
 	public:
 		gcc_toolset();
 		void autoconfigure(engine& e) const override;
@@ -25,5 +22,3 @@ class gcc_toolset : public toolset
 };
 
 }
-
-#endif

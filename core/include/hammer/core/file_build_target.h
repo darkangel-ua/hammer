@@ -3,8 +3,7 @@
 
 namespace hammer {
 
-class file_build_target : public basic_build_target
-{
+class file_build_target : public basic_build_target {
 	public:
 		file_build_target(const main_target* mt,
 		                  const std::string& name,

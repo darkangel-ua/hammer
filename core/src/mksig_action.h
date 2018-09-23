@@ -1,13 +1,10 @@
-#if !defined(h_612363a8_96e9_4e1f_8fdd_706368d197d9)
-#define h_612363a8_96e9_4e1f_8fdd_706368d197d9
-
+#pragma once
 #include <hammer/core/build_action.h>
 #include <hammer/core/location.h>
 
 namespace hammer {
 
-class mksig_action : public build_action
-{
+class mksig_action : public build_action {
 	public:
 		mksig_action();
 
@@ -24,5 +21,3 @@ class mksig_action : public build_action
 };
 
 }
-
-#endif //h_612363a8_96e9_4e1f_8fdd_706368d197d9

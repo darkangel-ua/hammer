@@ -1,14 +1,11 @@
-#if !defined(h_5db3364a_84ce_4a8f_a5bc_bde34dcef26f)
-#define h_5db3364a_84ce_4a8f_a5bc_bde34dcef26f
-
+#pragma once
 #include <hammer/core/generated_build_target.h>
 
 namespace hammer {
 
 class build_node;
 
-class signature_build_target : public generated_build_target
-{
+class signature_build_target : public generated_build_target {
    public:
 		// for composite targets, write properties + sources
 		// sources needs because we need to rebuild composite target when we REMOVE some simple source
@@ -29,5 +26,3 @@ class signature_build_target : public generated_build_target
 };
 
 }
-
-#endif //h_5db3364a_84ce_4a8f_a5bc_bde34dcef26f

@@ -1,13 +1,10 @@
-#ifndef HAMMER_CORE_PROXIED_BUILD_ENVIRONMENT_H
-#define HAMMER_CORE_PROXIED_BUILD_ENVIRONMENT_H
-
+#pragma once
 #include <hammer/core/build_environment.h>
 #include <hammer/core/basic_build_target.h>
 
 namespace hammer {
 
-class proxied_build_environment : public build_environment
-{
+class proxied_build_environment : public build_environment {
    public:
       proxied_build_environment(const build_environment& env) : env_(env) {}
 
@@ -104,5 +101,3 @@ class proxied_build_environment : public build_environment
 };
 
 }
-
-#endif

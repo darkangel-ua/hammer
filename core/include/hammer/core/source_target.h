@@ -1,30 +1,26 @@
-#if !defined(h_000faec0_e1c4_47aa_911a_31a1d9761f31)
-#define h_000faec0_e1c4_47aa_911a_31a1d9761f31
-
+#pragma once
 #include <hammer/core/basic_target.h>
 
-namespace hammer
-{
-   class main_target;
-   class target_type;
-   class engine;
-   class feature_set;
+namespace hammer {
 
-   class source_target : public basic_target
-   {
-      public:  
-         source_target(const main_target* mt,
-                       const location_t& l,
-                       const std::string& name,
-                       const target_type* t,
-                       const feature_set* f);
+class main_target;
+class target_type;
+class engine;
+class feature_set;
 
-         const location_t& location() const override { return location_; }
-			build_nodes_t generate() const override;
+class source_target : public basic_target {
+   public:
+      source_target(const main_target* mt,
+                    const location_t& l,
+                    const std::string& name,
+                    const target_type* t,
+                    const feature_set* f);
 
-      private:
-         const location_t location_;
-   };
+      const location_t& location() const override { return location_; }
+      build_nodes_t generate() const override;
+
+   private:
+      const location_t location_;
+};
+
 }
-
-#endif //h_000faec0_e1c4_47aa_911a_31a1d9761f31

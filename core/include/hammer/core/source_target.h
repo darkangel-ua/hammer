@@ -17,7 +17,9 @@ class source_target : public basic_target {
                     const feature_set* f);
 
       const location_t& location() const override { return location_; }
-      build_nodes_t generate() const override;
+
+   protected:
+      build_nodes_t generate_impl() const override;
 
    private:
       const location_t location_;

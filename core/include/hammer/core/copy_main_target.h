@@ -9,10 +9,9 @@ class copy_main_target : public main_target {
                        const std::string& name,
                        const feature_set* props);
 
-      build_nodes_t generate() const override;
-
    protected:
       bool need_signature() const override { return false; }
+      build_nodes_t generate_impl() const override;
 };
 
 }

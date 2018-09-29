@@ -105,7 +105,7 @@ copy_main_target::copy_main_target(const basic_meta_target* mt,
 using visited_nodes_t = std::set<const build_node*>;
 
 build_nodes_t
-copy_main_target::generate() const
+copy_main_target::generate_impl() const
 {
    build_nodes_t sources_nodes;
    for (const basic_target* source : sources()) {

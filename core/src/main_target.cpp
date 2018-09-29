@@ -28,8 +28,7 @@ main_target::main_target(const basic_meta_target* mt,
                          const std::string& name,
                          const hammer::target_type* t,
                          const feature_set* props)
-   : basic_target(this, name, t, props), meta_target_(mt),
-     generate_cache_filled_(false)
+   : basic_target(this, name, t, props), meta_target_(mt)
 {
 }
 
@@ -54,27 +53,23 @@ void main_target::generate_and_add_dependencies(build_nodes_t& nodes) const
    add_this_target_dependency(nodes, dependency_nodes);
 }
 
-std::vector<boost::intrusive_ptr<build_node> >
-main_target::generate() const
+build_nodes_t
+main_target::generate_impl() const
 {
-   if (generate_cache_filled_)
-      return generate_cache_;
-   else {
-      build_nodes_t result = get_engine().generators().construct(this);
+   build_nodes_t result = get_engine().generators().construct(this);
 
-      build_nodes_t owned_nodes;
-      for (auto& node : result)
-         if (&node->products_owner() == this)
-            owned_nodes.push_back(node);
+   build_nodes_t owned_nodes;
+   for (auto& node : result)
+      if (&node->products_owner() == this)
+         owned_nodes.push_back(node);
 
-      if (!result.empty())
-         build_node_ = result.front();
-      generate_and_add_dependencies(owned_nodes);
-      add_additional_dependencies(owned_nodes);
-      generate_cache_ = result;
-      generate_cache_filled_ = true;
-      return result;
-   }
+   if (!result.empty())
+      build_node_ = result.front();
+
+   generate_and_add_dependencies(owned_nodes);
+   add_additional_dependencies(owned_nodes);
+
+   return result;
 }
 
 static

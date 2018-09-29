@@ -27,7 +27,7 @@ searched_lib_main_target::searched_lib_main_target(const basic_meta_target* mt,
 }
 
 build_nodes_t
-searched_lib_main_target::generate() const
+searched_lib_main_target::generate_impl() const
 {
    build_node_ptr result{new hammer::build_node{*this, true, build_action_ptr{}}};
    basic_build_target* t;

@@ -10,7 +10,8 @@ class file_main_target : public main_target {
                        const std::string& filename,
                        const feature_set* props,
                        const target_type& t);
-         build_nodes_t generate() const override;
+   protected:
+      build_nodes_t generate_impl() const override;
       
       private:
          const target_type* type_;

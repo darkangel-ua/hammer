@@ -26,7 +26,7 @@ pch_main_target::pch_main_target(const basic_meta_target* mt,
 }
    
 build_nodes_t 
-pch_main_target::generate() const
+pch_main_target::generate_impl() const
 {
    const hammer::target_type& cpp_type = get_engine().get_type_registry().get(types::CPP);
    const hammer::target_type& c_type = get_engine().get_type_registry().get(types::C);

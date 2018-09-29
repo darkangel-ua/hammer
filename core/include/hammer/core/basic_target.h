@@ -36,7 +36,7 @@ class basic_target : public boost::noncopyable {
       const project* get_project() const;
       engine& get_engine() const;
 
-      virtual build_nodes_t generate() const = 0;
+      build_nodes_t generate() const;
       virtual const location_t& location() const;
       location_t full_path() const;
 
@@ -47,6 +47,7 @@ class basic_target : public boost::noncopyable {
 
    protected:
       virtual void additional_hash_string_data(std::ostream& s) const {}
+      virtual build_nodes_t generate_impl() const = 0;
 
    private:
       const main_target* main_target_;
@@ -55,6 +56,7 @@ class basic_target : public boost::noncopyable {
       const feature_set* features_;
       std::vector<basic_target*> dependencies_;
       mutable boost::optional<std::string> hash_;
+      mutable boost::optional<build_nodes_t> generate_cache_;
 };
 
 }

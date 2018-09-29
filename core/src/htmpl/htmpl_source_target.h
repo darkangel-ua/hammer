@@ -13,8 +13,9 @@ class htmpl_source_target : public source_target {
          : source_target(mt, l, name, t, f)
       {}
 
+   protected:
       build_nodes_t
-      generate() const override;
+      generate_impl() const override;
 };
 
 }

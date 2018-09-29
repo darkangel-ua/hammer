@@ -63,4 +63,13 @@ location_t basic_target::full_path() const
    return l;
 }
 
+build_nodes_t
+basic_target::generate() const
+{
+   if (!generate_cache_)
+      generate_cache_ = generate_impl();
+
+   return *generate_cache_;
+}
+
 }

@@ -15,12 +15,12 @@ source_target::source_target(const main_target* mt,
 }
 
 build_nodes_t
-source_target::generate() const
+source_target::generate_impl() const
 {
    boost::intrusive_ptr<build_node> result(new build_node(*get_main_target(), false, build_action_ptr{}));
    result->products_.push_back(new source_build_target(get_main_target(), name(), location_, &type(), &properties()));
    result->targeting_type_ = &this->type();
-   return std::vector<boost::intrusive_ptr<build_node> >(1, result);
+   return {1, result};
 }
 
 }

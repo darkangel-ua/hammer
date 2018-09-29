@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <iosfwd>
+#include <boost/optional.hpp>
 #include <hammer/core/basic_target.h>
 #include <hammer/core/location.h>
 
@@ -27,14 +28,14 @@ class main_target : public basic_target {
       void dependencies(const dependencies_t& deps);
       const dependencies_t& dependencies() const { return dependencies_; }
       const basic_meta_target* get_meta_target() const { return meta_target_; }
-      build_nodes_t generate() const override;
       const location_t& intermediate_dir() const;
-      boost::intrusive_ptr<const hammer::build_node> build_node() const { return build_node_; }
+      build_node_ptr build_node() const { return build_node_; }
       std::string version() const;
       const std::string& hash() const;
 
    protected:
       void additional_hash_string_data(std::ostream& s) const override;
+      build_nodes_t generate_impl() const override;
       virtual location_t intermediate_dir_impl() const;
       // some targets, copy for example, don't need signature files
       virtual bool need_signature() const { return true; }
@@ -46,8 +47,6 @@ class main_target : public basic_target {
       // FIXME: should call generate if no build_node_ assigned
       mutable boost::intrusive_ptr<hammer::build_node> build_node_;
       mutable location_t intermediate_dir_;
-      mutable std::vector<boost::intrusive_ptr<hammer::build_node> > generate_cache_;
-      mutable bool generate_cache_filled_;
 
       build_nodes_t
       create_intermediate_dirs_build_nodes(const build_nodes_t& build) const;

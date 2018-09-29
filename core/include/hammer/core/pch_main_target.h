@@ -16,10 +16,10 @@ class pch_main_target : public main_target {
       const basic_build_target& pch_header() const { return *pch_header_; }
       const basic_build_target& pch_source() const { return *pch_source_; }
       const basic_build_target& pch_product() const { return *pch_product_; }
-      build_nodes_t generate() const override;
 
    protected:
       location_t intermediate_dir_impl() const override;
+      build_nodes_t generate_impl() const override;
 
    private:
       const main_target& owner_;

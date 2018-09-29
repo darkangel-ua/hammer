@@ -10,7 +10,8 @@ class warehouse_target : public main_target {
                        const feature_set& build_request);
       ~warehouse_target();
 
-      build_nodes_t generate() const override;
+   protected:
+      build_nodes_t generate_impl() const override;
 };
 
 // throw from warehouse_target::generate to signal that build tree has some libs to download/install

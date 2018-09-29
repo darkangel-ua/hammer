@@ -18,7 +18,8 @@ warehouse_target::~warehouse_target()
 
 }
 
-build_nodes_t warehouse_target::generate() const
+build_nodes_t
+warehouse_target::generate_impl() const
 {
    throw warehouse_unresolved_target_exception();
 }

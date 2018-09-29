@@ -18,7 +18,7 @@ file_main_target::file_main_target(const basic_meta_target* mt,
 }
 
 build_nodes_t
-file_main_target::generate() const
+file_main_target::generate_impl() const
 {
    build_node_ptr result{new hammer::build_node{*this, true, build_action_ptr{}}};
    location_t l_filename = filename_;

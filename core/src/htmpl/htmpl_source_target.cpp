@@ -4,7 +4,7 @@
 namespace hammer {
 
 build_nodes_t
-htmpl_source_target::generate() const
+htmpl_source_target::generate_impl() const
 {
    build_node_ptr result(new build_node(*get_main_target(), false, {}));
    result->products_.push_back(new htmpl_build_target(get_main_target(), name(), location(), &type(), &properties()));

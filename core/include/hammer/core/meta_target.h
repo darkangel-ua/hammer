@@ -23,7 +23,6 @@ class meta_target : public basic_meta_target {
 
       // this is actual instantiation implementation for most meta targets
       // some of them can invoke this function multiple times with different sources
-      // header_lib and alias does this
       void instantiate_impl(const main_target* owner,
                             const sources_decl& sources,
                             const feature_set& build_request_,

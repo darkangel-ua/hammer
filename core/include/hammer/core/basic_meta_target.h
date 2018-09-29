@@ -45,10 +45,10 @@ class basic_meta_target {
                          const sources_decl& sources,
                          const feature_set& build_request) const;
 
-      virtual void instantiate(const main_target* owner,
-                               const feature_set& build_request,
-                               std::vector<basic_target*>* result,
-                               feature_set* usage_requirements) const;
+      void instantiate(const main_target* owner,
+                       const feature_set& build_request,
+                       std::vector<basic_target*>* result,
+                       feature_set* usage_requirements) const;
 
       void set_explicit(bool v) { is_explicit_ = v; }
       bool is_explicit() const { return is_explicit_; }

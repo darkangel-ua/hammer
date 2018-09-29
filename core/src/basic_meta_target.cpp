@@ -158,13 +158,11 @@ void basic_meta_target::instantiate(const main_target* owner,
                                     std::vector<basic_target*>* result,
                                     feature_set* usage_requirements) const
 {
-   if (is_cachable(owner))
-   {
-      for(instantiation_cache_t::const_iterator i = instantiation_cache_.begin(), last = instantiation_cache_.end(); i != last; ++i)
-         if (i->build_request_->compatible_with(build_request))
-         {
-            result->insert(result->end(), i->instantiated_targets_.begin(), i->instantiated_targets_.end());
-            usage_requirements->join(*i->computed_usage_requirements_);
+   if (is_cachable(owner)) {
+      for (auto& i : instantiation_cache_)
+         if (i.build_request_->compatible_with(build_request)) {
+            result->insert(result->end(), i.instantiated_targets_.begin(), i.instantiated_targets_.end());
+            usage_requirements->join(*i.computed_usage_requirements_);
             return;
          }
 
@@ -182,12 +180,12 @@ void basic_meta_target::instantiate(const main_target* owner,
       usage_requirements->join(*cache_item.computed_usage_requirements_);
 
       return;
+   } else {
+      instantiate_impl(owner,
+                       build_request,
+                       result,
+                       usage_requirements);
    }
-
-   instantiate_impl(owner,
-                    build_request,
-                    result,
-                    usage_requirements);
 }
 
 engine& basic_meta_target::get_engine() const

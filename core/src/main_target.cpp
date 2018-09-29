@@ -63,9 +63,6 @@ main_target::generate_impl() const
       if (&node->products_owner() == this)
          owned_nodes.push_back(node);
 
-   if (!result.empty())
-      build_node_ = result.front();
-
    generate_and_add_dependencies(owned_nodes);
    add_additional_dependencies(owned_nodes);
 

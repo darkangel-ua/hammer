@@ -29,7 +29,6 @@ class main_target : public basic_target {
       const dependencies_t& dependencies() const { return dependencies_; }
       const basic_meta_target* get_meta_target() const { return meta_target_; }
       const location_t& intermediate_dir() const;
-      build_node_ptr build_node() const { return build_node_; }
       std::string version() const;
       const std::string& hash() const;
 
@@ -44,8 +43,6 @@ class main_target : public basic_target {
       const basic_meta_target* meta_target_;
       sources_t sources_;
       sources_t dependencies_;
-      // FIXME: should call generate if no build_node_ assigned
-      mutable boost::intrusive_ptr<hammer::build_node> build_node_;
       mutable location_t intermediate_dir_;
 
       build_nodes_t

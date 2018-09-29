@@ -84,10 +84,10 @@ void impl_t::generate_dependencies(impl_t::dependencies_t::const_iterator first,
          (i != projects_.end() &&
           !i->second->has_variant(*first)))
       {
-         
-         auto_ptr<msvc_project> p_guard(new msvc_project(engine_, project_output_dir(*(**first).build_node()), variant_names_.front(), owner_->generate_id()));
+         const build_node_ptr build_node = (**first).generate().front();
+         auto_ptr<msvc_project> p_guard(new msvc_project(engine_, project_output_dir(*build_node), variant_names_.front(), owner_->generate_id()));
          msvc_project* p = p_guard.get();
-         p->add_variant((**first).build_node());
+         p->add_variant(build_node);
          p->generate();
          dependencies.insert(dependencies.end(), p->dependencies().begin(), p->dependencies().end());
          projects_.insert(&p->meta_target(), p_guard);

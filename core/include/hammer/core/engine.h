@@ -1,7 +1,7 @@
 #pragma once
-#include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
+#include <boost/noncopyable.hpp>
 #include <hammer/core/project.h>
 
 namespace hammer {
@@ -23,7 +23,7 @@ class parsing_error : public std::runtime_error {
       using runtime_error::runtime_error;
 };
 
-class engine : boost::noncopyable {
+class engine : public boost::noncopyable {
    public:
       engine();
 
@@ -108,5 +108,6 @@ class engine : boost::noncopyable {
 };
 
 boost::filesystem::path find_root(const boost::filesystem::path& initial_path);
+bool has_project_file(const boost::filesystem::path& folder);
 
 }

@@ -47,9 +47,14 @@
 #include <hammer/core/generated_build_target.h>
 
 #include "user_config_location.h"
-#include "dump_targets_to_update.h"
 #include "version.h"
-#include "testing_report.h"
+
+#include "build_cmd.h"
+#include "clean_cmd.h"
+#include "toolset_cmd.h"
+#include "project_cmd.h"
+#include "warehouse_cmd.h"
+#include "package_cmd.h"
 
 using namespace std;
 using namespace hammer;
@@ -82,38 +87,49 @@ namespace
          terminate();
    }
 
-   unsigned get_number_of_processors()
-   {
-      return boost::thread::hardware_concurrency();
-   }
+   using raw_args = vector<string>;
 
-   struct hammer_options
-   {
-      vector<string> build_request_options_;
+   struct toolset_options {
+      bool list_toolsets_ = false;
+   };
+
+   struct project_options {
+      std::string generator_name_;
       bool generate_projects_localy_ = false;
+      std::string hammer_output_dir_ = ".hammer";
+   };
+
+   struct test_options {
+      std::string testing_report_filename_;
+   };
+
+   struct build_options {
+      vector<string> build_request_options_;
       bool only_up_to_date_check_ = false;
       bool disable_batcher_ = false;
-      bool clean_all_ = false;
       bool dump_targets_to_update_ = false;
-      std::string hammer_output_dir_ = ".hammer";
-      int debug_level_ = 0;
       std::string just_one_source_;
       std::string just_one_source_project_path_;
-      unsigned worker_count_ = get_number_of_processors();
+      unsigned worker_count_ = boost::thread::hardware_concurrency();
       bool write_build_graph_ = false;
+      int debug_level_ = 0;
+      std::string hammer_output_dir_ = ".hammer";
+   };
+
+   struct clean_options {
+      bool all_ = false;
+   };
+
+   struct warehouse_options {
       bool update_warehouse_ = false;
       bool add_to_packages_ = false;
       std::string path_to_packages_;
       bool update_all_warehouse_packages_ = false;
       bool release_package_ = false;
-      bool version_ = false;
-      bool list_toolsets_ = false;
-      std::string testing_report_filename_;
    };
 
    po::positional_options_description build_request_options;
-   hammer_options opts;
-
+/*
    po::options_description options_for_help()
    {
       po::options_description desc("General options");
@@ -149,10 +165,31 @@ namespace
    po::options_description options_for_work()
    {
       po::options_description desc(options_for_help());
-      desc.add_options()("build-request", po::value<vector<string> >());
+      desc.add_options()("build-request", po::value<vector<string>>());
       build_request_options.add("build-request", -1);
       return desc;
    }
+*/
+   struct global_options {
+      bool version_ = false;
+      bool help_ = false;
+      unsigned debug_level_ = 0;
+      string command_;
+      raw_args command_args_;
+   } global_options;
+
+   po::options_description
+   global_options_description = []() {
+      po::options_description desc{"Global options"};
+      desc.add_options()
+         ("help", po::bool_switch(&global_options.help_), "produce this help message")
+         ("version", po::bool_switch(&global_options.version_), "print version information")
+         ("debug-level,d", po::value<unsigned>(&global_options.debug_level_), "debug level")
+         ("command", po::value<string>(&global_options.command_), "")
+         ("command-args", po::value<raw_args>(&global_options.command_args_), "")
+         ;
+      return desc;
+   } ();
 
    feature*
    try_resolve_implicit_feature(feature_registry& fr,
@@ -212,17 +249,17 @@ namespace
       }
    }
 
-   void add_all_targets(vector<string>& targets, const hammer::project& project)
-   {
-      for(hammer::project::targets_t::const_iterator i = project.targets().begin(), last = project.targets().end(); i != last; ++i)
-      {
-         if (!i->second->is_explicit() && !i->second->is_local())
-            targets.push_back(i->first);
-      }
+//   void add_all_targets(vector<string>& targets, const hammer::project& project)
+//   {
+//      for(hammer::project::targets_t::const_iterator i = project.targets().begin(), last = project.targets().end(); i != last; ++i)
+//      {
+//         if (!i->second->is_explicit() && !i->second->is_local())
+//            targets.push_back(i->first);
+//      }
 
-      std::sort(targets.begin(), targets.end());
-      targets.erase(std::unique(targets.begin(), targets.end()), targets.end());
-   }
+//      std::sort(targets.begin(), targets.end());
+//      targets.erase(std::unique(targets.begin(), targets.end()), targets.end());
+//   }
 
    bool is_looks_like_project(const string& s)
    {
@@ -308,7 +345,7 @@ namespace
 
       return result;
    }
-
+/*
    void generate_msvc80_solution(const nodes_t& nodes, const hammer::project& project_to_build)
    {
       project_generators::msvc_solution solution(project_to_build,
@@ -321,7 +358,7 @@ namespace
 
       solution.write();
    }
-
+*/
    typedef boost::unordered_set<const build_node*> visited_nodes_t;
    typedef boost::unordered_set<const meta_target*> top_targets_t;
 
@@ -451,7 +488,7 @@ namespace
 
       path.pop_back();
    }
-
+/*
    void run_build(nodes_t& nodes,
                   engine& e,
                   hammer_options opts)
@@ -534,23 +571,23 @@ namespace
          // this source should be rebuilt
          nodes_to_build.push_back(source_node);
          mark_nodes_to_update(nodes_to_build);
-/*
-         source_node->timestamp(boost::date_time::pos_infin);
-         actuality_checker checker(e, build_environment);
-         cout << "...checking targets for update... " << flush;
-         size_t target_to_update_count = checker.check(nodes_to_build);
-         cout << "Done." << endl;
 
-         if (opts.dump_targets_to_update_)
-         {
-            ofstream f("targets-to-update.txt", std::ios_base::trunc);
-            dump_targets_to_update(f, nodes_to_build, build_environment);
-         }
+//         source_node->timestamp(boost::date_time::pos_infin);
+//         actuality_checker checker(e, build_environment);
+//         cout << "...checking targets for update... " << flush;
+//         size_t target_to_update_count = checker.check(nodes_to_build);
+//         cout << "Done." << endl;
 
-         cout << "...building source '" << opts.just_one_source_ << "'..."<< endl;
-         builder::result build_result = builder.build(nodes_to_build, project_for_source);
-         cout << "...source '" << opts.just_one_source_ << "' builded."<< endl;
-*/
+//         if (opts.dump_targets_to_update_)
+//         {
+//            ofstream f("targets-to-update.txt", std::ios_base::trunc);
+//            dump_targets_to_update(f, nodes_to_build, build_environment);
+//         }
+
+//         cout << "...building source '" << opts.just_one_source_ << "'..."<< endl;
+//         builder::result build_result = builder.build(nodes_to_build, project_for_source);
+//         cout << "...source '" << opts.just_one_source_ << "' builded."<< endl;
+
          // remove dups
          std::sort(nodes_to_build.begin(), nodes_to_build.end());
          nodes_to_build.erase(std::unique(nodes_to_build.begin(), nodes_to_build.end()), nodes_to_build.end());
@@ -560,7 +597,7 @@ namespace
          cout << "...source '" << opts.just_one_source_ << "' builded."<< endl;
       }
    }
-
+*/
    bool has_configured_toolsets(const hammer::engine& e)
    {
       const feature_registry& fs = e.feature_registry();
@@ -586,91 +623,96 @@ namespace
            << r.cleaned_target_count_ << " targets was cleaned.\n";
    }
 
-   // http://stackoverflow.com/questions/3758606/how-to-convert-byte-size-into-human-readable-format-in-java
-   string human_readable_byte_count(const long long bytes,
-                                    const bool si = true)
-   {
-      const unsigned unit = si ? 1000 : 1024;
-      if (bytes < unit)
-         return (boost::format("%1 B") % bytes).str();
+void print_global_help() {
+   cout << R"(usage: hammer [--version] [--help]
+                  <command> [args]
+commands are:
 
-      const long exp = lrint(log(bytes) / log(unit));
-      return (boost::format("%.1f %c%sB")
-               % (bytes / pow(unit, exp))
-               % ((si ? "kMGTPE" : "KMGTPE")[exp - 1])
-               % (si ? "" : "i")).str();
-   }
+   build      Run build process
+   clean      Run clean process
+   package    Manage packages
+   toolset    Manage toolsets
+   project    Generate IDE project
+   warehouse  Manage warehouses
 
-   class warehouse_dl_notifier : public iwarehouse_download_and_install
-   {
-      public:
-         warehouse_dl_notifier(const unsigned max_package_name_lenght) : max_package_name_lenght_(max_package_name_lenght) {}
+build command is default and invoked when no other command specified.
 
-         bool on_download_begin(const std::size_t index,
-                                const warehouse::package_info& package) override
-         {
-            cout << "Downloading " << setw(max_package_name_lenght_) << left << (package.name_ + " (" + package.version_ +")")
-                 << setw(10) << right << human_readable_byte_count(package.package_file_size_) << flush;
-
-            return true;
-         }
-
-         void on_download_end(const std::size_t index,
-                              const warehouse::package_info& package) override
-         {
-            cout << " Done" << endl;
-         }
-
-         bool on_install_begin(const std::size_t index,
-                               const warehouse::package_info& package) override
-         {
-            cout << "Installing  " << setw(max_package_name_lenght_) << left << (package.name_ + " (" + package.version_ +")")
-                 << setw(10) << ' ' << flush;
-
-            return true;
-         }
-
-         void on_install_end(const std::size_t index,
-                             const warehouse::package_info& package) override
-         {
-            cout << " Done" << endl;
-         }
-
-      private:
-         const unsigned max_package_name_lenght_;
-   };
-
-void list_toolsets(engine& e,
-                   std::ostream& os) {
-   const feature_def* toolset_def = e.feature_registry().find_def("toolset");
-   if (!toolset_def)
-      return;
-
-   for (auto& legal_value : toolset_def->legal_values()) {
-      os << legal_value.value_;
-      if (toolset_def->defaults_contains(legal_value.value_))
-         os << " (default)\n";
-      else
-         os << "\n";
-
-      const subfeature_def& toolset_version_def = toolset_def->get_subfeature("version");
-      bool first = true;
-      for (const string& v : toolset_version_def.legal_values(legal_value.value_)) {
-         os << setw(4) << " " << v;
-         if (first) {
-            os << " (default)\n";
-            first = false;
-         } else
-            os << "\n";
-      }
-   }
+)";
 }
 
 }
-
 
 int main(int argc, char** argv) {
    try {
+      po::options_description desc{global_options_description};
+      po::variables_map vm;
+
+      po::positional_options_description pos;
+      pos.add("command", 1).
+          add("command-args", -1);
+
+      po::parsed_options parsed_options = po::command_line_parser(argc, argv).
+         options(desc).
+         positional(pos).
+         allow_unregistered().
+         run();
+
+      po::store(parsed_options, vm);
+      po::notify(vm);
+
+      const auto opts = po::collect_unrecognized(parsed_options.options, po::exclude_positional);
+      global_options.command_args_.insert(global_options.command_args_.begin(), opts.begin(), opts.end());
+
+      const string& cmd = global_options.command_;
+
+      if (global_options.help_) {
+         if ( cmd.empty() )
+            print_global_help();
+         else if (cmd == "build")
+            show_build_cmd_help();
+         else if (cmd == "clean")
+            show_clean_cmd_help();
+         else if (cmd == "toolset")
+            show_toolset_cmd_help();
+         else if (cmd == "project")
+            show_project_cmd_help();
+         else if (cmd == "warehouse")
+            show_warehouse_cmd_help();
+         else if (cmd == "package")
+            show_package_cmd_help();
+         else {
+            cout << "Unknown command: " << cmd << endl;
+            return 1;
+         }
+
+         return 0;
+      }
+
+      if (global_options.version_) {
+         print_version(cout);
+         cout << endl << endl;
+
+         return 0;
+      }
+
+      if (cmd == "clean")
+         return handle_clean_cmd(global_options.command_args_, global_options.debug_level_);
+      else if (cmd == "toolset")
+         return handle_toolset_cmd(global_options.command_args_, global_options.debug_level_);
+      else if (cmd == "project")
+         return handle_project_cmd(global_options.command_args_, global_options.debug_level_);
+      else if (cmd == "warehouse")
+         return handle_warehouse_cmd(global_options.command_args_, global_options.debug_level_);
+      else if (cmd == "package")
+         return handle_package_cmd(global_options.command_args_, global_options.debug_level_);
+      else {
+         if (!cmd.empty() && cmd != "build")
+            global_options.command_args_.insert(global_options.command_args_.begin(), global_options.command_);
+         signal(SIGINT, ctrl_handler);
+         terminate_immediately = false;
+         return handle_build_cmd(global_options.command_args_, global_options.debug_level_, interrupt_flag);
+      }
+/*
       po::options_description desc(options_for_work());
       po::variables_map vm;
       po::parsed_options options = po::command_line_parser(argc, argv).options(desc).positional(build_request_options).run();
@@ -890,8 +932,8 @@ int main(int argc, char** argv) {
                {
                   return lhs.name_.size() + lhs.version_.size() < rhs.name_.size() + rhs.version_.size();
                });
-            const unsigned max_package_name_lenght = package_with_longest_name->name_.size() + package_with_longest_name->version_.size() +
-                                                     3 /*formating extras*/;
+            const unsigned formating_extras = 3;
+            const unsigned max_package_name_lenght = package_with_longest_name->name_.size() + package_with_longest_name->version_.size() + formating_extras;
 
             long long total_bytes_to_download = 0;
             for(vector<warehouse::package_info>::const_iterator i = packages.begin(), last = packages.end(); i != last; ++i) {
@@ -918,8 +960,6 @@ int main(int argc, char** argv) {
          if (vm.count("generate"))
             return 0;
 
-   //      remove_propagated_targets(nodes, project_to_build);
-
          if (opts.clean_all_) {
             do_clean_all(nodes, engine);
             return 0;
@@ -937,6 +977,7 @@ int main(int argc, char** argv) {
       }
 
       return 0;
+*/
    } catch (const hammer::parsing_error& e) {
       cout << e.what() << "\n";
       return -1;

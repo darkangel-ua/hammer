@@ -301,6 +301,10 @@ boost::filesystem::path find_root(const boost::filesystem::path& initial_path)
    };
 }
 
+bool has_project_file(const boost::filesystem::path& folder) {
+   return exists(folder / "hamfile") || exists(folder / "hamroot");
+}
+
 void engine::add_alias(const location_t& alias_path,
                        const location_t& full_project_path,
                        feature_set* props)

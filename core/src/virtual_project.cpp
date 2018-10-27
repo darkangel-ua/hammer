@@ -1,11 +1,10 @@
 #include <hammer/core/virtual_project.h>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/uuid_io.hpp>
+#include <boost/guid.hpp>
 
 namespace hammer {
 
 virtual_project::virtual_project(engine& e)
-   : project(e, "/virtual_projects/" + to_string(boost::uuids::random_generator()()))
+   : project(e, "/virtual_projects/" + boost::guid::create().to_string())
 {
 }
 

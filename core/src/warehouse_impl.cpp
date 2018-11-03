@@ -223,40 +223,46 @@ global_trap_wh_project::load_project(const location_t& path) const
    }
 }
 
+static
+fs::path
+make_storage_dir(const boost::filesystem::path& storage_dir) {
+   fs::path result = storage_dir.empty() ? (get_home_path() / ".hammer") : storage_dir;
+   // path should be without trailing '.' to be correctly compared in package_from_warehouse()
+   result.normalize();
+   if (result.filename() == ".")
+      result.remove_leaf();
+
+   return result;
+}
+
 warehouse_impl::warehouse_impl(engine& e,
                                const std::string& id,
                                const std::string& url,
                                const boost::filesystem::path& storage_dir)
-   : warehouse(id),
-     repository_path_(storage_dir.empty() ? (get_home_path() / ".hammer") : storage_dir),
+   : warehouse(id, make_storage_dir(storage_dir)),
      repository_url_(url)
 {
-   if (!repository_path_.has_root_path())
+   if (!storage_dir_.has_root_path())
       throw std::runtime_error("Warehouse storage directory should be a full path");
 
-   // path should be without trailing '.' to be correctly compared in package_from_warehouse()
-   repository_path_.normalize();
-   if (repository_path_.filename() == ".")
-      repository_path_.remove_leaf();
-
-   if (!exists(repository_path_)) {
-      if (!create_directory(repository_path_))
-         throw std::runtime_error("Failed to create directory '" + repository_path_.string() + "'");
+   if (!exists(storage_dir_)) {
+      if (!create_directory(storage_dir_))
+         throw std::runtime_error("Failed to create directory '" + storage_dir_.string() + "'");
    }
 
-   const fs::path hamroot_path = repository_path_ / "hamroot";
+   const fs::path hamroot_path = storage_dir_ / "hamroot";
    if (!exists(hamroot_path)) {
       fs::ofstream f(hamroot_path, ios_base::trunc);
       if (!f)
          throw std::runtime_error("Can't create '" + hamroot_path.string() + "'");
    }
 
-   const fs::path packages_full_filename = repository_path_ / packages_filename;
+   const fs::path packages_full_filename = storage_dir_ / packages_filename;
    if (!exists(packages_full_filename))
-      download_file(repository_path_, url + "/" + packages_filename.string());
+      download_file(storage_dir_, url + "/" + packages_filename.string());
 
    packages_ = load_packages(packages_full_filename);
-   e.load_project(repository_path_);
+   e.load_project(storage_dir_);
    e.add_alias(location_t{"/"}, e.insert(std::unique_ptr<project>(new global_trap_wh_project(e, *this))).location(), nullptr);
 }
 
@@ -286,13 +292,13 @@ warehouse_impl::update_impl()
    if (repository_url_.empty())
       return package_infos_t();
 
-   const fs::path packages_update_filepath = repository_path_ / packages_update_filename;
-   const fs::path packages_filepath = repository_path_ / packages_filename;
+   const fs::path packages_update_filepath = storage_dir_ / packages_update_filename;
+   const fs::path packages_filepath = storage_dir_ / packages_filename;
 
    if (fs::exists(packages_update_filepath))
       fs::remove(packages_update_filepath);
 
-   download_file(repository_path_, repository_url_ + "/" + packages_filename.string(), packages_update_filename);
+   download_file(storage_dir_, repository_url_ + "/" + packages_filename.string(), packages_update_filename);
 
    packages_t new_packages = load_packages(packages_update_filepath);
    package_infos_t packages_needs_to_be_updated;
@@ -327,7 +333,7 @@ void warehouse_impl::update_all_packages_impl(engine& e)
          update_package(e, p.second);
    }
 
-   write_packages(repository_path_ / packages_filename, packages_);
+   write_packages(storage_dir_ / packages_filename, packages_);
 }
 
 warehouse_impl::packages_t::iterator
@@ -366,7 +372,7 @@ bool warehouse_impl::owned(const project& p) const
    if (project_location.filename() == ".")
       project_location.remove_leaf();
 
-   return project_location.string().find(repository_path_.string().c_str()) == 0;
+   return project_location.string().find(storage_dir_.string().c_str()) == 0;
 }
 
 bool warehouse_impl::has_project(const location_t& project_path,
@@ -474,7 +480,7 @@ warehouse_impl::get_unresoved_targets_info(engine& e,
       packages.insert(make_pair(package_hash, p));
    }
 
-   const project& repository_project = e.load_project(repository_path_);
+   const project& repository_project = e.load_project(storage_dir_);
    for(unresolved_dependencies_t::const_iterator i = deps.begin(), last = deps.end(); i != last; ++i)
       resolve_dependency(packages, e, i->second, repository_project);
 
@@ -567,7 +573,7 @@ void warehouse_impl::download_and_install(engine& e,
                                           const std::vector<package_info>& packages,
                                           iwarehouse_download_and_install& notifier)
 {
-   fs::path working_dir = repository_path_ / "downloads";
+   fs::path working_dir = storage_dir_ / "downloads";
    if (!exists(working_dir))
       create_directory(working_dir);
 
@@ -587,10 +593,10 @@ void warehouse_impl::download_and_install(engine& e,
       if (!notifier.on_install_begin(index, bpi))
          return;
 
-      const bool project_already_materilized = fs::exists(repository_path_ / "libs" / pi->second.public_id_);
-      install_package(pi->second, repository_path_);
+      const bool project_already_materilized = fs::exists(storage_dir_ / "libs" / pi->second.public_id_);
+      install_package(pi->second, storage_dir_);
       if (!project_already_materilized) {
-         const fs::path repository_hamroot = repository_path_ / "hamroot";
+         const fs::path repository_hamroot = storage_dir_ / "hamroot";
          append_line(repository_hamroot, "use-project /" + pi->second.public_id_ + " : ./libs/" + pi->second.public_id_ + ";");
       }
 
@@ -846,7 +852,7 @@ warehouse_impl::get_installed_versions(const std::string& public_id) const
    static const boost::regex pattern("^use-project.*<version>(.*);");
 
    vector<string> result;
-   const fs::path project_root = repository_path_ / "libs" / public_id / "hamfile";
+   const fs::path project_root = storage_dir_ / "libs" / public_id / "hamfile";
    if (!exists(project_root))
       return result;
 
@@ -865,7 +871,7 @@ warehouse_impl::get_installed_versions(const std::string& public_id) const
 
 bool warehouse_impl::already_materialized(const location_t& public_id) const
 {
-   return fs::exists(repository_path_ / "libs" / public_id);
+   return fs::exists(storage_dir_ / "libs" / public_id);
 }
 
 static
@@ -897,13 +903,13 @@ void remove_alias_from_package_hamfile(const string& package_public_id,
 
 void warehouse_impl::remove_package(const package_t& package_to_remove)
 {
-   const fs::path libs_path = repository_path_ / "libs";
+   const fs::path libs_path = storage_dir_ / "libs";
    const fs::path lib_path = libs_path / package_to_remove.public_id_;
    const fs::path package_root = lib_path / package_to_remove.version_;
 
    remove_alias_from_package_hamfile(package_to_remove.public_id_, package_to_remove.version_, package_to_remove.targets_, lib_path / "hamfile");
    fs::remove_all(package_root);
-   fs::remove(repository_path_ / "downloads" / package_to_remove.filename_);
+   fs::remove(storage_dir_ / "downloads" / package_to_remove.filename_);
 }
 
 void warehouse_impl::update_package(engine& e,

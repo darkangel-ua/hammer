@@ -31,7 +31,8 @@ class warehouse : public boost::noncopyable {
 
       static const std::string any_version;
 
-      warehouse(const std::string& id);
+      warehouse(const std::string& id,
+                const boost::filesystem::path& storage_dir);
       virtual ~warehouse() {}
 
       // check if project belongs to warehouse
@@ -63,6 +64,7 @@ class warehouse : public boost::noncopyable {
 
    public:
       const std::string id_;
+      const boost::filesystem::path storage_dir_;
 
    private:
       virtual package_infos_t update_impl() = 0;

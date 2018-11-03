@@ -20,10 +20,11 @@ namespace hammer {
 
 const std::string warehouse::any_version = string();
 
-warehouse::warehouse(const std::string& id)
-   : id_(id)
-{
-}
+warehouse::warehouse(const std::string& id,
+                     const boost::filesystem::path& storage_dir)
+   : id_(id),
+     storage_dir_(storage_dir)
+{}
 
 static
 void walk_over_targets(vector<const warehouse_target*>& result,

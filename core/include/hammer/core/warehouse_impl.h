@@ -65,7 +65,6 @@ class warehouse_impl : public warehouse {
       typedef boost::unordered_map<std::string, dependency_t> unresolved_dependencies_t;
       typedef boost::unordered_map<std::string, package_info> unresolved_packages_t;
 
-      boost::filesystem::path repository_path_;
       std::string repository_url_;
       packages_t packages_;
 

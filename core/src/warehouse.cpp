@@ -11,13 +11,19 @@
 #include <boost/bind.hpp>
 #include <boost/make_unique.hpp>
 #include <algorithm>
+#include <hammer/core/warehouse_manager.h>
 
 using namespace std;
 using boost::unordered_set;
 
-namespace hammer{
+namespace hammer {
 
 const std::string warehouse::any_version = string();
+
+warehouse::warehouse(const std::string& id)
+   : id_(id)
+{
+}
 
 static
 void walk_over_targets(vector<const warehouse_target*>& result,
@@ -48,12 +54,12 @@ find_all_warehouse_unresolved_targets(const vector<basic_target*>& targets)
    return result;
 }
 
-void add_traps(project& p,
+void add_traps(warehouse& wh,
+               project& p,
                const std::string& public_id)
 {
-   warehouse& wh = p.get_engine().warehouse();
    warehouse::versions_t all_versions = wh.get_package_versions(public_id);
-   vector<string> installed_versions = p.get_engine().warehouse().get_installed_versions(public_id);
+   vector<string> installed_versions = wh.get_installed_versions(public_id);
 
    warehouse::versions_t not_installed_versions;
 
@@ -86,11 +92,14 @@ static
 void warehouse_trap_rule(invocation_context& ctx,
                          const parscore::identifier& public_id)
 {
-   warehouse& wh = ctx.current_project_.get_engine().warehouse();
+   auto& whm = ctx.current_project_.get_engine().warehouse_manager();
+   auto iwh = whm.find(ctx.current_project_);
+   assert(iwh != whm.end() && "warehouse-trap used outside of warehouse tree");
+   warehouse& wh = *iwh->second;
    if (!wh.has_project(location_t(public_id.to_string()), warehouse::any_version))
       throw std::runtime_error("Can't find '" + public_id.to_string() + "' in warehouse");
 
-   add_traps(ctx.current_project_, public_id.to_string());
+   add_traps(wh, ctx.current_project_, public_id.to_string());
 }
 
 void install_warehouse_rules(engine& engine)

@@ -309,9 +309,9 @@ generate(engine& engine,
          }
 
          return result;
-      } catch(const warehouse_unresolved_target_exception& e) {
+      } catch (const warehouse_unresolved_target_exception& e) {
          // ups - we have some libs to download
-         warehouse& wh = engine.warehouse();
+         warehouse& wh = *e.warehouse_;
          vector<warehouse::package_info> packages = wh.get_unresoved_targets_info(engine, find_all_warehouse_unresolved_targets(targets));
 
          cout << boost::format("\n\nThere are %d unresolved package(s) to download and install:\n\n") % packages.size();

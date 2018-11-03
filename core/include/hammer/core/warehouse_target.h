@@ -14,10 +14,13 @@ class warehouse_target : public main_target {
       build_nodes_t generate_impl() const override;
 };
 
+class warehouse;
+
 // throw from warehouse_target::generate to signal that build tree has some libs to download/install
 class warehouse_unresolved_target_exception : public std::runtime_error {
    public:
-      warehouse_unresolved_target_exception();
+      warehouse_unresolved_target_exception(warehouse* wh);
+      warehouse* warehouse_;
 };
 
 }

@@ -1,5 +1,6 @@
 #include <boost/test/unit_test.hpp>
 #include <hammer/core/warehouse_impl.h>
+#include <hammer/core/warehouse_manager.h>
 #include <hammer/core/basic_target.h>
 #include <hammer/core/feature_set.h>
 #include <hammer/core/warehouse_target.h>
@@ -51,16 +52,18 @@ warehouse_test::warehouse_test(const bool remove_packages,
    if (remove_installed_packages)
       fs::remove_all(installed_packages_path_);
 
-   engine_.setup_warehouse("test", "file://" + packages_path_.string(), installed_packages_path_);
+   unique_ptr<warehouse> wh{ new warehouse_impl{ engine_, "test", "file://" + packages_path_.string(), installed_packages_path_ } };
+   engine_.warehouse_manager().insert(std::move(wh));
+
    install_warehouse_rules(engine_);
 }
 
 void warehouse_test::add_all_libs()
 {
-   engine_.warehouse().add_to_packages(engine_.load_project(libs_path_ / "lib1/1.0/build"));
-   engine_.warehouse().add_to_packages(engine_.load_project(libs_path_ / "lib1/2.0/build"));
-   engine_.warehouse().add_to_packages(engine_.load_project(libs_path_ / "lib2/1.0/build"));
-   engine_.warehouse().add_to_packages(engine_.load_project(libs_path_ / "lib2/2.0/build"));
+   engine_.warehouse_manager().get_default()->add_to_packages(engine_.load_project(libs_path_ / "lib1/1.0/build"));
+   engine_.warehouse_manager().get_default()->add_to_packages(engine_.load_project(libs_path_ / "lib1/2.0/build"));
+   engine_.warehouse_manager().get_default()->add_to_packages(engine_.load_project(libs_path_ / "lib2/1.0/build"));
+   engine_.warehouse_manager().get_default()->add_to_packages(engine_.load_project(libs_path_ / "lib2/2.0/build"));
 }
 
 }
@@ -106,10 +109,10 @@ void test_function_phase_1(const fs::path& test_data_path)
    }
 
    const vector<warehouse::package_info> packages =
-      env.engine_.warehouse().get_unresoved_targets_info(env.engine_, find_all_warehouse_unresolved_targets(instantiated_targets));
+      env.engine_.warehouse_manager().get_default()->get_unresoved_targets_info(env.engine_, find_all_warehouse_unresolved_targets(instantiated_targets));
 
    null_warehouse_download_and_install notifier;
-   BOOST_REQUIRE_NO_THROW(env.engine_.warehouse().download_and_install(env.engine_, packages, notifier));
+   BOOST_REQUIRE_NO_THROW(env.engine_.warehouse_manager().get_default()->download_and_install(env.engine_, packages, notifier));
 }
 
 static
@@ -155,7 +158,7 @@ void test_function(const fs::path& test_data_path)
    {
       warehouse_test test;
       test.add_all_libs();
-      test.engine_.warehouse().update();
+      test.engine_.warehouse_manager().get_default()->update();
    }
 
    test_function_phase_1(test_data_path);
@@ -170,7 +173,7 @@ void test_step(const fs::path& test_data_path,
    if (step == 1) {
       warehouse_test test;
       test.add_all_libs();
-      test.engine_.warehouse().update();
+      test.engine_.warehouse_manager().get_default()->update();
    }
 
    test_function_phase_1(test_data_path);

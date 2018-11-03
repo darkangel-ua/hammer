@@ -13,10 +13,13 @@ class basic_target;
 class warehouse_impl : public warehouse {
    public:
       warehouse_impl(engine& e,
-                     const std::string& name,
+                     const std::string& id,
                      const std::string& url,
                      const boost::filesystem::path& storage_dir = boost::filesystem::path());
       ~warehouse_impl();
+
+      bool owned(const project& p) const override;
+
       bool has_project(const location_t& project_path,
                        const std::string& version) const override;
 

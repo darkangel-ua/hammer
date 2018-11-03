@@ -31,8 +31,11 @@ class warehouse : public boost::noncopyable {
 
       static const std::string any_version;
 
+      warehouse(const std::string& id);
       virtual ~warehouse() {}
 
+      // check if project belongs to warehouse
+      virtual bool owned(const project& p) const = 0;
       // update package database
       package_infos_t update() { return update_impl(); }
       // update all packages that has been changed on the server, but stil not updated localy
@@ -57,6 +60,9 @@ class warehouse : public boost::noncopyable {
       virtual void add_to_packages(const project& p,
                                    const location_t& packages_db_path = location_t()) = 0;
       virtual versions_t get_package_versions(const std::string& public_id) const = 0;
+
+   public:
+      const std::string id_;
 
    private:
       virtual package_infos_t update_impl() = 0;
@@ -96,6 +102,7 @@ std::vector<const warehouse_target*>
 find_all_warehouse_unresolved_targets(const std::vector<basic_target*>& targets);
 
 void install_warehouse_rules(hammer::engine& engine);
-void add_traps(project& p,
+void add_traps(warehouse& wh,
+               project& p,
                const std::string& public_id);
 }

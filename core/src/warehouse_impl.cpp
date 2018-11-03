@@ -177,7 +177,15 @@ void download_file(const fs::path& working_dir,
 class trap_wh_project : public virtual_project {
    public:
       trap_wh_project(engine& e,
-                      warehouse_impl& wh)
+                      const std::string& name)
+         : virtual_project(e, name)
+      {}
+};
+
+class global_trap_wh_project : public virtual_project {
+   public:
+      global_trap_wh_project(engine& e,
+                             warehouse_impl& wh)
          : virtual_project(e),
            warehouse_(wh)
       {}
@@ -192,7 +200,7 @@ class trap_wh_project : public virtual_project {
 };
 
 loaded_projects
-trap_wh_project::load_project(const location_t& path) const
+global_trap_wh_project::load_project(const location_t& path) const
 {
    if (!warehouse_.has_project(path, {}))
       return {};
@@ -206,9 +214,9 @@ trap_wh_project::load_project(const location_t& path) const
    if (i != traps_.end())
       return loaded_projects{i->second.get()};
    else {
-      auto trap_project = boost::make_unique<virtual_project>(get_engine(), path.string());
+      auto trap_project = boost::make_unique<trap_wh_project>(get_engine(), path.string());
       project* raw_trap_project = trap_project.get();
-      add_traps(*trap_project, path.string());
+      add_traps(warehouse_, *trap_project, path.string());
       traps_.insert({path, std::move(trap_project)}) ;
 
       return loaded_projects{raw_trap_project};
@@ -216,10 +224,11 @@ trap_wh_project::load_project(const location_t& path) const
 }
 
 warehouse_impl::warehouse_impl(engine& e,
-                               const std::string& name,
+                               const std::string& id,
                                const std::string& url,
                                const boost::filesystem::path& storage_dir)
-   : repository_path_(storage_dir.empty() ? (get_home_path() / ".hammer") : storage_dir),
+   : warehouse(id),
+     repository_path_(storage_dir.empty() ? (get_home_path() / ".hammer") : storage_dir),
      repository_url_(url)
 {
    if (!repository_path_.has_root_path())
@@ -248,16 +257,7 @@ warehouse_impl::warehouse_impl(engine& e,
 
    packages_ = load_packages(packages_full_filename);
    e.load_project(repository_path_);
-   e.add_alias(location_t{"/"}, e.insert(std::unique_ptr<project>(new trap_wh_project(e, *this))).location(), nullptr);
-}
-
-static
-string package_id_from_location(const location_t& project_path)
-{
-   if (!project_path.has_root_path())
-      throw std::runtime_error("[package_id_from_location]: Bad project path '" + project_path.string() + "'");
-
-   return project_path.relative_path().string();
+   e.add_alias(location_t{"/"}, e.insert(std::unique_ptr<project>(new global_trap_wh_project(e, *this))).location(), nullptr);
 }
 
 warehouse_impl::packages_t
@@ -355,6 +355,18 @@ warehouse_impl::find_package(const std::string& public_id,
                              const std::string& version) const
 {
    return const_cast<warehouse_impl*>(this)->find_package(public_id, version);
+}
+
+bool warehouse_impl::owned(const project& p) const
+{
+   if (dynamic_cast<const trap_wh_project*>(&p))
+      return true;
+
+   auto project_location = p.location();
+   if (project_location.filename() == ".")
+      project_location.remove_leaf();
+
+   return project_location.string().find(repository_path_.string().c_str()) == 0;
 }
 
 bool warehouse_impl::has_project(const location_t& project_path,
@@ -478,22 +490,6 @@ void warehouse_impl::download_package(const package_t& p,
 {
    const string package_url = repository_url_ + "/" + p.filename_;
    download_file(working_dir, package_url);
-}
-
-static
-void insert_line_in_front(const fs::path& filename,
-                          const string& line)
-{
-   fs::path tmp_name = filename.branch_path() / (filename.filename().string() + ".tmp");
-   {
-      fs::ifstream src(filename);
-      fs::ofstream tmp_file(tmp_name);
-      tmp_file << line << endl;
-      copy(istreambuf_iterator<char>(src), istreambuf_iterator<char>(), ostreambuf_iterator<char>(tmp_file));
-   }
-
-   fs::remove(filename);
-   fs::rename(tmp_name, filename);
 }
 
 static

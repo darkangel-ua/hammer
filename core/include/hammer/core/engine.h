@@ -15,7 +15,7 @@ class project_requirements_decl;
 class toolset_manager;
 class scanner_manager;
 class output_location_strategy;
-class warehouse;
+class warehouse_manager;
 class rule_manager;
 
 class parsing_error : public std::runtime_error {
@@ -60,10 +60,7 @@ class engine : public boost::noncopyable {
       hammer::toolset_manager& toolset_manager() { return *toolset_manager_; }
       hammer::scanner_manager& scanner_manager() { return *scanner_manager_; }
       const hammer::scanner_manager& scanner_manager() const { return *scanner_manager_; }
-      hammer::warehouse& warehouse() { return *warehouse_; }
-      void setup_warehouse(const std::string& name,
-                           const std::string& url,
-                           const location_t& storage_dir);
+      hammer::warehouse_manager& warehouse_manager() { return *warehouse_manager_; }
       hammer::output_location_strategy& output_location_strategy() { return *output_location_strategy_; }
       void output_location_strategy(boost::shared_ptr<hammer::output_location_strategy>& strategy);
       void use_project(const project& p, const std::string& project_id_alias, const location_t& project_location);
@@ -93,7 +90,8 @@ class engine : public boost::noncopyable {
       boost::shared_ptr<hammer::scanner_manager> scanner_manager_;
       boost::shared_ptr<hammer::output_location_strategy> output_location_strategy_;
 
-      boost::shared_ptr<hammer::warehouse> warehouse_;
+      std::unique_ptr<hammer::warehouse_manager> warehouse_manager_;
+
       bool error_verbosity_ = true;
 
       void load_hammer_script_v2(location_t filepath);

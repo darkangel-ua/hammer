@@ -24,6 +24,7 @@
 #include <hammer/ast/context.h>
 #include <hammer/core/rule_manager.h>
 #include <hammer/core/ast2objects.h>
+#include <hammer/core/warehouse_manager.h>
 #include "wildcard.hpp"
 #include "builtin_rules.h"
 #include "builtin_features.h"
@@ -36,7 +37,8 @@ namespace hammer {
 engine::engine()
    :  global_project_(new project(*this, {})),
       feature_registry_(new hammer::feature_registry),
-      rule_manager_(new rule_manager)
+      rule_manager_(new rule_manager),
+      warehouse_manager_(new hammer::warehouse_manager)
 {
    details::install_builtin_rules(*rule_manager_);
    load_hammer_script(g_builtin_features, "builtin_features");
@@ -312,16 +314,6 @@ void engine::add_alias(const location_t& alias_path,
    assert(full_project_path.has_root_path());
    assert(alias_path.has_root_directory());
    global_project_->add_alias(alias_path.relative_path(), full_project_path, props);
-}
-
-void engine::setup_warehouse(const std::string& name,
-                             const std::string& url,
-                             const location_t& storage_dir)
-{
-   if (warehouse_)
-      throw std::runtime_error("You can setup only one warehouse to use");
-
-   warehouse_.reset(new warehouse_impl(*this, name, url, storage_dir));
 }
 
 void engine::output_location_strategy(boost::shared_ptr<hammer::output_location_strategy>& strategy)

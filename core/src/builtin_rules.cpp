@@ -27,6 +27,8 @@
 #include <hammer/core/feature.h>
 #include <hammer/core/ast2objects.h>
 #include <hammer/core/toolset_manager.h>
+#include <hammer/core/warehouse_manager.h>
+#include <hammer/core/warehouse_impl.h>
 #include <boost/guid.hpp>
 #include <boost/variant/get.hpp>
 #include <boost/filesystem/operations.hpp>
@@ -1016,7 +1018,7 @@ void searched_static_lib_rule(target_invocation_context& ctx,
 
 static
 void setup_warehouse_rule(invocation_context& ctx,
-                          const parscore::identifier& name,
+                          const parscore::identifier& id,
                           const parscore::identifier& url,
                           const location_t* storage_dir_)
 {
@@ -1032,7 +1034,13 @@ void setup_warehouse_rule(invocation_context& ctx,
       }
    }
 
-   ctx.current_project_.get_engine().setup_warehouse(name.to_string(), url.to_string(), storage_dir);
+   auto& whm = ctx.current_project_.get_engine().warehouse_manager();
+   auto sid = id.to_string();
+   if (whm.find(sid) != whm.end())
+      throw std::runtime_error("Warehouse '" + sid + "' already registered");
+
+   unique_ptr<warehouse> wh{ new warehouse_impl{ ctx.current_project_.get_engine(), sid, url.to_string(), storage_dir } };
+   ctx.current_project_.get_engine().warehouse_manager().insert(std::move(wh));
 }
 
 static

@@ -36,12 +36,14 @@ class project : public boost::noncopyable {
       typedef std::vector<selected_target> selected_targets_t;
 
       project(engine& e,
+              const project* parent,
               const std::string& name,
               const location_t& location,
               const requirements_decl& req,
               const requirements_decl& usage_req);
 
       project(engine& e,
+              const project* parent,
               const location_t& l);
       virtual ~project();
 
@@ -92,6 +94,9 @@ class project : public boost::noncopyable {
       selected_target select_best_alternative(const std::string& target_name, const feature_set& build_request, const bool allow_locals = false) const;
       selected_target try_select_best_alternative(const std::string& target_name, const feature_set& build_request, const bool allow_locals = false) const;
       feature_set* try_resolve_local_features(const feature_set& fs) const;
+
+   public:
+      const project* const parent_;
 
    private:
       struct aliases;

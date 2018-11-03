@@ -177,8 +177,9 @@ void download_file(const fs::path& working_dir,
 class trap_wh_project : public virtual_project {
    public:
       trap_wh_project(engine& e,
+                      const project* parent,
                       const std::string& name)
-         : virtual_project(e, name)
+         : virtual_project(e, parent, name)
       {}
 };
 
@@ -186,7 +187,7 @@ class global_trap_wh_project : public virtual_project {
    public:
       global_trap_wh_project(engine& e,
                              warehouse_impl& wh)
-         : virtual_project(e),
+         : virtual_project(e, nullptr),
            warehouse_(wh)
       {}
 
@@ -214,7 +215,7 @@ global_trap_wh_project::load_project(const location_t& path) const
    if (i != traps_.end())
       return loaded_projects{i->second.get()};
    else {
-      auto trap_project = boost::make_unique<trap_wh_project>(get_engine(), path.string());
+      auto trap_project = boost::make_unique<trap_wh_project>(get_engine(), this, path.string());
       project* raw_trap_project = trap_project.get();
       add_traps(warehouse_, *trap_project, path.string());
       traps_.insert({path, std::move(trap_project)}) ;

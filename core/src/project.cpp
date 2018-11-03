@@ -59,23 +59,26 @@ normalize_project_location(const location_t& l)
 }
 
 project::project(hammer::engine& e,
+                 const project* parent,
                  const std::string& name,
                  const location_t& location,
                  const requirements_decl& req,
                  const requirements_decl& usage_req)
-   :
-    engine_(e),
-    name_(name),
-    requirements_(req),
-    usage_requirements_(usage_req),
-    location_(normalize_project_location(location)),
-    aliases_(new aliases)
+   : parent_(parent),
+     engine_(e),
+     name_(name),
+     requirements_(req),
+     usage_requirements_(usage_req),
+     location_(normalize_project_location(location)),
+     aliases_(new aliases)
 {
 }
 
 project::project(engine& e,
+                 const project* parent,
                  const location_t& l)
-   : engine_(e),
+   : parent_(parent),
+     engine_(e),
      location_(normalize_project_location(l)),
      aliases_(new aliases)
 {

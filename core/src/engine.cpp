@@ -35,7 +35,7 @@ namespace fs = boost::filesystem;
 namespace hammer {
 
 engine::engine()
-   :  global_project_(new project(*this, {})),
+   :  global_project_(new project(*this, nullptr, {})),
       feature_registry_(new hammer::feature_registry),
       rule_manager_(new rule_manager),
       warehouse_manager_(new hammer::warehouse_manager)
@@ -137,7 +137,7 @@ void engine::load_hammer_script(location_t filepath)
    if (i != projects_.end())
       throw std::runtime_error("Hammer script '" + filepath.string() + "' already loaded.");
 
-   load_hammer_script_v2(filepath);
+   load_hammer_script_v2(nullptr, filepath);
 }
 
 void engine::load_hammer_script(const string& script_body,
@@ -147,11 +147,12 @@ void engine::load_hammer_script(const string& script_body,
    if (i != projects_.end())
       throw std::runtime_error("Hammer script '" + script_name + "' already loaded.");
 
-   load_hammer_script_v2(script_body, script_name);
+   load_hammer_script_v2(nullptr, script_body, script_name);
 }
 
 static
 void load_hammer_script_impl(engine& e,
+                             const project* parent,
                              ostringstream& s,
                              diagnostic& diag,
                              const location_t& project_location,
@@ -160,7 +161,7 @@ void load_hammer_script_impl(engine& e,
    if (diag.error_count())
       throw parsing_error(s.str());
 
-   std::unique_ptr<project> loaded_project(new project(e, project_location));
+   std::unique_ptr<project> loaded_project(new project(e, parent, project_location));
    invocation_context invc_ctx = { *loaded_project, diag, e.get_rule_manager() };
 
    try {
@@ -181,7 +182,8 @@ struct parser_environment : sema::actions_impl::environment {
    const feature_registry& fr_;
 };
 
-void engine::load_hammer_script_v2(location_t filepath)
+void engine::load_hammer_script_v2(const project* parent,
+                                   location_t filepath)
 {
    ostringstream s;
    streamed_diagnostic diag(filepath.string(), error_verbosity_, s);
@@ -190,10 +192,11 @@ void engine::load_hammer_script_v2(location_t filepath)
    sema::actions_impl actions(ast_ctx, env, *rule_manager_, diag);
    ast_hamfile_ptr ast = parse_hammer_script(filepath, actions);
 
-   load_hammer_script_impl(*this, s, diag, filepath.branch_path(), *ast);
+   load_hammer_script_impl(*this, parent, s, diag, filepath.branch_path(), *ast);
 }
 
-void engine::load_hammer_script_v2(const std::string& script_body,
+void engine::load_hammer_script_v2(const project* parent,
+                                   const std::string& script_body,
                                    const std::string& script_name)
 {
    ostringstream s;
@@ -203,7 +206,7 @@ void engine::load_hammer_script_v2(const std::string& script_body,
    sema::actions_impl actions(ast_ctx, env, *rule_manager_, diag);
    ast_hamfile_ptr ast = parse_hammer_script(script_body, script_name, actions);
 
-   load_hammer_script_impl(*this, s, diag, script_name, *ast);
+   load_hammer_script_impl(*this, parent, s, diag, script_name, *ast);
 }
 
 std::unique_ptr<project>
@@ -220,7 +223,7 @@ engine::load_project_v2(const location_t& project_path,
    if (diag.error_count())
       throw parsing_error(s.str());
 
-   std::unique_ptr<project> loaded_project(new project(*this, project_path.branch_path()));
+   std::unique_ptr<project> loaded_project(new project(*this, upper_project, project_path.branch_path()));
    if (upper_project) {
       loaded_project->requirements().insert_infront(upper_project->requirements());
       loaded_project->usage_requirements().insert_infront(upper_project->usage_requirements());

@@ -94,8 +94,10 @@ class engine : public boost::noncopyable {
 
       bool error_verbosity_ = true;
 
-      void load_hammer_script_v2(location_t filepath);
-      void load_hammer_script_v2(const std::string& script_body,
+      void load_hammer_script_v2(const project* parent,
+                                 location_t filepath);
+      void load_hammer_script_v2(const project* parent,
+                                 const std::string& script_body,
                                  const std::string& script_name);
 
       std::unique_ptr<project>

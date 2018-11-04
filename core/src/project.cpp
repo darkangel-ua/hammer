@@ -62,26 +62,41 @@ project::project(hammer::engine& e,
                  const project* parent,
                  const std::string& name,
                  const location_t& location,
-                 const requirements_decl& req,
-                 const requirements_decl& usage_req)
+                 const requirements_decl& local_req,
+                 const requirements_decl& local_usage_req)
    : parent_(parent),
      engine_(e),
      name_(name),
-     requirements_(req),
-     usage_requirements_(usage_req),
      location_(normalize_project_location(location)),
      aliases_(new aliases)
 {
+   local_requirements(local_req);
+   local_usage_requirements(local_usage_req);
 }
 
 project::project(engine& e,
                  const project* parent,
                  const location_t& l)
-   : parent_(parent),
-     engine_(e),
-     location_(normalize_project_location(l)),
-     aliases_(new aliases)
+   : project(e, parent, {}, l, {}, {})
 {
+}
+
+static
+requirements_decl
+join_requirements(const requirements_decl rhs,
+                  requirements_decl lhs) {
+   lhs.insert_infront(rhs);
+   return lhs;
+}
+
+void project::local_requirements(const requirements_decl& req) {
+   local_requirements_ = req;
+   requirements_ = parent_ ? join_requirements(parent_->requirements(), req) : req;
+}
+
+void project::local_usage_requirements(const requirements_decl& req) {
+   local_usage_requirements_ = req;
+   usage_requirements_ = parent_ ? join_requirements(parent_->usage_requirements(), req) : req;
 }
 
 project::~project() {

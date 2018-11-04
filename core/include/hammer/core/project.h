@@ -39,8 +39,8 @@ class project : public boost::noncopyable {
               const project* parent,
               const std::string& name,
               const location_t& location,
-              const requirements_decl& req,
-              const requirements_decl& usage_req);
+              const requirements_decl& local_req,
+              const requirements_decl& local_usage_req);
 
       project(engine& e,
               const project* parent,
@@ -52,11 +52,20 @@ class project : public boost::noncopyable {
 
       const location_t& location() const { return location_; }
 
-      const requirements_decl& usage_requirements() const { return usage_requirements_; }
-      const requirements_decl& requirements() const { return requirements_; }
+      void local_requirements(const requirements_decl& req);
+      void local_usage_requirements(const requirements_decl& req);
 
-      requirements_decl& usage_requirements() { return usage_requirements_; }
-      requirements_decl& requirements() { return requirements_; }
+      const requirements_decl&
+      local_requirements() const { return local_requirements_; }
+
+      const requirements_decl&
+      local_usage_requirements() const { return local_usage_requirements_; }
+
+      const requirements_decl&
+      usage_requirements() const { return usage_requirements_; }
+
+      const requirements_decl&
+      requirements() const { return requirements_; }
 
       void add_target(std::unique_ptr<basic_meta_target> t);
       const targets_t& targets() const { return targets_; }
@@ -104,7 +113,13 @@ class project : public boost::noncopyable {
 
       hammer::engine& engine_;
       std::string name_;
+      // this is local to project requirements
+      requirements_decl local_requirements_;
+      // this is merged parent + local project requirements
       requirements_decl requirements_;
+      // this is local to project usage requirememts
+      requirements_decl local_usage_requirements_;
+      // this is merged parent + local usage requirements
       requirements_decl usage_requirements_;
       const location_t location_;
       targets_t targets_;

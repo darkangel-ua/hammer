@@ -224,10 +224,6 @@ engine::load_project_v2(const location_t& project_path,
       throw parsing_error(s.str());
 
    std::unique_ptr<project> loaded_project(new project(*this, upper_project, project_path.branch_path()));
-   if (upper_project) {
-      loaded_project->requirements().insert_infront(upper_project->requirements());
-      loaded_project->usage_requirements().insert_infront(upper_project->usage_requirements());
-   }
 
    invocation_context invc_ctx = { *loaded_project, diag, *rule_manager_ };
 

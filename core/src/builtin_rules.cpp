@@ -115,15 +115,14 @@ void project_rule(invocation_context& ctx,
 {
    process_project_id(ctx, id);
 
-   // we use insert because we already put there requirements/usage requirements from upper project
    if (requirements) {
       requirements->setup_path_data(&ctx.current_project_);
-      ctx.current_project_.requirements().insert(*requirements);
+      ctx.current_project_.local_requirements(*requirements);
    }
 
    if (usage_requirements) {
       usage_requirements->setup_path_data(&ctx.current_project_);
-      ctx.current_project_.usage_requirements().insert(static_cast<const requirements_decl&>(*usage_requirements));
+      ctx.current_project_.local_usage_requirements(static_cast<const requirements_decl&>(*usage_requirements));
    }
 }
 

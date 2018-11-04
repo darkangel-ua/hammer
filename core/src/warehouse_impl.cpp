@@ -792,10 +792,9 @@ gather_targets(const project& p)
    return targets;
 }
 
-void warehouse_impl::add_to_packages(const project& p,
-                                     const location_t& packages_db_root_)
+void warehouse_impl::add_to_packages(const project& p)
 {
-   const location_t packages_db_root = packages_db_root_.empty() ? extract_filepath_from_url(repository_url_) : packages_db_root_;
+   const location_t packages_db_root = extract_filepath_from_url(repository_url_);
    fs::path packages_db_full_path = packages_db_root / packages_filename;
    if (!exists(packages_db_full_path)) {
       fs::ofstream f(packages_db_full_path, ios_base::trunc);

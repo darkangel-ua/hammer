@@ -30,8 +30,7 @@ class warehouse_impl : public warehouse {
                                 const std::vector<package_info>& packages,
                                 iwarehouse_download_and_install& notifier) override;
 
-      void add_to_packages(const project& p,
-                           const location_t& packages_db_root_ = location_t()) override;
+      void add_to_packages(const project& p) override;
       versions_t get_package_versions(const std::string& public_id) const override;
 
       std::vector<std::string>

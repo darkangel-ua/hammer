@@ -767,33 +767,61 @@ string extract_filepath_from_url(const string& url)
 }
 
 static
-vector<string>
-gather_targets(const project& p)
-{
-   unordered_map<string, unsigned> targets_info;
+list<string>
+gather_targets(const project& p,
+               const string& prefix) {
+   list<string> result;
+   unordered_set<string> implicit_targets;
+   unordered_set<string> explicit_targets;
 
    for (const auto& bt : p.targets()) {
       if (bt.second->is_local())
          continue;
 
-      if (bt.second->is_explicit())
-         ++targets_info[bt.second->name()];
-      else
-         ++targets_info["@" + bt.second->name()];
+      auto& target_name = bt.second->name();
+      if (bt.second->is_explicit()) {
+         if (explicit_targets.find(target_name) == explicit_targets.end()) {
+            explicit_targets.insert(target_name);
+            result.push_back(prefix + target_name);
+         }
+      } else {
+         if (implicit_targets.find(target_name) == implicit_targets.end()) {
+            implicit_targets.insert(target_name);
+            result.push_back("@" + prefix + target_name);
+         }
+      }
    }
 
-   if (targets_info.empty())
+   for (auto& alias : p.aliases()) {
+      string alias_prefix = alias.alias_.empty() ? prefix : prefix + "/" + alias.alias_.string();
+      result.merge(gather_targets(p.get_engine().load_project(alias.full_fs_path_), alias_prefix));
+   }
+
+   return result;
+}
+
+static
+vector<string>
+gather_targets(const project& p) {
+   auto targets = gather_targets(p, {});
+   if (targets.empty())
       throw std::runtime_error("There is no targets to export");
 
-   vector<string> targets;
-   for (const auto& ti : targets_info)
-      targets.push_back(ti.first);
-
-   return targets;
+   return {targets.begin(), targets.end()};
 }
 
 void warehouse_impl::add_to_packages(const project& p)
 {
+   if (p.name().empty())
+      throw std::runtime_error("Project must have id to be exported");
+
+   const feature_set* build_request = p.get_engine().feature_registry().make_set();
+   feature_set* project_requirements  = p.get_engine().feature_registry().make_set();
+   p.local_requirements().eval(*build_request, project_requirements);
+   feature_set::const_iterator i_version = project_requirements->find("version");
+   if (i_version == project_requirements->end())
+      throw std::runtime_error("Project must have explicitly specified version to be exported");
+
    const location_t packages_db_root = extract_filepath_from_url(repository_url_);
    fs::path packages_db_full_path = packages_db_root / packages_filename;
    if (!exists(packages_db_full_path)) {
@@ -804,12 +832,6 @@ void warehouse_impl::add_to_packages(const project& p)
    }
 
    packages_t packages = load_packages(packages_db_full_path);
-   const feature_set* build_request = p.get_engine().feature_registry().make_set();
-   feature_set* project_requirements  = p.get_engine().feature_registry().make_set();
-   p.requirements().eval(*build_request, project_requirements);
-   feature_set::const_iterator i_version = project_requirements->find("version");
-   if (i_version == project_requirements->end())
-      throw std::runtime_error("Project doesn't have 'version' feature");
 
    const string version = (**i_version).value();
    const string public_id = p.name();
@@ -820,7 +842,7 @@ void warehouse_impl::add_to_packages(const project& p)
    package.filename_ = boost::algorithm::replace_all_copy(public_id, "/", ".") + "-" + version + ".tar.bz2";
 
    const fs::path package_full_path = packages_db_root / package.filename_;
-   make_package_archive(p.location().branch_path().branch_path(), package_full_path);
+   make_package_archive(p.location(), package_full_path);
    package.md5_ = calculate_md5(package_full_path);
    package.filesize_ = file_size(package_full_path);
    package.dependencies_ = gather_dependencies(p);

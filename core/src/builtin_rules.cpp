@@ -237,7 +237,7 @@ static
 void use_project_rule(invocation_context& ctx,
                       const ast::expression* alias,
                       const location_t& location,
-                      feature_set* props)
+                      feature_set* requirements)
 {
    location_t project_alias;
 
@@ -259,9 +259,9 @@ void use_project_rule(invocation_context& ctx,
    }
 
    if (project_alias.has_root_path())
-      ctx.current_project_.get_engine().add_alias(project_alias, ctx.current_project_.location() / location, props);
+      ctx.current_project_.get_engine().add_alias(project_alias, ctx.current_project_.location() / location, requirements);
    else
-      ctx.current_project_.add_alias(project_alias, location, props);
+      ctx.current_project_.add_alias(project_alias, location, requirements);
 }
 
 static

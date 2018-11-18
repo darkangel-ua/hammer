@@ -60,10 +60,10 @@ warehouse_test::warehouse_test(const bool remove_packages,
 
 void warehouse_test::add_all_libs()
 {
-   engine_.warehouse_manager().get_default()->add_to_packages(engine_.load_project(libs_path_ / "lib1/1.0/build"));
-   engine_.warehouse_manager().get_default()->add_to_packages(engine_.load_project(libs_path_ / "lib1/2.0/build"));
-   engine_.warehouse_manager().get_default()->add_to_packages(engine_.load_project(libs_path_ / "lib2/1.0/build"));
-   engine_.warehouse_manager().get_default()->add_to_packages(engine_.load_project(libs_path_ / "lib2/2.0/build"));
+   engine_.warehouse_manager().get_default()->add_to_packages(engine_.load_project(libs_path_ / "lib1/1.0"));
+   engine_.warehouse_manager().get_default()->add_to_packages(engine_.load_project(libs_path_ / "lib1/2.0"));
+   engine_.warehouse_manager().get_default()->add_to_packages(engine_.load_project(libs_path_ / "lib2/1.0"));
+   engine_.warehouse_manager().get_default()->add_to_packages(engine_.load_project(libs_path_ / "lib2/2.0"));
 }
 
 }

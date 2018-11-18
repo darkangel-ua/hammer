@@ -19,16 +19,18 @@ int handle_publish_cmd(engine& e,
       return 1;
    }
 
-   if (debug_level > 0)
-      cout << "...Loading project at '" << fs::current_path() << "'... " << flush;
+   cout << "Publishing project at '" << fs::current_path() << "'... " << flush;
 
    if (!has_project_file(fs::current_path())) {
-      cout << "Failed (Not Found)" << endl;
+      cout << "Failed (File not found)" << endl;
+
       return 1;
    }
 
    const project& project_to_publish = e.load_project(fs::current_path());
    e.warehouse_manager().get_default()->add_to_packages(project_to_publish);
+
+   cout << "Done\n" << endl;
 
    return 0;
 }

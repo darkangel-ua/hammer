@@ -12,24 +12,28 @@ using namespace std;
 
 namespace hammer {
 
-struct project::aliases {
+struct project::aliases_impl {
    struct node;
    using node_ptr = std::unique_ptr<node>;
    using path_element = boost::filesystem::path;
    using nodes = boost::unordered_multimap<path_element, node_ptr>;
 
    struct node {
-      const feature_set* properties_;
+      const feature_set* requirements_;
       nodes nodes_;
       location_t full_fs_path_;
    };
 
    // return false on failure - same alias used twice
    bool add_alias(nodes& nodes,
+                  const boost::filesystem::path& alias,
+                  const location_t& fs_path,
+                  const feature_set* requirements);
+   bool add_alias(nodes& nodes,
                   boost::filesystem::path::const_iterator first,
                   boost::filesystem::path::const_iterator last,
                   const location_t& fs_path,
-                  const feature_set* properties);
+                  const feature_set* requirements);
    void load_project(loaded_projects& result,
                      engine& e,
                      boost::filesystem::path::const_iterator first,
@@ -41,6 +45,7 @@ struct project::aliases {
                      boost::filesystem::path::const_iterator last);
 
    nodes nodes_;
+   project::aliases_t aliases_;
 };
 
 // FIXME: Need to figure out why all projects have to end on dot
@@ -68,7 +73,7 @@ project::project(hammer::engine& e,
      engine_(e),
      name_(name),
      location_(normalize_project_location(location)),
-     aliases_(new aliases)
+     aliases_(new aliases_impl)
 {
    local_requirements(local_req);
    local_usage_requirements(local_usage_req);
@@ -126,7 +131,7 @@ basic_meta_target* project::find_target(const std::string& name)
 
 void project::add_alias(const location_t& alias,
                         const location_t& fs_path,
-                        const feature_set* properties)
+                        const feature_set* requirements)
 {
    if (alias.has_root_path())
       throw std::runtime_error("[project::add_alias]: alias can be only relative");
@@ -147,8 +152,14 @@ void project::add_alias(const location_t& alias,
    if (ia != alias.end() || ifp != fs_path.end())
       throw std::runtime_error("[project::add_alias]: alias/fs_path can't contain .. elements");
 
-   if (!aliases_->add_alias(aliases_->nodes_, alias.begin(), alias.end(), fs_path.has_root_path() ? fs_path : location() / fs_path, properties))
+   if (!aliases_->add_alias(aliases_->nodes_, alias, fs_path.has_root_path() ? fs_path : location() / fs_path, requirements))
       throw std::runtime_error("Alias path '" + alias.string() + "' already added" );
+}
+
+const project::aliases_t&
+project::aliases() const
+{
+   return aliases_->aliases_;
 }
 
 loaded_projects
@@ -376,11 +387,23 @@ project::try_resolve_local_features(const feature_set& fs) const
    return result;
 }
 
-bool project::aliases::add_alias(nodes& nodes,
-                                 location_t::const_iterator first,
-                                 location_t::const_iterator last,
-                                 const location_t& fs_path,
-                                 const feature_set* properties)
+bool project::aliases_impl::add_alias(nodes& nodes,
+                                      const boost::filesystem::path& alias,
+                                      const location_t& fs_path,
+                                      const feature_set* requirements)
+{
+   const bool r = add_alias(nodes, alias.begin(), alias.end(), fs_path, requirements);
+   if (r)
+      aliases_.push_back({alias, fs_path, requirements ? requirements->clone() : nullptr});
+
+   return r;
+}
+
+bool project::aliases_impl::add_alias(nodes& nodes,
+                                      location_t::const_iterator first,
+                                      location_t::const_iterator last,
+                                      const location_t& fs_path,
+                                      const feature_set* requirements)
 {
    auto has_same_fs_path = [&]() {
       for (auto& n : nodes) {
@@ -393,7 +416,7 @@ bool project::aliases::add_alias(nodes& nodes,
 
    if (first == last) {
       // special case for transparent proxies - they don't have alias
-      std::unique_ptr<node> new_node{ new node{ properties ? properties->clone() : nullptr, aliases::nodes{}, fs_path } };
+      std::unique_ptr<node> new_node{ new node{ requirements ? requirements->clone() : nullptr, aliases_impl::nodes{}, fs_path } };
       if (has_same_fs_path())
          return false;
       else {
@@ -409,7 +432,7 @@ bool project::aliases::add_alias(nodes& nodes,
          if (has_same_fs_path())
             return false;
          else {
-            std::unique_ptr<node> new_node{ new node{ properties ? properties->clone() : nullptr, aliases::nodes{}, fs_path } };
+            std::unique_ptr<node> new_node{ new node{ requirements ? requirements->clone() : nullptr, aliases_impl::nodes{}, fs_path } };
             nodes.insert({ *sfirst, std::move(new_node) });
             return true;
          }
@@ -417,17 +440,17 @@ bool project::aliases::add_alias(nodes& nodes,
          if (has_same_fs_path())
             return false;
          else {
-            std::unique_ptr<node> new_node{ new node{ nullptr, aliases::nodes{}, {} } };
+            std::unique_ptr<node> new_node{ new node{ nullptr, aliases_impl::nodes{}, {} } };
             i = nodes.insert({ *sfirst, std::move(new_node) });
-            return add_alias(i->second->nodes_, first, last, fs_path, properties);
+            return add_alias(i->second->nodes_, first, last, fs_path, requirements);
          }
       }
    } else {
       if (++first == last) {
          node& n = *i->second;
          if (n.full_fs_path_.empty()) {
-            if (properties)
-               n.properties_ = properties->clone();
+            if (requirements)
+               n.requirements_ = requirements->clone();
             n.full_fs_path_ = fs_path;
 
             return true;
@@ -436,20 +459,20 @@ bool project::aliases::add_alias(nodes& nodes,
             if (has_same_fs_path())
                return false;
             else {
-               std::unique_ptr<node> new_node{ new node{ properties ? properties->clone() : nullptr, aliases::nodes{}, fs_path } };
+               std::unique_ptr<node> new_node{ new node{ requirements ? requirements->clone() : nullptr, aliases_impl::nodes{}, fs_path } };
                nodes.insert({ *sfirst, std::move(new_node) });
                return true;
             }
          }
       } else
-         return add_alias(i->second->nodes_, first, last, fs_path, properties);
+         return add_alias(i->second->nodes_, first, last, fs_path, requirements);
    }
 }
 
-void project::aliases::load_project(loaded_projects& result,
-                                    engine& e,
-                                    boost::filesystem::path::const_iterator first,
-                                    boost::filesystem::path::const_iterator last)
+void project::aliases_impl::load_project(loaded_projects& result,
+                                         engine& e,
+                                         boost::filesystem::path::const_iterator first,
+                                         boost::filesystem::path::const_iterator last)
 {
    // first of all add transparent proxied projects
    auto ri = nodes_.equal_range({});
@@ -468,11 +491,11 @@ void project::aliases::load_project(loaded_projects& result,
    return load_project(result, nodes_, e, first, last);
 }
 
-void project::aliases::load_project(loaded_projects& result,
-                                    nodes& nodes,
-                                    engine& e,
-                                    boost::filesystem::path::const_iterator first,
-                                    boost::filesystem::path::const_iterator last)
+void project::aliases_impl::load_project(loaded_projects& result,
+                                         nodes& nodes,
+                                         engine& e,
+                                         boost::filesystem::path::const_iterator first,
+                                         boost::filesystem::path::const_iterator last)
 {
    // ignore dots if any
    while (first != last && *first == ".")

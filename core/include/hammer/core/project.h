@@ -35,6 +35,13 @@ class project : public boost::noncopyable {
       typedef std::multimap<std::string /* target name */, std::unique_ptr<basic_meta_target>> targets_t;
       typedef std::vector<selected_target> selected_targets_t;
 
+      struct alias {
+         boost::filesystem::path alias_;
+         boost::filesystem::path full_fs_path_;
+         const feature_set* requirements_;
+      };
+      using aliases_t = std::vector<alias>;
+
       project(engine& e,
               const project* parent,
               const std::string& name,
@@ -87,7 +94,8 @@ class project : public boost::noncopyable {
 
       void add_alias(const location_t& alias,
                      const location_t& fs_path,
-                     const feature_set* properties);
+                     const feature_set* requirements);
+      const aliases_t& aliases() const;
 
       void instantiate(const std::string& target_name,
                        const feature_set& build_request,
@@ -108,8 +116,8 @@ class project : public boost::noncopyable {
       const project* const parent_;
 
    private:
-      struct aliases;
-      friend struct aliases;
+      struct aliases_impl;
+      friend struct aliases_impl;
 
       hammer::engine& engine_;
       std::string name_;
@@ -127,7 +135,7 @@ class project : public boost::noncopyable {
       bool is_root_ = false;
       mutable feature_registry local_feature_registry_;
       // mutable because we cache resolved projects
-      mutable std::unique_ptr<aliases> aliases_;
+      mutable std::unique_ptr<aliases_impl> aliases_;
 };
 
 class loaded_projects {

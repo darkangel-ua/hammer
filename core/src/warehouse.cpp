@@ -18,7 +18,7 @@ using boost::unordered_set;
 
 namespace hammer {
 
-const std::string warehouse::any_version = string();
+const std::string warehouse::any_version;
 
 warehouse::warehouse(const std::string& id,
                      const boost::filesystem::path& storage_dir)

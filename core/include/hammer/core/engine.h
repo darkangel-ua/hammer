@@ -1,7 +1,9 @@
 #pragma once
+#include <functional>
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/noncopyable.hpp>
+#include <boost/optional/optional.hpp>
 #include <hammer/core/project.h>
 
 namespace hammer {
@@ -64,6 +66,10 @@ class engine : public boost::noncopyable {
       hammer::output_location_strategy& output_location_strategy() { return *output_location_strategy_; }
       void output_location_strategy(boost::shared_ptr<hammer::output_location_strategy>& strategy);
       void use_project(const project& p, const std::string& project_id_alias, const location_t& project_location);
+
+      const project::aliases_t&
+      global_aliases() const { return global_project_->aliases(); }
+
       ~engine();
 
       void add_alias(const location_t& alias_path,
@@ -107,7 +113,14 @@ class engine : public boost::noncopyable {
       project* get_upper_project(const location_t& project_path);
 };
 
-boost::filesystem::path find_root(const boost::filesystem::path& initial_path);
+boost::optional<boost::filesystem::path>
+find_root(boost::filesystem::path from_path);
+
 bool has_project_file(const boost::filesystem::path& folder);
 
+std::vector<std::reference_wrapper<const project>>
+resolve_project_query(engine& e,
+                      const std::string& query);
+
 }
+

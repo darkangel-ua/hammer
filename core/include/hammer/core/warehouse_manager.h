@@ -16,6 +16,7 @@ class warehouse_manager : public boost::noncopyable {
    public:
       using const_iterator = warehouses_t::const_iterator;
       using value_type = warehouses_t::value_type;
+      static const std::string any_version;
 
       warehouse_manager();
       void insert(std::unique_ptr<warehouse> wh);
@@ -23,6 +24,10 @@ class warehouse_manager : public boost::noncopyable {
       const_iterator end() const { return warehouses_.end(); }
       const_iterator find(const std::string& id) const;
       const_iterator find(const project& p) const;
+
+      // use warehouse::any_version to look up project regardless of version
+      bool has_project(const location_t& project_id,
+                       const std::string& version) const;
 
       warehouse* get_default() const { return default_; }
       ~warehouse_manager();

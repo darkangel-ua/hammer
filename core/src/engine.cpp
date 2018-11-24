@@ -4,6 +4,7 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
 #include <boost/filesystem/fstream.hpp>
+#include <boost/algorithm/string/replace.hpp>
 #include <boost/regex.hpp>
 #include <hammer/core/engine.h>
 #include <hammer/core/type_registry.h>
@@ -31,6 +32,9 @@
 
 using namespace std;
 namespace fs = boost::filesystem;
+
+static const string hamfile = "hamfile";
+static const string hamroot = "hamroot";
 
 namespace hammer {
 
@@ -99,10 +103,10 @@ project* engine::get_upper_project(const location_t& project_path)
    if (upper_path.empty() || upper_path == project_path.root_name())
       return NULL;
 
-   if (exists(upper_path / "hamfile"))
+   if (exists(upper_path / hamfile))
       return &load_project(upper_path);
 
-   if (exists(upper_path / "hamroot"))
+   if (exists(upper_path / hamroot))
       return &load_project(upper_path);
 
    if (upper_path.has_parent_path())
@@ -256,10 +260,10 @@ engine::try_load_project(location_t fs_project_path)
          return {};
    }
 
-   location_t project_file = fs_project_path / "hamfile";
+   location_t project_file = fs_project_path / hamfile;
    bool is_top_level = false;
    if (!exists(project_file)) {
-      project_file = fs_project_path / "hamroot";
+      project_file = fs_project_path / hamroot;
       is_top_level = true;
    }
    else if (upper_project == NULL)
@@ -286,24 +290,8 @@ engine::~engine()
 {
 }
 
-boost::filesystem::path find_root(const boost::filesystem::path& initial_path)
-{
-   boost::filesystem::path p(initial_path);
-
-   while(true)
-   {
-      if (p.empty())
-         throw runtime_error("Can't find boost-build.jam");
-
-      if (exists(p / "boost-build.jam"))
-         return p;
-
-      p = p.branch_path();
-   };
-}
-
 bool has_project_file(const boost::filesystem::path& folder) {
-   return exists(folder / "hamfile") || exists(folder / "hamroot");
+   return exists(folder / hamfile) || exists(folder / hamroot);
 }
 
 void engine::add_alias(const location_t& alias_path,
@@ -323,4 +311,66 @@ void engine::output_location_strategy(boost::shared_ptr<hammer::output_location_
       output_location_strategy_ = strategy;
 }
 
+template<typename Callback>
+void map_over_aliases(engine& e,
+                      const project::aliases_t& aliases,
+                      const std::string& prefix,
+                      Callback&& cb) {
+   for (auto& alias : aliases) {
+      if (alias.is_transparent())
+         map_over_aliases(e, e.load_project(alias.full_fs_path_).aliases(), prefix, cb);
+      else {
+         auto& p = e.load_project(alias.full_fs_path_);
+         auto new_prefix = prefix + "/" + alias.alias_.string();
+
+         cb(new_prefix, p);
+
+         map_over_aliases(e, p.aliases(), new_prefix, cb);
+      }
+   }
 }
+
+vector<reference_wrapper<const project>>
+resolve_project_query(engine& e,
+                      const std::string& query_) {
+   if (query_.empty() || query_.front() != '/')
+      throw std::runtime_error("Project query must me non empty and begins with /");
+
+   string regexyfied_query{query_};
+
+   // use regex where * has been replaced on #
+   // last step is to replace back # by *
+   boost::replace_all(regexyfied_query, "**", ".#?");
+   boost::replace_all(regexyfied_query, "*", "[^/]#");
+   boost::replace_all(regexyfied_query, "#", "*");
+
+   const boost::regex rquery{regexyfied_query};
+   vector<reference_wrapper<const project>> result;
+   map_over_aliases(e, e.global_aliases(), {}, [&](const std::string& alias, const project& p) {
+      if (boost::regex_match(alias, rquery) && p.publishable())
+         result.push_back(std::cref(p));
+   });
+
+   return result;
+}
+
+boost::optional<boost::filesystem::path>
+find_root(boost::filesystem::path from_path) {
+   if (!from_path.has_root_path())
+      throw std::runtime_error("[find_root]: from_path should be absolute");
+
+   from_path.normalize();
+   auto& p = from_path;
+
+   while (!p.empty()) {
+      if (exists(p / hamroot))
+         return p;
+
+      p = p.branch_path();
+   };
+
+   return {};
+}
+
+}
+

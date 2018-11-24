@@ -29,4 +29,11 @@ warehouse_manager::find(const project& p) const {
    });
 }
 
+bool warehouse_manager::has_project(const location_t& project_id,
+                                    const std::string& version) const {
+   return std::find_if(warehouses_.begin(), warehouses_.end(), [&](const value_type& wh) {
+      return wh.second->has_project(project_id, version);
+   }) != warehouses_.end();
+}
+
 }

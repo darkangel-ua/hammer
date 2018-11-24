@@ -39,6 +39,8 @@ class project : public boost::noncopyable {
          boost::filesystem::path alias_;
          boost::filesystem::path full_fs_path_;
          const feature_set* requirements_;
+
+         bool is_transparent() const { return alias_.empty(); }
       };
       using aliases_t = std::vector<alias>;
 
@@ -73,6 +75,11 @@ class project : public boost::noncopyable {
 
       const requirements_decl&
       requirements() const { return requirements_; }
+
+      bool publishable() const;
+
+      std::string
+      publishable_version() const;
 
       void add_target(std::unique_ptr<basic_meta_target> t);
       const targets_t& targets() const { return targets_; }

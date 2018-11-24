@@ -29,8 +29,6 @@ class warehouse : public boost::noncopyable {
       typedef std::vector<package_info> package_infos_t;
       typedef std::vector<version_info> versions_t;
 
-      static const std::string any_version;
-
       warehouse(const std::string& id,
                 const boost::filesystem::path& storage_dir);
       virtual ~warehouse() {}
@@ -41,9 +39,12 @@ class warehouse : public boost::noncopyable {
       package_infos_t update() { return update_impl(); }
       // update all packages that has been changed on the server, but stil not updated localy
       void update_all_packages(engine& e) { return update_all_packages_impl(e); }
-      // empty version means 'any'
+
+      static const std::string any_version;
+      // use any_version to look up project regardless of version
       virtual bool has_project(const location_t& project_path,
                                const std::string& version) const = 0;
+
       // FIXME: we need to represent some form of unknown package
       // possibly by introducing something like pair<known packages/unknown packages> or separate class
       virtual

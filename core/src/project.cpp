@@ -104,6 +104,35 @@ void project::local_usage_requirements(const requirements_decl& req) {
    usage_requirements_ = parent_ ? join_requirements(parent_->usage_requirements(), req) : req;
 }
 
+string
+find_version(engine& e,
+             const requirements_decl& meta_requirements) {
+   feature_set* requirements = e.feature_registry().make_set();
+   feature_set& build_request = *e.feature_registry().make_set();
+   feature_set* usage_requirements = e.feature_registry().make_set();
+
+   meta_requirements.eval(build_request, requirements, usage_requirements);
+   auto i = requirements->find("version");
+   if (i != requirements->end())
+      return (**i).value();
+   else
+      return {};
+}
+
+bool project::publishable() const {
+   return !find_version(get_engine(), local_requirements()).empty();
+}
+
+string
+project::publishable_version() const
+{
+   string version = find_version(get_engine(), local_requirements());
+   if (version.empty())
+      throw std::runtime_error("Project is not publishable");
+
+   return version;
+}
+
 project::~project() {
 
 }

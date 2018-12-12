@@ -12,6 +12,7 @@
 #include <hammer/ast/hamfile.h>
 #include <hammer/ast/condition.h>
 #include <hammer/ast/target_def.h>
+#include <hammer/ast/struct_expr.h>
 #include <hammer/ast/ast_xml_printer.h>
 
 namespace hammer { namespace ast {
@@ -316,6 +317,19 @@ bool ast_xml_printer::visit(const expression_statement& v)
    indent_ -= 3;
 
    os_ << std::setw(indent_) << ' ' << "</expression_statement>\n";
+
+   return true;
+}
+
+bool ast_xml_printer::visit(const struct_expr& v) {
+   os_ << std::setw(indent_) << ' ' << "<struct>\n";
+
+   indent_ += 3;
+      for (const expression* f : v.fields_)
+         f->accept(*this);
+   indent_ -= 3;
+
+   os_ << std::setw(indent_) << ' ' << "</struct>\n";
 
    return true;
 }

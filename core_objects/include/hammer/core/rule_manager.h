@@ -14,6 +14,8 @@
 #include <boost/mpl/copy.hpp>
 #include <boost/mpl/front.hpp>
 #include <boost/mpl/empty.hpp>
+#include <boost/variant/variant.hpp>
+#include <boost/variant/get.hpp>
 #include <hammer/parscore/identifier.h>
 
 namespace hammer {
@@ -27,13 +29,44 @@ class project;
 class diagnostic;
 class rule_manager;
 
+enum class rule_argument_meta_type {
+   simple,
+   list,
+   one_or_list,
+   variant,
+   struct_
+};
+
+template<typename T>
+struct one_or_list {
+   std::vector<T> value_;
+};
+
+template<typename T>
+struct rule_argument_meta_type_info {
+   static const rule_argument_meta_type meta_type_ = rule_argument_meta_type::simple;
+   using nested_type = void;
+};
+
+template<typename T>
+struct rule_argument_meta_type_info<std::vector<T>> {
+   static const rule_argument_meta_type meta_type_ = rule_argument_meta_type::list;
+   using nested_type = T;
+};
+
+template<typename T>
+struct rule_argument_meta_type_info<one_or_list<T>> {
+   static const rule_argument_meta_type meta_type_ = rule_argument_meta_type::one_or_list;
+   using nested_type = T;
+};
+
 enum class rule_argument_type {
 	void_,
 	invocation_context,
 	target_invocation_context,
 	identifier,
-	identifier_or_list_of_identifiers,
-	feature,
+   identifier_or_list_of_identifiers,
+   feature,
 	feature_set,
 	feature_or_feature_set,
 	sources,
@@ -47,8 +80,42 @@ enum class rule_argument_type {
 	ast_expression
 };
 
+class rule_argument;
+class rule_manager_arg_base;
+struct rule_manager_invoker_base;
+
+struct rule_argument_struct_desc {
+   std::string typename_;
+   std::shared_ptr<std::vector<rule_argument>> fields_;
+   std::shared_ptr<rule_manager_invoker_base> constructor_;
+};
+
+struct rule_argument_type_desc {
+   using list_type = std::shared_ptr<rule_argument_type_desc>;
+   using variant_types = std::vector<list_type>;
+   using type = boost::variant<rule_argument_type, list_type, variant_types, rule_argument_struct_desc>;
+
+   template<typename T>
+   rule_argument_type_desc(T&& v) : type_(std::forward<T>(v)) {}
+
+   const rule_argument_type* as_simple() const { return boost::get<rule_argument_type>(&type_); }
+   const list_type* as_list() const { return boost::get<list_type>(&type_); }
+   const variant_types* as_variant() const { return boost::get<variant_types>(&type_); }
+   const rule_argument_struct_desc* as_struct() const { return boost::get<rule_argument_struct_desc>(&type_); }
+
+   bool operator == (const rule_argument_type v) const { if (auto s = as_simple()) return v == *s; else return false; }
+
+   type type_;
+};
+
 template<typename T>
 struct rule_argument_type_info {
+   static
+   rule_argument_type_desc
+   ast_type(typename boost::enable_if_c<rule_argument_meta_type::list == rule_argument_meta_type_info<T>::meta_type_>::type* = nullptr) {
+      using nested_type = typename rule_argument_meta_type_info<T>::nested_type;
+      return std::make_shared<rule_argument_type_desc>(rule_argument_type_info<nested_type>::ast_type());
+   }
 };
 
 struct invocation_context {
@@ -88,40 +155,37 @@ struct target_invocation_context : invocation_context {
 	bool explicit_;
 };
 
-template<>
-struct rule_argument_type_info<parscore::identifier> { static const rule_argument_type ast_type = rule_argument_type::identifier; };
+#define HAMMER_RULE_MANAGER_SIMPLE_TYPE(type, atype) \
+   template<> \
+   struct rule_argument_type_info< type > { static rule_argument_type_desc ast_type() { return { rule_argument_type:: atype }; } }
 
-template<>
-struct rule_argument_type_info<invocation_context> { static const rule_argument_type ast_type = rule_argument_type::invocation_context; };
-
-template<>
-struct rule_argument_type_info<target_invocation_context> { static const rule_argument_type ast_type = rule_argument_type::target_invocation_context; };
-
-template<>
-struct rule_argument_type_info<ast::expression> { static const rule_argument_type ast_type = rule_argument_type::ast_expression; };
+HAMMER_RULE_MANAGER_SIMPLE_TYPE(parscore::identifier, identifier);
+HAMMER_RULE_MANAGER_SIMPLE_TYPE(invocation_context, invocation_context);
+HAMMER_RULE_MANAGER_SIMPLE_TYPE(target_invocation_context, target_invocation_context);
+HAMMER_RULE_MANAGER_SIMPLE_TYPE(ast::expression, ast_expression);
 
 class rule_argument {
    public:   
       using raw_ast_transformer_t = const ast::expression*(*)(ast::context& ctx, diagnostic& diag, const ast::expression*);
       using ast_transformer_t = boost::function<const ast::expression*(ast::context& ctx, diagnostic& diag, const ast::expression*)>;
 
-		rule_argument(rule_argument_type type,
+		rule_argument(const rule_argument_type_desc& type,
                     const parscore::identifier& name,
                     bool optional,
                     ast_transformer_t ast_transformer)
-         : type_(type), 
+         : type_(type),
            name_(name),
            ast_transformer_(ast_transformer),
            optional_(optional)
       {}
       
-		rule_argument_type type() const { return type_; }
+		const rule_argument_type_desc& type() const { return type_; }
       const parscore::identifier& name() const { return name_; }
       bool is_optional() const { return optional_; }
       const ast_transformer_t& ast_transformer() const { return ast_transformer_; }
 
    private:
-		rule_argument_type type_;
+		rule_argument_type_desc type_;
       parscore::identifier name_;
       ast_transformer_t ast_transformer_;
       bool optional_;
@@ -159,6 +223,7 @@ class rule_manager_arg : public rule_manager_arg_base {
       rule_manager_arg(T* v) : rule_manager_arg_base(v), owned_(true) {}
 		rule_manager_arg(std::unique_ptr<T> v) : rule_manager_arg_base(v.release()), owned_(true) {}
       rule_manager_arg(T& v) : rule_manager_arg_base(&v), owned_(false) {}
+      rule_manager_arg(T&& v) : rule_manager_arg_base(new T{std::forward<T>(v)}), owned_(true) {}
 		rule_manager_arg(const T& v) : rule_manager_arg_base(&const_cast<T&>(v)), owned_(false) {}
       ~rule_manager_arg() { if (owned_) delete static_cast<T*>(v_); }
 
@@ -322,7 +387,7 @@ make_one_arg(const rule_argument_decl& arg_decl,
 	      >::type
 	      >::type pure_arg_t;
 
-	return rule_argument(rule_argument_type_info<pure_arg_t>::ast_type,
+   return rule_argument(rule_argument_type_info<pure_arg_t>::ast_type(),
 	                     arg_decl.name_,
 	                     boost::mpl::bool_<boost::is_pointer<T>::value>(),
                         arg_decl.transformer_);
@@ -341,7 +406,7 @@ rule_argument
 make_one_arg(const rule_argument_decl& arg_decl,
              boost::mpl::tag<std::unique_ptr<T>>)
 {
-	return rule_argument(rule_argument_type_info<T>::ast_type, arg_decl.name_, false, arg_decl.transformer_);
+	return rule_argument(rule_argument_type_info<T>::ast_type(), arg_decl.name_, false, arg_decl.transformer_);
 }
 
 template<typename T>
@@ -370,6 +435,33 @@ make_args(const rule_args_decl& args_decl)
 	return result;
 }
 
+template<typename T>
+rule_argument_struct_desc
+make_rule_argument_struct_desc_impl(const std::string& type,
+                                    boost::function<T>&& constructor,
+                                    const rule_args_decl& fields_decl) {
+   std::vector<rule_argument> fields;
+   for (auto& f : make_args<T>(fields_decl))
+      fields.emplace_back(std::move(f));
+
+   auto invoker = std::make_shared<rule_manager_invoker<T>>(constructor);
+
+   return { type, std::make_shared<rule_arguments>(std::move(fields)), std::move(invoker) };
+}
+
+}
+
+template<typename FunctionPointer>
+rule_argument_struct_desc
+make_rule_argument_struct_desc(const std::string& type,
+                               FunctionPointer constructor,
+                               const rule_args_decl& fields_decl) {
+   using f_type = typename boost::remove_pointer<FunctionPointer>::type;
+
+   if (fields_decl.size() != boost::function_types::function_arity<f_type>::value)
+      throw std::runtime_error("[hammer.rule_manager] Not enought field descriptions for struct '" + type + "'");
+
+   return details::make_rule_argument_struct_desc_impl(type, boost::function<f_type>(constructor), fields_decl);
 }
 
 // FIXME: ast_expression can't be optional

@@ -15,7 +15,8 @@ Arguments;
 EmptyArgument;
 NamedArgument;
 Structure;
-StructureField;
+EmptyField;
+NamedField;
 List;
 Feature;
 Condition;
@@ -93,14 +94,37 @@ expressions_b
 	| rule_invocation
 	;	
 structure 
-	: '{' WS* fields '}' -> ^(Structure fields)
+	: s='{' WS* structure_body '}' -> ^(Structure[$s, $s->getText($s)->chars] structure_body)
 	;
-fields 	
-	: field (':' WS* field)* -> field field*
- 	;		
-field 	
-	: Id WS* '=' WS* unnamed_argument -> ^(StructureField Id unnamed_argument)
- 	;
+structure_body
+	: ('}') => ->
+	| fields
+	;	
+fields 
+	: field rest_of_fields*
+	;
+rest_of_fields 
+	: ':' WS* field -> field
+	;
+field
+        : empty_field
+	| named_field
+	| unnamed_field
+	;
+empty_field
+	: (':' | '}') => -> EmptyField[LT(1), LT(1)->getText(LT(1))->chars]
+	;
+unnamed_field
+	: (list)=> list WS* -> list
+	| expression WS* -> expression
+	;	
+named_field
+	: Id WS* '=' WS* named_field_body -> ^(NamedField Id named_field_body)
+	;	
+named_field_body
+	: empty_field
+	| unnamed_field
+	;
 feature 
 	: '<' WS* Id WS* '>' WS* feature_value -> ^(Feature Id feature_value)
 	;

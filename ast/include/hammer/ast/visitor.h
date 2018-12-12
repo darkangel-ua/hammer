@@ -25,6 +25,7 @@ class condition_expr;
 class logical_or;
 class logical_and;
 class expression_statement;
+class struct_expr;
 
 class visitor {
    public:
@@ -49,6 +50,7 @@ class visitor {
 		virtual bool visit(const logical_or& v) { return true; }
 		virtual bool visit(const logical_and& v) { return true; }
 		virtual bool visit(const expression_statement& v) { return true; }
+      virtual bool visit(const struct_expr& v) { return true; }
 };
 
 }}

@@ -14,6 +14,7 @@
 #include <hammer/ast/casts.h>
 #include <hammer/ast/condition.h>
 #include <hammer/ast/target_def.h>
+#include <hammer/ast/struct_expr.h>
 #include <hammer/core/diagnostic.h>
 #include <hammer/sema/actions_impl.h>
 
@@ -258,10 +259,10 @@ actions_impl::process_sources_arg(const rule_argument& ra,
          const rule_declaration& ri_rd = rule_manager_.find(ri->name())->second;
          const rule_argument& rdr = ri_rd.result();
          // we can deal only with return types that can be converted to sources
-         if (rdr.type() == rule_argument_type::identifier ||
-             rdr.type() == rule_argument_type::sources ||
-             rdr.type() == rule_argument_type::path ||
-             rdr.type() == rule_argument_type::target_ref)
+         if (*rdr.type().as_simple() == rule_argument_type::identifier ||
+             *rdr.type().as_simple() == rule_argument_type::sources ||
+             *rdr.type().as_simple() == rule_argument_type::path ||
+             *rdr.type().as_simple() == rule_argument_type::target_ref)
          {
             return ri;
          }
@@ -542,6 +543,20 @@ actions_impl::process_target_ref_arg(const rule_argument& ra,
 }
 
 const expression*
+actions_impl::process_struct_arg(const rule_argument& ra,
+                                 const rule_argument_struct_desc& rasd,
+                                 const expression* arg) {
+   if (const struct_expr* s = as<struct_expr>(arg))
+      return new (ctx_) struct_expr(s->start_brace_,
+                                    process_arguments_impl("Struct", "field", rasd.typename_.c_str(), s->start_brace_,
+                                                           rasd.fields_->begin(), rasd.fields_->end(),
+                                                           s->fields_.begin(), s->fields_.end()));
+
+   diag_.error(arg->start_loc(), "Argument '%s': Expected struct of type '%s'") << ra.name() << rasd.typename_;
+   return new (ctx_) error_expression(arg);
+}
+
+const expression*
 actions_impl::process_one_arg(const rule_argument& ra,
                               const expression* arg)
 {
@@ -561,53 +576,161 @@ actions_impl::process_one_arg(const rule_argument& ra,
    if (error_count != diag_.error_count())
       return arg;
 
-   switch(ra.type()) {
-      case rule_argument_type::identifier:
-         return process_identifier_arg(ra, arg);
+   if (auto simple_type_ptr = ra.type().as_simple()) {
+      switch(*simple_type_ptr) {
+         case rule_argument_type::identifier:
+            return process_identifier_arg(ra, arg);
 
-      case rule_argument_type::identifier_or_list_of_identifiers:
-         return process_identifier_or_list_of_identifiers_arg(ra, arg);
+         case rule_argument_type::identifier_or_list_of_identifiers:
+            return process_identifier_or_list_of_identifiers_arg(ra, arg);
 
-      case rule_argument_type::feature:
-         return process_feature_arg(ra, arg);
+         case rule_argument_type::feature:
+            return process_feature_arg(ra, arg);
 
-      case rule_argument_type::feature_set:
-         return process_feature_set_arg(ra, arg);
+         case rule_argument_type::feature_set:
+            return process_feature_set_arg(ra, arg);
 
-      case rule_argument_type::sources:
-         return process_sources_arg(ra, arg);
+         case rule_argument_type::sources:
+            return process_sources_arg(ra, arg);
 
-      case rule_argument_type::requirement_set:
-         return process_requirements_decl_arg(ra, arg);
+         case rule_argument_type::requirement_set:
+            return process_requirements_decl_arg(ra, arg);
 
-      case rule_argument_type::usage_requirements:
-         return process_usage_requirements_arg(ra, arg);
+         case rule_argument_type::usage_requirements:
+            return process_usage_requirements_arg(ra, arg);
 
-      case rule_argument_type::path:
-         return process_path_arg(ra, arg);
+         case rule_argument_type::path:
+            return process_path_arg(ra, arg);
 
-      case rule_argument_type::path_or_list_of_paths:
-         return process_path_or_list_of_paths(ra, arg);
+         case rule_argument_type::path_or_list_of_paths:
+            return process_path_or_list_of_paths(ra, arg);
 
-      case rule_argument_type::wcpath:
-         return process_wcpath_arg(ra, arg);
+         case rule_argument_type::wcpath:
+            return process_wcpath_arg(ra, arg);
 
-      case rule_argument_type::wcpath_or_list_of_wcpaths:
-         return process_wcpath_or_list_of_wcpaths(ra, arg);
+         case rule_argument_type::wcpath_or_list_of_wcpaths:
+            return process_wcpath_or_list_of_wcpaths(ra, arg);
 
-      case rule_argument_type::ast_expression:
-         return arg;
+         case rule_argument_type::ast_expression:
+            return arg;
 
-      case rule_argument_type::feature_or_feature_set:
-         return process_feature_of_feature_set_arg(ra, arg);
+         case rule_argument_type::feature_or_feature_set:
+            return process_feature_of_feature_set_arg(ra, arg);
 
-      case rule_argument_type::target_ref:
-         return process_target_ref_arg(ra, arg);
+         case rule_argument_type::target_ref:
+            return process_target_ref_arg(ra, arg);
 
-      default:
-         assert(false && "Unknown argument type");
-         abort();
+         default:
+            assert(false && "Unknown argument type");
+            abort();
+      }
+   } else if (auto list_type_ptr = ra.type().as_list()) {
+      assert(false && "not implemented");
+   } else if (auto struct_type_ptr = ra.type().as_struct()) {
+      return process_struct_arg(ra, *struct_type_ptr, arg);
+   } else
+      assert(false && "Unhandled rule argument type");
+}
+
+expressions_t
+actions_impl::process_arguments_impl(const char* kind,
+                                     const char* argument_or_field,
+                                     const char* rule_or_struct_name,
+                                     parscore::source_location rule_or_struct_name_loc,
+                                     rule_declaration::const_iterator args_decl_first,
+                                     rule_declaration::const_iterator args_decl_last,
+                                     ast::expressions_t::const_iterator arguments_first,
+                                     ast::expressions_t::const_iterator arguments_last)
+{
+   using used_named_args_t = std::set<const rule_argument*>;
+
+   expressions_t result{expressions_t::allocator_type{ctx_}};
+   used_named_args_t used_named_args;
+
+   bool only_named = false;
+   bool has_error = false;
+   auto ra = args_decl_first;
+   int required_argument_used = 0;
+   for (auto i = arguments_first, last = arguments_last; i != last; ++i) {
+      if (const named_expr* ne = as<named_expr>(*i)) {
+         const identifier& arg_name = as<named_expr>(**i).name();
+         auto r = std::find_if(args_decl_first, args_decl_last, [&](const rule_argument& ra) {
+            return ra.name() == arg_name;
+         });
+
+         if (r == args_decl_last) {
+            has_error = true;
+            diag_.error(arg_name.start_loc(), "%s '%s' does not have named %s '%s'")
+               << kind
+               << rule_or_struct_name
+               << argument_or_field
+               << arg_name;
+
+            result.push_back(new (ctx_) error_expression((**i).start_loc()));
+         } else { // named argument founded
+            if (used_named_args.find(&*r) != used_named_args.end()) {
+               has_error = true;
+               diag_.error(arg_name.start_loc(), "%s '%s': %s '%s' used more than once")
+                  << kind
+                  << rule_or_struct_name
+                  << argument_or_field
+                  << arg_name;
+
+               result.push_back(new (ctx_) error_expression((**i).start_loc()));
+            } else {
+               used_named_args.insert(&*r);
+               if (!r->is_optional())
+                  ++required_argument_used;
+
+               const named_expr* new_ne = new (ctx_) named_expr(ne->name(), process_one_arg(*r, ne->value()));
+               result.push_back(new_ne);
+            }
+         }
+
+         only_named = true;
+      } else { // unnamed argument
+         // too many arguments
+         if (ra == args_decl_last) {
+            result.push_back(*i);
+            ++required_argument_used;
+            continue;
+         }
+
+         if (is_a<error_expression>(**i)) {
+            if (!ra->is_optional())
+               ++required_argument_used;
+
+            result.push_back(*i);
+         } else if (only_named) {
+            diag_.error((**i).start_loc(), "Named %s expected") << argument_or_field;
+            return result;
+         } else {
+            if (!ra->is_optional())
+               ++required_argument_used;
+
+            result.push_back(process_one_arg(*ra, *i));
+         }
+      }
+
+      if (ra != args_decl_last)
+         ++ra;
    }
+
+   int rac = std::count_if(args_decl_first, args_decl_last, [](const rule_argument& ra) {
+      return !ra.is_optional();
+   });
+
+   if (!has_error) {
+      if (rac > required_argument_used) {
+         diag_.error(rule_or_struct_name_loc, "%s '%s': not enough %ss")
+            << kind << rule_or_struct_name << argument_or_field;
+      } else if (ra == args_decl_last && rac != required_argument_used) {
+         diag_.error(rule_or_struct_name_loc, "%s '%s': too many %ss")
+            << kind << rule_or_struct_name << argument_or_field;
+      }
+   }
+
+   return result;
 }
 
 expressions_t
@@ -731,6 +854,13 @@ actions_impl::on_target_ref(parscore::source_location public_tag,
                             const features_t& build_request)
 {
    return new (ctx_) ast::target_ref(public_tag, target_path, target_name, build_request);
+}
+
+const expression*
+actions_impl::on_struct(source_location start_brace,
+                        const expressions_t& fields)
+{
+   return new (ctx_) ast::struct_expr(start_brace, fields);
 }
 
 const ast::logical_or*

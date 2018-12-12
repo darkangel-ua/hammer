@@ -65,6 +65,7 @@ expression returns[const hammer::ast::expression* result]
         | public_expression { result = $public_expression.result; }
         | expression_a { result = $expression_a.result; }
 	| rule_invocation { result = $rule_invocation.result; }
+	| struct_ { result = $struct_.result; }
 //	| target_def_or_rule_call { result = $target_def_or_rule_call.result; }
 	;
 
@@ -123,7 +124,21 @@ rule_invocation returns[const hammer::ast::expression* result]
 @init { DECLARE_TYPE(hammer::ast::expressions_t, args); }
 	: ^(RuleInvocation name=Id arguments[&args]) { result = SEMA->on_rule_invocation($name->getToken($name), args); }
 	;
-
+struct_ returns[const hammer::ast::expression* result]
+@init { DECLARE_TYPE(hammer::ast::expressions_t, fields); 
+        hammer::parscore::source_location start_brace;
+}
+	: ^(Structure (struct_field { fields.push_back($struct_field.result); })*) { result = SEMA->on_struct($Structure->getToken($Structure), fields); }
+	;
+struct_field returns[const hammer::ast::expression* result]	
+	: EmptyField { result = SEMA->on_empty_expr($EmptyField->getToken($EmptyField)); }
+	| named_field { result = $named_field.result; }
+	| expression { result = $expression.result; }
+	;
+named_field returns[const hammer::ast::expression* result]
+	: ^(NamedField Id expression { result = SEMA->on_named_expr($Id->getToken($Id), $expression.result); } )
+	| ^(NamedField Id EmptyField { result = SEMA->on_named_expr($Id->getToken($Id), SEMA->on_empty_expr($EmptyField->getToken($EmptyField))); } )
+	;
 feature returns[const hammer::ast::feature* result]
 	: ^(Feature Id feature_value) { result = SEMA->on_feature($Id->getToken($Id), $feature_value.result); }
 	;

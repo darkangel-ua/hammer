@@ -63,6 +63,12 @@ void diagnostic::format_message()
                         break;
                      }
 
+                     case arg_type::std_string:
+                     {
+                        stream_ << *static_cast<const std::string*>(args_[arg_pos]);
+                        break;
+                     }
+
                      case arg_type::identifier:
                      {
                         stream_ << *static_cast<const parscore::identifier*>(args_[arg_pos]);

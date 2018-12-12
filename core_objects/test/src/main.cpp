@@ -1,5 +1,6 @@
 #define BOOST_AUTO_TEST_MAIN
 #include <boost/test/auto_unit_test.hpp>
+#include <boost/optional/optional.hpp>
 #include <hammer/core/rule_manager.h>
 #include <hammer/core/diagnostic.h>
 
@@ -12,10 +13,8 @@ class test_feature_set;
 class test_sources;
 
 namespace hammer {
-   template<>
-   struct rule_argument_type_info<test_sources> { static const rule_argument_type ast_type = rule_argument_type::sources; };
-   template<>
-   struct rule_argument_type_info<test_feature_set> { static const rule_argument_type ast_type = rule_argument_type::feature_set; };
+   HAMMER_RULE_MANAGER_SIMPLE_TYPE(test_sources, sources);
+   HAMMER_RULE_MANAGER_SIMPLE_TYPE(test_feature_set, feature_set);
 
    class project{};
 }
@@ -178,4 +177,108 @@ BOOST_AUTO_TEST_CASE(invoke_test_2)
 
    BOOST_CHECK_EQUAL(invoke_function_2_invoked, true);
    BOOST_CHECK_EQUAL(*static_cast<identifier*>(result->value()), identifier("123qwe"));
+}
+
+static bool id_list_rule_invoked = false;
+
+static
+void id_list_rule(invocation_context& ctx,
+                  const vector<identifier>& ids)
+{
+   id_list_rule_invoked = true;
+   BOOST_REQUIRE_EQUAL(ids.size(), 1);
+   BOOST_CHECK_EQUAL(ids.front(), "foo");
+}
+
+BOOST_AUTO_TEST_CASE(invoke_test_id_list)
+{
+   const identifier rule_id("id_list_rule");
+
+   rule_manager m;
+   m.add_rule(rule_id, id_list_rule, { "ids" });
+   const rule_declaration& rd = m.find(rule_id)->second;
+
+   hammer::project p;
+   ostringstream s;
+   streamed_diagnostic diag("invoke_test_1", true, s);
+   target_invocation_context ctx = {p, diag, m, true, false};
+   identifier id_1("foo");
+
+   rule_manager_arg_ptr arg_0(new rule_manager_arg<invocation_context>(ctx));
+   rule_manager_arg_ptr arg_1(new rule_manager_arg<vector<identifier>>({id_1}));
+
+   rule_manager_arguments_t args;
+   args.push_back(move(arg_0));
+   args.push_back(move(arg_1));
+
+   rule_manager_arg_ptr result;
+   BOOST_REQUIRE_NO_THROW(result = rd.invoke(args));
+
+   BOOST_CHECK_EQUAL(id_list_rule_invoked, true);
+}
+
+struct simple_struct {
+   identifier id_1_;
+   boost::optional<identifier> id_2_;
+};
+
+namespace hammer {
+
+template<>
+struct rule_argument_type_info<simple_struct> {
+   static
+   std::unique_ptr<simple_struct>
+   constructor(const identifier& id_1,
+               const identifier* id_2) {
+      return std::unique_ptr<simple_struct>(new simple_struct{id_1, id_2 ? boost::optional<identifier>{*id_2} : boost::optional<identifier>{}});
+   }
+
+   static
+   rule_argument_type_desc
+   ast_type() {
+      return make_rule_argument_struct_desc("simple_struct", constructor, {"id_1", "id_2"});
+   }
+};
+
+}
+
+static
+bool struct_rule_invoked = false;
+
+static
+void struct_rule(invocation_context& ctx,
+                 const simple_struct& s)
+{
+   struct_rule_invoked = true;
+   BOOST_REQUIRE_EQUAL(s.id_1_, "id_1");
+   BOOST_REQUIRE(s.id_2_);
+   BOOST_REQUIRE_EQUAL(*s.id_2_, "id_2");
+}
+
+BOOST_AUTO_TEST_CASE(invoke_test_struct)
+{
+   const identifier rule_id("struct_rule");
+
+   rule_manager m;
+   m.add_rule(rule_id, struct_rule, { "s" });
+   const rule_declaration& rd = m.find(rule_id)->second;
+
+   hammer::project p;
+   ostringstream s;
+   streamed_diagnostic diag("invoke_test_struct", true, s);
+   target_invocation_context ctx = {p, diag, m, true, false};
+   identifier id_1("id_1");
+   identifier id_2{"id_2"};
+
+   rule_manager_arg_ptr arg_0(new rule_manager_arg<invocation_context>(ctx));
+   rule_manager_arg_ptr arg_1(new rule_manager_arg<simple_struct>({id_1, id_2}));
+
+   rule_manager_arguments_t args;
+   args.push_back(move(arg_0));
+   args.push_back(move(arg_1));
+
+   rule_manager_arg_ptr result;
+   BOOST_REQUIRE_NO_THROW(result = rd.invoke(args));
+
+   BOOST_CHECK_EQUAL(id_list_rule_invoked, true);
 }

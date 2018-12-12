@@ -3,6 +3,7 @@
 #include <boost/filesystem/convenience.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/bind.hpp>
+#include <boost/optional/optional.hpp>
 #include <iostream>
 #include <hammer/parser/parser.h>
 #include <hammer/sema/actions_impl.h>
@@ -33,27 +34,59 @@ class test_usage_requirements;
 class test_feature;
 class test_target_ref;
 
+struct struct_1 {
+   parscore::identifier pattern_;
+   parscore::identifier version_;
+};
+
+struct struct_2 {
+   parscore::identifier pattern_;
+   boost::optional<parscore::identifier> version_;
+};
+
 namespace hammer {
+   HAMMER_RULE_MANAGER_SIMPLE_TYPE(test_requirements, requirement_set);
+   HAMMER_RULE_MANAGER_SIMPLE_TYPE(test_sources, sources);
+   HAMMER_RULE_MANAGER_SIMPLE_TYPE(test_feature_set, feature_set);
+   HAMMER_RULE_MANAGER_SIMPLE_TYPE(test_feature, feature);
+   HAMMER_RULE_MANAGER_SIMPLE_TYPE(test_path, path);
+   HAMMER_RULE_MANAGER_SIMPLE_TYPE(vector<test_path>, path_or_list_of_paths);
+   HAMMER_RULE_MANAGER_SIMPLE_TYPE(test_wcpath, wcpath);
+   HAMMER_RULE_MANAGER_SIMPLE_TYPE(vector<test_wcpath>, wcpath_or_list_of_wcpaths);
+   HAMMER_RULE_MANAGER_SIMPLE_TYPE(test_usage_requirements, usage_requirements);
+   HAMMER_RULE_MANAGER_SIMPLE_TYPE(test_target_ref, target_ref);
+
    template<>
-   struct rule_argument_type_info<test_requirements> { static const rule_argument_type ast_type = rule_argument_type::requirement_set; };
+   struct rule_argument_type_info<struct_1> {
+      static
+      std::unique_ptr<struct_1>
+      constructor(const parscore::identifier& pattern,
+                  const parscore::identifier& version) {
+         return std::unique_ptr<struct_1>{new struct_1{pattern, version}};
+      }
+
+      static
+      rule_argument_type_desc
+      ast_type() {
+         return make_rule_argument_struct_desc("struct_1", constructor, {"pattern", "version"});
+      }
+   };
+
    template<>
-   struct rule_argument_type_info<test_sources> { static const rule_argument_type ast_type = rule_argument_type::sources; };
-   template<>
-   struct rule_argument_type_info<test_feature_set> { static const rule_argument_type ast_type = rule_argument_type::feature_set; };
-   template<>
-   struct rule_argument_type_info<test_feature> { static const rule_argument_type ast_type = rule_argument_type::feature; };
-   template<>
-   struct rule_argument_type_info<test_path> { static const rule_argument_type ast_type = rule_argument_type::path; };
-   template<>
-   struct rule_argument_type_info<vector<test_path>> { static const rule_argument_type ast_type = rule_argument_type::path_or_list_of_paths; };
-   template<>
-   struct rule_argument_type_info<test_wcpath> { static const rule_argument_type ast_type = rule_argument_type::wcpath; };
-   template<>
-   struct rule_argument_type_info<vector<test_wcpath>> { static const rule_argument_type ast_type = rule_argument_type::wcpath_or_list_of_wcpaths; };
-   template<>
-   struct rule_argument_type_info<test_usage_requirements> { static const rule_argument_type ast_type = rule_argument_type::usage_requirements; };
-   template<>
-   struct rule_argument_type_info<test_target_ref> { static const rule_argument_type ast_type = rule_argument_type::target_ref; };
+   struct rule_argument_type_info<struct_2> {
+      static
+      std::unique_ptr<struct_2>
+      constructor(const parscore::identifier& pattern,
+                  const parscore::identifier* version) {
+         return std::unique_ptr<struct_2>{new struct_2{pattern, version ? boost::optional<parscore::identifier>{} : boost::optional<parscore::identifier>{*version}}};
+      }
+
+      static
+      rule_argument_type_desc
+      ast_type() {
+         return make_rule_argument_struct_desc("struct_2", constructor, {"pattern", "version"});
+      }
+   };
 }
 
 static
@@ -166,6 +199,16 @@ static
 void target_ref_test_rule(invocation_context& ctx,
                           const test_target_ref&)
 {
+}
+
+static
+void struct_1_test_rule(invocation_context&,
+                        const struct_1& s) {
+}
+
+static
+void struct_2_test_rule(invocation_context&,
+                        const struct_2&) {
 }
 
 static
@@ -318,6 +361,8 @@ void test_function(const fs::path& hamfile)
    rule_manager.add_rule("wcpath_test", wcpath_test_rule, {"path"});
    rule_manager.add_rule("wcpaths_test", wcpaths_test_rule, {"paths"});
    rule_manager.add_rule("target_ref_test", target_ref_test_rule, {"target_ref"});
+   rule_manager.add_rule("struct_1_test", struct_1_test_rule, {"struct_arg"});
+   rule_manager.add_rule("struct_2_test", struct_2_test_rule, {"struct_arg"});
 
    ast::context ctx;
    sema_env env;

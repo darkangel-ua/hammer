@@ -12,7 +12,7 @@ class diagnostic {
       friend class diagnostic_builder;
       
       struct type { enum value {error}; };
-      struct arg_type { enum value{integer, chars, identifier}; };
+      struct arg_type { enum value{integer, chars, identifier, std_string}; };
 
 		diagnostic(const std::string& source_name,
                  bool verbose);
@@ -66,6 +66,14 @@ class diagnostic_builder {
       { 
          d_->args_.push_back(v);
          d_->arg_types_.push_back(diagnostic::arg_type::chars);
+         return *this;
+      }
+
+      diagnostic_builder&
+      operator << (const std::string& v)
+      {
+         d_->args_.push_back(&v);
+         d_->arg_types_.push_back(diagnostic::arg_type::std_string);
          return *this;
       }
 

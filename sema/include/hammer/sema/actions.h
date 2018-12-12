@@ -99,7 +99,13 @@ class actions {
 						  const ast::path* target_path,
 						  const parscore::identifier& target_name,
 						  const ast::features_t& build_request) = 0;
-		virtual ~actions() {}
+
+      virtual
+      const ast::expression*
+      on_struct(parscore::source_location start_brace,
+                const ast::expressions_t& fields) = 0;
+
+      virtual ~actions() {}
 
 		ast::context& get_context() const { return ctx_; }
 

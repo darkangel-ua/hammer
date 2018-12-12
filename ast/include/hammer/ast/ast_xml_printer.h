@@ -28,6 +28,7 @@ class ast_xml_printer : public visitor {
 		bool visit(const logical_or& v) override;
 		bool visit(const logical_and& v) override;
 		bool visit(const expression_statement& v) override;
+      bool visit(const struct_expr& v) override;
 
    private:
       std::ostream& os_;

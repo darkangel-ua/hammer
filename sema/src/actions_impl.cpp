@@ -543,6 +543,38 @@ actions_impl::process_target_ref_arg(const rule_argument& ra,
 }
 
 const expression*
+actions_impl::process_target_ref_mask_arg(const rule_argument& ra,
+                                          const expression* arg)
+{
+   if (as<id_expr>(arg))
+      return arg;
+   else if (const path* p = as<path>(arg)) {
+      if (p->root_name().valid()) {
+         diag_.error(p->start_loc(), "Argument '%s': Absolute path can't be used as target reference mask") << ra.name();
+         return new (ctx_) error_expression(p);
+      }
+      return arg;
+   } else if (const target_ref* tr = as<target_ref>(arg)) {
+      if (tr->public_tag().valid()) {
+         diag_.error(tr->public_tag(), "Argument '%s': Target reference mask can't be public") << ra.name();
+         return new (ctx_) error_expression(tr);
+      }
+      if (tr->has_target_name()) {
+         diag_.error(tr->target_name().start_loc(), "Argument '%s': Target name is not allowed in target reference mask") << ra.name();
+         return new (ctx_) error_expression(tr);
+      }
+      if (!tr->build_request().empty()) {
+         diag_.error(tr->build_request().front()->start_loc(), "Argument '%s': Build request is not allowed in target reference mask") << ra.name();
+         return new (ctx_) error_expression(tr);
+      } else
+         return arg;
+   }
+
+   diag_.error(arg->start_loc(), "Argument '%s': Expected target reference mask") << ra.name();
+   return new (ctx_) error_expression(arg);
+}
+
+const expression*
 actions_impl::process_struct_arg(const rule_argument& ra,
                                  const rule_argument_struct_desc& rasd,
                                  const expression* arg) {
@@ -619,6 +651,9 @@ actions_impl::process_one_arg(const rule_argument& ra,
 
          case rule_argument_type::target_ref:
             return process_target_ref_arg(ra, arg);
+
+         case rule_argument_type::target_ref_mask:
+            return process_target_ref_mask_arg(ra, arg);
 
          default:
             assert(false && "Unknown argument type");

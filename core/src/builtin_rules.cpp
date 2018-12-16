@@ -111,7 +111,8 @@ static
 void project_rule(invocation_context& ctx,
                   const ast::expression* id,
                   requirements_decl* requirements,
-                  usage_requirements_decl* usage_requirements)
+                  usage_requirements_decl* usage_requirements,
+                  const details::project_dependency* dependencies)
 {
    process_project_id(ctx, id);
 
@@ -123,6 +124,14 @@ void project_rule(invocation_context& ctx,
    if (usage_requirements) {
       usage_requirements->setup_path_data(&ctx.current_project_);
       ctx.current_project_.local_usage_requirements(static_cast<const requirements_decl&>(*usage_requirements));
+   }
+
+   if (dependencies) {
+      feature_set* props = ctx.current_project_.get_engine().feature_registry().make_set();
+      props->join("version", dependencies->version_.to_string().c_str());
+      project::dependencies_t deps;
+      deps.push_back({target_ref_mask_to_regex(dependencies->pattern_.value_.string()), props});
+      ctx.current_project_.dependencies(std::move(deps));
    }
 }
 
@@ -1062,7 +1071,7 @@ c_as_cpp_rule(invocation_context& ctx,
 
 void install_builtin_rules(rule_manager& rm)
 {
-   rm.add_rule("project", project_rule, {{"id", project_id_validator}, "requirements", "usage-requirements"});
+   rm.add_rule("project", project_rule, {{"id", project_id_validator}, "requirements", "usage-requirements", "dependencies"});
    rm.add_rule("use-project", use_project_rule, {{"alias", use_project_alias_validator}, "location", "requirements"});
    rm.add_rule("feature", feature_rule, {"name", "values", {"attributes", feature_attributes_validator}});
    rm.add_rule("feature.local", feature_local_rule, {"name", "values", {"attributes", feature_attributes_validator}});

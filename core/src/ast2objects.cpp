@@ -20,6 +20,7 @@
 #include <hammer/ast/target_ref.h>
 #include <hammer/ast/target_def.h>
 #include <hammer/ast/condition.h>
+#include <hammer/ast/struct_expr.h>
 #include <boost/make_unique.hpp>
 
 namespace hammer {
@@ -33,6 +34,20 @@ static
 rule_manager_arg_ptr
 process_implicit_target_def_or_rule_invocation(invocation_context& ctx,
                                                const ast::rule_invocation& ri);
+
+static
+void rule_invocation_handle_named_args(invocation_context& ctx,
+                                       rule_manager_arguments_t& args,
+                                       rule_declaration::const_iterator rd_first,
+                                       rule_declaration::const_iterator rd_last,
+                                       ast::expressions_t::const_iterator arg_first,
+                                       ast::expressions_t::const_iterator arg_last);
+
+static
+void handle_one_arg(invocation_context& ctx,
+                    rule_manager_arguments_t& args,
+                    const rule_argument& ra,
+                    const ast::expression* e);
 
 static
 feature*
@@ -359,6 +374,57 @@ ast2wcpath_or_list_of_wcpaths(invocation_context& ctx,
 }
 
 static
+std::unique_ptr<target_ref_mask>
+ast2target_ref_mask(invocation_context& ctx,
+                    const ast::expression& e)
+{
+   if (const ast::id_expr* id = ast::as<ast::id_expr>(&e))
+      return boost::make_unique<target_ref_mask>({id->id().to_string()});
+   else if (const ast::path* p = ast::as<ast::path>(&e))
+      return boost::make_unique<target_ref_mask>({p->to_string()});
+   else if (const ast::target_ref* tr = ast::as<ast::target_ref>(&e))
+      return boost::make_unique<target_ref_mask>({tr->target_path()->to_string()});
+   else
+      throw std::runtime_error("ast2target_ref_mask: Unexpected AST node");
+}
+
+static
+rule_manager_arg_ptr
+ast2struct(invocation_context& ctx,
+           const rule_argument_struct_desc& struct_desc,
+           const ast::expression& e)
+{
+   const ast::struct_expr* s = ast::as<ast::struct_expr>(&e);
+   assert(s);
+
+   rule_manager_arguments_t args;
+
+   // ast args
+   auto af_first = s->fields_.begin(),
+        af_last = s->fields_.end();
+   // constructor args
+   auto cf_first = struct_desc.fields_->begin(),
+        cf_last = struct_desc.fields_->end();
+   for (; cf_first != cf_last; ++cf_first) {
+      if (af_first == af_last) {
+         // no more args in ast - pushing empty ones
+         args.push_back(rule_manager_arg_ptr());
+         continue;
+      }
+
+      if (ast::is_a<ast::named_expr>(*af_first)) {
+         rule_invocation_handle_named_args(ctx, args, cf_first, cf_last, af_first, af_last);
+         break;
+      }
+
+      handle_one_arg(ctx, args, *cf_first, *af_first);
+      ++af_first;
+   }
+
+   return struct_desc.constructor_->invoke(args);
+}
+
+static
 const ast::expression*
 find_named_argument(ast::expressions_t::const_iterator arg_first,
                     ast::expressions_t::const_iterator arg_last,
@@ -479,10 +545,18 @@ void handle_one_arg(invocation_context& ctx,
                break;
             }
 
+            case rule_argument_type::target_ref_mask: {
+               rule_manager_arg_ptr arg(new rule_manager_arg<target_ref_mask>(ast2target_ref_mask(ctx, *e)));
+               args.push_back(move(arg));
+               break;
+            }
+
             default:
-               throw std::runtime_error("not implemented");
+               throw std::runtime_error("Unexpected rule argument type");
          }
-      } else
+      } else if (auto type = ra.type().as_struct())
+         args.push_back(ast2struct(ctx, *type, *e));
+      else
          throw std::runtime_error("not implemented");
    }
 }
@@ -595,10 +669,11 @@ void ast2objects(invocation_context& ctx,
       process_rule_invocation(ctx, *p);
    else {
       rule_manager_arg_ptr id_arg(new rule_manager_arg<ast::expression>(empty_project_id));
-      rule_manager_arg_ptr requirements_arg, usage_requirements_arg;
+      rule_manager_arg_ptr requirements_arg, usage_requirements_arg, dependencies;
       args.push_back(move(id_arg));
       args.push_back(move(requirements_arg));
       args.push_back(move(usage_requirements_arg));
+      args.push_back(move(dependencies));
       project_rd.invoke(args);
    }
 

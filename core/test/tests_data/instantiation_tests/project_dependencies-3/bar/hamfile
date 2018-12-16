@@ -1,0 +1,2 @@
+lib bar : bar.cpp : <version>1.0 ;
+lib bar : bar.cpp : <version>2.0 ;

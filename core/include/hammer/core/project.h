@@ -2,6 +2,7 @@
 #include <memory>
 #include <vector>
 #include <map>
+#include <boost/regex.hpp>
 #include <hammer/core/location.h>
 #include <hammer/core/basic_meta_target.h>
 #include <hammer/core/feature_registry.h>
@@ -44,12 +45,20 @@ class project : public boost::noncopyable {
       };
       using aliases_t = std::vector<alias>;
 
+      struct dependency {
+         boost::regex target_ref_mask_;
+         feature_set* properties_;
+      };
+
+      using dependencies_t = std::vector<dependency>;
+
       project(engine& e,
               const project* parent,
               const std::string& name,
               const location_t& location,
               const requirements_decl& local_req,
-              const requirements_decl& local_usage_req);
+              const requirements_decl& local_usage_req,
+              const dependencies_t& dependencies);
 
       project(engine& e,
               const project* parent,
@@ -75,6 +84,13 @@ class project : public boost::noncopyable {
 
       const requirements_decl&
       requirements() const { return requirements_; }
+
+      const dependencies_t&
+      dependencies() const { return dependencies_; }
+      // both function will prepend v to parent->dependencies() and use combined
+      // this will allow to calculate all replacements with one call instead of traversing up to parents
+      void dependencies(const dependencies_t& v);
+      void dependencies(dependencies_t&& v);
 
       bool publishable() const;
 
@@ -143,6 +159,7 @@ class project : public boost::noncopyable {
       mutable feature_registry local_feature_registry_;
       // mutable because we cache resolved projects
       mutable std::unique_ptr<aliases_impl> aliases_;
+      dependencies_t dependencies_;
 };
 
 class loaded_projects {

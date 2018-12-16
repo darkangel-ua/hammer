@@ -1,0 +1,10 @@
+# Applying /foo/<version>1.0 for test executable /foo dependency
+
+project 
+    dependencies = 
+     { /foo : 1.0 }
+   ;
+
+use-project /foo : ./foo ;
+
+exe test : main.cpp /foo ;

@@ -1,0 +1,12 @@
+target_ref_mask_test foo ;
+target_ref_mask_test /foo ;
+target_ref_mask_test /foo/bar ;
+target_ref_mask_test * ;
+target_ref_mask_test */* ;
+target_ref_mask_test /* ;
+
+target_ref_mask_test foo//bar ; #error: Argument 'target_ref_mask': Target name is not allowed in target reference mask
+target_ref_mask_test /foo/<version>1.0 ; #error: Argument 'target_ref_mask': Build request is not allowed in target reference mask
+target_ref_mask_test file:///foo ; #error: Argument 'target_ref_mask': Absolute path can't be used as target reference mask
+target_ref_mask_test @foo ; #error: Argument 'target_ref_mask': Target reference mask can't be public
+

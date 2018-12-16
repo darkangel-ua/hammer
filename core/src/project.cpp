@@ -68,8 +68,10 @@ project::project(hammer::engine& e,
                  const std::string& name,
                  const location_t& location,
                  const requirements_decl& local_req,
-                 const requirements_decl& local_usage_req)
+                 const requirements_decl& local_usage_req,
+                 const dependencies_t& dependencies)
    : parent_(parent),
+     dependencies_(dependencies),
      engine_(e),
      name_(name),
      location_(normalize_project_location(location)),
@@ -82,7 +84,7 @@ project::project(hammer::engine& e,
 project::project(engine& e,
                  const project* parent,
                  const location_t& l)
-   : project(e, parent, {}, l, {}, {})
+   : project(e, parent, {}, l, {}, {}, {})
 {
 }
 
@@ -102,6 +104,22 @@ void project::local_requirements(const requirements_decl& req) {
 void project::local_usage_requirements(const requirements_decl& req) {
    local_usage_requirements_ = req;
    usage_requirements_ = parent_ ? join_requirements(parent_->usage_requirements(), req) : req;
+}
+
+void project::dependencies(const dependencies_t& v) {
+   if (parent_) {
+      dependencies_ = parent_->dependencies();
+      dependencies_.insert(dependencies_.end(), v.begin(), v.end());
+   } else
+      dependencies_ = v;
+}
+
+void project::dependencies(dependencies_t&& v) {
+   if (parent_) {
+      dependencies_ = parent_->dependencies();
+      dependencies_.insert(dependencies_.end(), make_move_iterator(v.begin()), make_move_iterator(v.end()));
+   } else
+      dependencies_ = std::move(v);
 }
 
 string

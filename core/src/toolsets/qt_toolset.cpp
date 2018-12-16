@@ -450,7 +450,7 @@ void add_libs_and_generators(engine& e,
    }
 
    // register qt libs
-   auto_ptr<project> qt_project(new project(e, nullptr, "Qt", *toolset_home, requirements_decl(), requirements_decl()));
+   auto_ptr<project> qt_project(new project(e, nullptr, "Qt", *toolset_home, {}, {}, {}));
    if (qt5) {
       add_lib(*qt_project, "Qt5Core", vector<string>(), e, include_tag, "QtCore", lib_tag);
       add_lib(*qt_project, "Qt5Gui", {"Qt5Core"}, e, include_tag, "QtGui", lib_tag);

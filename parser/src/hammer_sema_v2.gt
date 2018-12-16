@@ -114,6 +114,7 @@ wildcard_elem returns[const hammer::ast::expression* result]
 	: Id { result = SEMA->on_id($Id->getToken($Id)); }
 	| QuestionMark { result = SEMA->on_id($QuestionMark->getToken($QuestionMark)); }
 	| Asterix { result = SEMA->on_id($Asterix->getToken($Asterix)); }
+	| DoubleAsterix { result = SEMA->on_id($DoubleAsterix->getToken($DoubleAsterix)); }
 	;
 
 public_tag[hammer::parscore::source_location* tag_loc] 

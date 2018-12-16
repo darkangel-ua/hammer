@@ -122,5 +122,8 @@ std::vector<std::reference_wrapper<const project>>
 resolve_project_query(engine& e,
                       const std::string& query);
 
+boost::regex
+target_ref_mask_to_regex(const std::string& mask);
+
 }
 

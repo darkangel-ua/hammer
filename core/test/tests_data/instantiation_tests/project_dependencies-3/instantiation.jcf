@@ -1,0 +1,9 @@
+test {
+    main.cpp {}
+    foo [ features = <version>2.0; ] { 
+        foo.cpp {} 
+    }
+    bar [ features = <version>1.0; ] {
+        bar.cpp {}
+    } 
+}

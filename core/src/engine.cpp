@@ -330,6 +330,19 @@ void map_over_aliases(engine& e,
    }
 }
 
+boost::regex
+target_ref_mask_to_regex(const std::string& mask) {
+   string regexyfied_mask{mask};
+
+   // use regex where * has been replaced on #
+   // last step is to replace back # by *
+   boost::replace_all(regexyfied_mask, "**", ".#?");
+   boost::replace_all(regexyfied_mask, "*", "[^/]#");
+   boost::replace_all(regexyfied_mask, "#", "*");
+
+   return boost::regex{regexyfied_mask};
+}
+
 vector<reference_wrapper<const project>>
 resolve_project_query(engine& e,
                       const std::string& query_) {

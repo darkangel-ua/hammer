@@ -91,7 +91,7 @@ void basic_meta_target::split_one_source(sources_decl* simple_targets,
    if (source.type())
       simple_targets->push_back(source);
    else
-      resolve_meta_target_source(source, build_request, simple_targets, meta_targets);
+      resolve_meta_target_source(source, build_request, meta_targets);
 }
 
 void basic_meta_target::split_sources(sources_decl* simple_targets, meta_targets_t* meta_targets,
@@ -102,9 +102,25 @@ void basic_meta_target::split_sources(sources_decl* simple_targets, meta_targets
       split_one_source(simple_targets, meta_targets, *i, build_request, tr);
 }
 
+// trying to avoid feature_set conning if possible
+static
+const feature_set*
+apply_project_dependencies(const feature_set* properties,
+                           const std::string& target_ref,
+                           const project& p ) {
+   for (auto& d : p.dependencies()) {
+      if (boost::regex_match(target_ref, d.target_ref_mask_)) {
+         feature_set* result = properties->clone();
+         result->join(*d.properties_);
+         return result;
+      }
+   }
+
+   return properties;
+}
+
 void basic_meta_target::resolve_meta_target_source(const source_decl& source,
                                                    const feature_set& build_request,
-                                                   sources_decl* simple_targets,
                                                    meta_targets_t* meta_targets) const
 {
    const feature_set* build_request_with_source_properties = (source.properties() == NULL ? &build_request : build_request.join(*source.properties()));
@@ -118,8 +134,11 @@ void basic_meta_target::resolve_meta_target_source(const source_decl& source,
 		}
    }
 
-	// source has target_name_ only when it was explicitly requested (./foo//bar) where target_name_ == "bar"
+   // source has target_name_ only when it was explicitly requested (./foo//bar) where target_name_ == "bar"
    loaded_projects suitable_projects = get_project()->load_project(source.target_path());
+
+   build_request_with_source_properties = apply_project_dependencies(build_request_with_source_properties, source.target_path(), *get_project());
+
    if (source.target_name().empty()) {
       try {
          hammer::project::selected_targets_t selected_targets(suitable_projects.select_best_alternative(*build_request_with_source_properties));

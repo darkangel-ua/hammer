@@ -1,0 +1,10 @@
+# Overrinding test dependency /foo/<version>1.0 by /foo/<version>2.0
+
+project 
+    dependencies = 
+     { /foo : 2.0 }
+   ;
+
+use-project /foo : ./foo ;
+
+exe test : main.cpp /foo/<version>1.0 ;

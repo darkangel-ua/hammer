@@ -76,7 +76,6 @@ class basic_meta_target {
                             const type_registry& tr) const;
       void resolve_meta_target_source(const source_decl& source,
                                       const feature_set& build_request,
-                                      sources_decl* simple_targets,
                                       meta_targets_t* meta_targets) const;
 
       const feature_set& resolve_undefined_features(const feature_set& fs) const;

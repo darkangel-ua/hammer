@@ -170,7 +170,8 @@ path_uri
 	: 'file://' path_with_root -> path_with_root
 	;
 path_without_root 
-	: path_element path_rest+ -> ^(Path path_element path_rest+) 
+	: (path_element path_rest+) => path_element path_rest+ -> ^(Path path_element path_rest+) 
+	| wildcard -> ^(Path wildcard)
 	;	
 path_with_root
 	: path_root_name path_element path_rest* -> ^(Path path_root_name path_element path_rest*)
@@ -197,21 +198,32 @@ wildcard_a
 	;	
 wildcard_s 
 	: '*'
+	| '**'
 	| '?'+
 	;	           
+// path that can't have trailing slash - target ref specific version
+target_ref_path_with_root
+	: path_root_name path_element target_ref_path_rest* -> ^(Path path_root_name path_element target_ref_path_rest*)
+	;
+target_ref_path_without_root 
+	: path_element target_ref_path_rest+ -> ^(Path path_element target_ref_path_rest+)
+	;	
+target_ref_path_rest 
+	: '/' path_element -> path_element
+	;
 target_ref
 	: PublicTag WS* target_ref_impl -> ^(PublicTag target_ref_impl)
 	| ('/') => target_ref_root_path
-	| path_without_root target_ref_spec -> ^(TargetRef path_without_root target_ref_spec)
+	| target_ref_path_without_root target_ref_spec -> ^(TargetRef target_ref_path_without_root target_ref_spec)
 	| Id target_ref_spec -> ^(TargetRef Id target_ref_spec)
 	;	
 target_ref_impl 
 	: ('/') => target_ref_root_path
-	| path_without_root target_ref_spec? -> ^(TargetRef path_without_root target_ref_spec?)
+	| target_ref_path_without_root target_ref_spec? -> ^(TargetRef target_ref_path_without_root target_ref_spec?)
 	| Id target_ref_spec? -> ^(TargetRef Id target_ref_spec?)
 	;
 target_ref_root_path
-	: path_with_root target_ref_spec? -> ^(TargetRef path_with_root target_ref_spec?)
+	: target_ref_path_with_root target_ref_spec? -> ^(TargetRef target_ref_path_with_root target_ref_spec?)
 	;
 target_ref_spec
 	: '//' Id target_ref_build_request? -> ^(TargetRefSpec Id target_ref_build_request?)
@@ -229,6 +241,7 @@ Local : 'local' ;
 Explicit : 'explicit' ;
 QuestionMark : '?';
 Asterix : '*';
+DoubleAsterix : '**';
 
 Id : ('a'..'z' | 'A'..'Z' | '0'..'9' | '.' | '-' | '_' | '+')+
    | STRING | STRING_1

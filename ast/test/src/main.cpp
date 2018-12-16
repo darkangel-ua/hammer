@@ -33,6 +33,7 @@ class test_wcpath;
 class test_usage_requirements;
 class test_feature;
 class test_target_ref;
+class test_target_ref_mask;
 
 struct struct_1 {
    parscore::identifier pattern_;
@@ -55,6 +56,7 @@ namespace hammer {
    HAMMER_RULE_MANAGER_SIMPLE_TYPE(vector<test_wcpath>, wcpath_or_list_of_wcpaths);
    HAMMER_RULE_MANAGER_SIMPLE_TYPE(test_usage_requirements, usage_requirements);
    HAMMER_RULE_MANAGER_SIMPLE_TYPE(test_target_ref, target_ref);
+   HAMMER_RULE_MANAGER_SIMPLE_TYPE(test_target_ref_mask, target_ref_mask);
 
    template<>
    struct rule_argument_type_info<struct_1> {
@@ -198,6 +200,12 @@ void wcpaths_test_rule(invocation_context& ctx,
 static
 void target_ref_test_rule(invocation_context& ctx,
                           const test_target_ref&)
+{
+}
+
+static
+void target_ref_mask_test_rule(invocation_context& ctx,
+                               const test_target_ref_mask&)
 {
 }
 
@@ -361,6 +369,7 @@ void test_function(const fs::path& hamfile)
    rule_manager.add_rule("wcpath_test", wcpath_test_rule, {"path"});
    rule_manager.add_rule("wcpaths_test", wcpaths_test_rule, {"paths"});
    rule_manager.add_rule("target_ref_test", target_ref_test_rule, {"target_ref"});
+   rule_manager.add_rule("target_ref_mask_test", target_ref_mask_test_rule, {"target_ref_mask"});
    rule_manager.add_rule("struct_1_test", struct_1_test_rule, {"struct_arg"});
    rule_manager.add_rule("struct_2_test", struct_2_test_rule, {"struct_arg"});
 

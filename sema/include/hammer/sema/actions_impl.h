@@ -151,6 +151,9 @@ class actions_impl : public actions {
       process_target_ref_arg(const rule_argument& ra,
                              const ast::expression* arg);
       const ast::expression*
+      process_target_ref_mask_arg(const rule_argument& ra,
+                                  const ast::expression* arg);
+      const ast::expression*
       process_condition(const rule_argument& ra,
                         const ast::expression* e);
       const ast::expression*

@@ -77,6 +77,7 @@ enum class rule_argument_type {
    wcpath, // wildcards allowed
    wcpath_or_list_of_wcpaths,
 	target_ref,
+   target_ref_mask, // target ref without target name and properties and wildcards allowed
 	ast_expression
 };
 

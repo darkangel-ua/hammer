@@ -1,0 +1,12 @@
+# Selecting version 2.0 for all root project references
+# This will NOT select version 2.0 for /bar/bar dependency
+
+project 
+    dependencies = 
+     { /* : 2.0 }
+   ;
+
+use-project /foo : ./foo ;
+use-project /bar/bar : ./bar ;
+
+exe test : main.cpp /foo /bar/bar/<version>1.0 ;

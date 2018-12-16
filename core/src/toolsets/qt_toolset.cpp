@@ -81,7 +81,7 @@ void qt_uic_meta_target::compute_usage_requirements(feature_set& result,
 
    // making dependency on self :)
    feature* dependency = result.owner().create_feature("dependency", "");
-   dependency->set_dependency_data(source_decl(name(), std::string(), nullptr, nullptr), get_project());
+   dependency->set_dependency_data(source_decl(name(), std::string(), nullptr, nullptr), &get_project());
 
    result.join(uic_inc).join(dependency);
 }

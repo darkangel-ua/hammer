@@ -169,7 +169,7 @@ void remove_duplicates(deduplicator_t& deduplicator,
       for (const source_decl& source : sources) {
          if (source.is_public()) {
             feature* f = fr.create_feature("use", "");
-            f->set_dependency_data(source, relative_to_target.get_project());
+            f->set_dependency_data(source, &relative_to_target.get_project());
 
             uses.join(f);
          }
@@ -219,7 +219,7 @@ void remove_duplicates(deduplicator_t& deduplicator,
       remove_duplicates(sources_deduplicator, meta_targets);
 
       get_engine().feature_registry().add_defaults(*mt_fs);
-      get_project()->local_feature_registry().add_defaults(*mt_fs);
+      get_project().local_feature_registry().add_defaults(*mt_fs);
 
       main_target* mt = construct_main_target(owner, mt_fs); // construct_main_target may construct main_target with different properties PCH is example
       mt_fs = mt->properties().clone(); // FIXME ref semantic required

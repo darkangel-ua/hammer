@@ -25,7 +25,7 @@ class basic_meta_target {
                         const requirements_decl& usage_req);
       basic_meta_target() {}
       virtual ~basic_meta_target();
-      const project* get_project() const { return project_; }
+      const project& get_project() const { return *project_; }
       engine& get_engine() const;
       const std::string& name() const { return name_; }
       void name(const std::string& v) { name_ = v; }

@@ -46,7 +46,8 @@ const basic_meta_target* basic_target::get_meta_target() const
    return main_target_->get_meta_target();
 }
 
-const project* basic_target::get_project() const
+const project&
+basic_target::get_project() const
 {
    return main_target_->get_meta_target()->get_project();
 }

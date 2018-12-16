@@ -195,7 +195,7 @@ void extract_dependency_like_sources(sources_decl& result,
 
       if (!sd_copy.target_path().empty() &&
           !sd_copy.target_path_is_global() &&
-          relative_to_target.get_project() != (**i).get_path_data().project_)
+          &relative_to_target.get_project() != (**i).get_path_data().project_)
       {
          const location_t full_target_path = ((**i).get_path_data().project_->location() / sd_copy.target_path()).normalize();
          const boost::filesystem::path p = relative_path(full_target_path, relative_to_target.location());

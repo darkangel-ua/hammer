@@ -33,7 +33,7 @@ class basic_target : public boost::noncopyable {
       void properties(const feature_set* p);
       const main_target* get_main_target() const { return main_target_; }
       const basic_meta_target* get_meta_target() const;
-      const project* get_project() const;
+      const project& get_project() const;
       engine& get_engine() const;
 
       build_nodes_t generate() const;

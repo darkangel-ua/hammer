@@ -24,7 +24,7 @@ basic_build_target::get_meta_target() const
    return get_main_target()->get_meta_target();
 }
 
-const project*
+const project&
 basic_build_target::get_project() const
 {
    return get_main_target()->get_project();

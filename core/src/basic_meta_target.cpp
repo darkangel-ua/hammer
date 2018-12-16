@@ -42,7 +42,7 @@ void basic_meta_target::add_sources(const sources_decl& s)
 
 const location_t& basic_meta_target::location() const
 {
-   return get_project()->location();
+   return get_project().location();
 }
 
 void basic_meta_target::instantiate_simple_targets(const sources_decl& targets,
@@ -135,9 +135,9 @@ void basic_meta_target::resolve_meta_target_source(const source_decl& source,
    }
 
    // source has target_name_ only when it was explicitly requested (./foo//bar) where target_name_ == "bar"
-   loaded_projects suitable_projects = get_project()->load_project(source.target_path());
+   loaded_projects suitable_projects = get_project().load_project(source.target_path());
 
-   build_request_with_source_properties = apply_project_dependencies(build_request_with_source_properties, source.target_path(), *get_project());
+   build_request_with_source_properties = apply_project_dependencies(build_request_with_source_properties, source.target_path(), get_project());
 
    if (source.target_name().empty()) {
       try {
@@ -163,7 +163,7 @@ basic_meta_target::~basic_meta_target()
 const feature_set& basic_meta_target::resolve_undefined_features(const feature_set& fs) const
 {
    const feature_set* without_undefined = fs.has_undefined_features()
-                                             ? get_project()->try_resolve_local_features(fs)
+                                             ? get_project().try_resolve_local_features(fs)
                                              : &fs;
    if (without_undefined->has_undefined_features())
       throw std::runtime_error("Target '" + name() + "' at location '" +
@@ -237,7 +237,7 @@ void adjust_dependency_features_sources(feature_set& set_to_adjust,
          adjusted_source.target_path("./", nullptr);
          adjusted_source.target_name(source.target_path());
 
-         f->set_dependency_data(adjusted_source, relative_to_target.get_project());
+         f->set_dependency_data(adjusted_source, &relative_to_target.get_project());
       }
    }
 }

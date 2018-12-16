@@ -22,7 +22,7 @@ warehouse_target::~warehouse_target()
 build_nodes_t
 warehouse_target::generate_impl() const
 {
-   auto w = get_engine().warehouse_manager().find(*get_project());
+   auto w = get_engine().warehouse_manager().find(get_project());
    throw warehouse_unresolved_target_exception(w->second.get());
 }
 

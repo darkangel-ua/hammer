@@ -461,7 +461,7 @@ warehouse_impl::get_unresoved_targets_info(engine& e,
       else
          throw std::runtime_error("Unable to get unresolved target info - no version specified");
 
-      p.name_ = (**i).get_project()->name();
+      p.name_ = (**i).get_project().name();
 
       const string package_hash = p.name_ + ":" + p.version_;
       // check for duplicates

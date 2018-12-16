@@ -49,12 +49,12 @@ gather_nodes(gather_ctx& ctx,
 
    for(build_node::sources_t::const_iterator i = node.sources_.begin(), last = node.sources_.end(); i != last; ++i)
       if (!i->source_node_->up_to_date() || ctx.unconditional_build_)
-         if (ctx.bounds_ == nullptr || i->source_node_->products_owner().get_project() == ctx.bounds_) // we don't build nodes that don't belongs to bounds
+         if (ctx.bounds_ == nullptr || &i->source_node_->products_owner().get_project() == ctx.bounds_) // we don't build nodes that don't belongs to bounds
             gather_nodes(ctx, ctx_node, *i->source_node_);
 
    for(build_node::nodes_t::const_iterator i = node.dependencies_.begin(), last = node.dependencies_.end(); i != last; ++i)
       if (!(**i).up_to_date() || ctx.unconditional_build_)
-         if (ctx.bounds_ == nullptr || (**i).products_owner().get_project() == ctx.bounds_) // we don't build nodes that don't belongs to bounds
+         if (ctx.bounds_ == nullptr || &(**i).products_owner().get_project() == ctx.bounds_) // we don't build nodes that don't belongs to bounds
             gather_nodes(ctx, ctx_node, **i);
 
    return ctx_node;

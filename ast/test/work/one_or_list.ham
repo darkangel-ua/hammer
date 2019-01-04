@@ -1,0 +1,11 @@
+# test for simple nested type one_or_list<id>
+one_or_list_1_test foo ;
+one_or_list_1_test foo bar ;
+one_or_list_1_test /foo ; #error: Argument 'one_or_list_arg': Identifier expected
+one_or_list_1_test foo /foo; #error: Argument 'one_or_list_arg': Identifier expected
+
+# one or list of structs
+one_or_list_2_test { foo : bar } ;
+one_or_list_2_test { foo : bar } { foo : bar } ;
+one_or_list_2_test foo ; #error: Argument 'one_or_list_arg': Expected struct of type 'struct_1'
+one_or_list_2_test { /foo : bar } ; #error: Field 'pattern': Identifier expected

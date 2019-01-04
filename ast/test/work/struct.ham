@@ -1,3 +1,4 @@
+# struct with all fields required
 struct_1_test foo; #error: Argument 'struct_arg': Expected struct of type 'struct_1'
 struct_1_test { pattern = foo : version = bar };
 struct_1_test { foo : bar };
@@ -5,7 +6,11 @@ struct_1_test { pattern = foo }; #error: Struct 'struct_1': not enough fields
 struct_1_test { foo = foo }; #error: Struct 'struct_1' does not have named field 'foo'
 struct_1_test {}; #error: Struct 'struct_1': not enough fields
 
+# struct with optional field
 struct_2_test { pattern = foo };
 struct_2_test { foo };
 struct_2_test { }; #error: Struct 'struct_2': not enough fields
 struct_2_test { version = bar }; #error: Struct 'struct_2': not enough fields
+
+# nested structs
+struct_3_test { pattern = foo : inner = { foo : bar } } ;

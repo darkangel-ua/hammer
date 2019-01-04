@@ -112,7 +112,7 @@ void project_rule(invocation_context& ctx,
                   const ast::expression* id,
                   requirements_decl* requirements,
                   usage_requirements_decl* usage_requirements,
-                  const details::project_dependency* dependencies)
+                  const one_or_list<details::project_dependency>* dependencies)
 {
    process_project_id(ctx, id);
 
@@ -127,10 +127,12 @@ void project_rule(invocation_context& ctx,
    }
 
    if (dependencies) {
-      feature_set* props = ctx.current_project_.get_engine().feature_registry().make_set();
-      props->join("version", dependencies->version_.to_string().c_str());
       project::dependencies_t deps;
-      deps.push_back({target_ref_mask_to_regex(dependencies->pattern_.value_.string()), props});
+      for (auto& d : dependencies->value_) {
+         feature_set* props = ctx.current_project_.get_engine().feature_registry().make_set();
+         props->join("version", d.version_.to_string().c_str());
+         deps.push_back({target_ref_mask_to_regex(d.pattern_.value_.string()), props});
+      }
       ctx.current_project_.dependencies(std::move(deps));
    }
 }

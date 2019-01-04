@@ -98,7 +98,8 @@ class actions_impl : public actions {
                         const rule_declaration& rule_decl,
                         const ast::expressions_t& arguments);
       ast::expressions_t
-      process_arguments_impl(const char* kind,
+      process_arguments_impl(const char* prefix,
+                             const char* kind,
                              const char* argument_or_field,
                              const char* rule_or_struct_name,
                              parscore::source_location rule_or_struct_name_loc,
@@ -108,58 +109,74 @@ class actions_impl : public actions {
                              ast::expressions_t::const_iterator arguments_last);
 
       const ast::expression*
-      process_one_arg(const rule_argument& ra,
+      process_one_arg(const char* prefix,
+                      const rule_argument& ra,
                       const ast::expression* arg);
 
       const ast::expression*
-      process_identifier_arg(const rule_argument& ra,
+      process_identifier_arg(const char* prefix,
+                             const rule_argument& ra,
                              const ast::expression* arg);
       const ast::expression*
       process_identifier_or_list_of_identifiers_arg(const rule_argument& ra,
                                                     const ast::expression* arg);
       const ast::expression*
-      process_feature_arg(const rule_argument& ra,
+      process_feature_arg(const char* prefix,
+                          const rule_argument& ra,
                           const ast::expression* arg);
       const ast::expression*
-      process_feature_set_arg(const rule_argument& ra,
+      process_feature_set_arg(const char* prefix,
+                              const rule_argument& ra,
                               const ast::expression* arg);
       const ast::expression*
       process_sources_arg(const rule_argument& ra,
                           const ast::expression* arg);
       const ast::expression*
-      process_requirements_decl_arg(const rule_argument& ra,
+      process_requirements_decl_arg(const char* prefix,
+                                    const rule_argument& ra,
                                     const ast::expression* arg);
       const ast::expression*
       process_usage_requirements_arg(const rule_argument& ra,
                                      const ast::expression* arg);
       const ast::expression*
-      process_path_arg(const rule_argument& ra,
+      process_path_arg(const char* prefix,
+                       const rule_argument& ra,
                        const ast::expression* arg);
       const ast::expression*
       process_path_or_list_of_paths(const rule_argument& ra,
                                     const ast::expression* arg);
       const ast::expression*
-      process_wcpath_arg(const rule_argument& ra,
+      process_wcpath_arg(const char* prefix,
+                         const rule_argument& ra,
                          const ast::expression* arg);
       const ast::expression*
       process_wcpath_or_list_of_wcpaths(const rule_argument& ra,
                                         const ast::expression* arg);
       const ast::expression*
-      process_feature_of_feature_set_arg(const rule_argument& ra,
+      process_feature_of_feature_set_arg(const char* prefix,
+                                         const rule_argument& ra,
                                          const ast::expression* arg);
       const ast::expression*
-      process_target_ref_arg(const rule_argument& ra,
+      process_target_ref_arg(const char* prefix,
+                             const rule_argument& ra,
                              const ast::expression* arg);
       const ast::expression*
-      process_target_ref_mask_arg(const rule_argument& ra,
+      process_target_ref_mask_arg(const char* prefix,
+                                  const rule_argument& ra,
                                   const ast::expression* arg);
       const ast::expression*
       process_condition(const rule_argument& ra,
                         const ast::expression* e);
       const ast::expression*
-      process_struct_arg(const rule_argument& ra,
+      process_struct_arg(const char* prefix,
+                         const rule_argument& ra,
                          const rule_argument_struct_desc& rasd,
                          const ast::expression* arg);
+      const ast::expression*
+      process_one_or_list_arg(const char* prefix,
+                              const rule_argument& ra,
+                              const rule_argument_type_desc& nested_type,
+                              const ast::expression* arg);
       const ast::expression*
       wrap_public(const ast::expression* e,
                   const ast::public_expr* pe);

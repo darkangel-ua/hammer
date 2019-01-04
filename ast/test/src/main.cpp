@@ -45,6 +45,11 @@ struct struct_2 {
    boost::optional<parscore::identifier> version_;
 };
 
+struct struct_3 {
+   parscore::identifier pattern;
+   struct_1 inner_;
+};
+
 namespace hammer {
    HAMMER_RULE_MANAGER_SIMPLE_TYPE(test_requirements, requirement_set);
    HAMMER_RULE_MANAGER_SIMPLE_TYPE(test_sources, sources);
@@ -87,6 +92,22 @@ namespace hammer {
       rule_argument_type_desc
       ast_type() {
          return make_rule_argument_struct_desc("struct_2", constructor, {"pattern", "version"});
+      }
+   };
+
+   template<>
+   struct rule_argument_type_info<struct_3> {
+      static
+      std::unique_ptr<struct_3>
+      constructor(const parscore::identifier& pattern,
+                  const struct_1& inner) {
+         return std::unique_ptr<struct_3>{new struct_3{pattern, inner}};
+      }
+
+      static
+      rule_argument_type_desc
+      ast_type() {
+         return make_rule_argument_struct_desc("struct_3", constructor, {"pattern", "inner"});
       }
    };
 }
@@ -217,6 +238,21 @@ void struct_1_test_rule(invocation_context&,
 static
 void struct_2_test_rule(invocation_context&,
                         const struct_2&) {
+}
+
+static
+void struct_3_test_rule(invocation_context&,
+                        const struct_3&) {
+}
+
+static
+void one_or_list_1_test_rule(invocation_context&,
+                             const one_or_list<parscore::identifier>& ol) {
+}
+
+static
+void one_or_list_2_test_rule(invocation_context&,
+                             const one_or_list<struct_1>& ol) {
 }
 
 static
@@ -372,6 +408,9 @@ void test_function(const fs::path& hamfile)
    rule_manager.add_rule("target_ref_mask_test", target_ref_mask_test_rule, {"target_ref_mask"});
    rule_manager.add_rule("struct_1_test", struct_1_test_rule, {"struct_arg"});
    rule_manager.add_rule("struct_2_test", struct_2_test_rule, {"struct_arg"});
+   rule_manager.add_rule("struct_3_test", struct_3_test_rule, {"struct_arg"});
+   rule_manager.add_rule("one_or_list_1_test", one_or_list_1_test_rule, {"one_or_list_arg"});
+   rule_manager.add_rule("one_or_list_2_test", one_or_list_2_test_rule, {"one_or_list_arg"});
 
    ast::context ctx;
    sema_env env;
@@ -388,28 +427,23 @@ void test_function(const fs::path& hamfile)
 }
 
 boost::unit_test::test_suite*
-init_unit_test_suite( int argc, char* argv[] )
-{
-   if (argc < 2)
-   {
-      cout << "Need test data directory path\n";
-      return NULL;
+init_unit_test_suite(int argc, char* argv[]) {
+   if (argc < 2) {
+      cout << "Need test data directory path" << endl;
+      return nullptr;
    }
        
    test_data_path = fs::path(argv[1]); 
-   if (!test_data_path.has_root_path())
-   {
+   if (!test_data_path.has_root_path()) {
       test_data_path = fs::current_path() / test_data_path;
       test_data_path.normalize();
    }
 
-   for(fs::directory_iterator i(test_data_path); i != fs::directory_iterator(); ++i)
-      if (i->path().filename() != ".svn" &&
-          extension(i->path()) == ".ham")
-      {
+   for (fs::directory_iterator i{test_data_path}, last = {}; i != last; ++i) {
+      if (i->path().filename() != ".svn" && extension(i->path()) == ".ham")
          framework::master_test_suite().add(make_test_case(boost::bind(&test_function, i->path()), basename(i->path())));
-      }
+   }
 
-   return 0;
+   return nullptr;
 }                             
 

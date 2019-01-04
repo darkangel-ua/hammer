@@ -151,13 +151,14 @@ int required_argument_count(const rule_declaration& rule_decl)
 }
 
 const expression*
-actions_impl::process_identifier_arg(const rule_argument& ra,
+actions_impl::process_identifier_arg(const char* prefix,
+                                     const rule_argument& ra,
                                      const expression* arg)
 {
    if (const id_expr* expr = as<id_expr>(arg))
       return expr;
 
-   diag_.error(arg->start_loc(), "Argument '%s': must be simple identifier") << ra.name();
+   diag_.error(arg->start_loc(), "%s '%s': Identifier expected") << prefix << ra.name();
    return new (ctx_) error_expression(arg);
 }
 
@@ -184,18 +185,19 @@ actions_impl::process_identifier_or_list_of_identifiers_arg(const rule_argument&
 }
 
 const expression*
-actions_impl::process_feature_set_arg(const rule_argument& ra,
+actions_impl::process_feature_set_arg(const char* prefix,
+                                      const rule_argument& ra,
                                       const expression* arg)
 {
    auto process_one = [&](const expression* e) -> const expression* {
       if (const feature* f = as<feature>(e)) {
          if (!known_feature(f->name())) {
-            diag_.error(f->start_loc(), "Argument '%s': Unknown feature '%s'") << ra.name() << f->name();
+            diag_.error(f->start_loc(), "%s '%s': Unknown feature '%s'") << prefix << ra.name() << f->name();
             return new (ctx_) error_expression(e);
          } else
             return e;
       } else {
-         diag_.error(e->start_loc(), "Argument '%s': Feature set elements are simple features") << ra.name();
+         diag_.error(e->start_loc(), "%s '%s': Feature set elements are simple features") << prefix << ra.name();
          return new (ctx_) error_expression(e);
       }
    };
@@ -211,18 +213,19 @@ actions_impl::process_feature_set_arg(const rule_argument& ra,
 }
 
 const expression*
-actions_impl::process_feature_arg(const rule_argument& ra,
+actions_impl::process_feature_arg(const char* prefix,
+                                  const rule_argument& ra,
                                   const expression* arg)
 {
    if (const feature* f = ast::as<feature>(arg)) {
       if (!known_feature(f->name())) {
-         diag_.error(arg->start_loc(), "Argument '%s': Unknown feature '%s'") << ra.name() << f->name();
+         diag_.error(arg->start_loc(), "%s '%s': Unknown feature '%s'") << prefix << ra.name() << f->name();
          return new (ctx_) error_expression(arg);
       } else
          return arg;
    }
 
-   diag_.error(arg->start_loc(), "Argument '%s': feature expected") << ra.name();
+   diag_.error(arg->start_loc(), "%s '%s': Feature expected") << prefix << ra.name();
    return new (ctx_) error_expression(arg);
 }
 
@@ -286,7 +289,8 @@ actions_impl::process_sources_arg(const rule_argument& ra,
 }
 
 const expression*
-actions_impl::process_requirements_decl_arg(const rule_argument& ra,
+actions_impl::process_requirements_decl_arg(const char* prefix,
+                                            const rule_argument& ra,
                                             const expression* arg)
 {
    auto process_result_element = [&](const expression* e,
@@ -294,7 +298,7 @@ actions_impl::process_requirements_decl_arg(const rule_argument& ra,
       const public_expr* pe = as<public_expr>(e);
       if (pe) {
          if (public_requirement) {
-            diag_.error(e->start_loc(), "Argument '%s': Public feature is not allowed here") << ra.name();
+            diag_.error(e->start_loc(), "%s '%s': Public feature is not allowed here") << prefix << ra.name();
             return new (ctx_) error_expression(e);
          } else
             e = pe->value();
@@ -302,17 +306,17 @@ actions_impl::process_requirements_decl_arg(const rule_argument& ra,
 
       if (const feature* f = as<feature>(e)) {
          if (!known_feature(f->name())) {
-            diag_.error(f->start_loc(), "Argument '%s': Unknown feature '%s'") << ra.name() << f->name();
+            diag_.error(f->start_loc(), "%s '%s': Unknown feature '%s'") << prefix << ra.name() << f->name();
             return new (ctx_) error_expression(e);
          } else if (const target_ref* tr = as<target_ref>(f->value())) {
             if (tr->is_public() && public_requirement) {
-               diag_.error(f->value()->start_loc(), "Argument '%s': Public target is not allowed here") << ra.name();
+               diag_.error(f->value()->start_loc(), "%s '%s': Public target is not allowed here") << prefix << ra.name();
                return new (ctx_) error_expression(e);
             }
          }
          return wrap_public(e, pe);
       } else {
-         diag_.error(e->start_loc(), "Argument '%s': Expected feature or condition") << ra.name();
+         diag_.error(e->start_loc(), "%s '%s': Expected feature or condition") << prefix << ra.name();
          return new (ctx_) error_expression(e);
       }
    };
@@ -421,7 +425,8 @@ actions_impl::process_usage_requirements_arg(const rule_argument& ra,
 }
 
 const expression*
-actions_impl::process_path_arg(const rule_argument& ra,
+actions_impl::process_path_arg(const char* prefix,
+                               const rule_argument& ra,
                                const expression* arg)
 {
    if (const path* p = as<path>(arg)) {
@@ -437,7 +442,7 @@ actions_impl::process_path_arg(const rule_argument& ra,
       return arg;
    }
 
-   diag_.error(arg->start_loc(), "Path expected");
+   diag_.error(arg->start_loc(), "%s '%s': Path expected") << prefix << ra.name();
    return new (ctx_) error_expression(arg);
 }
 
@@ -477,13 +482,14 @@ actions_impl::process_path_or_list_of_paths(const rule_argument& ra,
 }
 
 const expression*
-actions_impl::process_wcpath_arg(const rule_argument& ra,
+actions_impl::process_wcpath_arg(const char* prefix,
+                                 const rule_argument& ra,
                                  const expression* arg)
 {
    if (as<path>(arg))
       return arg;
 
-   diag_.error(arg->start_loc(), "Argument '%s': Path expected") << ra.name();
+   diag_.error(arg->start_loc(), "%s '%s': Path expected") << prefix << ra.name();
    return new (ctx_) error_expression(arg);
 }
 
@@ -514,82 +520,129 @@ actions_impl::process_wcpath_or_list_of_wcpaths(const rule_argument& ra,
 }
 
 const expression*
-actions_impl::process_feature_of_feature_set_arg(const rule_argument& ra,
+actions_impl::process_feature_of_feature_set_arg(const char* prefix,
+                                                 const rule_argument& ra,
                                                  const expression* arg)
 {
    if (as<ast::feature>(arg))
-      return process_feature_arg(ra, arg);
+      return process_feature_arg(prefix, ra, arg);
    else if (as<ast::list_of>(arg))
-      return process_feature_set_arg(ra, arg);
+      return process_feature_set_arg(prefix, ra, arg);
 
-   diag_.error(arg->start_loc(), "Argument '%s': expected feature or feature list") << ra.name();
+   diag_.error(arg->start_loc(), "%s '%s': expected feature or feature list") << prefix << ra.name();
    return new (ctx_) error_expression(arg);
 }
 
 const expression*
-actions_impl::process_target_ref_arg(const rule_argument& ra,
+actions_impl::process_target_ref_arg(const char* prefix,
+                                     const rule_argument& ra,
                                      const expression* arg)
 {
    if (const target_ref* tr = as<target_ref>(arg)) {
       if (tr->target_path()->has_wildcard()) {
-         diag_.error(tr->start_loc(), "Argument '%s': Wildcards not allowed in target reference") << ra.name();
+         diag_.error(tr->start_loc(), "%s '%s': Wildcards not allowed in target reference") << prefix << ra.name();
          return new (ctx_) error_expression(tr);
       } else
          return arg;
    }
 
-   diag_.error(arg->start_loc(), "Argument '%s': Expected target reference") << ra.name();
+   diag_.error(arg->start_loc(), "%s '%s': Expected target reference") << prefix << ra.name();
    return new (ctx_) error_expression(arg);
 }
 
 const expression*
-actions_impl::process_target_ref_mask_arg(const rule_argument& ra,
+actions_impl::process_target_ref_mask_arg(const char* prefix,
+                                          const rule_argument& ra,
                                           const expression* arg)
 {
    if (as<id_expr>(arg))
       return arg;
    else if (const path* p = as<path>(arg)) {
       if (p->root_name().valid()) {
-         diag_.error(p->start_loc(), "Argument '%s': Absolute path can't be used as target reference mask") << ra.name();
+         diag_.error(p->start_loc(), "%s '%s': Absolute path can't be used as target reference mask") << prefix << ra.name();
          return new (ctx_) error_expression(p);
       }
       return arg;
    } else if (const target_ref* tr = as<target_ref>(arg)) {
       if (tr->public_tag().valid()) {
-         diag_.error(tr->public_tag(), "Argument '%s': Target reference mask can't be public") << ra.name();
+         diag_.error(tr->public_tag(), "%s '%s': Target reference mask can't be public") << prefix << ra.name();
          return new (ctx_) error_expression(tr);
       }
       if (tr->has_target_name()) {
-         diag_.error(tr->target_name().start_loc(), "Argument '%s': Target name is not allowed in target reference mask") << ra.name();
+         diag_.error(tr->target_name().start_loc(), "%s '%s': Target name is not allowed in target reference mask") << prefix << ra.name();
          return new (ctx_) error_expression(tr);
       }
       if (!tr->build_request().empty()) {
-         diag_.error(tr->build_request().front()->start_loc(), "Argument '%s': Build request is not allowed in target reference mask") << ra.name();
+         diag_.error(tr->build_request().front()->start_loc(), "%s '%s': Build request is not allowed in target reference mask") << prefix << ra.name();
          return new (ctx_) error_expression(tr);
       } else
          return arg;
    }
 
-   diag_.error(arg->start_loc(), "Argument '%s': Expected target reference mask") << ra.name();
+   diag_.error(arg->start_loc(), "%s '%s': Target reference mask expected") << prefix << ra.name();
    return new (ctx_) error_expression(arg);
 }
 
 const expression*
-actions_impl::process_struct_arg(const rule_argument& ra,
+actions_impl::process_struct_arg(const char* prefix,
+                                 const rule_argument& ra,
                                  const rule_argument_struct_desc& rasd,
                                  const expression* arg) {
    if (const struct_expr* s = as<struct_expr>(arg))
       return new (ctx_) struct_expr(s->start_brace_,
-                                    process_arguments_impl("Struct", "field", rasd.typename_.c_str(), s->start_brace_,
+                                    process_arguments_impl("Field", "Struct", "field", rasd.typename_.c_str(), s->start_brace_,
                                                            rasd.fields_->begin(), rasd.fields_->end(),
                                                            s->fields_.begin(), s->fields_.end()));
 
-   diag_.error(arg->start_loc(), "Argument '%s': Expected struct of type '%s'") << ra.name() << rasd.typename_;
+   diag_.error(arg->start_loc(), "%s '%s': Expected struct of type '%s'") << prefix << ra.name() << rasd.typename_;
    return new (ctx_) error_expression(arg);
 }
 
 const expression*
-actions_impl::process_one_arg(const rule_argument& ra,
+actions_impl::process_one_or_list_arg(const char* prefix,
+                                      const rule_argument& ra,
+                                      const rule_argument_type_desc& nested_type,
+                                      const expression* arg) {
+   auto process_one = [&] (const expression* e) -> const expression* {
+      if (auto type = nested_type.as_simple()) {
+         switch (*type) {
+            case rule_argument_type::identifier:
+               return process_identifier_arg(prefix, ra, e);
+            case rule_argument_type::feature:
+               return process_feature_arg(prefix, ra, e);
+            case rule_argument_type::path:
+               return process_path_arg(prefix, ra, e);
+            case rule_argument_type::wcpath:
+               return process_wcpath_arg(prefix, ra, e);
+            case rule_argument_type::target_ref:
+               return process_target_ref_arg(prefix, ra, e);
+            case rule_argument_type::target_ref_mask:
+               return process_target_ref_mask_arg(prefix, ra, e);
+            default:
+               break;
+         }
+      } else if (auto type = nested_type.as_struct())
+         return process_struct_arg(prefix, ra, *type, e);
+      else if (auto type = nested_type.as_variant())
+         throw std::runtime_error("[actions_impl::process_one_or_list_arg]: variants not implemented");
+
+      assert(false && "[actions_impl::process_one_or_list_arg]: Unhandled argument type!");
+      abort();
+   };
+
+   if (const list_of* l = as<list_of>(arg)) {
+      expressions_t values{expressions_t::allocator_type{ctx_}};
+      for (const expression* le : l->values())
+         values.push_back(process_one(le));
+
+      return new (ctx_) list_of(values);
+   } else
+      return process_one(arg);
+}
+
+const expression*
+actions_impl::process_one_arg(const char* prefix,
+                              const rule_argument& ra,
                               const expression* arg)
 {
    if (!ra.is_optional() && is_a<empty_expr>(arg)) {
@@ -611,34 +664,34 @@ actions_impl::process_one_arg(const rule_argument& ra,
    if (auto simple_type_ptr = ra.type().as_simple()) {
       switch(*simple_type_ptr) {
          case rule_argument_type::identifier:
-            return process_identifier_arg(ra, arg);
+            return process_identifier_arg(prefix, ra, arg);
 
          case rule_argument_type::identifier_or_list_of_identifiers:
             return process_identifier_or_list_of_identifiers_arg(ra, arg);
 
          case rule_argument_type::feature:
-            return process_feature_arg(ra, arg);
+            return process_feature_arg(prefix, ra, arg);
 
          case rule_argument_type::feature_set:
-            return process_feature_set_arg(ra, arg);
+            return process_feature_set_arg(prefix, ra, arg);
 
          case rule_argument_type::sources:
             return process_sources_arg(ra, arg);
 
          case rule_argument_type::requirement_set:
-            return process_requirements_decl_arg(ra, arg);
+            return process_requirements_decl_arg(prefix, ra, arg);
 
          case rule_argument_type::usage_requirements:
             return process_usage_requirements_arg(ra, arg);
 
          case rule_argument_type::path:
-            return process_path_arg(ra, arg);
+            return process_path_arg(prefix, ra, arg);
 
          case rule_argument_type::path_or_list_of_paths:
             return process_path_or_list_of_paths(ra, arg);
 
          case rule_argument_type::wcpath:
-            return process_wcpath_arg(ra, arg);
+            return process_wcpath_arg(prefix, ra, arg);
 
          case rule_argument_type::wcpath_or_list_of_wcpaths:
             return process_wcpath_or_list_of_wcpaths(ra, arg);
@@ -647,28 +700,31 @@ actions_impl::process_one_arg(const rule_argument& ra,
             return arg;
 
          case rule_argument_type::feature_or_feature_set:
-            return process_feature_of_feature_set_arg(ra, arg);
+            return process_feature_of_feature_set_arg(prefix, ra, arg);
 
          case rule_argument_type::target_ref:
-            return process_target_ref_arg(ra, arg);
+            return process_target_ref_arg(prefix, ra, arg);
 
          case rule_argument_type::target_ref_mask:
-            return process_target_ref_mask_arg(ra, arg);
+            return process_target_ref_mask_arg(prefix, ra, arg);
 
          default:
             assert(false && "Unknown argument type");
             abort();
       }
-   } else if (auto list_type_ptr = ra.type().as_list()) {
-      assert(false && "not implemented");
-   } else if (auto struct_type_ptr = ra.type().as_struct()) {
-      return process_struct_arg(ra, *struct_type_ptr, arg);
-   } else
+   } else if (auto list_type_ptr = ra.type().as_list())
+      return process_one_or_list_arg(prefix, ra, *list_type_ptr->nested_type_, arg);
+   else if (auto struct_type_ptr = ra.type().as_struct()) {
+      return process_struct_arg(prefix, ra, *struct_type_ptr, arg);
+   } else {
       assert(false && "Unhandled rule argument type");
+      abort();
+   }
 }
 
 expressions_t
-actions_impl::process_arguments_impl(const char* kind,
+actions_impl::process_arguments_impl(const char* prefix,
+                                     const char* kind,
                                      const char* argument_or_field,
                                      const char* rule_or_struct_name,
                                      parscore::source_location rule_or_struct_name_loc,
@@ -717,7 +773,7 @@ actions_impl::process_arguments_impl(const char* kind,
                if (!r->is_optional())
                   ++required_argument_used;
 
-               const named_expr* new_ne = new (ctx_) named_expr(ne->name(), process_one_arg(*r, ne->value()));
+               const named_expr* new_ne = new (ctx_) named_expr(ne->name(), process_one_arg(prefix, *r, ne->value()));
                result.push_back(new_ne);
             }
          }
@@ -743,7 +799,7 @@ actions_impl::process_arguments_impl(const char* kind,
             if (!ra->is_optional())
                ++required_argument_used;
 
-            result.push_back(process_one_arg(*ra, *i));
+            result.push_back(process_one_arg(prefix, *ra, *i));
          }
       }
 
@@ -806,7 +862,7 @@ actions_impl::process_arguments(const parscore::identifier& rule_name,
                if (!r->is_optional())
                   ++required_argument_used;
 
-               const named_expr* new_ne = new (ctx_) named_expr(ne->name(), process_one_arg(*r, ne->value()));
+               const named_expr* new_ne = new (ctx_) named_expr(ne->name(), process_one_arg("Argument", *r, ne->value()));
                result.push_back(new_ne);
             }
          }
@@ -832,7 +888,7 @@ actions_impl::process_arguments(const parscore::identifier& rule_name,
             if (!ra->is_optional())
                ++required_argument_used;
 
-            result.push_back(process_one_arg(*ra, *i));
+            result.push_back(process_one_arg("Argument", *ra, *i));
          }
       }
 

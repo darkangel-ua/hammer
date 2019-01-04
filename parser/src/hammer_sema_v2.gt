@@ -79,6 +79,7 @@ list_element returns[const hammer::ast::expression* result]
         | public_expression { result = $public_expression.result; }
         | expression_a { result = $expression_a.result; }
 	| rule_invocation { result = $rule_invocation.result; }
+	| struct_ { result = $struct_.result; }
 	;
 public_expression returns[const hammer::ast::expression* result]
 	: ^(PublicTag expression_a) { result = SEMA->on_public_expr($PublicTag->getToken($PublicTag), $expression_a.result); }

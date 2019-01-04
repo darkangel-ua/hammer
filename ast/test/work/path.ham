@@ -1,6 +1,6 @@
 path_test ./test ;
 path_test ./*/foo ; #error: Wildcards not allowed here
-path_test /foo ; #error: Path expected
+path_test /foo ; #error: Argument 'path': Path expected
 
 paths_test ./test ;
 paths_test ./foo ./bar ;

@@ -183,11 +183,11 @@ static bool id_list_rule_invoked = false;
 
 static
 void id_list_rule(invocation_context& ctx,
-                  const vector<identifier>& ids)
+                  const one_or_list<identifier>& ids)
 {
    id_list_rule_invoked = true;
-   BOOST_REQUIRE_EQUAL(ids.size(), 1);
-   BOOST_CHECK_EQUAL(ids.front(), "foo");
+   BOOST_REQUIRE_EQUAL(ids.value_.size(), 1);
+   BOOST_CHECK_EQUAL(ids.value_.front(), "foo");
 }
 
 BOOST_AUTO_TEST_CASE(invoke_test_id_list)
@@ -205,7 +205,7 @@ BOOST_AUTO_TEST_CASE(invoke_test_id_list)
    identifier id_1("foo");
 
    rule_manager_arg_ptr arg_0(new rule_manager_arg<invocation_context>(ctx));
-   rule_manager_arg_ptr arg_1(new rule_manager_arg<vector<identifier>>({id_1}));
+   rule_manager_arg_ptr arg_1(new rule_manager_arg<one_or_list<identifier>>({{id_1}}));
 
    rule_manager_arguments_t args;
    args.push_back(move(arg_0));

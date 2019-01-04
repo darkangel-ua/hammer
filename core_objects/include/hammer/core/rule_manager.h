@@ -1,6 +1,7 @@
 #pragma once
 #include <map>
 #include <vector>
+#include <boost/noncopyable.hpp>
 #include <boost/function.hpp>
 #include <boost/function_types/result_type.hpp>
 #include <boost/function_types/function_arity.hpp>
@@ -31,7 +32,6 @@ class rule_manager;
 
 enum class rule_argument_meta_type {
    simple,
-   list,
    one_or_list,
    variant,
    struct_
@@ -45,13 +45,6 @@ struct one_or_list {
 template<typename T>
 struct rule_argument_meta_type_info {
    static const rule_argument_meta_type meta_type_ = rule_argument_meta_type::simple;
-   using nested_type = void;
-};
-
-template<typename T>
-struct rule_argument_meta_type_info<std::vector<T>> {
-   static const rule_argument_meta_type meta_type_ = rule_argument_meta_type::list;
-   using nested_type = T;
 };
 
 template<typename T>
@@ -91,32 +84,35 @@ struct rule_argument_struct_desc {
    std::shared_ptr<rule_manager_invoker_base> constructor_;
 };
 
+struct rule_argument_type_desc;
+
+struct rule_argument_list_desc {
+   class basic_list_adaptor;
+
+   template<typename T>
+   class list_adaptor;
+
+   using adaptor_constructor_t = boost::function<std::unique_ptr<basic_list_adaptor>()>;
+
+   adaptor_constructor_t make_list;
+   std::shared_ptr<rule_argument_type_desc> nested_type_;
+};
+
 struct rule_argument_type_desc {
-   using list_type = std::shared_ptr<rule_argument_type_desc>;
-   using variant_types = std::vector<list_type>;
-   using type = boost::variant<rule_argument_type, list_type, variant_types, rule_argument_struct_desc>;
+   using variant_types = std::vector<std::shared_ptr<rule_argument_type_desc>>;
+   using type = boost::variant<rule_argument_type, rule_argument_list_desc, variant_types, rule_argument_struct_desc>;
 
    template<typename T>
    rule_argument_type_desc(T&& v) : type_(std::forward<T>(v)) {}
 
    const rule_argument_type* as_simple() const { return boost::get<rule_argument_type>(&type_); }
-   const list_type* as_list() const { return boost::get<list_type>(&type_); }
+   const rule_argument_list_desc* as_list() const { return boost::get<rule_argument_list_desc>(&type_); }
    const variant_types* as_variant() const { return boost::get<variant_types>(&type_); }
    const rule_argument_struct_desc* as_struct() const { return boost::get<rule_argument_struct_desc>(&type_); }
 
    bool operator == (const rule_argument_type v) const { if (auto s = as_simple()) return v == *s; else return false; }
 
    type type_;
-};
-
-template<typename T>
-struct rule_argument_type_info {
-   static
-   rule_argument_type_desc
-   ast_type(typename boost::enable_if_c<rule_argument_meta_type::list == rule_argument_meta_type_info<T>::meta_type_>::type* = nullptr) {
-      using nested_type = typename rule_argument_meta_type_info<T>::nested_type;
-      return std::make_shared<rule_argument_type_desc>(rule_argument_type_info<nested_type>::ast_type());
-   }
 };
 
 struct invocation_context {
@@ -155,15 +151,6 @@ struct target_invocation_context : invocation_context {
 	bool local_;
 	bool explicit_;
 };
-
-#define HAMMER_RULE_MANAGER_SIMPLE_TYPE(type, atype) \
-   template<> \
-   struct rule_argument_type_info< type > { static rule_argument_type_desc ast_type() { return { rule_argument_type:: atype }; } }
-
-HAMMER_RULE_MANAGER_SIMPLE_TYPE(parscore::identifier, identifier);
-HAMMER_RULE_MANAGER_SIMPLE_TYPE(invocation_context, invocation_context);
-HAMMER_RULE_MANAGER_SIMPLE_TYPE(target_invocation_context, target_invocation_context);
-HAMMER_RULE_MANAGER_SIMPLE_TYPE(ast::expression, ast_expression);
 
 class rule_argument {
    public:   
@@ -208,10 +195,10 @@ struct rule_argument_decl {
 
 using rule_args_decl = std::vector<rule_argument_decl>;
 
-class rule_manager_arg_base {
+class rule_manager_arg_base : public boost::noncopyable {
 	public:
-		rule_manager_arg_base(void* v) : v_(v) {}
-		virtual ~rule_manager_arg_base() {}
+      rule_manager_arg_base(void* v) : v_(v) {}
+		virtual ~rule_manager_arg_base() = default;
 		void* value() { return v_; }
 
 	protected:
@@ -234,6 +221,49 @@ class rule_manager_arg : public rule_manager_arg_base {
 
 typedef std::unique_ptr<rule_manager_arg_base> rule_manager_arg_ptr;
 typedef std::vector<rule_manager_arg_ptr> rule_manager_arguments_t;
+
+class rule_argument_list_desc::basic_list_adaptor : public rule_manager_arg_base {
+   public:
+      basic_list_adaptor(void* v) : rule_manager_arg_base(v) {}
+      virtual void push_back(rule_manager_arg_ptr arg) = 0;
+      virtual ~basic_list_adaptor() = default;
+};
+
+template<typename T>
+class rule_argument_list_desc::list_adaptor : public rule_argument_list_desc::basic_list_adaptor {
+      using value_type = one_or_list<T>;
+
+   public:
+      list_adaptor() : basic_list_adaptor(new one_or_list<T>) {}
+
+      void push_back(rule_manager_arg_ptr arg) override {
+         static_cast<value_type*>(value())->value_.push_back(*static_cast<T*>(arg->value()));
+      }
+
+      ~list_adaptor() { delete static_cast<value_type*>(v_); }
+};
+
+template<typename T>
+struct rule_argument_type_info {
+   static
+   rule_argument_type_desc
+   ast_type(typename boost::enable_if_c<rule_argument_meta_type::one_or_list == rule_argument_meta_type_info<T>::meta_type_>::type* = nullptr) {
+      using nested_type = typename rule_argument_meta_type_info<T>::nested_type;
+
+      auto make_list = [] { return std::unique_ptr<rule_argument_list_desc::basic_list_adaptor>{ new rule_argument_list_desc::list_adaptor<nested_type> }; };
+
+      return rule_argument_list_desc{ make_list, std::make_shared<rule_argument_type_desc>(rule_argument_type_info<nested_type>::ast_type()) };
+   }
+};
+
+#define HAMMER_RULE_MANAGER_SIMPLE_TYPE(type, atype) \
+   template<> \
+   struct rule_argument_type_info< type > { static rule_argument_type_desc ast_type() { return { rule_argument_type:: atype }; } }
+
+HAMMER_RULE_MANAGER_SIMPLE_TYPE(parscore::identifier, identifier);
+HAMMER_RULE_MANAGER_SIMPLE_TYPE(invocation_context, invocation_context);
+HAMMER_RULE_MANAGER_SIMPLE_TYPE(target_invocation_context, target_invocation_context);
+HAMMER_RULE_MANAGER_SIMPLE_TYPE(ast::expression, ast_expression);
 
 struct rule_manager_invoker_base {
    virtual rule_manager_arg_ptr invoke(rule_manager_arguments_t& args) const = 0;

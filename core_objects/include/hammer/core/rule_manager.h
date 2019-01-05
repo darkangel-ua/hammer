@@ -39,6 +39,11 @@ enum class rule_argument_meta_type {
 
 template<typename T>
 struct one_or_list {
+   using const_iterator = typename std::vector<T>::const_iterator;
+
+   const_iterator begin() const { return value_.begin(); }
+   const_iterator end() const { return value_.end(); }
+
    std::vector<T> value_;
 };
 
@@ -58,7 +63,6 @@ enum class rule_argument_type {
 	invocation_context,
 	target_invocation_context,
 	identifier,
-   identifier_or_list_of_identifiers,
    feature,
 	feature_set,
 	feature_or_feature_set,
@@ -66,9 +70,7 @@ enum class rule_argument_type {
 	requirement_set,
 	usage_requirements,
 	path,  // wildcards not allowed
-	path_or_list_of_paths,
    wcpath, // wildcards allowed
-   wcpath_or_list_of_wcpaths,
 	target_ref,
    target_ref_mask, // target ref without target name and properties and wildcards allowed
 	ast_expression

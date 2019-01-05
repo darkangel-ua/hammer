@@ -128,7 +128,7 @@ void project_rule(invocation_context& ctx,
 
    if (dependencies) {
       project::dependencies_t deps;
-      for (auto& d : dependencies->value_) {
+      for (auto& d : *dependencies) {
          feature_set* props = ctx.current_project_.get_engine().feature_registry().make_set();
          props->join("version", d.version_.to_string().c_str());
          deps.push_back({target_ref_mask_to_regex(d.pattern_.value_.string()), props});
@@ -312,7 +312,7 @@ feature_attributes_validator(ast::context& ctx,
 
 static
 feature_attributes
-resolve_attributes(const std::vector<parscore::identifier>* attributes)
+resolve_attributes(const one_or_list<parscore::identifier>* attributes)
 {
 
    feature_attributes result = {0};
@@ -364,7 +364,7 @@ resolve_attributes(const std::vector<parscore::identifier>* attributes)
 
 static
 std::vector<std::string>
-to_simple_ids(const id_or_list_of_ids_t* values)
+to_simple_ids(const one_or_list<parscore::identifier>* values)
 {
    std::vector<std::string> result;
 
@@ -381,8 +381,8 @@ to_simple_ids(const id_or_list_of_ids_t* values)
 static
 void feature_rule(invocation_context& ctx,
                   const parscore::identifier& name,
-                  const id_or_list_of_ids_t* values_,
-                  const id_or_list_of_ids_t* attributes)
+                  const one_or_list<parscore::identifier>* values_,
+                  const one_or_list<parscore::identifier>* attributes)
 {
    std::vector<std::string> values = to_simple_ids(values_);
    feature_def::legal_values_t legal_values;
@@ -396,8 +396,8 @@ void feature_rule(invocation_context& ctx,
 static
 void feature_local_rule(invocation_context& ctx,
                         const parscore::identifier& name,
-                        const id_or_list_of_ids_t* values_,
-                        const id_or_list_of_ids_t* attributes)
+                        const one_or_list<parscore::identifier>* values_,
+                        const one_or_list<parscore::identifier>* attributes)
 {
    std::vector<std::string> values = to_simple_ids(values_);
    feature_def::legal_values_t legal_values;
@@ -527,8 +527,8 @@ glob_patterns_validator(ast::context& ctx,
 static
 std::unique_ptr<sources_decl>
 glob_rule_impl(invocation_context& ctx,
-               const wcpath_or_list_of_wcpaths_t& patterns,
-               const path_or_list_of_paths_t* exceptions,
+               const one_or_list<wcpath>& patterns,
+               const one_or_list<location_t>* exceptions,
                const bool recursive)
 {
    auto result = boost::make_unique<sources_decl>();
@@ -559,8 +559,8 @@ glob_rule_impl(invocation_context& ctx,
 static
 std::unique_ptr<sources_decl>
 glob_rule(invocation_context& ctx,
-          const wcpath_or_list_of_wcpaths_t& patterns,
-          const path_or_list_of_paths_t* exceptions)
+          const one_or_list<wcpath>& patterns,
+          const one_or_list<location_t>* exceptions)
 {
    return glob_rule_impl(ctx, patterns, exceptions, false);
 }
@@ -568,8 +568,8 @@ glob_rule(invocation_context& ctx,
 static
 std::unique_ptr<sources_decl>
 rglob_rule(invocation_context& ctx,
-           const wcpath_or_list_of_wcpaths_t& patterns,
-           const path_or_list_of_paths_t* exceptions)
+           const one_or_list<wcpath>& patterns,
+           const one_or_list<location_t>* exceptions)
 {
    return glob_rule_impl(ctx, patterns, exceptions, true);
 }
@@ -579,7 +579,7 @@ void copy_rule(target_invocation_context& ctx,
                const parscore::identifier& name,
                const sources_decl& sources,
                const location_t& destination,
-               const id_or_list_of_ids_t& ast_types_to_copy,
+               const one_or_list<parscore::identifier>& ast_types_to_copy,
                const parscore::identifier* ast_recursive)
 {
    vector<const target_type*> types_to_copy;

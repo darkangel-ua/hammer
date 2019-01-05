@@ -217,24 +217,6 @@ ast2sources_decl(invocation_context& ctx,
 }
 
 static
-std::unique_ptr<id_or_list_of_ids_t>
-ast2identifier_or_list_of_identifiers(invocation_context& ctx,
-                                      const ast::expression* e)
-{
-   auto result = boost::make_unique<id_or_list_of_ids_t>();
-
-   if (const ast::id_expr* id = ast::as<ast::id_expr>(e))
-      result->push_back(id->id());
-   else {
-      const ast::list_of* l = ast::as<ast::list_of>(e);
-      for (const ast::expression* le : l->values())
-         result->push_back(ast::as<ast::id_expr>(le)->id());
-   }
-
-   return result;
-}
-
-static
 std::unique_ptr<requirement_condition_op_base>
 ast2requirement_condition_op(invocation_context& ctx,
                              const ast::expression* e)
@@ -346,40 +328,6 @@ ast2wcpath(invocation_context& ctx,
 }
 
 static
-std::unique_ptr<path_or_list_of_paths_t>
-ast2path_or_list_of_paths(invocation_context& ctx,
-                          const ast::expression& e)
-{
-   if (const ast::path* p = ast::as<ast::path>(&e))
-      return boost::make_unique<path_or_list_of_paths_t>(path_or_list_of_paths_t{*ast2path(ctx, *p)});
-   else if (const ast::list_of* l = ast::as<ast::list_of>(&e)) {
-      std::vector<location_t> paths;
-      for (const ast::expression* le : l->values())
-         paths.push_back(*ast2path(ctx, *ast::as<ast::path>(le)));
-
-      return boost::make_unique<path_or_list_of_paths_t>(std::move(paths));
-   } else
-      throw std::runtime_error("ast2feature_or_feature_set: Unexpected AST node");
-}
-
-static
-std::unique_ptr<wcpath_or_list_of_wcpaths_t>
-ast2wcpath_or_list_of_wcpaths(invocation_context& ctx,
-                              const ast::expression& e)
-{
-   if (const ast::path* p = ast::as<ast::path>(&e))
-      return boost::make_unique<wcpath_or_list_of_wcpaths_t>(wcpath_or_list_of_wcpaths_t{*ast2wcpath(ctx, *p)});
-   else if (const ast::list_of* l = ast::as<ast::list_of>(&e)) {
-      std::vector<wcpath> paths;
-      for (const ast::expression* le : l->values())
-         paths.push_back(*ast2wcpath(ctx, *ast::as<ast::path>(le)));
-
-      return boost::make_unique<wcpath_or_list_of_wcpaths_t>(std::move(paths));
-   } else
-      throw std::runtime_error("ast2feature_or_feature_set: Unexpected AST node");
-}
-
-static
 std::unique_ptr<target_ref_mask>
 ast2target_ref_mask(invocation_context& ctx,
                     const ast::expression& e)
@@ -475,9 +423,6 @@ make_one_arg(invocation_context& ctx,
             return rule_manager_arg_ptr{new rule_manager_arg<parscore::identifier>{new parscore::identifier{id->id()}}};
          }
 
-         case rule_argument_type::identifier_or_list_of_identifiers:
-            return rule_manager_arg_ptr{new rule_manager_arg<id_or_list_of_ids_t>{ast2identifier_or_list_of_identifiers(ctx, e)}};
-
          case rule_argument_type::sources: {
             const ast::sources* sources = ast::as<ast::sources>(e);
             assert(sources);
@@ -505,18 +450,11 @@ make_one_arg(invocation_context& ctx,
             return rule_manager_arg_ptr{new rule_manager_arg<location_t>{ast2path(ctx, *path)}};
          }
 
-         case rule_argument_type::path_or_list_of_paths: {
-            return rule_manager_arg_ptr{new rule_manager_arg<path_or_list_of_paths_t>{ast2path_or_list_of_paths(ctx, *e)}};
-         }
-
          case rule_argument_type::wcpath: {
             const ast::path* path = ast::as<ast::path>(e);
             assert(path);
             return rule_manager_arg_ptr{new rule_manager_arg<wcpath>{ast2wcpath(ctx, *path)}};
          }
-
-         case rule_argument_type::wcpath_or_list_of_wcpaths:
-            return rule_manager_arg_ptr{new rule_manager_arg<wcpath_or_list_of_wcpaths_t>{ast2wcpath_or_list_of_wcpaths(ctx, *e)}};
 
          case rule_argument_type::feature: {
             const ast::feature* f = ast::as<ast::feature>(e);

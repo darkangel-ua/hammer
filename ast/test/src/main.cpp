@@ -28,8 +28,8 @@ namespace fs = boost::filesystem;
 class test_requirements;
 class test_sources{};
 class test_feature_set;
-class test_path;
-class test_wcpath;
+class test_path{};
+class test_wcpath{};
 class test_usage_requirements;
 class test_feature;
 class test_target_ref;
@@ -56,9 +56,7 @@ namespace hammer {
    HAMMER_RULE_MANAGER_SIMPLE_TYPE(test_feature_set, feature_set);
    HAMMER_RULE_MANAGER_SIMPLE_TYPE(test_feature, feature);
    HAMMER_RULE_MANAGER_SIMPLE_TYPE(test_path, path);
-   HAMMER_RULE_MANAGER_SIMPLE_TYPE(vector<test_path>, path_or_list_of_paths);
    HAMMER_RULE_MANAGER_SIMPLE_TYPE(test_wcpath, wcpath);
-   HAMMER_RULE_MANAGER_SIMPLE_TYPE(vector<test_wcpath>, wcpath_or_list_of_wcpaths);
    HAMMER_RULE_MANAGER_SIMPLE_TYPE(test_usage_requirements, usage_requirements);
    HAMMER_RULE_MANAGER_SIMPLE_TYPE(test_target_ref, target_ref);
    HAMMER_RULE_MANAGER_SIMPLE_TYPE(test_target_ref_mask, target_ref_mask);
@@ -202,7 +200,7 @@ void path_test_rule(invocation_context& ctx,
 
 static
 void paths_test_rule(invocation_context& ctx,
-                     const vector<test_path>&)
+                     const one_or_list<test_path>&)
 {
 }
 
@@ -214,7 +212,7 @@ void wcpath_test_rule(invocation_context& ctx,
 
 static
 void wcpaths_test_rule(invocation_context& ctx,
-                       const vector<test_wcpath>&)
+                       const one_or_list<test_wcpath>&)
 {
 }
 

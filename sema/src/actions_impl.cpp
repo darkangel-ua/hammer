@@ -163,28 +163,6 @@ actions_impl::process_identifier_arg(const char* prefix,
 }
 
 const expression*
-actions_impl::process_identifier_or_list_of_identifiers_arg(const rule_argument& ra,
-                                                            const expression* arg)
-{
-   if (const id_expr* expr = as<id_expr>(arg))
-      return expr;
-
-   if (const list_of* l = as<list_of>(arg)) {
-      for (const expression* e : l->values()) {
-         if (!is_a<id_expr>(e)) {
-            diag_.error(arg->start_loc(), "Argument '%s': must be simple identifier or list of identifiers") << ra.name();
-            return new (ctx_) error_expression(arg);
-         }
-      }
-
-      return arg;
-   }
-
-   diag_.error(arg->start_loc(), "Argument '%s': must be simple identifier or list of identifiers") << ra.name();
-   return new (ctx_) error_expression(arg);
-}
-
-const expression*
 actions_impl::process_feature_set_arg(const char* prefix,
                                       const rule_argument& ra,
                                       const expression* arg)
@@ -447,41 +425,6 @@ actions_impl::process_path_arg(const char* prefix,
 }
 
 const expression*
-actions_impl::process_path_or_list_of_paths(const rule_argument& ra,
-                                            const expression* arg)
-{
-   auto check_path = [&](const expression* e) -> const expression* {
-      if (const path* p = as<path>(e)) {
-         for (const expression* pe : p->elements()) {
-            if (ast::as<id_expr>(pe))
-               continue;
-            else { // its wildcard list_of
-               diag_.error(pe->start_loc(), "Wildcards not allowed here");
-               return new (ctx_) error_expression(e);
-            }
-         }
-
-         return e;
-      } else {
-         diag_.error(e->start_loc(), "Path expected");
-         return new (ctx_) error_expression(e);
-      }
-   };
-
-   if (const list_of* l = as<list_of>(arg)) {
-      expressions_t elements{expressions_t::allocator_type{ctx_}};
-      for (auto le : l->values())
-         elements.push_back(check_path(le));
-
-      return new (ctx_) list_of(elements);
-   } else if (as<path>(arg))
-      return check_path(arg);
-
-   diag_.error(arg->start_loc(), "Argument '%s': Path or list of paths expected") << ra.name();
-   return new (ctx_) error_expression(arg);
-}
-
-const expression*
 actions_impl::process_wcpath_arg(const char* prefix,
                                  const rule_argument& ra,
                                  const expression* arg)
@@ -490,32 +433,6 @@ actions_impl::process_wcpath_arg(const char* prefix,
       return arg;
 
    diag_.error(arg->start_loc(), "%s '%s': Path expected") << prefix << ra.name();
-   return new (ctx_) error_expression(arg);
-}
-
-const expression*
-actions_impl::process_wcpath_or_list_of_wcpaths(const rule_argument& ra,
-                                                const expression* arg)
-{
-   auto check_path = [&](const expression* e) -> const expression* {
-      if (as<path>(e))
-         return e;
-      else {
-         diag_.error(e->start_loc(), "Path expected");
-         return new (ctx_) error_expression(e);
-      }
-   };
-
-   if (const list_of* l = as<list_of>(arg)) {
-      expressions_t elements{expressions_t::allocator_type{ctx_}};
-      for (auto le : l->values())
-         elements.push_back(check_path(le));
-
-      return new (ctx_) list_of(elements);
-   } else if (as<path>(arg))
-      return check_path(arg);
-
-   diag_.error(arg->start_loc(), "Argument '%s': Path or list of paths expected") << ra.name();
    return new (ctx_) error_expression(arg);
 }
 
@@ -666,9 +583,6 @@ actions_impl::process_one_arg(const char* prefix,
          case rule_argument_type::identifier:
             return process_identifier_arg(prefix, ra, arg);
 
-         case rule_argument_type::identifier_or_list_of_identifiers:
-            return process_identifier_or_list_of_identifiers_arg(ra, arg);
-
          case rule_argument_type::feature:
             return process_feature_arg(prefix, ra, arg);
 
@@ -687,14 +601,8 @@ actions_impl::process_one_arg(const char* prefix,
          case rule_argument_type::path:
             return process_path_arg(prefix, ra, arg);
 
-         case rule_argument_type::path_or_list_of_paths:
-            return process_path_or_list_of_paths(ra, arg);
-
          case rule_argument_type::wcpath:
             return process_wcpath_arg(prefix, ra, arg);
-
-         case rule_argument_type::wcpath_or_list_of_wcpaths:
-            return process_wcpath_or_list_of_wcpaths(ra, arg);
 
          case rule_argument_type::ast_expression:
             return arg;

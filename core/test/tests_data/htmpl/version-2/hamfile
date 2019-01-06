@@ -1,0 +1,2 @@
+# test that we can correctly handle *.htmpl with path
+exe test : ./src/main.cpp [ htmpl ./src/version.h.htmpl ./src/version_cpp.cpp.htmpl ] : <version>1.0 ;

@@ -112,9 +112,9 @@ namespace
 
 void print_global_help() {
    cout << R"(usage: hammer [--version] [--help]
-                  <command> [args]
-commands are:
+              <command> [args]
 
+commands are:
    build      Run build process
    clean      Run clean process
    package    Manage packages
@@ -147,8 +147,14 @@ int main(int argc, char** argv) {
       po::store(parsed_options, vm);
       po::notify(vm);
 
-      const auto opts = po::collect_unrecognized(parsed_options.options, po::exclude_positional);
-      global_options.command_args_.insert(global_options.command_args_.begin(), opts.begin(), opts.end());
+      global_options.command_args_ = [&] () {
+         // we collect all options including positional 'command' and then remove it from beginning
+         // this way we get rest of cmdline in right order (i.e. not modified)
+         auto opts = po::collect_unrecognized(parsed_options.options, po::include_positional);
+         if (!opts.empty())
+            opts.erase(opts.begin());
+         return opts;
+      } ();
 
       const string& cmd = global_options.command_;
 
@@ -166,7 +172,7 @@ int main(int argc, char** argv) {
          else if (cmd == "warehouse")
             show_warehouse_cmd_help();
          else if (cmd == "package")
-            show_package_cmd_help();
+            show_package_cmd_help(global_options.command_args_);
          else {
             cout << "Unknown command: " << cmd << endl;
             return 1;

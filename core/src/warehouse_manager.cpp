@@ -18,8 +18,8 @@ warehouse_manager::~warehouse_manager() {
 }
 
 warehouse_manager::const_iterator
-warehouse_manager::find(const std::string& id) const {
-   return warehouses_.find(id);
+warehouse_manager::find(const std::string& warehouse_id) const {
+   return warehouses_.find(warehouse_id);
 }
 
 warehouse_manager::const_iterator

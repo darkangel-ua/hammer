@@ -22,7 +22,7 @@ class warehouse_manager : public boost::noncopyable {
       void insert(std::unique_ptr<warehouse> wh);
       const_iterator begin() const { return warehouses_.begin(); }
       const_iterator end() const { return warehouses_.end(); }
-      const_iterator find(const std::string& id) const;
+      const_iterator find(const std::string& warehouse_id) const;
       const_iterator find(const project& p) const;
 
       // use warehouse::any_version to look up project regardless of version

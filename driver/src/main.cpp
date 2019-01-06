@@ -151,7 +151,7 @@ int main(int argc, char** argv) {
          // we collect all options including positional 'command' and then remove it from beginning
          // this way we get rest of cmdline in right order (i.e. not modified)
          auto opts = po::collect_unrecognized(parsed_options.options, po::include_positional);
-         if (!opts.empty())
+         if (!opts.empty() && !global_options.command_.empty())
             opts.erase(opts.begin());
          return opts;
       } ();

@@ -1,7 +1,17 @@
+local
+lib version
+   : sources =
+      [ htmpl ../src/version.cpp.htmpl ]
+   : requirements =
+      <include>../src
+      <link>static
+   ;
+
 exe hammer
    : sources =
       [ glob ../src/*.cpp ]
       [ glob ../src/*.h ]
+      version
       /boost/program_options/<version>1.58.0+1
       /boost/filesystem/<version>1.58.0+1
       /boost/format/<version>1.58.0+1

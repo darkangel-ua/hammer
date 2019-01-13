@@ -1,0 +1,6 @@
+subprojectA [ features = <version>2.0; ] {
+    subprojectA.cpp {}
+    subprojectB [ features = <version>2.0; ] {
+        subprojectB.cpp {}
+    }
+}

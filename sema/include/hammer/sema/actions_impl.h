@@ -84,6 +84,7 @@ class actions_impl : public actions {
 
       const ast::expression*
       on_target_ref(parscore::source_location public_tag,
+                    parscore::source_location project_local_ref_tag,
                     const ast::path* target_path,
                     const parscore::identifier& target_name,
                     const ast::features_t& build_request) override;

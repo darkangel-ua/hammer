@@ -158,6 +158,7 @@ bool ast_xml_printer::visit(const error_expression& v)
 bool ast_xml_printer::visit(const target_ref& v)
 {
    os_ << std::setw(indent_) << ' ' << "<target_ref public=\"" << v.is_public() << "\"\n";
+   os_ << std::setw(indent_) << ' ' << "            project_local_ref=\"" << v.is_project_local_ref() << "\"\n";
    os_ << std::setw(indent_) << ' ' << "            target_path=\"" << v.target_path()->to_string() << "\"\n";
    os_ << std::setw(indent_) << ' ' << "            target_name=\"";
    if (v.has_target_name())

@@ -28,7 +28,7 @@ htmpl_rule(invocation_context& ctx,
       const string target_name = "#unnamed::htmpl." + sd.target_path();
       ctx.current_project_.add_target(boost::make_unique<htmpl_meta_target>(&ctx.current_project_, target_name, sd));
 
-      result->push_back(source_decl{"./", target_name, nullptr, nullptr});
+      result->push_back(source_decl{ctx.current_project_, "./", target_name, nullptr, nullptr});
    }
 
    return result;

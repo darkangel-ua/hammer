@@ -7,5 +7,17 @@ target_ref_test ./foo/<define>FOO ;
 target_ref_test ./foo//bar/<define>FOO ;
 target_ref_test @/ext/boost/guid/<version>0.1+1 ;
 
+#project local references
+target_ref_test ^foo ;
+target_ref_test @^foo ;
+target_ref_test ^foo//bar ;
+target_ref_test @^foo//bar ;
+target_ref_test ^foo/<define>FOO ;
+target_ref_test @^foo/<define>FOO ;
+target_ref_test ^foo/bar//bar ;
+target_ref_test @^foo/bar//bar ;
+target_ref_test ^foo/bar/<define>FOO ;
+target_ref_test @^foo/bar/<define>FOO ;
+
 target_ref_test foo ; #error: Argument 'target_ref': Expected target reference
 target_ref_test /test/* ; #error: Argument 'target_ref': Wildcards not allowed in target reference

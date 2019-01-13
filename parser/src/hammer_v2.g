@@ -212,8 +212,9 @@ target_ref_path_rest
 	: '/' path_element -> path_element
 	;
 target_ref
-	: PublicTag WS* target_ref_impl -> ^(PublicTag target_ref_impl)
-	| ('/') => target_ref_root_path
+	: PublicTag WS* ProjectLocalRefTag? target_ref_impl -> ^(PublicTag '^'? target_ref_impl)
+	| '^' target_ref_impl
+	| target_ref_root_path
 	| target_ref_path_without_root target_ref_spec -> ^(TargetRef target_ref_path_without_root target_ref_spec)
 	| Id target_ref_spec -> ^(TargetRef Id target_ref_spec)
 	;	
@@ -242,6 +243,7 @@ Explicit : 'explicit' ;
 QuestionMark : '?';
 Asterix : '*';
 DoubleAsterix : '**';
+ProjectLocalRefTag: '^';
 
 Id : ('a'..'z' | 'A'..'Z' | '0'..'9' | '.' | '-' | '_' | '+')+
    | STRING | STRING_1

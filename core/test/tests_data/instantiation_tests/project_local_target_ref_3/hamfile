@@ -1,0 +1,3 @@
+# test that we fail if referenced project has no version specified
+#options: should-fail=true
+alias test : ./projectA/subprojectA ;

@@ -62,14 +62,13 @@ class requirement_condition_op_base {
 };
 
 class requirement_condition_op_binary : public requirement_condition_op_base {
-   public:
+   protected:
       requirement_condition_op_binary(std::unique_ptr<requirement_condition_op_base> lhs,
                                       std::unique_ptr<requirement_condition_op_base> rhs)
          : lhs_(std::move(lhs)),
            rhs_(std::move(rhs))
       {}
 
-   protected:
       std::unique_ptr<requirement_condition_op_base> lhs_;
       std::unique_ptr<requirement_condition_op_base> rhs_;
 };
@@ -88,8 +87,7 @@ class requirement_condition_op_and : public requirement_condition_op_binary {
       }
 
       requirement_condition_op_base*
-      clone() const override
-      {
+      clone() const override {
          return new requirement_condition_op_and(std::unique_ptr<requirement_condition_op_base>(lhs_->clone()),
                                                  std::unique_ptr<requirement_condition_op_base>(rhs_->clone()));
       }
@@ -109,10 +107,9 @@ class requirement_condition_op_or : public requirement_condition_op_binary {
       }
 
       requirement_condition_op_base*
-      clone() const override
-      {
-         return new requirement_condition_op_and(std::unique_ptr<requirement_condition_op_base>(lhs_->clone()),
-                                                 std::unique_ptr<requirement_condition_op_base>(rhs_->clone()));
+      clone() const override {
+         return new requirement_condition_op_or(std::unique_ptr<requirement_condition_op_base>(lhs_->clone()),
+                                                std::unique_ptr<requirement_condition_op_base>(rhs_->clone()));
       }
 };
 

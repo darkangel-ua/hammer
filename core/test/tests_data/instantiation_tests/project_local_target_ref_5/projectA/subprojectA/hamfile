@@ -1,0 +1,1 @@
+exe subprojectA : subprojectA.cpp ^projectA/subprojectBB ;

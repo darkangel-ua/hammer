@@ -137,16 +137,16 @@ handle_one_source(invocation_context& ctx,
                   const ast::expression* e)
 {
    if (const ast::id_expr* v = ast::as<ast::id_expr>(e))
-      return source_decl(v->id().to_string(), std::string(), tr.resolve_from_target_name(v->id().to_string()), nullptr);
+      return source_decl(ctx.current_project_, v->id().to_string(), std::string(), tr.resolve_from_target_name(v->id().to_string()), nullptr);
    else if (const ast::path* v = ast::as<ast::path>(e))
-      return source_decl(v->to_string(), std::string(), tr.resolve_from_target_name(v->to_string()), nullptr);
+      return source_decl(ctx.current_project_, v->to_string(), std::string(), tr.resolve_from_target_name(v->to_string()), nullptr);
    else if (const ast::public_expr* pe = ast::as<ast::public_expr>(e)) {
       source_decl result = handle_one_source(ctx, tr, pe->value());
       result.set_public(true);
       return result;
    } else if (const ast::target_ref* v = ast::as<ast::target_ref>(e)) {
       feature_set* build_request = v->build_request().empty() ? nullptr : ast2feature_set(ctx, v->build_request());
-      source_decl sd(v->target_path()->to_string(), v->target_name().valid() ? v->target_name().to_string() : std::string(), nullptr, build_request);
+      source_decl sd(ctx.current_project_, (v->is_project_local_ref() ? "^" : "") + v->target_path()->to_string(), v->target_name().valid() ? v->target_name().to_string() : std::string(), nullptr, build_request);
       sd.set_public(v->is_public());
       return sd;
    } else
@@ -174,13 +174,13 @@ void handle_one_source(invocation_context& ctx,
 
             case rule_argument_type::identifier: {
                const parscore::identifier& id = *static_cast<const parscore::identifier*>(invocation_result->value());
-               result.push_back(source_decl(id.to_string(), std::string(), tr.resolve_from_target_name(id.to_string()), nullptr));
+               result.push_back(source_decl(ctx.current_project_, id.to_string(), std::string(), tr.resolve_from_target_name(id.to_string()), nullptr));
                break;
             }
 
             case rule_argument_type::path: {
                const location_t& p = *static_cast<const location_t*>(invocation_result->value());
-               result.push_back(source_decl(p.string(), std::string(), tr.resolve_from_target_name(p.string()), nullptr));
+               result.push_back(source_decl(ctx.current_project_, p.string(), std::string(), tr.resolve_from_target_name(p.string()), nullptr));
                break;
             }
 

@@ -459,13 +459,13 @@ void glob_impl(sources_decl& result,
                const fs::path& relative_path,
                const boost::dos_wildcard& wildcard,
                const std::vector<std::string>* exceptions,
-               const type_registry& tr)
+               const project& p)
 {
    for (fs::directory_iterator i(searching_path), last = fs::directory_iterator(); i != last; ++i) {
       if (!is_directory(*i) && wildcard.match(i->path().filename()) &&
           !(exceptions != 0 && find(exceptions->begin(), exceptions->end(), i->path().filename().string()) != exceptions->end()))
       {
-         result.push_back((relative_path / i->path().filename()).string(), tr);
+         result.push_back(p, (relative_path / i->path().filename()).string(), p.get_engine().get_type_registry());
       }
    }
 }
@@ -476,7 +476,7 @@ void rglob_impl(sources_decl& result,
                 fs::path relative_path,
                 const boost::dos_wildcard& wildcard,
                 const std::vector<std::string>* exceptions,
-                const type_registry& tr)
+                const project& p)
 {
    int level = 0;
    for (fs::recursive_directory_iterator i(searching_path), last = fs::recursive_directory_iterator(); i != last; ++i) {
@@ -491,7 +491,7 @@ void rglob_impl(sources_decl& result,
       } else if (wildcard.match(i->path().filename()) &&
                  !(exceptions != 0 && find(exceptions->begin(), exceptions->end(), i->path().filename().string()) != exceptions->end()))
       {
-         result.push_back((relative_path / i->path().filename()).string(), tr);
+         result.push_back(p, (relative_path / i->path().filename()).string(), p.get_engine().get_type_registry());
       }
    }
 }
@@ -548,9 +548,9 @@ glob_rule_impl(invocation_context& ctx,
       fs::path searching_path(ctx.current_project_.location() / relative_path);
       boost::dos_wildcard wildcard(string(pattern.begin() + mask_pos, pattern.end()));
       if (recursive)
-         rglob_impl(*result, searching_path, relative_path, wildcard, &s_exceptions, ctx.current_project_.get_engine().get_type_registry());
+         rglob_impl(*result, searching_path, relative_path, wildcard, &s_exceptions, ctx.current_project_);
       else
-         glob_impl(*result, searching_path, relative_path, wildcard, &s_exceptions, ctx.current_project_.get_engine().get_type_registry());
+         glob_impl(*result, searching_path, relative_path, wildcard, &s_exceptions, ctx.current_project_);
    }
 
    return result;
@@ -740,12 +740,13 @@ testing_run_rule_impl(target_invocation_context& ctx,
                               {}));
 
    sources_decl run_sources;
-   run_sources.push_back(exe_target_name, tr);
+   run_sources.push_back(ctx.current_project_, exe_target_name, tr);
    runner_target->sources(run_sources);
    runner_target->set_local(ctx.local_);
    runner_target->set_explicit(ctx.explicit_);
 
-   source_decl run_target_source(runner_target->name(),
+   source_decl run_target_source(ctx.current_project_,
+                                 runner_target->name(),
                                  {},
                                  NULL /*to signal that this is meta target*/,
                                  NULL);
@@ -817,7 +818,8 @@ testing_compile_fail_rule(target_invocation_context& ctx,
                                                                          requirements ? *requirements : requirements_decl()));
    mt->sources(sources);
 
-   const source_decl compile_source(mt->name(),
+   const source_decl compile_source(ctx.current_project_,
+                                    mt->name(),
                                     std::string(),
                                     NULL /*to signal that this is meta target*/,
                                     NULL);
@@ -844,7 +846,8 @@ testing_compile_rule_impl(target_invocation_context& ctx,
                                                                     requirements ? *requirements : requirements_decl{}));
    mt->sources(sources);
 
-   const source_decl compile_source(mt->name(),
+   const source_decl compile_source(ctx.current_project_,
+                                    mt->name(),
                                     std::string(),
                                     NULL /*to signal that this is meta target*/,
                                     NULL);
@@ -917,7 +920,8 @@ testing_link_fail_rule(target_invocation_context& ctx,
                                                                       requirements ? *requirements : requirements_decl()));
    mt->sources(sources);
 
-   const source_decl compile_source(mt->name(),
+   const source_decl compile_source(ctx.current_project_,
+                                    mt->name(),
                                     std::string(),
                                     NULL /*to signal that this is meta target*/,
                                     NULL);
@@ -946,7 +950,8 @@ testing_link_rule(target_invocation_context& ctx,
                                                                  requirements ? *requirements : requirements_decl{}));
    mt->sources(sources);
 
-   const source_decl compile_source(mt->name(),
+   const source_decl compile_source(ctx.current_project_,
+                                    mt->name(),
                                     std::string(),
                                     NULL /*to signal that this is meta target*/,
                                     NULL);
@@ -1063,7 +1068,7 @@ c_as_cpp_rule(invocation_context& ctx,
    const target_type& c_type = ctx.current_project_.get_engine().get_type_registry().get(types::C);
    for (const source_decl& s : sources) {
       if (s.type() && s.type()->equal_or_derived_from(c_type))
-         result->push_back(source_decl{s.target_path(), s.target_name(), &c_as_cpp_type, s.properties() ? s.properties()->clone() : nullptr});
+         result->push_back(source_decl{ctx.current_project_, s.target_path(), s.target_name(), &c_as_cpp_type, s.properties() ? s.properties()->clone() : nullptr});
       else
          result->push_back(s);
    }

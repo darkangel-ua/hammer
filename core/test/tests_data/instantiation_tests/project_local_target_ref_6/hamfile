@@ -1,0 +1,2 @@
+# test that we can resolve reference in usage requirements in dependency feature such as <use>
+alias test : ./projectA/subprojectA ;

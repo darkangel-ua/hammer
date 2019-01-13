@@ -1,22 +1,28 @@
 #pragma once
+#include <functional>
 #include <hammer/core/type_registry.h>
 
 namespace hammer {
 
 class feature_set;
 class target_type;
+class project;
 
 // FIXME: type should not be determined at constructing time
 // FIXME: source_decl should have method resolve_type for resolving type of source
 // FIXME: and caching it. Without caching it will be huge performance hit
 class source_decl {
    public:
-      source_decl() : type_(NULL), properties_(NULL), public_(false) {}
-      source_decl(const std::string& target_path,
+      // FIXME: need to remove this constructor
+      source_decl() : project_(*((const project*)0)), type_(NULL), properties_(NULL), public_(false) {}
+
+      source_decl(const project& p,
+                  const std::string& target_path,
                   const std::string& target_name,
                   const target_type* t,
                   feature_set* props)
                  :
+                  project_(p),
                   target_path_(target_path),
                   target_name_(target_name),
                   type_(t),
@@ -42,6 +48,7 @@ class source_decl {
 
       void set_locals_allowed(bool v) { locals_allowed_ = v; }
       bool locals_allowed() const { return locals_allowed_; }
+      const project& owner_project() const { return project_; }
 
       bool operator < (const source_decl& rhs) const {
          if (target_path_ < rhs.target_path_)
@@ -57,13 +64,17 @@ class source_decl {
       }
 
       bool operator == (const source_decl& rhs) const {
-         return target_path_ == rhs.target_path_ &&
-               target_name_ == rhs.target_name_;
+         return &project_.get() == &rhs.project_.get() &&
+                target_path_ == rhs.target_path_ &&
+                target_name_ == rhs.target_name_;
       }
 
       bool operator != (const source_decl& rhs) const { return !(*this == rhs); }
 
+      bool is_project_local_reference() const;
+
    private:
+      std::reference_wrapper<const project> project_;
       std::string target_path_;
       std::string target_name_;
       const target_type* type_;
@@ -78,5 +89,4 @@ class source_decl {
 
 // check that source_decl looks like reference on target within same project
 bool looks_like_local_target_ref(const source_decl& sd);
-
 }

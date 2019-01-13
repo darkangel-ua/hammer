@@ -195,6 +195,7 @@ void extract_dependency_like_sources(sources_decl& result,
 
       if (!sd_copy.target_path().empty() &&
           !sd_copy.target_path_is_global() &&
+          !sd_copy.is_project_local_reference() &&
           &relative_to_target.get_project() != (**i).get_path_data().project_)
       {
          const location_t full_target_path = ((**i).get_path_data().project_->location() / sd_copy.target_path()).normalize();
@@ -473,7 +474,7 @@ void apply_build_request(feature_set& dest,
       {
          const source_decl old = (**i).get_dependency_data().source_;
          feature_set& new_props = old.properties() == NULL ? *build_request.clone() : old.properties()->clone()->join(build_request);
-         (**i).set_dependency_data(source_decl(old.target_path(), old.target_name(), old.type(), &new_props), (**i).get_path_data().project_);
+         (**i).set_dependency_data(source_decl(old.owner_project(), old.target_path(), old.target_name(), old.type(), &new_props), (**i).get_path_data().project_);
       }
 }
 

@@ -1,0 +1,7 @@
+project parentA/projectA 
+   : requirements =
+      <version>1.0  # this is required to resolve ^projectA references
+   ;
+
+use-project subprojectA : ./subprojectA ;
+use-project subprojectB : ./subprojectB ;

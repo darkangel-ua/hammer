@@ -1,0 +1,1 @@
+lib subprojectB : subprojectB.cpp @^projectA/subprojectC ;

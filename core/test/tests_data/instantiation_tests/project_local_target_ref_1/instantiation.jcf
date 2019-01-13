@@ -1,0 +1,6 @@
+subprojectA {
+    subprojectA.cpp {}
+    subprojectB {
+        subprojectB.cpp {}
+    }
+}

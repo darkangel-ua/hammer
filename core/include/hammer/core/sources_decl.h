@@ -8,18 +8,22 @@ class feature_set;
 
 class sources_decl {
    public:
-      typedef std::vector<source_decl>::iterator iterator;
-      typedef std::vector<source_decl>::const_iterator const_iterator;
+      using iterator = std::vector<source_decl>::iterator;
+      using const_iterator = std::vector<source_decl>::const_iterator;
 
       sources_decl();
       ~sources_decl();
       sources_decl(const sources_decl& rhs);
       sources_decl& operator = (const sources_decl& rhs);
 
-      void push_back(const std::string& v, const type_registry& tr);
+      void push_back(const project& related_project,
+                     const std::string& v,
+                     const type_registry& tr);
       void push_back(const source_decl& v);
 
-      void insert(const std::vector<std::string>& v, const type_registry& tr);
+      void insert(const project& related_project,
+                  const std::vector<std::string>& v,
+                  const type_registry& tr);
       void insert(const sources_decl& s);
 
       void transfer_from(sources_decl& s);

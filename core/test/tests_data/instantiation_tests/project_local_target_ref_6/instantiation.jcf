@@ -1,0 +1,6 @@
+subprojectA [ features = <define>use_subprojectC; ] {
+   subprojectA.cpp {}
+   subprojectB {
+      subprojectB.cpp {}
+   }
+}

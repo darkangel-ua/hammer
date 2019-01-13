@@ -1,0 +1,6 @@
+# test that we can use project local references with project dependencies overrides
+
+use-project /projectA : ./projectA-1.0 ;
+use-project /projectA : ./projectA-2.0 ;
+
+alias test : /projectA/subprojectA/<version>2.0 ;

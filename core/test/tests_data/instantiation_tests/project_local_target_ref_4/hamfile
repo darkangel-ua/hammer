@@ -1,0 +1,3 @@
+# test that we fail if referenced project is not found in parent projects
+#options: should-fail=true
+alias test : ./projectA/subprojectA ;

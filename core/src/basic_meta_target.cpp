@@ -10,6 +10,7 @@
 #include <hammer/core/source_target.h>
 #include <hammer/core/main_target.h>
 #include <hammer/core/feature_registry.h>
+#include <hammer/core/fs_helpers.h>
 
 using namespace std;
 
@@ -119,6 +120,35 @@ apply_project_dependencies(const feature_set* properties,
    return properties;
 }
 
+static
+loaded_projects
+resolve_project_local_reference(const source_decl& s,
+                                const project& current_project) {
+   const project& top = [&] () -> const project& {
+      auto result = &s.owner_project();
+      while(result && !result->publishable())
+         result = result->parent_;
+
+      if (!result)
+         throw std::runtime_error("While resolving project local reference '" + s.target_path() + "' at '" + current_project.location().string() + "' - can't find parent publishable project");
+
+      return *result;
+   }();
+
+   if (s.target_path().size() - 1 < top.name().size() ||
+       !std::equal(top.name().begin(), top.name().end(), s.target_path().begin() + 1))
+   {
+      throw std::runtime_error("Can't resolve project local reference '" + s.target_path() + "'. Top project id is '" + top.name() + "'");
+   }
+
+   // in case we specify ^projectID we have to return only projects from projectID itself
+   // otherwise path looks like ^projectID/some_other_path and we need to load only some_other_path
+   if (top.name().size() == s.target_path().size() - 1)
+      return top.load_project({});
+   else
+      return top.load_project(s.target_path().substr(top.name().size() + 2));
+}
+
 void basic_meta_target::resolve_meta_target_source(const source_decl& source,
                                                    const feature_set& build_request,
                                                    meta_targets_t* meta_targets) const
@@ -135,7 +165,9 @@ void basic_meta_target::resolve_meta_target_source(const source_decl& source,
    }
 
    // source has target_name_ only when it was explicitly requested (./foo//bar) where target_name_ == "bar"
-   loaded_projects suitable_projects = get_project().load_project(source.target_path());
+   loaded_projects suitable_projects =
+      source.is_project_local_reference() ? resolve_project_local_reference(source, get_project())
+                                          : get_project().load_project(source.target_path());
 
    build_request_with_source_properties = apply_project_dependencies(build_request_with_source_properties, source.target_path(), get_project());
 
@@ -231,7 +263,8 @@ void adjust_dependency_features_sources(feature_set& set_to_adjust,
 
       const source_decl& source = f->get_dependency_data().source_;
       if (source.type() == nullptr /*source is meta-target*/ &&
-          !has_slash(source.target_path()))
+          !has_slash(source.target_path()) &&
+          !source.is_project_local_reference())
       {
          source_decl adjusted_source = source;
          adjusted_source.target_path("./", nullptr);

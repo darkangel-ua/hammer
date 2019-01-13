@@ -150,20 +150,50 @@ feature_value returns[const hammer::ast::expression* result]
 	| path { result = $path.result; }
 	| target_ref { result = $target_ref.result; }
 	;
+
+target_ref_impl[hammer::parscore::source_location* project_local_ref_tag,
+                hammer::parscore::identifier* target_name, 
+                hammer::ast::features_t* build_request]
+returns[const hammer::ast::path* result]
+	: ProjectLocalRefTag target_ref_impl_impl[target_name, build_request] { 
+	      *project_local_ref_tag = $ProjectLocalRefTag->getToken($ProjectLocalRefTag); 
+	      result = $target_ref_impl_impl.result; 
+	  }
+	| target_ref_impl_impl[target_name, build_request] { 
+	      result = $target_ref_impl_impl.result; 
+	  }
+	;
 target_ref returns[const hammer::ast::expression* result]
 @init { DECLARE_TYPE(hammer::ast::features_t, build_request); 
-        hammer::parscore::identifier target_name; }
-	: ^(PublicTag target_ref_impl[&target_name, &build_request]) { result = SEMA->on_target_ref($PublicTag->getToken($PublicTag), $target_ref_impl.result, target_name, build_request); }
-	| target_ref_impl[&target_name, &build_request] { result = SEMA->on_target_ref(hammer::parscore::source_location(), $target_ref_impl.result, target_name, build_request); }
+        hammer::parscore::identifier target_name; 
+        hammer::parscore::source_location project_local_ref_tag;
+      }
+	: ^(PublicTag target_ref_impl[&project_local_ref_tag, &target_name, &build_request]) { 
+	       result = SEMA->on_target_ref($PublicTag->getToken($PublicTag), 
+	                                    project_local_ref_tag, 
+	                                    $target_ref_impl.result, 
+	                                    target_name, 
+	                                    build_request); 
+	  }
+	| target_ref_impl[&project_local_ref_tag, &target_name, &build_request] { 
+	       result = SEMA->on_target_ref(hammer::parscore::source_location(), 
+	                                    project_local_ref_tag, 
+	                                    $target_ref_impl.result, 
+	                                    target_name, 
+	                                    build_request); 
+	  }
 	;
 
-target_ref_impl[hammer::parscore::identifier* target_name, 
-	    hammer::ast::features_t* build_request]
+target_ref_impl_impl[hammer::parscore::identifier* target_name, 
+                     hammer::ast::features_t* build_request]
 returns[const hammer::ast::path* result]
 	: ^(TargetRef path target_ref_spec[target_name, build_request]?) { result = $path.result; }
-	| ^(TargetRef Id target_ref_spec[target_name, build_request]?) { DECLARE_TYPE(hammer::ast::expressions_t, elements); elements.push_back(SEMA->on_id($Id->getToken($Id))); result = SEMA->on_path({}, elements, {}); }
+	| ^(TargetRef Id target_ref_spec[target_name, build_request]?) { 
+	       DECLARE_TYPE(hammer::ast::expressions_t, elements); 
+	       elements.push_back(SEMA->on_id($Id->getToken($Id))); 
+	       result = SEMA->on_path({}, elements, {}); 
+	  }
 	;
-	
 target_ref_spec[hammer::parscore::identifier* target_name, 
 	    hammer::ast::features_t* build_request]
 	: ^(TargetRefSpec Id target_ref_build_request[build_request]?) { *target_name = hammer::parscore::identifier($Id->getToken($Id)); }

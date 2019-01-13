@@ -847,12 +847,13 @@ actions_impl::on_feature(parscore::identifier name,
 }
 
 const ast::expression*
-actions_impl::on_target_ref(parscore::source_location public_tag,
+actions_impl::on_target_ref(source_location public_tag,
+                            source_location project_local_ref_tag,
                             const ast::path* target_path,
                             const parscore::identifier& target_name,
                             const features_t& build_request)
 {
-   return new (ctx_) ast::target_ref(public_tag, target_path, target_name, build_request);
+   return new (ctx_) ast::target_ref(public_tag, project_local_ref_tag, target_path, target_name, build_request);
 }
 
 const expression*

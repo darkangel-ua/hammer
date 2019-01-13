@@ -1,0 +1,1 @@
+lib subprojectB : subprojectB.cpp : usage-requirements = <use>(^projectA/subprojectC) ;

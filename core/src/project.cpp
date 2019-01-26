@@ -71,7 +71,6 @@ project::project(hammer::engine& e,
                  const requirements_decl& local_usage_req,
                  const dependencies_t& dependencies)
    : parent_(parent),
-     dependencies_(dependencies),
      engine_(e),
      name_(name),
      location_(normalize_project_location(location)),
@@ -79,6 +78,7 @@ project::project(hammer::engine& e,
 {
    local_requirements(local_req);
    local_usage_requirements(local_usage_req);
+   this->dependencies(dependencies);
 }
 
 project::project(engine& e,

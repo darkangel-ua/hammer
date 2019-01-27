@@ -1,0 +1,5 @@
+#options: shoud-fail=true 
+exe test : test.cpp a ;
+lib a : a.cpp b ;
+lib b : b.cpp c ;
+lib c : c.cpp a ;

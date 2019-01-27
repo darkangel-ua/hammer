@@ -7,6 +7,7 @@
 #include <hammer/core/feature_registry.h>
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature.h>
+#include <hammer/core/instantiation_context.h>
 
 using namespace std;
 
@@ -381,7 +382,8 @@ void project::instantiate(const std::string& target_name,
 {
    selected_target best_target = select_best_alternative(target_name, build_request);
    feature_set* usage_requirements = engine_.feature_registry().make_set();
-   best_target.target_->instantiate(0, build_request, result, usage_requirements);
+   instantiation_context ctx;
+   best_target.target_->instantiate(ctx, nullptr, build_request, result, usage_requirements);
 }
 
 bool project::operator == (const project& rhs) const

@@ -72,7 +72,8 @@ void remove_duplicates(deduplicator_t& deduplicator,
    }
 
    static
-   void instantiate_meta_targets(sources_decl& simple_targets,
+   void instantiate_meta_targets(instantiation_context& ctx,
+                                 sources_decl& simple_targets,
                                  std::vector<basic_target*>& instantiated_meta_targets,
                                  deduplicator_t& sources_deduplicator,
                                  sources_decl& additional_sources,
@@ -83,7 +84,7 @@ void remove_duplicates(deduplicator_t& deduplicator,
                                  const main_target& owner_for_new_targets)
    {
       feature_set& local_usage_requirements = *this_.get_engine().feature_registry().make_set();
-      instantiate_meta_targets(meta_targets, build_request, &owner_for_new_targets,
+      instantiate_meta_targets(ctx, meta_targets, build_request, &owner_for_new_targets,
                                &instantiated_meta_targets, &local_usage_requirements);
 
       sources_decl sources_from_features;
@@ -96,7 +97,7 @@ void remove_duplicates(deduplicator_t& deduplicator,
          meta_targets_t new_meta_targets;
          this_.split_sources(&simple_targets, &new_meta_targets, sources_from_features, build_request);
          remove_duplicates(sources_deduplicator, new_meta_targets);
-         instantiate_meta_targets(simple_targets, instantiated_meta_targets, sources_deduplicator, additional_sources,
+         instantiate_meta_targets(ctx, simple_targets, instantiated_meta_targets, sources_deduplicator, additional_sources,
                                   usage_requirements, this_, new_meta_targets,
                                   build_request, owner_for_new_targets);
       }
@@ -104,7 +105,8 @@ void remove_duplicates(deduplicator_t& deduplicator,
 
    // instantiate targets that we found in use feature and
    // add additional usage requirements to main target usage requirements
-   void compute_additional_usage_requirements(sources_decl& simple_targets,
+   void compute_additional_usage_requirements(instantiation_context& ctx,
+                                              sources_decl& simple_targets,
                                               std::vector<basic_target*>& instantiated_meta_targets,
                                               deduplicator_t& sources_deduplicator,
                                               feature_set& usage_requirements,
@@ -120,13 +122,13 @@ void remove_duplicates(deduplicator_t& deduplicator,
       remove_duplicates(sources_deduplicator, ignored_meta_targets);
       std::vector<basic_target*> ignored_instantiated_meta_targets;
       feature_set* local_usage_requirements = this_.get_engine().feature_registry().make_set();
-      instantiate_meta_targets(ignored_meta_targets, build_request, &owner_for_new_targets,
+      instantiate_meta_targets(ctx, ignored_meta_targets, build_request, &owner_for_new_targets,
                                &ignored_instantiated_meta_targets, local_usage_requirements);
 
       sources_decl sources_from_uses;
       extract_uses(sources_from_uses, *local_usage_requirements, this_);
       if (!sources_from_uses.empty())
-         compute_additional_usage_requirements(simple_targets, instantiated_meta_targets, sources_deduplicator,
+         compute_additional_usage_requirements(ctx, simple_targets, instantiated_meta_targets, sources_deduplicator,
                                                *local_usage_requirements, this_, sources_from_uses,
                                                build_request, owner_for_new_targets);
 
@@ -140,13 +142,13 @@ void remove_duplicates(deduplicator_t& deduplicator,
          if (!meta_targets.empty())
          {
             feature_set* local_usage_requirements = this_.get_engine().feature_registry().make_set();
-            instantiate_meta_targets(simple_targets, instantiated_meta_targets, sources_deduplicator, ignored_additional_sources,
+            instantiate_meta_targets(ctx, simple_targets, instantiated_meta_targets, sources_deduplicator, ignored_additional_sources,
                                      *local_usage_requirements, this_, meta_targets,
                                      build_request, owner_for_new_targets);
             sources_decl sources_from_usage_requirements;
             extract_uses(sources_from_usage_requirements, *local_usage_requirements, this_);
             if (!sources_from_usage_requirements.empty())
-               compute_additional_usage_requirements(simple_targets, instantiated_meta_targets, sources_deduplicator,
+               compute_additional_usage_requirements(ctx, simple_targets, instantiated_meta_targets, sources_deduplicator,
                                                      *local_usage_requirements, this_, sources_from_usage_requirements,
                                                      build_request, owner_for_new_targets);
             usage_requirements.join(*local_usage_requirements);
@@ -179,7 +181,8 @@ void remove_duplicates(deduplicator_t& deduplicator,
       dest.join(uses);
    }
    
-   void meta_target::instantiate_impl(const main_target* owner,
+   void meta_target::instantiate_impl(instantiation_context& ctx,
+                                      const main_target* owner,
                                       const sources_decl& sources,
                                       const feature_set& build_request_,
                                       std::vector<basic_target*>* result,
@@ -225,7 +228,7 @@ void remove_duplicates(deduplicator_t& deduplicator,
       mt_fs = mt->properties().clone(); // FIXME ref semantic required
 
       if (!meta_targets.empty())
-         instantiate_meta_targets(simple_targets, instantiated_meta_targets, sources_deduplicator, sources_from_features,
+         instantiate_meta_targets(ctx, simple_targets, instantiated_meta_targets, sources_deduplicator, sources_from_features,
                                   *local_usage_requirements, *this, meta_targets,
                                   *build_request_for_dependencies, *mt);
 
@@ -237,7 +240,7 @@ void remove_duplicates(deduplicator_t& deduplicator,
       remove_duplicates(dependency_sources_deduplicator, dependency_meta_targets);
       feature_set* ignored_dependencies_usage_requirements = get_engine().feature_registry().make_set();
       if (!dependency_meta_targets.empty())
-         instantiate_meta_targets(simple_targets, instantiated_dependency_meta_targets, dependency_sources_deduplicator, sources_from_features,
+         instantiate_meta_targets(ctx, simple_targets, instantiated_dependency_meta_targets, dependency_sources_deduplicator, sources_from_features,
                                  *ignored_dependencies_usage_requirements, *this, dependency_meta_targets,
                                  *build_request_for_dependencies, *mt);
 
@@ -246,7 +249,7 @@ void remove_duplicates(deduplicator_t& deduplicator,
       extract_uses(sources_from_uses, *local_usage_requirements, *this);
       if (!sources_from_uses.empty()) {
          deduplicator_t use_sources_deduplicator;
-         compute_additional_usage_requirements(simple_targets, instantiated_meta_targets, use_sources_deduplicator,
+         compute_additional_usage_requirements(ctx, simple_targets, instantiated_meta_targets, use_sources_deduplicator,
                                                *local_usage_requirements, *this, sources_from_uses,
                                                *build_request_for_dependencies, *mt);
       }
@@ -269,12 +272,13 @@ void remove_duplicates(deduplicator_t& deduplicator,
       result->push_back(mt);
    }
 
-   void meta_target::instantiate_impl(const main_target* owner,
+   void meta_target::instantiate_impl(instantiation_context& ctx,
+                                      const main_target* owner,
                                       const feature_set& build_request_param,
                                       std::vector<basic_target*>* result,
                                       feature_set* usage_requirements) const
    {
-      instantiate_impl(owner, sources(), build_request_param, result, usage_requirements);
+      instantiate_impl(ctx, owner, sources(), build_request_param, result, usage_requirements);
    }
 
    void meta_target::compute_usage_requirements(feature_set& result, 

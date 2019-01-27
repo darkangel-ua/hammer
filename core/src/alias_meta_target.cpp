@@ -21,7 +21,8 @@ alias_meta_target::alias_meta_target(hammer::project* p, const std::string& name
    this->sources(sources);
 }
    
-void alias_meta_target::instantiate_impl(const main_target* owner, 
+void alias_meta_target::instantiate_impl(instantiation_context& ctx,
+                                         const main_target* owner,
                                          const feature_set& build_request,
                                          std::vector<basic_target*>* result, 
                                          feature_set* usage_requirements) const
@@ -58,7 +59,7 @@ void alias_meta_target::instantiate_impl(const main_target* owner,
       sources_decl simple_targets;
       meta_targets_t meta_targets;
       split_sources(&simple_targets, &meta_targets, this->sources(), build_request);
-      instantiate_meta_targets(meta_targets, build_request, NULL, &sources, usage_requirements);
+      instantiate_meta_targets(ctx, meta_targets, build_request, NULL, &sources, usage_requirements);
       result->insert(result->end(), sources.begin(), sources.end());
    }
 }

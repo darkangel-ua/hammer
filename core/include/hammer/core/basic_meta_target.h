@@ -13,6 +13,7 @@ class basic_target;
 class main_target;
 class type_registry;
 class basic_meta_target;
+class instantiation_context;
 
 typedef std::vector<std::pair<const basic_meta_target* /* target */,
                               const feature_set* /* requested build properties*/> > meta_targets_t;
@@ -45,7 +46,8 @@ class basic_meta_target {
                          const sources_decl& sources,
                          const feature_set& build_request) const;
 
-      void instantiate(const main_target* owner,
+      void instantiate(instantiation_context& ctx,
+                       const main_target* owner,
                        const feature_set& build_request,
                        std::vector<basic_target*>* result,
                        feature_set* usage_requirements) const;
@@ -60,10 +62,12 @@ class basic_meta_target {
       // returns true if instantiate() can cache instantiation for build_request
       virtual bool is_cachable(const main_target* owner) const { return true; }
 
-      virtual void instantiate_impl(const main_target* owner,
-                                    const feature_set& build_request,
-                                    std::vector<basic_target*>* result,
-                                    feature_set* usage_requirements) const = 0;
+      virtual
+      void instantiate_impl(instantiation_context& ctx,
+                            const main_target* owner,
+                            const feature_set& build_request,
+                            std::vector<basic_target*>* result,
+                            feature_set* usage_requirements) const = 0;
 
       void instantiate_simple_targets(const sources_decl& targets,
                                       const feature_set& build_request,
@@ -105,7 +109,8 @@ class basic_meta_target {
       mutable instantiation_cache_t instantiation_cache_;
 };
 
-void instantiate_meta_targets(const meta_targets_t& targets,
+void instantiate_meta_targets(instantiation_context& ctx,
+                              const meta_targets_t& targets,
                               const feature_set& build_request,
                               const main_target* owner,
                               std::vector<basic_target*>* result,

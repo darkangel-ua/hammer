@@ -15,7 +15,8 @@ testing_compile_base_meta_target::testing_compile_base_meta_target(hammer::proje
 
 }
 
-void testing_compile_base_meta_target::instantiate_impl(const main_target* owner,
+void testing_compile_base_meta_target::instantiate_impl(instantiation_context& ctx,
+                                                        const main_target* owner,
                                                         const feature_set& build_request,
                                                         std::vector<basic_target*>* result,
                                                         feature_set* usage_requirements) const
@@ -34,7 +35,7 @@ void testing_compile_base_meta_target::instantiate_impl(const main_target* owner
       }
    }
 
-   typed_meta_target::instantiate_impl(owner, *new_build_request, result, usage_requirements);
+   typed_meta_target::instantiate_impl(ctx, owner, *new_build_request, result, usage_requirements);
 }
 
 }

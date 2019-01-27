@@ -29,6 +29,7 @@
 #include <hammer/core/generic_batcher.h>
 #include <hammer/core/actuality_checker.h>
 #include <hammer/core/build_environment_impl.h>
+#include <hammer/core/instantiation_context.h>
 #include "user_config_location.h"
 #include "build_cmd.h"
 #include "build_request.h"
@@ -289,8 +290,9 @@ instantiate(engine& e,
             const feature_set& build_request) {
    vector<basic_target*> result;
    feature_set* usage_requirements = e.feature_registry().make_set();
+   instantiation_context ctx;
    for (auto& mt : meta_targets) {
-      mt->instantiate(nullptr, build_request, &result, usage_requirements);
+      mt->instantiate(ctx, nullptr, build_request, &result, usage_requirements);
       usage_requirements->clear();
    }
 

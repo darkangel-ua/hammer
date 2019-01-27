@@ -31,7 +31,8 @@ warehouse_meta_target::~warehouse_meta_target()
 
 }
 
-void warehouse_meta_target::instantiate_impl(const main_target* owner,
+void warehouse_meta_target::instantiate_impl(instantiation_context& ctx,
+                                             const main_target* owner,
                                              const feature_set& build_request,
                                              std::vector<basic_target*>* result,
                                              feature_set* usage_requirements) const

@@ -16,14 +16,16 @@ class meta_target : public basic_meta_target {
                   const requirements_decl& usage_req);
 
    protected:
-      void instantiate_impl(const main_target* owner,
+      void instantiate_impl(instantiation_context& ctx,
+                            const main_target* owner,
                             const feature_set& build_request,
                             std::vector<basic_target*>* result,
                             feature_set* usage_requirements) const override;
 
       // this is actual instantiation implementation for most meta targets
       // some of them can invoke this function multiple times with different sources
-      void instantiate_impl(const main_target* owner,
+      void instantiate_impl(instantiation_context& ctx,
+                            const main_target* owner,
                             const sources_decl& sources,
                             const feature_set& build_request_,
                             std::vector<basic_target*>* result,

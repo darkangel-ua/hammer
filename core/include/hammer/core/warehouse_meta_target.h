@@ -13,7 +13,8 @@ class warehouse_meta_target : public meta_target {
       ~warehouse_meta_target();
 
    protected:
-      void instantiate_impl(const main_target* owner,
+      void instantiate_impl(instantiation_context& ctx,
+                            const main_target* owner,
                             const feature_set& build_request,
                             std::vector<basic_target*>* result,
                             feature_set* usage_requirements) const override;

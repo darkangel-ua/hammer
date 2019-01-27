@@ -11,6 +11,7 @@
 #include <hammer/core/main_target.h>
 #include <hammer/core/feature_registry.h>
 #include <hammer/core/fs_helpers.h>
+#include <hammer/core/instantiation_context.h>
 
 using namespace std;
 
@@ -71,14 +72,15 @@ basic_meta_target::create_simple_target(const main_target& owner,
    return new source_target(&owner, source_location.branch_path(), source_location.filename().string(), &tp, properties);
 }
 
-void instantiate_meta_targets(const meta_targets_t& targets,
+void instantiate_meta_targets(instantiation_context& ctx,
+                              const meta_targets_t& targets,
                               const feature_set& build_request,
                               const main_target* owner,
                               std::vector<basic_target*>* result,
                               feature_set* usage_requirments)
 {
    for (auto& t : targets) {
-      t.first->instantiate(owner, t.second == NULL ? build_request : *build_request.join(*t.second),
+      t.first->instantiate(ctx, owner, t.second == NULL ? build_request : *build_request.join(*t.second),
                            result, usage_requirments);
    }
 }
@@ -204,11 +206,14 @@ const feature_set& basic_meta_target::resolve_undefined_features(const feature_s
    return *without_undefined;
 }
 
-void basic_meta_target::instantiate(const main_target* owner,
+void basic_meta_target::instantiate(instantiation_context& ctx,
+                                    const main_target* owner,
                                     const feature_set& build_request,
                                     std::vector<basic_target*>* result,
                                     feature_set* usage_requirements) const
 {
+   instantiation_context::guard ig = {ctx, *this};
+
    if (is_cachable(owner)) {
       for (auto& i : instantiation_cache_)
          if (i.build_request_->compatible_with(build_request)) {
@@ -221,10 +226,7 @@ void basic_meta_target::instantiate(const main_target* owner,
       cache_item.build_request_ = &build_request;
       cache_item.computed_usage_requirements_ = get_engine().feature_registry().make_set();
 
-      instantiate_impl(owner,
-                       build_request,
-                       &cache_item.instantiated_targets_,
-                       cache_item.computed_usage_requirements_);
+      instantiate_impl(ctx, owner, build_request, &cache_item.instantiated_targets_, cache_item.computed_usage_requirements_);
       instantiation_cache_.push_back(cache_item);
 
       result->insert(result->end(), cache_item.instantiated_targets_.begin(), cache_item.instantiated_targets_.end());
@@ -232,10 +234,7 @@ void basic_meta_target::instantiate(const main_target* owner,
 
       return;
    } else {
-      instantiate_impl(owner,
-                       build_request,
-                       result,
-                       usage_requirements);
+      instantiate_impl(ctx, owner, build_request, result, usage_requirements);
    }
 }
 

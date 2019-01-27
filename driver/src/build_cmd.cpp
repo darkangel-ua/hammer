@@ -47,6 +47,7 @@ struct build_options_t {
    bool only_up_to_date_check_ = false;
    bool disable_batcher_ = false;
    bool write_build_graph_ = false;
+   bool write_instantiation_graph_ = false;
    unsigned worker_count_ = boost::thread::hardware_concurrency();
    vector<string> build_request_;
 } build_options;
@@ -61,6 +62,7 @@ build_options_description = []() {
       ("disable-batcher", po::bool_switch(&build_options.disable_batcher_), "do not build many sources at once")
       ("jobs,j", po::value<unsigned>(&build_options.worker_count_), "concurrency level")
       ("write-build-graph", po::bool_switch(&build_options.write_build_graph_), "don't build, just write graphviz build-graph.dot for building process")
+      ("write-instantiation-graph", po::bool_switch(&build_options.write_instantiation_graph_), "don't build, just instantiate targets and write instantiation-graph.dot")
    ;
 
    return desc;
@@ -345,6 +347,46 @@ generate(engine& engine,
    }
 }
 
+static
+void write_instantiation_graph(const vector<basic_target*>& targets) {
+   using visited_targets_t = std::unordered_set<const main_target*>;
+
+   std::ofstream s{"instantiation-graph.dot"};
+   visited_targets_t visited_targets;
+
+   s << "digraph g{graph [rankdir = \"LR\"];\n";
+
+   boost::format node_format("\"%s\" [label = \"%s\" "
+                               "shape = \"record\"];\n");
+
+   boost::format edge_format("\"%s\" -> \"%s\"\n");
+
+   std::function<bool (const basic_target& t)> dump_one = [&] (const basic_target& t) {
+      auto* mt = dynamic_cast<const main_target*>(&t);
+      if (!mt)
+         return false;
+
+      if (visited_targets.find(mt) != visited_targets.end())
+         return true;
+
+      visited_targets.insert(mt);
+
+      s << (node_format % mt->name() % mt->name());
+
+      for (auto* source : mt->sources()) {
+         if (dump_one(*source))
+            s << (edge_format % mt->name() % source->name());
+      }
+
+      return true;
+   };
+
+   for (auto* t : targets)
+      dump_one(*t);
+
+   s << "}";
+}
+
 int handle_build_cmd(const std::vector<std::string>& args,
                      const unsigned debug_level,
                      volatile bool& interrupt_flag) {
@@ -373,6 +415,11 @@ int handle_build_cmd(const std::vector<std::string>& args,
    cout << "...instantiating... " << flush;
    vector<basic_target*> instantiated_targets = instantiate(*engine, build_request.targets_, *build_request.build_request_);
    cout << "Done" << endl;
+
+   if (build_options.write_instantiation_graph_) {
+      write_instantiation_graph(instantiated_targets);
+      return 0;
+   }
 
    if (build_options.only_instantiate_)
       return 0;

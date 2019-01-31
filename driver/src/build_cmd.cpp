@@ -370,12 +370,20 @@ void write_instantiation_graph(const vector<basic_target*>& targets) {
          return true;
 
       visited_targets.insert(mt);
+      auto make_name = [] (const basic_target& mt) {
+         auto i_version = mt.properties().find("version");
+         if (i_version != mt.properties().end())
+            return mt.name() + "-" + (**i_version).value();
+         else
+            return mt.name();
+      };
 
-      s << (node_format % mt->name() % mt->name());
+      const std::string mt_name = make_name(*mt);
+      s << (node_format % mt_name % mt_name);
 
       for (auto* source : mt->sources()) {
          if (dump_one(*source))
-            s << (edge_format % mt->name() % source->name());
+            s << (edge_format % mt_name % make_name(*source));
       }
 
       return true;

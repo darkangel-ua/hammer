@@ -105,32 +105,12 @@ void basic_meta_target::split_sources(sources_decl* simple_targets, meta_targets
       split_one_source(simple_targets, meta_targets, *i, build_request, tr);
 }
 
-// trying to avoid feature_set conning if possible
-static
-const feature_set*
-apply_project_dependencies(const feature_set* properties,
-                           const std::string& target_ref,
-                           const project& p ) {
-   for (auto& d : p.dependencies()) {
-      if (boost::regex_match(target_ref, d.target_ref_mask_)) {
-         feature_set* result = properties->clone();
-         result->join(*d.properties_);
-         return result;
-      }
-   }
-
-   return properties;
-}
-
 static
 loaded_projects
 resolve_project_local_reference(const source_decl& s,
                                 const project& current_project) {
    const project& top = [&] () -> const project& {
-      auto result = &s.owner_project();
-      while(result && !result->publishable())
-         result = result->parent_;
-
+      auto result = find_nearest_publishable_project(current_project);
       if (!result)
          throw std::runtime_error("While resolving project local reference '" + s.target_path() + "' at '" + current_project.location().string() + "' - can't find parent publishable project");
 
@@ -170,8 +150,6 @@ void basic_meta_target::resolve_meta_target_source(const source_decl& source,
    loaded_projects suitable_projects =
       source.is_project_local_reference() ? resolve_project_local_reference(source, get_project())
                                           : get_project().load_project(source.target_path());
-
-   build_request_with_source_properties = apply_project_dependencies(build_request_with_source_properties, source.target_path(), get_project());
 
    if (source.target_name().empty()) {
       try {

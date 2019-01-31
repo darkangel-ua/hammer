@@ -1,0 +1,2 @@
+# libC has <source> and we should not apply project dependencies to it
+lib libA : libA.cpp /projectC/libC/<version>1.0 ;

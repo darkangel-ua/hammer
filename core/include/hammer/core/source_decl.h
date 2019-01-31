@@ -72,6 +72,7 @@ class source_decl {
       bool operator != (const source_decl& rhs) const { return !(*this == rhs); }
 
       bool is_project_local_reference() const;
+      bool is_meta_target() const { return type_ == nullptr; }
 
    private:
       std::reference_wrapper<const project> project_;

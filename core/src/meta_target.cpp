@@ -183,10 +183,12 @@ void remove_duplicates(deduplicator_t& deduplicator,
    
    void meta_target::instantiate_impl(instantiation_context& ctx,
                                       const main_target* owner,
-                                      const sources_decl& sources,
+                                      sources_decl sources,
                                       const feature_set& build_request_,
                                       std::vector<basic_target*>* result,
                                       feature_set* usage_requirements) const {
+      apply_project_dependencies(sources, *this);
+
       const feature_set& build_request =
          build_request_.has_undefined_features()
             ? resolve_undefined_features(build_request_)
@@ -211,7 +213,9 @@ void remove_duplicates(deduplicator_t& deduplicator,
       sources_decl sources_from_features;
       sources_decl dependencies_from_requierements;
       extract_sources(sources_from_requirements, *mt_fs, *this);
+      apply_project_dependencies(sources_from_requirements, *this);
       extract_dependencies(dependencies_from_requierements, *mt_fs, *this);
+      apply_project_dependencies(dependencies_from_requierements, *this);
 
       split_sources(&simple_targets, &meta_targets, sources, *build_request_for_dependencies);
       split_sources(&simple_targets, &meta_targets, sources_from_requirements, *build_request_for_dependencies);
@@ -301,4 +305,23 @@ void remove_duplicates(deduplicator_t& deduplicator,
    {
       return sources_decl();
    }
+
+   void apply_project_dependencies(sources_decl& sources,
+                                   const basic_meta_target& sources_owner) {
+      const project& p = sources_owner.get_project();
+      for (auto& s : sources) {
+         if (!s.is_meta_target())
+            continue;
+
+         for (auto& d : p.dependencies()) {
+            if (boost::regex_match(s.target_path(), d.target_ref_mask_)) {
+               if (s.properties())
+                  s.properties()->join(*d.properties_);
+               else
+                  s.properties(d.properties_->clone());
+            }
+         }
+      }
+   }
+
 }

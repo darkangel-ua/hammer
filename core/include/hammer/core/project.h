@@ -195,4 +195,7 @@ class loaded_projects {
       projects_t projects_;
 };
 
+const project*
+find_nearest_publishable_project(const project& p);
+
 }

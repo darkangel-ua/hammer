@@ -1,0 +1,7 @@
+project projectB
+   : requirements = 
+      <version>1.0
+   ;
+
+use-project libB : ./libB ;
+

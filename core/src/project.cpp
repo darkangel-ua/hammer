@@ -680,4 +680,13 @@ loaded_projects::select_best_alternative(const std::string& target_name,
    }
 }
 
+const project*
+find_nearest_publishable_project(const project& p) {
+   auto result = &p;
+   while(result && !result->publishable())
+      result = result->parent_;
+
+   return result;
+}
+
 }

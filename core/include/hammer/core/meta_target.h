@@ -26,7 +26,7 @@ class meta_target : public basic_meta_target {
       // some of them can invoke this function multiple times with different sources
       void instantiate_impl(instantiation_context& ctx,
                             const main_target* owner,
-                            const sources_decl& sources,
+                            sources_decl sources,
                             const feature_set& build_request_,
                             std::vector<basic_target*>* result,
                             feature_set* usage_requirements) const;
@@ -46,5 +46,8 @@ class meta_target : public basic_meta_target {
                                               const main_target* owner) const;
 
 };
+
+void apply_project_dependencies(sources_decl& sources,
+                                const basic_meta_target& sources_owner);
 
 }

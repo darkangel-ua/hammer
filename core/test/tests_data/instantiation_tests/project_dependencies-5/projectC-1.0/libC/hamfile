@@ -1,0 +1,1 @@
+lib libC : libC.cpp : usage-requirements = <source>(/projectB/libB/<version>2.0) ;

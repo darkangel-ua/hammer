@@ -1,0 +1,1 @@
+lib libB : libB.cpp : usage-requirements = <define>LIB_B_2_0 ;

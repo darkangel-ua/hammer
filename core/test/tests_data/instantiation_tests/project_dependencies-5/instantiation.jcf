@@ -1,0 +1,12 @@
+test {
+    main.cpp {}
+    libA {
+        libA.cpp {}
+        libB [ features = <version>2.0; ] {
+            libB.cpp {}
+        }
+        libC {
+            libC.cpp {}
+       }
+    }
+}

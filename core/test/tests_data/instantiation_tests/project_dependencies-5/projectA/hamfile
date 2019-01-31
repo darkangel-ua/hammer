@@ -1,0 +1,9 @@
+project projectA
+   : requirements = 
+      <version>1.0
+   : dependencies = 
+      { /projectB/** : 1.0 }
+   ;
+
+use-project libA : ./libA ;
+

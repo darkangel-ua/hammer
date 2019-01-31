@@ -1,0 +1,9 @@
+test [ features = <define>LIB_B_1_0; ] {
+    main.cpp {}
+    libA {
+        libA.cpp {}
+        libB [ features = <version>1.0; ]{
+            libB.cpp {}
+       }
+    }
+}

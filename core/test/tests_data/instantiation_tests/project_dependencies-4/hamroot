@@ -1,0 +1,5 @@
+# test that we correctly rewrite public dependencies
+use-project /projectB : ./projectB-1.0 ;
+use-project /projectB : ./projectB-2.0 ;
+
+exe test : main.cpp ./projectA/libA ;

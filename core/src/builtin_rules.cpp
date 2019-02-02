@@ -204,6 +204,7 @@ void header_lib_rule(target_invocation_context& ctx,
 {
    unique_ptr<basic_meta_target> mt(new header_lib_meta_target(&ctx.current_project_,
                                                                id.to_string(),
+                                                               sources ? *sources : sources_decl{},
                                                                requirements ? *requirements : requirements_decl(),
                                                                usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl()));
    if (sources)

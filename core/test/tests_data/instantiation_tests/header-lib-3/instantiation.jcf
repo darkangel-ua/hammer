@@ -1,0 +1,6 @@
+test [ features = <define>b; ] {
+    test.cpp {}
+    a {
+        b {}   
+    }
+}

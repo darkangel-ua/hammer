@@ -1,0 +1,5 @@
+# test that header-lib treats sources as public sources and adds <use>() to usage requirements
+exe test : test.cpp a;
+
+header-lib a : b ;
+header-lib b : usage-requirements = <define>b ;

@@ -8,11 +8,12 @@ namespace hammer {
 
 header_lib_meta_target::header_lib_meta_target(hammer::project* p,
                                                const std::string& name,
+                                               const sources_decl& sources,
                                                const requirements_decl& requirements,
                                                const requirements_decl& usage_requirements)
    : typed_meta_target(p, name, requirements, usage_requirements, p->get_engine().get_type_registry().get(types::HEADER_LIB))
 {
-
+   this->sources(sources);
 }
 
 void header_lib_meta_target::compute_usage_requirements(feature_set& result,
@@ -21,7 +22,10 @@ void header_lib_meta_target::compute_usage_requirements(feature_set& result,
                                                         const feature_set& computed_usage_requirements,
                                                         const main_target* owner) const
 {
-   // we just tranfer all computed usage requirements for this target further up
+   // compute our own usage requirements
+   typed_meta_target::compute_usage_requirements(result, constructed_target, build_request, computed_usage_requirements, owner);
+
+   // tranfer all computed usage requirements for this target further up
    result.join(computed_usage_requirements);
 }
 

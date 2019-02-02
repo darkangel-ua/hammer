@@ -1,0 +1,3 @@
+# test that we can correctly handle reference on aliased local target
+
+exe test : main.cpp ./lib1 ;

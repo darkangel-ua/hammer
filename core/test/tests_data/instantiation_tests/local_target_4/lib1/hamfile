@@ -1,0 +1,5 @@
+local
+lib local_lib : local_lib.cpp ;
+
+lib lib1 : lib1.cpp : usage-requirements = <source>local_lib ;
+

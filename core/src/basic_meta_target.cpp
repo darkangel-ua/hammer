@@ -221,31 +221,18 @@ engine& basic_meta_target::get_engine() const
    return project_->get_engine();
 }
 
-static
-bool has_slash(const std::string& s)
-{
-   for (const char c : s)
-      if (c == '/')
-         return true;
-
-   return false;
-}
-
 void adjust_dependency_features_sources(feature_set& set_to_adjust,
-                                        const basic_meta_target& relative_to_target)
-{
+                                        const basic_meta_target& relative_to_target) {
    for (feature* f : set_to_adjust) {
       if (!f->attributes().dependency)
          continue;
 
       const source_decl& source = f->get_dependency_data().source_;
-      if (source.type() == nullptr /*source is meta-target*/ &&
-          !has_slash(source.target_path()) &&
-          !source.is_project_local_reference())
-      {
+      if (looks_like_local_target_ref(source) && source.target_name().empty()) {
          source_decl adjusted_source = source;
          adjusted_source.target_path("./", nullptr);
          adjusted_source.target_name(source.target_path());
+         adjusted_source.set_locals_allowed(true);
 
          f->set_dependency_data(adjusted_source, &relative_to_target.get_project());
       }

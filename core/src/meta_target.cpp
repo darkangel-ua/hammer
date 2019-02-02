@@ -291,13 +291,17 @@ void remove_duplicates(deduplicator_t& deduplicator,
                                                 const feature_set& computed_usage_requirements,
                                                 const main_target* owner) const
    {
-//      this->usage_requirements().eval(constructed_target.properties(), &result);
+      feature_set& tmp = *get_engine().feature_registry().make_set();
+      this->usage_requirements().eval(constructed_target.properties(), &tmp);
+
+      // we need to transform references in dependency features to local meta-targets to './/foo' form
+      adjust_dependency_features_sources(tmp, *this);
+
       // when transferring public sources we should make <use> with current build request applied
       // because this is the only way to produce correct usage requirements in dependent targets
       // same as in transfer_public_sources
-      feature_set& tmp = *get_engine().feature_registry().make_set();
-      this->usage_requirements().eval(constructed_target.properties(), &tmp);
       apply_build_request(tmp, build_request);
+
       result.join(tmp);
    }
 

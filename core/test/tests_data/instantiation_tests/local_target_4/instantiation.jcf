@@ -1,0 +1,9 @@
+test {
+   main.cpp {}
+   lib1 { 
+      lib1.cpp {} 
+   }
+   local_lib {
+      local_lib.cpp {}
+   }
+}

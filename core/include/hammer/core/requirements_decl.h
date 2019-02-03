@@ -154,7 +154,7 @@ class requirements_decl {
       requirements_decl();
       requirements_decl(const requirements_decl& rhs);
       requirements_decl& operator = (const requirements_decl& rhs);
-      void add(std::auto_ptr<requirement_base> r);
+      void add(std::unique_ptr<requirement_base> r);
       void add(const feature& f);
       void eval(const feature_set& build_request,
                 feature_set* result,

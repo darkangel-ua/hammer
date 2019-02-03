@@ -1,3 +1,4 @@
+#include <boost/make_unique.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <hammer/core/requirements_decl.h>
 #include <hammer/core/feature_set.h>
@@ -48,14 +49,14 @@ requirements_decl::operator = (const requirements_decl& rhs) {
    return *this;
 }
 
-void requirements_decl::add(std::auto_ptr<requirement_base> r) {
-   impl_->requirements_.push_back(r);
+void requirements_decl::add(std::unique_ptr<requirement_base> r) {
+   impl_->requirements_.push_back(r.get());
+   r.release();
 }
 
 void requirements_decl::add(const feature& f)
 {
-   std::auto_ptr<requirement_base> r(new just_feature_requirement(const_cast<feature*>(&f)));
-   add(r);
+   add(boost::make_unique<just_feature_requirement>(const_cast<feature*>(&f)));
 }
 
 requirements_decl::~requirements_decl() {

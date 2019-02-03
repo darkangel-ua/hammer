@@ -1,3 +1,4 @@
+#include <boost/make_unique.hpp>
 #include <hammer/core/ast2objects.h>
 #include <hammer/ast/hamfile.h>
 #include <hammer/core/rule_manager.h>
@@ -21,7 +22,8 @@
 #include <hammer/ast/target_def.h>
 #include <hammer/ast/condition.h>
 #include <hammer/ast/struct_expr.h>
-#include <boost/make_unique.hpp>
+
+using boost::make_unique;
 
 namespace hammer {
 
@@ -262,19 +264,19 @@ ast2requirement_condition_result(invocation_context& ctx,
 }
 
 static
-std::auto_ptr<requirement_base>
+std::unique_ptr<requirement_base>
 ast2requirement_base(invocation_context& ctx,
                      const ast::expression* e,
                      const bool public_)
 {
    if (const ast::feature* v = ast::as<ast::feature>(e))
-      return std::auto_ptr<requirement_base>(new just_feature_requirement(ast2feature(ctx, *v)));
+      return make_unique<just_feature_requirement>(ast2feature(ctx, *v));
    else if (const ast::public_expr* pe = ast::as<ast::public_expr>(e)) {
-      std::auto_ptr<requirement_base> rb = ast2requirement_base(ctx, pe->value(), true);
+      auto rb = ast2requirement_base(ctx, pe->value(), true);
       rb->set_public(true);
       return rb;
    } else if (const ast::condition_expr* c = ast::as<ast::condition_expr>(e))
-      return std::auto_ptr<requirement_base>(new requirement_condition(ast2requirement_condition_op(ctx, c->condition()), ast2requirement_condition_result(ctx, c->result()), public_));
+      return make_unique<requirement_condition>(ast2requirement_condition_op(ctx, c->condition()), ast2requirement_condition_result(ctx, c->result()), public_);
    else
       throw std::runtime_error("ast2requirement_base: Unexpected AST node");
 }
@@ -284,7 +286,7 @@ std::unique_ptr<usage_requirements_decl>
 ast2usage_requirements_decl_impl(invocation_context& ctx,
                                  const ast::expression* requirements)
 {
-   std::unique_ptr<usage_requirements_decl> result(new usage_requirements_decl);
+   auto result = make_unique<usage_requirements_decl>();
 
    if (const ast::list_of* l = ast::as<ast::list_of>(requirements)) {
       for (const ast::expression* e : l->values())

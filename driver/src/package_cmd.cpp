@@ -42,7 +42,7 @@ int handle_publish_cmd(engine& e,
 
    auto root = find_root(fs::current_path());
    if (!root) {
-      cout << "Failed to find root project path!" << endl;
+      cout << "Failed to find hamroot!" << endl;
       return 1;
    }
 

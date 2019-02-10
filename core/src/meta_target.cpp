@@ -209,6 +209,8 @@ void remove_duplicates(deduplicator_t& deduplicator,
       meta_targets_t dependency_meta_targets;
 
       sources_decl additional_sources(owner == NULL ? sources_decl() : compute_additional_sources(*owner));
+      apply_project_dependencies(additional_sources, *this);
+
       sources_decl sources_from_requirements;
       sources_decl sources_from_features;
       sources_decl dependencies_from_requierements;

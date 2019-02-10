@@ -406,7 +406,29 @@ int handle_build_cmd(const std::vector<std::string>& args,
    const project* project_to_build = has_project_file(fs::current_path()) ? &engine->load_project(fs::current_path()) : nullptr;
 
    if (debug_level > 0)
-      cout << static_cast<const char*>(project_to_build ? "Done" : "Done (Not Founded)") << endl;
+      cout << static_cast<const char*>(project_to_build ? "Done" : "Done (Not Found)") << endl;
+
+   if (!project_to_build) {
+      if (debug_level > 0)
+         cout << "...Searching root project ... " << flush;
+      auto root = find_root(fs::current_path());
+      if (!root) {
+         if (debug_level > 0)
+            cout << "Failed (Not Found)" << endl;
+         return 1;
+      } else {
+         if (debug_level > 0)
+            cout << "Found (at '" << root->string() << "')\n" << flush;
+      }
+
+      if (debug_level > 0)
+         cout << "...Loading root project... " << endl;
+
+      engine->load_project(*root);
+
+      if (debug_level > 0)
+         cout << "Done" << endl;
+   }
 
    parse_options(args);
 

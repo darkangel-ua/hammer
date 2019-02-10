@@ -65,40 +65,40 @@ struct resolved_targets {
 resolved_targets
 resolve_target_names(hammer::engine& e,
                      const hammer::project* project,
-                     const vector<string>& target_names,
+                     const vector<string>& targets,
                      const feature_set& build_request)
 {
    using selected_targets_t = hammer::project::selected_targets_t;
 
    resolved_targets result;
 
-   for (auto& target_name : target_names) {
-      if (is_looks_like_project(target_name)) {
+   for (auto& target : targets) {
+      if (is_looks_like_project(target)) {
          string target_path, target_name;
-         split_target_path(target_path, target_name, target_name);
+         split_target_path(target_path, target_name, target);
 
-         if (target_name[0] != '/' && !project) {
+         if (target_path[0] != '/' && !project) {
             result.unresolved_target_names_.push_back(target_name);
             continue;
          }
 
          const hammer::loaded_projects p =
-            target_name[0] == '/' ? e.load_project(engine::global_project_ref{target_path})
+            target_path[0] == '/' ? e.load_project(engine::global_project_ref{target_path})
                                   : project->load_project(target_path);
-         selected_targets_t st =
+         const selected_targets_t st =
             target_name.empty() ? p.select_best_alternative(build_request)
                                 : selected_targets_t{1, p.select_best_alternative(target_name, build_request, false)};
-         feature_set* usage_requirements = project->get_engine().feature_registry().make_set();
-         for (selected_targets_t::const_iterator t = st.begin(), t_last = st.end(); t != t_last; ++t) {
-            result.targets_.push_back(t->target_);
+         feature_set* usage_requirements = e.feature_registry().make_set();
+         for (const auto& t : st) {
+            result.targets_.push_back(t.target_);
             usage_requirements->clear();
          }
       } else {
          if (project) {
-            hammer::project::selected_target target = project->select_best_alternative(target_name, build_request);
-            result.targets_.push_back(target.target_);
+            hammer::project::selected_target selected_target = project->select_best_alternative(target, build_request);
+            result.targets_.push_back(selected_target.target_);
          } else
-            result.unresolved_target_names_.push_back(target_name);
+            result.unresolved_target_names_.push_back(target);
       }
    }
 

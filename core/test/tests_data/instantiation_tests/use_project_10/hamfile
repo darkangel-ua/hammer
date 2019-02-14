@@ -1,0 +1,6 @@
+# testing use-project with exact matching strategy
+# when loading root/lib1/test we shouldn't load /root/lib1
+use-project root/lib1 : location = ./lib1 : match = exact ;
+use-project root/lib1/test : location = ./lib1/test ; 
+
+exe test : main.cpp root/lib1/test ;

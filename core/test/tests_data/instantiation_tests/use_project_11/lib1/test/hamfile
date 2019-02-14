@@ -1,0 +1,1 @@
+lib test : test.cpp : usage-requirements = <define>TEST;

@@ -246,12 +246,42 @@ use_project_alias_validator(ast::context& ctx,
 }
 
 static
+const ast::expression*
+use_project_match_validator(ast::context& ctx,
+                            diagnostic& diag,
+                            const ast::expression* match_) {
+   const ast::id_expr* match = ast::as<ast::id_expr>(match_);
+   if (!match) {
+      diag.error(match_->start_loc(), "Argument 'match': Expected identifier");
+      return new (ctx) ast::error_expression(match_);
+   }
+
+   if (match->id().to_string() == "always" || match->id().to_string() == "exact")
+      return match_;
+
+   diag.error(match_->start_loc(), "Argument 'match': Valid values are: always, exact");
+   return new (ctx) ast::error_expression(match_);
+}
+
+static
 void use_project_rule(invocation_context& ctx,
                       const ast::expression* alias,
                       const location_t& location,
-                      feature_set* requirements)
+                      feature_set* requirements,
+                      const parscore::identifier* i_match_strategy)
 {
    location_t project_alias;
+   project::alias::match match_strategy = project::alias::match::always;
+
+   if (i_match_strategy) {
+      const std::string ms = i_match_strategy->to_string();
+      if (ms == "always")
+         match_strategy = project::alias::match::always;
+      else if (ms == "exact")
+         match_strategy = project::alias::match::exact;
+      else
+         assert(false);
+   }
 
    if (alias) {
       if (const ast::id_expr* id = ast::as<ast::id_expr>(alias))
@@ -271,9 +301,9 @@ void use_project_rule(invocation_context& ctx,
    }
 
    if (project_alias.has_root_path())
-      ctx.current_project_.get_engine().add_alias(project_alias, ctx.current_project_.location() / location, requirements);
+      ctx.current_project_.get_engine().add_alias(project_alias, ctx.current_project_.location() / location, requirements, match_strategy);
    else
-      ctx.current_project_.add_alias(project_alias, location, requirements);
+      ctx.current_project_.add_alias(project_alias, location, requirements, match_strategy);
 }
 
 static
@@ -1080,7 +1110,7 @@ c_as_cpp_rule(invocation_context& ctx,
 void install_builtin_rules(rule_manager& rm)
 {
    rm.add_rule("project", project_rule, {{"id", project_id_validator}, "requirements", "usage-requirements", "dependencies"});
-   rm.add_rule("use-project", use_project_rule, {{"alias", use_project_alias_validator}, "location", "requirements"});
+   rm.add_rule("use-project", use_project_rule, {{"alias", use_project_alias_validator}, "location", "requirements", {"match", use_project_match_validator}});
    rm.add_rule("feature", feature_rule, {"name", "values", {"attributes", feature_attributes_validator}});
    rm.add_rule("feature.local", feature_local_rule, {"name", "values", {"attributes", feature_attributes_validator}});
    rm.add_rule("feature.compose", feature_compose_rule, {"feature", "components"});

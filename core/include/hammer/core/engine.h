@@ -74,7 +74,8 @@ class engine : public boost::noncopyable {
 
       void add_alias(const location_t& alias_path,
                      const location_t& full_project_path,
-                     feature_set* props);
+                     feature_set* props,
+                     const project::alias::match match_strategy = project::alias::match::always);
 
       void enable_error_verbosity() { error_verbosity_ = true; }
       void disable_error_verbosity() { error_verbosity_ = false; }

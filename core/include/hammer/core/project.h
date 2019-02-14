@@ -37,9 +37,15 @@ class project : public boost::noncopyable {
       typedef std::vector<selected_target> selected_targets_t;
 
       struct alias {
+         enum class match {
+            always,
+            exact
+         };
+
          boost::filesystem::path alias_;
          boost::filesystem::path full_fs_path_;
          const feature_set* requirements_;
+         match match_strategy_;
 
          bool is_transparent() const { return alias_.empty(); }
       };
@@ -117,7 +123,8 @@ class project : public boost::noncopyable {
 
       void add_alias(const location_t& alias,
                      const location_t& fs_path,
-                     const feature_set* requirements);
+                     const feature_set* requirements,
+                     const alias::match match_strategy = alias::match::always);
       const aliases_t& aliases() const;
 
       void instantiate(const std::string& target_name,

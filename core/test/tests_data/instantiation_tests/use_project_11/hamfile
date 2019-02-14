@@ -1,0 +1,4 @@
+# testing transparent project proxing with exact matching strategy
+use-project lib1 : location = ./lib1 ;
+
+exe test : main.cpp lib1/test ;

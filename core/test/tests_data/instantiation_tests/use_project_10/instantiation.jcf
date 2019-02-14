@@ -1,0 +1,4 @@
+test [ features = <define>TEST !<define>LIB1; ] {
+    main.cpp {}
+    test { test.cpp {} }
+}

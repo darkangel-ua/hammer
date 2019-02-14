@@ -23,18 +23,21 @@ struct project::aliases_impl {
       const feature_set* requirements_;
       nodes nodes_;
       location_t full_fs_path_;
+      project::alias::match match_strategy_;
    };
 
    // return false on failure - same alias used twice
    bool add_alias(nodes& nodes,
                   const boost::filesystem::path& alias,
                   const location_t& fs_path,
-                  const feature_set* requirements);
+                  const feature_set* requirements,
+                  const alias::match match_strategy);
    bool add_alias(nodes& nodes,
                   boost::filesystem::path::const_iterator first,
                   boost::filesystem::path::const_iterator last,
                   const location_t& fs_path,
-                  const feature_set* requirements);
+                  const feature_set* requirements,
+                  const alias::match match_strategy);
    void load_project(loaded_projects& result,
                      engine& e,
                      boost::filesystem::path::const_iterator first,
@@ -179,7 +182,8 @@ basic_meta_target* project::find_target(const std::string& name)
 
 void project::add_alias(const location_t& alias,
                         const location_t& fs_path,
-                        const feature_set* requirements)
+                        const feature_set* requirements,
+                        const alias::match match_strategy)
 {
    if (alias.has_root_path())
       throw std::runtime_error("[project::add_alias]: alias can be only relative");
@@ -200,7 +204,7 @@ void project::add_alias(const location_t& alias,
    if (ia != alias.end() || ifp != fs_path.end())
       throw std::runtime_error("[project::add_alias]: alias/fs_path can't contain .. elements");
 
-   if (!aliases_->add_alias(aliases_->nodes_, alias, fs_path.has_root_path() ? fs_path : location() / fs_path, requirements))
+   if (!aliases_->add_alias(aliases_->nodes_, alias, fs_path.has_root_path() ? fs_path : location() / fs_path, requirements, match_strategy))
       throw std::runtime_error("Alias path '" + alias.string() + "' already added" );
 }
 
@@ -439,11 +443,12 @@ project::try_resolve_local_features(const feature_set& fs) const
 bool project::aliases_impl::add_alias(nodes& nodes,
                                       const boost::filesystem::path& alias,
                                       const location_t& fs_path,
-                                      const feature_set* requirements)
+                                      const feature_set* requirements,
+                                      const alias::match match_strategy)
 {
-   const bool r = add_alias(nodes, alias.begin(), alias.end(), fs_path, requirements);
+   const bool r = add_alias(nodes, alias.begin(), alias.end(), fs_path, requirements, match_strategy);
    if (r)
-      aliases_.push_back({alias, fs_path, requirements ? requirements->clone() : nullptr});
+      aliases_.push_back({alias, fs_path, requirements ? requirements->clone() : nullptr, match_strategy});
 
    return r;
 }
@@ -452,7 +457,8 @@ bool project::aliases_impl::add_alias(nodes& nodes,
                                       location_t::const_iterator first,
                                       location_t::const_iterator last,
                                       const location_t& fs_path,
-                                      const feature_set* requirements)
+                                      const feature_set* requirements,
+                                      const alias::match match_strategy)
 {
    auto has_same_fs_path = [&]() {
       for (auto& n : nodes) {
@@ -465,7 +471,7 @@ bool project::aliases_impl::add_alias(nodes& nodes,
 
    if (first == last) {
       // special case for transparent proxies - they don't have alias
-      std::unique_ptr<node> new_node{ new node{ requirements ? requirements->clone() : nullptr, aliases_impl::nodes{}, fs_path } };
+      std::unique_ptr<node> new_node{ new node{ requirements ? requirements->clone() : nullptr, aliases_impl::nodes{}, fs_path, match_strategy } };
       if (has_same_fs_path())
          return false;
       else {
@@ -481,7 +487,7 @@ bool project::aliases_impl::add_alias(nodes& nodes,
          if (has_same_fs_path())
             return false;
          else {
-            std::unique_ptr<node> new_node{ new node{ requirements ? requirements->clone() : nullptr, aliases_impl::nodes{}, fs_path } };
+            std::unique_ptr<node> new_node{ new node{ requirements ? requirements->clone() : nullptr, aliases_impl::nodes{}, fs_path, match_strategy } };
             nodes.insert({ *sfirst, std::move(new_node) });
             return true;
          }
@@ -489,9 +495,9 @@ bool project::aliases_impl::add_alias(nodes& nodes,
          if (has_same_fs_path())
             return false;
          else {
-            std::unique_ptr<node> new_node{ new node{ nullptr, aliases_impl::nodes{}, {} } };
+            std::unique_ptr<node> new_node{ new node{ nullptr, aliases_impl::nodes{}, {}, match_strategy } };
             i = nodes.insert({ *sfirst, std::move(new_node) });
-            return add_alias(i->second->nodes_, first, last, fs_path, requirements);
+            return add_alias(i->second->nodes_, first, last, fs_path, requirements, match_strategy);
          }
       }
    } else {
@@ -508,13 +514,13 @@ bool project::aliases_impl::add_alias(nodes& nodes,
             if (has_same_fs_path())
                return false;
             else {
-               std::unique_ptr<node> new_node{ new node{ requirements ? requirements->clone() : nullptr, aliases_impl::nodes{}, fs_path } };
+               std::unique_ptr<node> new_node{ new node{ requirements ? requirements->clone() : nullptr, aliases_impl::nodes{}, fs_path, match_strategy } };
                nodes.insert({ *sfirst, std::move(new_node) });
                return true;
             }
          }
       } else
-         return add_alias(i->second->nodes_, first, last, fs_path, requirements);
+         return add_alias(i->second->nodes_, first, last, fs_path, requirements, match_strategy);
    }
 }
 
@@ -526,6 +532,9 @@ void project::aliases_impl::load_project(loaded_projects& result,
    // first of all add transparent proxied projects
    auto ri = nodes_.equal_range({});
    for (auto i = ri.first; i != ri.second; ++i) {
+      if (i->second->match_strategy_ == alias::match::exact && first != last)
+         continue;
+
       project& p = e.load_project(i->second->full_fs_path_);
       result.push_back(&p);
       if (first != last) {
@@ -558,10 +567,13 @@ void project::aliases_impl::load_project(loaded_projects& result,
       node& n = *i->second;
 
       if (!n.full_fs_path_.empty()) {
-         auto first_copy = first;
          project& p = e.load_project(n.full_fs_path_);
-         if (++first_copy == last) {
+
+         auto first_copy = first;
+         if (++first_copy == last && n.match_strategy_ == alias::match::always)
             result.push_back(&p);
+
+         if (first_copy == last) {
             // project path has been fully resolved, but we need to include transparent proxies from final project
             p.aliases_->load_project(result, e, last, last);
             continue;

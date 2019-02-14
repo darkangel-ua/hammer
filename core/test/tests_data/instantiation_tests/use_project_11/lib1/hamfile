@@ -1,0 +1,3 @@
+# when select lib/test we shouldn't add ./lib into result set
+use-project location = ./lib1 : match = exact ;
+use-project test : location = ./test ;

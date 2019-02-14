@@ -296,11 +296,12 @@ bool has_project_file(const boost::filesystem::path& folder) {
 
 void engine::add_alias(const location_t& alias_path,
                        const location_t& full_project_path,
-                       feature_set* props)
+                       feature_set* props,
+                       const project::alias::match match_strategy)
 {
    assert(full_project_path.has_root_path());
    assert(alias_path.has_root_directory());
-   global_project_->add_alias(alias_path.relative_path(), full_project_path, props);
+   global_project_->add_alias(alias_path.relative_path(), full_project_path, props, match_strategy);
 }
 
 void engine::output_location_strategy(boost::shared_ptr<hammer::output_location_strategy>& strategy)

@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <unordered_set>
 #include <boost/program_options.hpp>
 #include <boost/filesystem/convenience.hpp>
 #include <boost/format.hpp>
@@ -129,6 +130,10 @@ build command is default and invoked when no other command specified.
 
 }
 
+static
+std::unordered_set<string> top_commands =
+   { "build", "clean", "toolset", "project", "warehouse", "package" };
+
 int main(int argc, char** argv) {
    try {
       po::options_description desc{global_options_description};
@@ -151,8 +156,13 @@ int main(int argc, char** argv) {
          // we collect all options including positional 'command' and then remove it from beginning
          // this way we get rest of cmdline in right order (i.e. not modified)
          auto opts = po::collect_unrecognized(parsed_options.options, po::include_positional);
-         if (!opts.empty() && !global_options.command_.empty())
+         if (!opts.empty() &&
+             !global_options.command_.empty() &&
+             top_commands.find(global_options.command_) != top_commands.end())
+         {
             opts.erase(opts.begin());
+         }
+
          return opts;
       } ();
 
@@ -199,8 +209,6 @@ int main(int argc, char** argv) {
       else if (cmd == "package")
          return handle_package_cmd(global_options.command_args_, global_options.debug_level_);
       else {
-         if (!cmd.empty() && cmd != "build")
-            global_options.command_args_.insert(global_options.command_args_.begin(), global_options.command_);
          signal(SIGINT, ctrl_handler);
          terminate_immediately = false;
          return handle_build_cmd(global_options.command_args_, global_options.debug_level_, interrupt_flag);

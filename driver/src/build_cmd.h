@@ -23,9 +23,6 @@ std::unique_ptr<hammer::engine>
 setup_engine(const unsigned debug_level,
              const bool configure_toolsets = true);
 
-void resolve_meta_targets(build_request& build_request,
-                          const hammer::project* p);
-
 std::vector<hammer::basic_target*>
 instantiate(hammer::engine& e,
             const std::vector<const hammer::basic_meta_target*>& meta_targets,

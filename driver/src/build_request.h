@@ -22,3 +22,7 @@ build_request
 resolve_build_request(hammer::engine& e,
                       const std::vector<std::string>& build_request_args,
                       const hammer::project* current_project);
+
+std::ostream&
+operator << (std::ostream& s,
+             const build_request& build_request);

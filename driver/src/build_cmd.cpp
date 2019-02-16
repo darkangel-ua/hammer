@@ -208,9 +208,6 @@ setup_engine(const unsigned debug_level,
    types::register_standart_types(engine.get_type_registry(), engine.feature_registry());
 
    if (debug_level > 0)
-      cout << "Done" << endl;
-
-   if (debug_level > 0)
       cout << "...Installing generators... " << flush;
 
    engine.generators().insert(std::auto_ptr<generator>(new obj_generator(engine)));
@@ -268,22 +265,6 @@ setup_engine(const unsigned debug_level,
    }
 
    return engine_ptr;
-}
-
-void resolve_meta_targets(build_request& build_request,
-                          const project* p) {
-   project::selected_targets_t targets;
-   if (build_request.target_names_.empty() ||
-       (build_request.target_names_.size() == 1 && build_request.target_names_[0] == "all"))
-   {
-      targets = p->select_best_alternative(*build_request.build_request_);
-   } else {
-      for (const string& target_name : build_request.target_names_)
-         targets.push_back(p->select_best_alternative(target_name, *build_request.build_request_));
-   }
-
-   for (const auto& st : targets)
-      build_request.targets_.push_back(st.target_);
 }
 
 vector<basic_target*>
@@ -435,12 +416,7 @@ int handle_build_cmd(const std::vector<std::string>& args,
    build_request build_request = resolve_build_request(*engine, build_options.build_request_, project_to_build);
 
    if (debug_level > 0)
-      cout << "...Build request: " << dump_for_hash(*build_request.build_request_) << endl;
-
-   resolve_meta_targets(build_request, project_to_build);
-
-   if (debug_level > 0)
-      cout << "...Targets to build are: " << boost::join(build_request.target_names_, ", ") << endl;
+      cout << build_request;
 
    cout << "...instantiating... " << flush;
    vector<basic_target*> instantiated_targets = instantiate(*engine, build_request.targets_, *build_request.build_request_);

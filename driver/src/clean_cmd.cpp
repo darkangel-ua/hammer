@@ -70,13 +70,13 @@ int handle_clean_cmd(const std::vector<std::string>& args,
 
    build_request clean_request = resolve_build_request(*engine, clean_options.clean_request_, project_to_clean);
 
-   if (debug_level > 0)
-      cout << "...Clean request: " << dump_for_hash(*clean_request.build_request_) << endl;
-
-   resolve_meta_targets(clean_request, project_to_clean);
-
-   if (debug_level > 0)
-      cout << "...Targets to clean are: " << boost::join(clean_request.target_names_, ", ") << endl;
+   if (debug_level > 0) {
+      cout << "\nClean request: " << dump_for_hash(*clean_request.build_request_)
+           << "\nTargets to clean are:\n";
+      for (auto target : clean_request.targets_)
+         cout << "   " << target->name() << " at '" << target->location().string() << "'\n";
+      cout << endl;
+   }
 
    cout << "...instantiating... " << flush;
    vector<basic_target*> instantiated_targets = instantiate(*engine, clean_request.targets_, *clean_request.build_request_);

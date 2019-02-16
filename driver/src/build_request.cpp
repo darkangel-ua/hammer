@@ -172,3 +172,17 @@ resolve_build_request(hammer::engine& e,
 
    return result;
 }
+
+std::ostream&
+operator << (std::ostream& s,
+             const build_request& build_request) {
+   s << "\nBuild request: " << dump_for_hash(*build_request.build_request_)
+     << "\nTargets to build are:\n";
+
+   for (auto target : build_request.targets_)
+      s << "   " << target->name() << " at '" << target->location().string() << "'\n";
+
+   s << "\n";
+
+   return s;
+}

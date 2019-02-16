@@ -61,13 +61,9 @@ int handle_project_cmd(const std::vector<std::string>& args,
    parse_options(args);
 
    build_request build_request = resolve_build_request(*engine, project_options.build_request_, project_to_build);
-   // we don't care about user provided targets
-   build_request.target_names_ = {"all"};
 
    if (debug_level > 0)
       cout << "...Build request: " << dump_for_hash(*build_request.build_request_) << endl;
-
-   resolve_meta_targets(build_request, project_to_build);
 
    cout << "...instantiating... " << flush;
    vector<basic_target*> instantiated_targets = instantiate(*engine, build_request.targets_, *build_request.build_request_);

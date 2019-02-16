@@ -72,6 +72,13 @@ resolve_target_names(hammer::engine& e,
 
    resolved_targets result;
 
+   if (targets.empty() && project) {
+      for (const auto& st : project->select_best_alternative(build_request))
+         result.targets_.push_back(st.target_);
+
+      return result;
+   }
+
    for (auto& target : targets) {
       if (is_looks_like_project(target)) {
          string target_path, target_name;

@@ -17,6 +17,7 @@
 #include <hammer/core/testing_link_meta_target.h>
 #include <hammer/core/testing_intermediate_meta_target.h>
 #include <hammer/core/testing_meta_target.h>
+#include <hammer/core/testing_suite_meta_target.h>
 #include <hammer/core/target_type.h>
 #include <hammer/ast/target_ref.h>
 #include <hammer/ast/path.h>
@@ -29,6 +30,7 @@
 #include <hammer/core/toolset_manager.h>
 #include <hammer/core/warehouse_manager.h>
 #include <hammer/core/warehouse_impl.h>
+#include <boost/make_unique.hpp>
 #include <boost/guid.hpp>
 #include <boost/variant/get.hpp>
 #include <boost/filesystem/operations.hpp>
@@ -41,8 +43,8 @@
 #include "wildcard.hpp"
 
 using namespace std;
+using boost::make_unique;
 namespace fs = boost::filesystem;
-
 namespace hammer { namespace details {
 
 static boost::regex project_id_pattern("[a-zA-Z0-9_.\\-]+");
@@ -669,24 +671,10 @@ void testing_suite_rule(target_invocation_context& ctx,
                         const sources_decl& sources,
                         const sources_decl* common_sources)
 {
-   sources_decl modified_sources(sources);
-
-   if (common_sources) {
-      feature_set& build_request = *ctx.current_project_.get_engine().feature_registry().make_set();
-      for (auto& s : *common_sources) {
-         feature& f = *ctx.current_project_.get_engine().feature_registry().create_feature("testing.additional-source", "");
-         f.set_dependency_data(s, &ctx.current_project_);
-         build_request.join(&f);
-      }
-
-      modified_sources.add_to_source_properties(build_request);
-   }
-
-   unique_ptr<basic_meta_target> mt(new alias_meta_target(&ctx.current_project_,
-                                                          name.to_string(),
-                                                          modified_sources,
-                                                          {},
-                                                          {}));
+   auto mt = make_unique<testing_suite_meta_target>(&ctx.current_project_,
+                                                    name.to_string(),
+                                                    sources,
+                                                    common_sources ? *common_sources : sources_decl{});
 
    mt->set_local(ctx.local_);
    mt->set_explicit(ctx.explicit_);

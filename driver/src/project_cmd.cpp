@@ -63,10 +63,12 @@ int handle_project_cmd(const std::vector<std::string>& args,
    build_request build_request = resolve_build_request(*engine, project_options.build_request_, project_to_build);
 
    if (debug_level > 0)
-      cout << "...Build request: " << dump_for_hash(*build_request.build_request_) << endl;
+      cout << build_request << endl;
+
+   auto resolved_targets = resolve_target_ids(*engine, project_to_build, build_request.target_ids_, *build_request.build_request_);
 
    cout << "...instantiating... " << flush;
-   vector<basic_target*> instantiated_targets = instantiate(*engine, build_request.targets_, *build_request.build_request_);
+   vector<basic_target*> instantiated_targets = instantiate(*engine, resolved_targets.targets_, *build_request.build_request_);
    cout << "Done" << endl;
 
    cout << "...generating build graph... " << flush;

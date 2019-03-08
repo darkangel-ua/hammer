@@ -56,6 +56,7 @@
 #include "project_cmd.h"
 #include "warehouse_cmd.h"
 #include "package_cmd.h"
+#include "test_cmd.h"
 
 using namespace std;
 using namespace hammer;
@@ -117,6 +118,7 @@ void print_global_help() {
 
 commands are:
    build      Run build process
+   test       Build and run tests
    clean      Run clean process
    package    Manage packages
    toolset    Manage toolsets
@@ -132,7 +134,7 @@ build command is default and invoked when no other command specified.
 
 static
 std::unordered_set<string> top_commands =
-   { "build", "clean", "toolset", "project", "warehouse", "package" };
+   { "build", "test", "clean", "toolset", "project", "warehouse", "package" };
 
 int main(int argc, char** argv) {
    try {
@@ -173,6 +175,8 @@ int main(int argc, char** argv) {
             print_global_help();
          else if (cmd == "build")
             show_build_cmd_help();
+         else if (cmd == "test")
+            show_test_cmd_help();
          else if (cmd == "clean")
             show_clean_cmd_help();
          else if (cmd == "toolset")
@@ -200,7 +204,11 @@ int main(int argc, char** argv) {
 
       if (cmd == "clean")
          return handle_clean_cmd(global_options.command_args_, global_options.debug_level_);
-      else if (cmd == "toolset")
+      else if (cmd == "test") {
+         signal(SIGINT, ctrl_handler);
+         terminate_immediately = false;
+         return handle_test_cmd(global_options.command_args_, global_options.debug_level_, interrupt_flag);
+      } else if (cmd == "toolset")
          return handle_toolset_cmd(global_options.command_args_, global_options.debug_level_);
       else if (cmd == "project")
          return handle_project_cmd(global_options.command_args_, global_options.debug_level_);

@@ -130,6 +130,8 @@ class warehouse_dl_notifier : public iwarehouse_download_and_install {
       const unsigned max_package_name_lenght_;
 };
 
+}
+
 void build(engine& e,
            build_nodes_t& nodes,
            const unsigned debug_level,
@@ -193,8 +195,6 @@ void parse_options(const vector<string>& args) {
 
    if (build_options.worker_count_ == 0)
       build_options.worker_count_ = 1;
-}
-
 }
 
 std::unique_ptr<hammer::engine>
@@ -414,12 +414,16 @@ int handle_build_cmd(const std::vector<std::string>& args,
    parse_options(args);
 
    build_request build_request = resolve_build_request(*engine, build_options.build_request_, project_to_build);
+   auto resolved_targets = resolve_target_ids(*engine, project_to_build, build_request.target_ids_, *build_request.build_request_);
 
    if (debug_level > 0)
-      cout << build_request;
+      cout << build_request
+           << "\nTargets to build are:\n"
+           << resolved_targets;
+;
 
    cout << "...instantiating... " << flush;
-   vector<basic_target*> instantiated_targets = instantiate(*engine, build_request.targets_, *build_request.build_request_);
+   vector<basic_target*> instantiated_targets = instantiate(*engine, resolved_targets.targets_, *build_request.build_request_);
    cout << "Done" << endl;
 
    if (build_options.write_instantiation_graph_) {

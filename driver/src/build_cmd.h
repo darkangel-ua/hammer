@@ -33,3 +33,7 @@ boost::optional<hammer::build_nodes_t>
 generate(hammer::engine& engine,
          const std::vector<hammer::basic_target*> targets);
 
+void build(hammer::engine& e,
+           hammer::build_nodes_t& nodes,
+           const unsigned debug_level,
+           volatile bool& interrupt_flag );

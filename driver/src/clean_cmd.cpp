@@ -69,17 +69,16 @@ int handle_clean_cmd(const std::vector<std::string>& args,
    parse_options(args);
 
    build_request clean_request = resolve_build_request(*engine, clean_options.clean_request_, project_to_clean);
+   auto resolved_targets = resolve_target_ids(*engine, project_to_clean, clean_request.target_ids_, *clean_request.build_request_);
 
-   if (debug_level > 0) {
+   if (debug_level > 0)
       cout << "\nClean request: " << dump_for_hash(*clean_request.build_request_)
-           << "\nTargets to clean are:\n";
-      for (auto target : clean_request.targets_)
-         cout << "   " << target->name() << " at '" << target->location().string() << "'\n";
-      cout << endl;
-   }
+           << "\nTargets to clean are:\n"
+           << resolved_targets
+           << endl;
 
    cout << "...instantiating... " << flush;
-   vector<basic_target*> instantiated_targets = instantiate(*engine, clean_request.targets_, *clean_request.build_request_);
+   vector<basic_target*> instantiated_targets = instantiate(*engine, resolved_targets.targets_, *clean_request.build_request_);
    cout << "Done" << endl;
 
    cout << "...generating graph... " << flush;

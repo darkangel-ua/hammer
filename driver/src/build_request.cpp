@@ -57,16 +57,13 @@ void split_target_path(string& target_path,
       target_path = to_split;
 }
 
-struct resolved_targets {
-   vector<const basic_meta_target*> targets_;
-   vector<string> unresolved_target_names_;
-};
+}
 
 resolved_targets
-resolve_target_names(hammer::engine& e,
-                     const hammer::project* project,
-                     const vector<string>& targets,
-                     const feature_set& build_request)
+resolve_target_ids(hammer::engine& e,
+                   const hammer::project* project,
+                   const vector<string>& targets,
+                   const feature_set& build_request)
 {
    using selected_targets_t = hammer::project::selected_targets_t;
 
@@ -85,7 +82,7 @@ resolve_target_names(hammer::engine& e,
          split_target_path(target_path, target_name, target);
 
          if (target_path[0] != '/' && !project) {
-            result.unresolved_target_names_.push_back(target_name);
+            result.unresolved_target_ids_.push_back(target_name);
             continue;
          }
 
@@ -102,16 +99,18 @@ resolve_target_names(hammer::engine& e,
          }
       } else {
          if (project) {
-            hammer::project::selected_target selected_target = project->select_best_alternative(target, build_request);
-            result.targets_.push_back(selected_target.target_);
+            if (!project->find_target(target))
+               result.unresolved_target_ids_.push_back(target);
+            else {
+               hammer::project::selected_target selected_target = project->select_best_alternative(target, build_request);
+               result.targets_.push_back(selected_target.target_);
+            }
          } else
-            result.unresolved_target_names_.push_back(target);
+            result.unresolved_target_ids_.push_back(target);
       }
    }
 
    return result;
-}
-
 }
 
 build_request
@@ -129,7 +128,7 @@ resolve_build_request(hammer::engine& e,
          if (posible_implicit_feature)
             result.build_request_->join(posible_implicit_feature);
          else
-            result.target_names_.push_back(arg);
+            result.target_ids_.push_back(arg);
       } else {
          string feature_name(arg.begin(), arg.begin() + p);
          result.build_request_->join(feature_name.c_str(), arg.c_str() + p + 1);
@@ -173,21 +172,26 @@ resolve_build_request(hammer::engine& e,
    if (result.build_request_->find("target-os") == result.build_request_->end())
       result.build_request_->join("target-os", fr.get_def("target-os").get_defaults().front().value_.c_str());
 
-   auto resolved_targets = resolve_target_names(e, current_project, result.target_names_, *result.build_request_);
-   result.targets_ = move(resolved_targets.targets_);
-   result.unresolved_target_names_ = move(resolved_targets.unresolved_target_names_);
-
    return result;
 }
 
 std::ostream&
 operator << (std::ostream& s,
              const build_request& build_request) {
-   s << "\nBuild request: " << dump_for_hash(*build_request.build_request_)
-     << "\nTargets to build are:\n";
+   s << "\nBuild request: " << dump_for_hash(*build_request.build_request_) << "\n";
 
-   for (auto target : build_request.targets_)
-      s << "   " << target->name() << " at '" << target->location().string() << "'\n";
+   return s;
+}
+
+std::ostream&
+operator << (std::ostream& s,
+             const resolved_targets& resolved_targets) {
+   if (resolved_targets.targets_.empty())
+      s << "   <none>\n";
+   else {
+      for (auto target : resolved_targets.targets_)
+         s << "   " << target->name() << " at '" << target->location().string() << "'\n";
+   }
 
    s << "\n";
 

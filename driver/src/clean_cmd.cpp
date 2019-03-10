@@ -68,7 +68,7 @@ int handle_clean_cmd(const std::vector<std::string>& args,
 
    parse_options(args);
 
-   build_request clean_request = resolve_build_request(*engine, clean_options.clean_request_, project_to_clean);
+   auto clean_request = resolve_build_request(*engine, clean_options.clean_request_, project_to_clean);
    auto resolved_targets = resolve_target_ids(*engine, project_to_clean, clean_request.target_ids_, *clean_request.build_request_);
 
    if (debug_level > 0)

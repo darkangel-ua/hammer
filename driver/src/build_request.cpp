@@ -59,7 +59,7 @@ void split_target_path(string& target_path,
 
 }
 
-resolved_targets
+resolved_targets_t
 resolve_target_ids(hammer::engine& e,
                    const hammer::project* project,
                    const vector<string>& targets,
@@ -67,7 +67,7 @@ resolve_target_ids(hammer::engine& e,
 {
    using selected_targets_t = hammer::project::selected_targets_t;
 
-   resolved_targets result;
+   resolved_targets_t result;
 
    if (targets.empty() && project) {
       for (const auto& st : project->select_best_alternative(build_request))
@@ -99,12 +99,12 @@ resolve_target_ids(hammer::engine& e,
          }
       } else {
          if (project) {
-            if (!project->find_target(target))
-               result.unresolved_target_ids_.push_back(target);
-            else {
+            auto mt = project->find_target(target);
+            if (mt && !mt->is_local()) {
                hammer::project::selected_target selected_target = project->select_best_alternative(target, build_request);
                result.targets_.push_back(selected_target.target_);
-            }
+            } else
+               result.unresolved_target_ids_.push_back(target);
          } else
             result.unresolved_target_ids_.push_back(target);
       }
@@ -113,13 +113,13 @@ resolve_target_ids(hammer::engine& e,
    return result;
 }
 
-build_request
+build_request_t
 resolve_build_request(hammer::engine& e,
                       const vector<string>& build_request_args,
                       const project* current_project) {
    feature_registry& fr = e.feature_registry();
 
-   build_request result;
+   build_request_t result;
    result.build_request_ = e.feature_registry().make_set();
    for (const string& arg : build_request_args) {
       auto p = arg.find('=');
@@ -177,7 +177,7 @@ resolve_build_request(hammer::engine& e,
 
 std::ostream&
 operator << (std::ostream& s,
-             const build_request& build_request) {
+             const build_request_t& build_request) {
    s << "\nBuild request: " << dump_for_hash(*build_request.build_request_) << "\n";
 
    return s;
@@ -185,7 +185,7 @@ operator << (std::ostream& s,
 
 std::ostream&
 operator << (std::ostream& s,
-             const resolved_targets& resolved_targets) {
+             const resolved_targets_t& resolved_targets) {
    if (resolved_targets.targets_.empty())
       s << "   <none>\n";
    else {

@@ -12,7 +12,7 @@ namespace hammer {
    class feature_set;
 }
 
-struct build_request;
+struct build_request_t;
 
 int handle_build_cmd(const std::vector<std::string>& args,
                      const unsigned debug_level,
@@ -26,7 +26,7 @@ setup_engine(const unsigned debug_level,
 std::vector<hammer::basic_target*>
 instantiate(hammer::engine& e,
             const std::vector<const hammer::basic_meta_target*>& meta_targets,
-            const hammer::feature_set& build_request);
+            const hammer::feature_set& build_request_t);
 
 // generate targets + handle warehouse
 boost::optional<hammer::build_nodes_t>

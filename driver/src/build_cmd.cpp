@@ -413,7 +413,7 @@ int handle_build_cmd(const std::vector<std::string>& args,
 
    parse_options(args);
 
-   build_request build_request = resolve_build_request(*engine, build_options.build_request_, project_to_build);
+   auto build_request = resolve_build_request(*engine, build_options.build_request_, project_to_build);
    auto resolved_targets = resolve_target_ids(*engine, project_to_build, build_request.target_ids_, *build_request.build_request_);
 
    if (debug_level > 0)

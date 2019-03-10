@@ -60,7 +60,7 @@ int handle_project_cmd(const std::vector<std::string>& args,
 
    parse_options(args);
 
-   build_request build_request = resolve_build_request(*engine, project_options.build_request_, project_to_build);
+   auto build_request = resolve_build_request(*engine, project_options.build_request_, project_to_build);
 
    if (debug_level > 0)
       cout << build_request << endl;

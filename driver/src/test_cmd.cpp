@@ -8,6 +8,7 @@
 #include <hammer/core/testing_meta_target.h>
 #include <hammer/core/testing_compile_base_meta_target.h>
 #include <hammer/core/testing_link_base_meta_target.h>
+#include <hammer/core/basic_target.h>
 #include "build_request.h"
 #include "build_cmd.h"
 #include "test_cmd.h"
@@ -60,6 +61,41 @@ bool is_testing_meta_target(const basic_meta_target& mt) {
           dynamic_cast<const testing_link_base_meta_target*>(&mt);
 }
 
+struct resolved_test_targets_t {
+   std::vector<basic_target*> targets_;
+   std::vector<std::string> unresolved_target_ids_;
+};
+
+resolved_test_targets_t
+resolve_test_ids(const vector<string>& ids_to_resolve,
+                 std::vector<basic_target*>& test_targets) {
+   resolved_test_targets_t result;
+   for (const string& id : ids_to_resolve) {
+      auto i = find_if(test_targets.begin(), test_targets.end(), [=] (const basic_target* t) {
+         return t->name() == id;
+      });
+
+      if (i != test_targets.end())
+         result.targets_.push_back(*i);
+      else
+         result.unresolved_target_ids_.push_back(id);
+   }
+
+   return result;
+}
+
+vector<const basic_meta_target*>
+gather_test_suites(const project& p) {
+   vector<const basic_meta_target*> result;
+
+   for (auto& t : p.targets()) {
+      if (dynamic_cast<const testing_suite_meta_target*>(t.second.get()))
+         result.push_back(t.second.get());
+   }
+
+   return result;
+}
+
 }
 
 
@@ -100,24 +136,17 @@ int handle_test_cmd(const std::vector<std::string>& args,
 
    parse_options(args);
 
-   build_request build_request = resolve_build_request(*engine, test_options.test_request_, project_to_build);
+   auto build_request = resolve_build_request(*engine, test_options.test_request_, project_to_build);
+   if (debug_level > 0)
+      cout << build_request << flush;
+
+   // here we resolve only top level targets
    auto resolved_targets = resolve_target_ids(*engine, project_to_build, build_request.target_ids_, *build_request.build_request_);
 
    if (debug_level > 0)
-      cout << build_request
-           << "Test targets are:\n"
+      cout << "Top level test targets are:\n"
            << resolved_targets
            << flush;
-
-   if (!resolved_targets.unresolved_target_ids_.empty()) {
-      cout << "Failed: Unable to resolve passed target ids: " << boost::join(resolved_targets.unresolved_target_ids_, ", ") << endl;
-      return 1;
-   }
-
-   if (resolved_targets.targets_.empty()) {
-      cout << "Failed: Nothing to test!" << endl;
-      return 1;
-   }
 
    for (auto& mt : resolved_targets.targets_) {
       if (!is_testing_meta_target(*mt)) {
@@ -126,9 +155,39 @@ int handle_test_cmd(const std::vector<std::string>& args,
       }
    }
 
-   cout << "...instantiating... " << flush;
+   cout << "...instantiating top level targets... " << flush;
    vector<basic_target*> instantiated_targets = instantiate(*engine, resolved_targets.targets_, *build_request.build_request_);
    cout << "Done" << endl;
+
+   if (!resolved_targets.unresolved_target_ids_.empty() && project_to_build) {
+      auto test_suites = gather_test_suites(*project_to_build);
+
+      cout << "...instantiating test suites... " << flush;
+      auto instantiated_suites = instantiate(*engine, test_suites, *build_request.build_request_);
+      cout << "Done" << endl;
+
+      auto test_targets = resolve_test_ids(resolved_targets.unresolved_target_ids_, instantiated_suites);
+      if (!test_targets.unresolved_target_ids_.empty()) {
+         cout << "Failed: unable to resolved passed target ids: " << boost::join(test_targets.unresolved_target_ids_, ", ") << endl;
+         return 1;
+      }
+
+      if (debug_level > 0)
+         cout << "\nTest suite targets are: " << boost::join(resolved_targets.unresolved_target_ids_, ", ") << "\n\n" << flush;
+
+      resolved_targets.unresolved_target_ids_.clear();
+      instantiated_targets.insert(instantiated_targets.end(), test_targets.targets_.begin(), test_targets.targets_.end());
+   }
+
+   if (!resolved_targets.unresolved_target_ids_.empty()) {
+      cout << "Failed: Unable to resolve passed target ids: " << boost::join(resolved_targets.unresolved_target_ids_, ", ") << endl;
+      return 1;
+   }
+
+   if (instantiated_targets.empty()) {
+      cout << "Failed: Nothing to test!" << endl;
+      return 1;
+   }
 
    cout << "...generating build graph... " << flush;
    boost::optional<build_nodes_t> nodes = generate(*engine, instantiated_targets);

@@ -9,14 +9,14 @@ namespace hammer {
    class engine;
 }
 
-struct build_request {
+struct build_request_t {
    hammer::feature_set* build_request_;
    std::vector<std::string> target_ids_;
 //   std::vector<const hammer::basic_meta_target*> targets_;
 //   std::vector<std::string> unresolved_target_names_;
 };
 
-struct resolved_targets {
+struct resolved_targets_t {
    std::vector<const hammer::basic_meta_target*> targets_;
    std::vector<std::string> unresolved_target_ids_;
 };
@@ -28,21 +28,21 @@ struct resolved_targets {
 // 3 /boost/thread variant=debug version=1.56.0 - build only 1.56.0 version of boost/thread lib in debug variant
 // 4 /boost/thread variant=debug,release        - build all founded boost/thread targets in both release and debug variants - not handled right now
 
-build_request
+build_request_t
 resolve_build_request(hammer::engine& e,
                       const std::vector<std::string>& build_request_args,
                       const hammer::project* current_project);
 
-resolved_targets
+resolved_targets_t
 resolve_target_ids(hammer::engine& e,
                    const hammer::project* project,
                    const std::vector<std::string>& target_ids,
-                   const hammer::feature_set& build_request);
+                   const hammer::feature_set& build_request_t);
 
 std::ostream&
 operator << (std::ostream& s,
-             const build_request& build_request);
+             const build_request_t& build_request_t);
 
 std::ostream&
 operator << (std::ostream& s,
-             const resolved_targets& resolved_targets);
+             const resolved_targets_t& resolved_targets_t);

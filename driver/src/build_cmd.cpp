@@ -420,7 +420,6 @@ int handle_build_cmd(const std::vector<std::string>& args,
       cout << build_request
            << "\nTargets to build are:\n"
            << resolved_targets;
-;
 
    cout << "...instantiating... " << flush;
    vector<basic_target*> instantiated_targets = instantiate(*engine, resolved_targets.targets_, *build_request.build_request_);

@@ -739,7 +739,6 @@ testing_run_rule_impl(target_invocation_context& ctx,
                       const ast::expression* ast_args,
                       const string& target_name)
 {
-   type_registry& tr = ctx.current_project_.get_engine().get_type_registry();
    const string exe_target_name = target_name + ".run";
    unique_ptr<basic_meta_target> intermediate_exe(
       new testing_intermediate_meta_target(&ctx.current_project_,
@@ -759,7 +758,7 @@ testing_run_rule_impl(target_invocation_context& ctx,
                               {}));
 
    sources_decl run_sources;
-   run_sources.push_back(ctx.current_project_, exe_target_name, tr);
+   run_sources.push_back({ctx.current_project_, "./", exe_target_name, nullptr, nullptr});
    runner_target->sources(run_sources);
    runner_target->set_local(ctx.local_);
    runner_target->set_explicit(ctx.explicit_);

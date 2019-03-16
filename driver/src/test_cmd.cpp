@@ -2,10 +2,12 @@
 #include <boost/algorithm/string/join.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/program_options.hpp>
+#include <boost/make_unique.hpp>
 #include <hammer/core/engine.h>
 #include <hammer/core/build_environment_impl.h>
 #include <hammer/core/testing_suite_meta_target.h>
 #include <hammer/core/testing_meta_target.h>
+#include <hammer/core/testing_intermediate_meta_target.h>
 #include <hammer/core/testing_compile_base_meta_target.h>
 #include <hammer/core/testing_link_base_meta_target.h>
 #include <hammer/core/basic_target.h>
@@ -96,8 +98,58 @@ gather_test_suites(const project& p) {
    return result;
 }
 
+const testing_meta_target*
+find_single_run_target(const project& p) {
+   const testing_meta_target* result = nullptr;
+   for (auto& t : p.targets()) {
+      if (!t.second->is_explicit() &&
+          !t.second->is_local() &&
+          dynamic_cast<const testing_meta_target*>(t.second.get()))
+      {
+         if (result)
+            return nullptr;
+
+         result = static_cast<const testing_meta_target*>(t.second.get());
+      }
+   }
+
+   return result;
 }
 
+testing_meta_target&
+make_run_target(project& p,
+                const testing_meta_target& run_mt,
+                const vector<string>& target_ids) {
+   assert(run_mt.sources().size() == 1);
+   const auto& exe_target_name = run_mt.sources().begin()->target_name();
+   auto exe_mt = dynamic_cast<const testing_intermediate_meta_target*>(p.find_target(exe_target_name));
+
+   auto make_new_args = [=] {
+      auto new_args = testing_intermediate_meta_target::args{{"--run_test=" + boost::join(target_ids, ",")}};
+      new_args.insert(new_args.end(), exe_mt->args_.begin(), exe_mt->args_.end());
+      return new_args;
+   };
+
+   auto new_exe_mt = boost::make_unique<testing_intermediate_meta_target>(&p, "testing.filtered(" + exe_mt->name() + ")", exe_mt->requirements(), make_new_args());
+   new_exe_mt->sources(exe_mt->sources());
+   new_exe_mt->set_local(true);
+
+   auto result = boost::make_unique<testing_meta_target>(&p, run_mt.name(), run_mt.requirements());
+   result->set_local(true);
+
+   const source_decl& exe_src = *run_mt.sources().begin();
+   sources_decl new_run_sources;
+   new_run_sources.push_back(source_decl{p, "./", new_exe_mt->name(), nullptr, exe_src.properties() ? exe_src.properties()->clone() : nullptr});
+   result->sources(new_run_sources);
+
+   auto& raw_result = *result;
+   p.add_target(move(new_exe_mt));
+   p.add_target(move(result));
+
+   return raw_result;
+}
+
+}
 
 int handle_test_cmd(const std::vector<std::string>& args,
                     const unsigned debug_level,
@@ -107,7 +159,7 @@ int handle_test_cmd(const std::vector<std::string>& args,
    if (debug_level > 0)
       cout << "...Loading project at '" << fs::current_path() << "'... " << flush;
 
-   const project* project_to_build = has_project_file(fs::current_path()) ? &engine->load_project(fs::current_path()) : nullptr;
+   project* project_to_build = has_project_file(fs::current_path()) ? &engine->load_project(fs::current_path()) : nullptr;
 
    if (debug_level > 0)
       cout << static_cast<const char*>(project_to_build ? "Done" : "Done (Not Found)") << endl;
@@ -168,15 +220,25 @@ int handle_test_cmd(const std::vector<std::string>& args,
 
       auto test_targets = resolve_test_ids(resolved_targets.unresolved_target_ids_, instantiated_suites);
       if (!test_targets.unresolved_target_ids_.empty()) {
-         cout << "Failed: unable to resolved passed target ids: " << boost::join(test_targets.unresolved_target_ids_, ", ") << endl;
-         return 1;
+         // ok, lets check if this is testing.run internal target
+         auto single_run_target = find_single_run_target(*project_to_build);
+         if (single_run_target) {
+            auto& new_run_target = make_run_target(*project_to_build, *single_run_target, test_targets.unresolved_target_ids_);
+            auto instantiated_new_run_target = instantiate(*engine, {&new_run_target}, *build_request.build_request_);
+
+            resolved_targets.unresolved_target_ids_.clear();
+            instantiated_targets.insert(instantiated_targets.end(), instantiated_new_run_target.begin(), instantiated_new_run_target.end());
+         } else {
+            cout << "Failed: unable to resolved passed target ids: " << boost::join(test_targets.unresolved_target_ids_, ", ") << endl;
+            return 1;
+         }
+      } else {
+         if (debug_level > 0)
+            cout << "\nTest suite targets are: " << boost::join(resolved_targets.unresolved_target_ids_, ", ") << "\n\n" << flush;
+
+         resolved_targets.unresolved_target_ids_.clear();
+         instantiated_targets.insert(instantiated_targets.end(), test_targets.targets_.begin(), test_targets.targets_.end());
       }
-
-      if (debug_level > 0)
-         cout << "\nTest suite targets are: " << boost::join(resolved_targets.unresolved_target_ids_, ", ") << "\n\n" << flush;
-
-      resolved_targets.unresolved_target_ids_.clear();
-      instantiated_targets.insert(instantiated_targets.end(), test_targets.targets_.begin(), test_targets.targets_.end());
    }
 
    if (!resolved_targets.unresolved_target_ids_.empty()) {

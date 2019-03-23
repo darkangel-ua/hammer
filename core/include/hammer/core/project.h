@@ -131,7 +131,7 @@ class project : public boost::noncopyable {
                        const feature_set& build_request,
                        std::vector<basic_target*>* result) const;
 
-      bool operator == (const project& rhs) const;
+      bool operator == (const project& rhs) const { return this == &rhs; }
       bool operator != (const project& rhs) const { return !(*this == rhs); }
 
       // select targets in project that satisfied build_request. Can return empty list.

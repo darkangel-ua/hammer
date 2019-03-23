@@ -9,13 +9,17 @@ class basic_meta_target;
 class instantiation_context {
    public:
       class guard;
+      using stack_type = std::deque<const basic_meta_target*>;
+
+      const stack_type&
+      get_stack() const { return stack_; }
 
    private:
       void enter(const basic_meta_target& mt);
       void leave();
 
       std::unordered_set<const basic_meta_target*> targets_;
-      std::deque<const basic_meta_target*> stack_;
+      stack_type stack_;
 };
 
 class instantiation_context::guard {

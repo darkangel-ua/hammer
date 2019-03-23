@@ -9,7 +9,8 @@
 #include <hammer/core/source_argument_writer.h>
 #include <hammer/core/shared_lib_dirs_writer.h>
 #include <hammer/core/main_target.h>
-#include <hammer/core/testing_intermediate_meta_target.h>
+#include <hammer/core/basic_build_target.h>
+#include <hammer/core/testing_run_meta_target.h>
 #include <hammer/core/testing_compile_action.h>
 #include <hammer/core/testing_compile_generator.h>
 #include <hammer/core/testing_compile_fail_action.h>
@@ -32,43 +33,65 @@ namespace hammer {
 namespace {
 
 struct testing_run_args_writer : public argument_writer {
-   testing_run_args_writer(const type_registry& tr) : argument_writer("args"), exe_type_(tr.get(types::EXE)) {}
+   testing_run_args_writer(const type_registry& tr) : argument_writer("args"), runner_type_(tr.get(types::TESTING_RUN_PASSED)) {}
    argument_writer* clone() const override { return new testing_run_args_writer(*this); }
    std::vector<const feature*> valuable_features() const override { return {}; }
    void write_impl(std::ostream& output,
                    const build_node& node,
                    const build_environment& environment) const override;
 
-   const target_type& exe_type_;
+   const target_type& runner_type_;
 };
 
 void testing_run_args_writer::write_impl(std::ostream& output,
                                          const build_node& node,
                                          const build_environment& environment) const
 {
-
-   for (const build_node::source_t& src: node.sources_){
-      if (!src.source_node_->targeting_type_->equal_or_derived_from(exe_type_))
-         continue;
-
-      assert(dynamic_cast<const testing_intermediate_meta_target*>(src.source_node_->products_owner().get_meta_target()));
-      const testing_intermediate_meta_target& mt = static_cast<const testing_intermediate_meta_target&>(*src.source_node_->products_owner().get_meta_target());
-
-      for (const testing_intermediate_meta_target::arg& arg : mt.args_) {
-         if (const string* id = boost::get<string>(&arg))
-            output << '"' << *id << "\" ";
-         else if (const fs::path* path = boost::get<fs::path>(&arg)) {
-            if (path->has_root_path())
-               output << '"' << path->string() << "\" ";
-            else {
-               auto l = mt.location() / *path;
-               l.normalize();
-               output << '"' << l.string() << "\" ";
-            }
-         } else
-            throw std::logic_error("testing_run_args_writer::write_impl");
+   auto find_runner_mt = [&] {
+      for (const basic_build_target* p: node.products_) {
+         if (p->type().equal_or_derived_from(runner_type_))
+            return dynamic_cast<const testing_run_meta_target*>(p->get_meta_target());
       }
+
+      assert(false);
+      throw std::runtime_error("Failed to find runner meta target");
+   };
+
+   const auto* mt = find_runner_mt();
+   assert(mt);
+
+   for (const auto& arg : mt->args_) {
+      if (const string* id = boost::get<string>(&arg))
+         output << '"' << *id << "\" ";
+      else if (const fs::path* path = boost::get<fs::path>(&arg)) {
+         if (path->has_root_path())
+            output << '"' << path->string() << "\" ";
+         else {
+            auto l = mt->location() / *path;
+            l.normalize();
+            output << '"' << l.string() << "\" ";
+         }
+      } else
+         throw std::logic_error("testing_run_args_writer::write_impl");
    }
+}
+
+void add_testing_suite_generator(engine& e,
+                                 generator_registry& gr) {
+   auto sources = make_consume_types(e, {
+      types::TESTING_COMPILE_FAIL,
+      types::TESTING_COMPILE_SUCCESSFUL,
+      types::TESTING_LINK_FAIL,
+      types::TESTING_LINK_SUCCESSFUL,
+      types::TESTING_OUTPUT,
+      types::TESTING_RUN_PASSED,
+      types::TESTING_SUITE
+   });
+
+   auto products = make_product_types(e, {types::TESTING_SUITE});
+   auto g = make_unique<generator>(e, "testing.suite", sources, products, true, build_action_ptr{});
+   g->include_composite_generators(true);
+   gr.insert(std::move(g));
 }
 
 }
@@ -103,6 +126,8 @@ void add_testing_generators(engine& e,
    unique_ptr<generator> g(new generator(e, "testing.run", sources, products, true, action));
    g->include_composite_generators(true);
    gr.insert(std::move(g));
+
+   add_testing_suite_generator(e, gr);
 }
 
 void add_compile_generators(engine& e,

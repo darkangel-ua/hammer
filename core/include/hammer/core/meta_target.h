@@ -35,7 +35,10 @@ class meta_target : public basic_meta_target {
       // pch stdafx : stdafx.cpp stdafx.h ;
       // test a : main.cpp stdafx /boost/regex ;
       // To build stdafx target we need specify /boost/regex in stdafx sources too. But this is stupid double typing.
-      virtual sources_decl compute_additional_sources(const main_target& owner) const;
+      virtual
+      sources_decl
+      compute_additional_sources(const instantiation_context& ctx,
+                                 const main_target& owner) const;
       virtual main_target* construct_main_target(const main_target* owner, const feature_set* properties) const = 0;
       // compute usage requirements from this main target's usage requirements and
       // usage requirements that was calculated during instantiation source meta targets

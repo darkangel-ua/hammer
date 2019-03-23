@@ -38,9 +38,6 @@ feature debug-symbols : on off ;
 feature pch : off create use : generated ;
 feature mangling : full version none ;
 
-# testing support
-feature testing.additional-source : : free dependency propagated ; # can't get rid of this yet
-
 feature warnings :
   on         # enable default/"reasonable" warning level for the tool
   all        # enable all possible warnings issued by the tool

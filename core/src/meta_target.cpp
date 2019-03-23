@@ -208,7 +208,7 @@ void remove_duplicates(deduplicator_t& deduplicator,
       meta_targets_t meta_targets;
       meta_targets_t dependency_meta_targets;
 
-      sources_decl additional_sources(owner == NULL ? sources_decl() : compute_additional_sources(*owner));
+      sources_decl additional_sources(owner == NULL ? sources_decl() : compute_additional_sources(ctx, *owner));
       apply_project_dependencies(additional_sources, *this);
 
       sources_decl sources_from_requirements;
@@ -307,9 +307,11 @@ void remove_duplicates(deduplicator_t& deduplicator,
       result.join(tmp);
    }
 
-   sources_decl meta_target::compute_additional_sources(const main_target& owner) const
+   sources_decl
+   meta_target::compute_additional_sources(const instantiation_context&,
+                                           const main_target&) const
    {
-      return sources_decl();
+      return {};
    }
 
    void apply_project_dependencies(sources_decl& sources,

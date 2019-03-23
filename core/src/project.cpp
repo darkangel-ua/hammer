@@ -390,11 +390,6 @@ void project::instantiate(const std::string& target_name,
    best_target.target_->instantiate(ctx, nullptr, build_request, result, usage_requirements);
 }
 
-bool project::operator == (const project& rhs) const
-{
-   return this == &rhs;
-}
-
 project::selected_targets_t
 project::select_best_alternative(const feature_set& build_request) const
 {

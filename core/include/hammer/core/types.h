@@ -37,6 +37,7 @@ extern const type_tag TESTING_COMPILE_FAIL;
 extern const type_tag TESTING_COMPILE_SUCCESSFUL;
 extern const type_tag TESTING_LINK_FAIL;
 extern const type_tag TESTING_LINK_SUCCESSFUL;
+extern const type_tag TESTING_SUITE;
 
 void register_standart_types(type_registry& tr,
                              feature_registry& fr);

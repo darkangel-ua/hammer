@@ -183,7 +183,8 @@ void builder::impl_t::task_completition_handler(shared_ptr<worker_ctx_t> ctx)
          details::buffered_output_environment buffered_environment(environment_);
 
          // some sources was not build - skip this node, but print why we skip it
-         buffered_environment.output_stream() << "...skipped " << current_node.node_->action()->target_tag(*current_node.node_, buffered_environment) << '\n';
+         if (auto* action = current_node.node_->action().get())
+            buffered_environment.output_stream() << "...skipped " << action->target_tag(*current_node.node_, buffered_environment) << '\n';
 
          // remove dups
          sort(lack_of_nodes.begin(), lack_of_nodes.end());

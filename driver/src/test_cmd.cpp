@@ -6,7 +6,7 @@
 #include <hammer/core/engine.h>
 #include <hammer/core/build_environment_impl.h>
 #include <hammer/core/testing_suite_meta_target.h>
-#include <hammer/core/testing_meta_target.h>
+#include <hammer/core/testing_run_meta_target.h>
 #include <hammer/core/testing_intermediate_meta_target.h>
 #include <hammer/core/testing_compile_base_meta_target.h>
 #include <hammer/core/testing_link_base_meta_target.h>
@@ -58,7 +58,7 @@ void parse_options(const vector<string>& args) {
 
 bool is_testing_meta_target(const basic_meta_target& mt) {
    return dynamic_cast<const testing_suite_meta_target*>(&mt) ||
-          dynamic_cast<const testing_meta_target*>(&mt) ||
+          dynamic_cast<const testing_run_meta_target*>(&mt) ||
           dynamic_cast<const testing_compile_base_meta_target*>(&mt) ||
           dynamic_cast<const testing_link_base_meta_target*>(&mt);
 }
@@ -98,52 +98,41 @@ gather_test_suites(const project& p) {
    return result;
 }
 
-const testing_meta_target*
+const testing_run_meta_target*
 find_single_run_target(const project& p) {
-   const testing_meta_target* result = nullptr;
+   const testing_run_meta_target* result = nullptr;
    for (auto& t : p.targets()) {
       if (!t.second->is_explicit() &&
           !t.second->is_local() &&
-          dynamic_cast<const testing_meta_target*>(t.second.get()))
+          dynamic_cast<const testing_run_meta_target*>(t.second.get()))
       {
          if (result)
             return nullptr;
 
-         result = static_cast<const testing_meta_target*>(t.second.get());
+         result = static_cast<const testing_run_meta_target*>(t.second.get());
       }
    }
 
    return result;
 }
 
-testing_meta_target&
+testing_run_meta_target&
 make_run_target(project& p,
-                const testing_meta_target& run_mt,
+                const testing_run_meta_target& run_mt,
                 const vector<string>& target_ids) {
    assert(run_mt.sources().size() == 1);
-   const auto& exe_target_name = run_mt.sources().begin()->target_name();
-   auto exe_mt = dynamic_cast<const testing_intermediate_meta_target*>(p.find_target(exe_target_name));
 
    auto make_new_args = [=] {
-      auto new_args = testing_intermediate_meta_target::args{{"--run_test=" + boost::join(target_ids, ",")}};
-      new_args.insert(new_args.end(), exe_mt->args_.begin(), exe_mt->args_.end());
+      auto new_args = testing_run_meta_target::args{{"--run_test=" + boost::join(target_ids, ",")}};
+      new_args.insert(new_args.end(), run_mt.args_.begin(), run_mt.args_.end());
       return new_args;
    };
 
-   auto new_exe_mt = boost::make_unique<testing_intermediate_meta_target>(&p, "testing.filtered(" + exe_mt->name() + ")", exe_mt->requirements(), make_new_args());
-   new_exe_mt->sources(exe_mt->sources());
-   new_exe_mt->set_local(true);
-
-   auto result = boost::make_unique<testing_meta_target>(&p, run_mt.name(), run_mt.requirements());
+   auto result = boost::make_unique<testing_run_meta_target>(&p, run_mt.name(), make_new_args());
+   result->sources(run_mt.sources());
    result->set_local(true);
 
-   const source_decl& exe_src = *run_mt.sources().begin();
-   sources_decl new_run_sources;
-   new_run_sources.push_back(source_decl{p, "./", new_exe_mt->name(), nullptr, exe_src.properties() ? exe_src.properties()->clone() : nullptr});
-   result->sources(new_run_sources);
-
    auto& raw_result = *result;
-   p.add_target(move(new_exe_mt));
    p.add_target(move(result));
 
    return raw_result;

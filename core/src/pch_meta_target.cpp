@@ -79,7 +79,9 @@ void pch_meta_target::compute_usage_requirements(feature_set& result,
    result.join(self_dependency_feature);
 }
 
-sources_decl pch_meta_target::compute_additional_sources(const main_target& owner) const
+sources_decl
+pch_meta_target::compute_additional_sources(const instantiation_context& ctx,
+                                            const main_target& owner) const
 {
    sources_decl result;
    for(sources_decl::const_iterator i = owner.get_meta_target()->sources().begin(), last =  owner.get_meta_target()->sources().end(); i!= last; ++i)

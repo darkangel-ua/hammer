@@ -9,7 +9,9 @@ class pch_meta_target : public meta_target {
                       const requirements_decl& req,
                       const requirements_decl& usage_req);
    protected:
-      sources_decl compute_additional_sources(const main_target& owner) const override;
+      sources_decl
+      compute_additional_sources(const instantiation_context& ctx,
+                                 const main_target& owner) const override;
       main_target* construct_main_target(const main_target* owner,
                                          const feature_set* properties) const override;
       void compute_usage_requirements(feature_set& result,

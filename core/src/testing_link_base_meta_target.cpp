@@ -1,7 +1,8 @@
-#include <hammer/core/engine.h>
-#include <hammer/core/types.h>
-#include <hammer/core/feature_set.h>
-#include <hammer/core/feature.h>
+#include <hammer/core/main_target.h>
+#include <hammer/core/project.h>
+#include <hammer/core/instantiation_context.h>
+#include <hammer/core/testing_suite_meta_target.h>
+#include <hammer/core/testing_run_meta_target.h>
 #include <hammer/core/testing_link_base_meta_target.h>
 
 namespace hammer {
@@ -15,27 +16,37 @@ testing_link_base_meta_target::testing_link_base_meta_target(hammer::project* p,
 
 }
 
-void testing_link_base_meta_target::instantiate_impl(instantiation_context& ctx,
-                                                     const main_target* owner,
-                                                     const feature_set& build_request,
-                                                     std::vector<basic_target*>* result,
-                                                     feature_set* usage_requirements) const
-{
-   // we need to convert <testing.additional-source> into <source> in build request
-   // because that is how test-suite target will pass sources down if any
-   feature_set* new_build_request = get_engine().feature_registry().make_set();
-   for (const feature* f : build_request) {
-      if (f->name() == "testing.additional-source") {
-         feature* source = get_engine().feature_registry().create_feature("source", "");
-         source->set_dependency_data(f->get_dependency_data().source_, f->get_path_data().project_);
-         new_build_request->join(source);
-      } else {
-         feature* f_copy = get_engine().feature_registry().clone_feature(*f);
-         new_build_request->join(f_copy);
+const testing_suite_meta_target*
+find_suite(const project &p,
+           const instantiation_context& ctx) {
+   if (ctx.get_stack().size() <= 1)
+      return nullptr;
+
+   auto i = ctx.get_stack().rbegin();
+   auto mt1 = *(++i);
+
+   if (mt1->get_project() == p && dynamic_cast<const testing_suite_meta_target*>(mt1))
+      return static_cast<const testing_suite_meta_target*>(mt1);
+
+   if (ctx.get_stack().size() >=3) {
+      auto mt2 = *(++i);
+      if (mt1->get_project() == p && mt2->get_project() == p &&
+          dynamic_cast<const testing_run_meta_target*>(mt1) &&
+          dynamic_cast<const testing_suite_meta_target*>(mt2))
+      {
+         return static_cast<const testing_suite_meta_target*>(mt2);
       }
    }
 
-   typed_meta_target::instantiate_impl(ctx, owner, *new_build_request, result, usage_requirements);
+   return nullptr;
+}
+
+sources_decl
+testing_link_base_meta_target::compute_additional_sources(const instantiation_context& ctx,
+                                                          const main_target& owner) const
+{
+   auto* suite = find_suite(get_project(), ctx);
+   return suite ? suite->common_sources() : sources_decl{};
 }
 
 }

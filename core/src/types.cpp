@@ -35,6 +35,7 @@ const type_tag TESTING_COMPILE_FAIL("TESTING_COMPILE_FAIL");
 const type_tag TESTING_COMPILE_SUCCESSFUL("TESTING_COMPILE_SUCCESSFUL");
 const type_tag TESTING_LINK_FAIL("TESTING_LINK_FAIL");
 const type_tag TESTING_LINK_SUCCESSFUL("TESTING_LINK_SUCCESSFUL");
+const type_tag TESTING_SUITE("TESTING_SUITE");
 
 void register_standart_types(type_registry& tr,
                              feature_registry& fr)
@@ -96,6 +97,7 @@ void register_standart_types(type_registry& tr,
    tr.insert(target_type(TESTING_COMPILE_SUCCESSFUL, ".compile_successful"));
    tr.insert(target_type(TESTING_LINK_FAIL, ".link_failed"));
    tr.insert(target_type(TESTING_LINK_SUCCESSFUL, ".link_successful"));
+   tr.insert(target_type(TESTING_SUITE, string()));
 }
 
 }}

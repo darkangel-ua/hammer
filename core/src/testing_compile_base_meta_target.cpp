@@ -2,9 +2,15 @@
 #include <hammer/core/types.h>
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature.h>
+#include <hammer/core/testing_suite_meta_target.h>
 #include <hammer/core/testing_compile_base_meta_target.h>
 
 namespace hammer {
+
+// defined in testing_link_base_meta_target
+const testing_suite_meta_target*
+find_suite(const project &p,
+           const instantiation_context& ctx);
 
 testing_compile_base_meta_target::testing_compile_base_meta_target(hammer::project* p,
                                                                    const std::string& name,
@@ -21,21 +27,21 @@ void testing_compile_base_meta_target::instantiate_impl(instantiation_context& c
                                                         std::vector<basic_target*>* result,
                                                         feature_set* usage_requirements) const
 {
-   // we need to convert <testing.additional-source> into <use> in build request
-   // because that is how test-suite target will pass sources down if any
-   feature_set* new_build_request = get_engine().feature_registry().make_set();
-   for (const feature* f : build_request) {
-      if (f->name() == "testing.additional-source") {
-         feature* source = get_engine().feature_registry().create_feature("use", "");
-         source->set_dependency_data(f->get_dependency_data().source_, f->get_path_data().project_);
-         new_build_request->join(source);
-      } else {
-         feature* f_copy = get_engine().feature_registry().clone_feature(*f);
-         new_build_request->join(f_copy);
-      }
+   auto* suite = find_suite(get_project(), ctx);
+   if (!suite) {
+      typed_meta_target::instantiate_impl(ctx, owner, build_request, result, usage_requirements);
+      return;
    }
 
-   typed_meta_target::instantiate_impl(ctx, owner, *new_build_request, result, usage_requirements);
+   // we need to add <use> feature for sources found in testing.suite common-sources
+   feature_set& new_build_request = *build_request.clone();
+   for (const source_decl s : suite->common_sources()) {
+      feature* source = get_engine().feature_registry().create_feature("use", "");
+      source->set_dependency_data(s, &get_project());
+      new_build_request.join(source);
+   }
+
+   typed_meta_target::instantiate_impl(ctx, owner, new_build_request, result, usage_requirements);
 }
 
 }

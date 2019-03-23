@@ -16,7 +16,7 @@
 #include <hammer/core/testing_link_fail_meta_target.h>
 #include <hammer/core/testing_link_meta_target.h>
 #include <hammer/core/testing_intermediate_meta_target.h>
-#include <hammer/core/testing_meta_target.h>
+#include <hammer/core/testing_run_meta_target.h>
 #include <hammer/core/testing_suite_meta_target.h>
 #include <hammer/core/target_type.h>
 #include <hammer/ast/target_ref.h>
@@ -671,7 +671,7 @@ void testing_suite_rule(target_invocation_context& ctx,
                         const sources_decl& sources,
                         const sources_decl* common_sources)
 {
-   auto mt = make_unique<testing_suite_meta_target>(&ctx.current_project_,
+   auto mt = make_unique<testing_suite_meta_target>(ctx.current_project_,
                                                     name.to_string(),
                                                     sources,
                                                     common_sources ? *common_sources : sources_decl{});
@@ -682,11 +682,11 @@ void testing_suite_rule(target_invocation_context& ctx,
 }
 
 static
-testing_intermediate_meta_target::args
+testing_run_meta_target::args
 make_testing_run_args(target_invocation_context& ctx,
                       const ast::expression* ast_args)
 {
-   testing_intermediate_meta_target::args result;
+   testing_run_meta_target::args result;
 
    if (!ast_args)
       return result;
@@ -743,8 +743,7 @@ testing_run_rule_impl(target_invocation_context& ctx,
    unique_ptr<basic_meta_target> intermediate_exe(
       new testing_intermediate_meta_target(&ctx.current_project_,
                                            exe_target_name,
-                                           requirements != NULL ? *requirements : requirements_decl(),
-                                           make_testing_run_args(ctx, ast_args)));
+                                           requirements ? *requirements : requirements_decl()));
 
    intermediate_exe->sources(sources);
    intermediate_exe->set_local(true);
@@ -752,10 +751,10 @@ testing_run_rule_impl(target_invocation_context& ctx,
 
    ctx.current_project_.add_target(move(intermediate_exe));
 
-   unique_ptr<basic_meta_target> runner_target(
-      new testing_meta_target(&ctx.current_project_,
-                              target_name,
-                              {}));
+   auto runner_target =
+      make_unique<testing_run_meta_target>(&ctx.current_project_,
+                                           target_name,
+                                           make_testing_run_args(ctx, ast_args));
 
    sources_decl run_sources;
    run_sources.push_back({ctx.current_project_, "./", exe_target_name, nullptr, nullptr});

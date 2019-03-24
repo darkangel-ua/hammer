@@ -27,7 +27,7 @@ void alias_meta_target::instantiate_impl(instantiation_context& ctx,
                                          std::vector<basic_target*>* result, 
                                          feature_set* usage_requirements) const
 {
-   if (owner != NULL) {
+   if (owner) {
       // compute usage requirements based only on build request
       // our own requirements is just for target selection - that's how alias works
       this->usage_requirements().eval(build_request, usage_requirements);
@@ -59,7 +59,7 @@ void alias_meta_target::instantiate_impl(instantiation_context& ctx,
       sources_decl simple_targets;
       meta_targets_t meta_targets;
       split_sources(&simple_targets, &meta_targets, this->sources(), build_request);
-      instantiate_meta_targets(ctx, meta_targets, build_request, NULL, &sources, usage_requirements);
+      instantiate_meta_targets(ctx, meta_targets, build_request, nullptr, &sources, usage_requirements);
       result->insert(result->end(), sources.begin(), sources.end());
    }
 }

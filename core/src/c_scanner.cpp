@@ -83,9 +83,9 @@ struct c_scanner_context : public scanner_context
       typedef boost::unordered_map<const directories_t*, variant> variants_t;
       struct file_info
       {
-         file_info() : included_files_(NULL) {}
+         file_info() : included_files_(nullptr) {}
          file_info(const ptime& timestamp) 
-            : included_files_(NULL), 
+            : included_files_(nullptr),
               timestamp_(timestamp)
          {}
 
@@ -97,7 +97,7 @@ struct c_scanner_context : public scanner_context
 
       typedef boost::unordered_map<const hashed_location*, file_info> file_infos_t;
       
-      file_node() : filename_(NULL) {}
+      file_node() : filename_(nullptr) {}
 
       const hashed_location* filename_;
       file_infos_t file_infos_;
@@ -150,13 +150,13 @@ struct c_scanner_context : public scanner_context
         env_(env),
         cache_is_valid_(false)
    {
-       if (env.cache_directory() != NULL)
+       if (env.cache_directory())
           try_load_cache();
    }
    
    ~c_scanner_context()
    {
-      if (env_.cache_directory() != NULL && cache_is_valid_ == false)
+      if (env_.cache_directory() && cache_is_valid_ == false)
           try_save_cache();
    }
 
@@ -288,7 +288,7 @@ bool c_scanner_context::load_directory(const hashed_location& dir, dir_node_t& c
       {
          cur_dir_node.nodes_ = i->second.directory_content_;
 
-         if (cur_suffix_node != NULL)
+         if (cur_suffix_node)
          {
             for(dir_nodes_t::const_iterator j = cur_dir_node.nodes_.begin(), j_last = cur_dir_node.nodes_.end(); j != j_last;++i)
             {
@@ -328,7 +328,7 @@ bool c_scanner_context::load_directory(const hashed_location& dir, dir_node_t& c
             ldr.directory_content_.insert(make_pair(element, boost::ref(*new_dir_node)));
             all_dir_nodes_.push_back(new_dir_node);
             
-            if (cur_suffix_node != NULL)
+            if (cur_suffix_node)
             {
                suffix_nodes_t::iterator r = cur_suffix_node->nodes_.find(element);
                if (r != cur_suffix_node->nodes_.end())
@@ -343,7 +343,7 @@ bool c_scanner_context::load_directory(const hashed_location& dir, dir_node_t& c
             const hashed_location* filename = get_cached_location(i->path().filename()).first;
             
             file_node& file = file_nodes_[filename];
-            if (file.filename_ == NULL)
+            if (!file.filename_)
                file.filename_ = filename;
 
             try
@@ -413,7 +413,7 @@ void c_scanner_context::load_directories_with_suffix(location_t::const_iterator 
    for(dir_nodes_t::iterator i = r.begin(), i_last = r.end(); i != i_last; ++i)
    {
       if (!i->second.get().loaded_)
-         load_directory(*i->second.get().full_dir_path_, i->second, NULL);
+         load_directory(*i->second.get().full_dir_path_, i->second, nullptr);
    }
    
    ++first;
@@ -482,7 +482,7 @@ ptime c_scanner_context::calculate_timestamp_for_known_file(const hashed_locatio
    for(included_files_t::const_iterator i = file.included_files_->begin(), last = file.included_files_->end(); i != last; ++i)
    {
       // Skip files that known to be non existent
-      if (i->file_ == NULL)
+      if (!i->file_)
          continue;
 
       if (i->quoted_)
@@ -560,7 +560,7 @@ ptime c_scanner_context::calculate_timestamp(const hashed_location& file_dir,
       if (fi != file.file_infos_.end())
       {
          //file_node::file_info& fi_ref = fi->second; // unused variable
-         if (fi->second.included_files_ == NULL || 
+         if (!fi->second.included_files_ ||
              fi->second.timestamp_ != fi->second.cached_timestamp_)
          {
             fi->second.included_files_ = &extract_includes(file_dir, filename);
@@ -715,7 +715,7 @@ c_scanner_context::make_included_file(const location_t& include_path, bool quote
 
    const hashed_location* filename = get_cached_location(include_path.filename()).first;
    file_node& file = file_nodes_[filename];
-   if (file.filename_ == NULL)
+   if (!file.filename_)
       file.filename_ = filename;
 
    return included_file(path_part, 

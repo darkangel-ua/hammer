@@ -60,7 +60,7 @@ namespace
          virtual std::ostream& output_stream() const { return std::cout; }
          virtual std::ostream& error_stream() const { return std::cerr; }
 
-         const location_t* cache_directory() const { return NULL; }
+         const location_t* cache_directory() const { return nullptr; }
 
 
       private:

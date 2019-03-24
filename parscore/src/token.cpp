@@ -15,14 +15,14 @@ token::token(const char* v)
 
 token::token(const ANTLR3_COMMON_TOKEN_struct* v)
    : loc_(v),
-     v_(NULL),
+     v_(nullptr),
      length_(v->stop - v->start + 1),
      no_loc_(false)
 {
 }
 
 token::token()
-   : v_(NULL),
+   : v_(nullptr),
      no_loc_(true)
 {
 }

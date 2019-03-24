@@ -42,7 +42,7 @@ createTokenFromToken(pANTLR3_BASE_TREE_ADAPTOR adaptor,
 
     newToken	= adaptor->tokenFactory->newToken(adaptor->tokenFactory);
 
-    if (newToken != NULL) {
+    if (newToken) {
 		// Create the text using our own string factory to avoid complicating
 		// commontoken.
 		//

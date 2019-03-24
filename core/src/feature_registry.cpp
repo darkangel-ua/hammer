@@ -238,7 +238,7 @@ namespace hammer{
    {
       defs_t::iterator i = defs_.find(name);
       if (i == defs_.end())
-         return NULL;
+         return nullptr;
       else
          return i->second.get();
    }
@@ -246,12 +246,12 @@ namespace hammer{
    feature* feature_registry::impl_t::find_feature(const string& name, const string& value)
    {
       feature_def* def = find_def(name);
-      if (def == NULL)
-         return NULL;
+      if (!def)
+         return nullptr;
 
        main_feature_index_t::iterator i = features_.get<0>().find(find_feature_data(*def, value, feature::subfeatures_t()));
        if (i == features_.get<0>().end())
-          return NULL;
+          return nullptr;
        else 
           return i->get();
    }
@@ -261,7 +261,7 @@ namespace hammer{
                                                            const string& value)
    {
       const subfeature_def* sdef = f.definition().find_subfeature(name);
-      if (sdef == NULL)
+      if (!sdef)
          throw std::runtime_error("Feature '" + f.name() + "' does not have subfeature '" + name + "'.");
       
       if (!sdef->is_legal_value(f.value(), value))
@@ -288,7 +288,7 @@ namespace hammer{
       subfeatures.push_back(&sf);
       main_feature_index_t::iterator i = features_.get<0>().find(find_feature_data(f.definition(), f.value(), subfeatures));
       if (i == features_.get<0>().end())
-         return NULL;
+         return nullptr;
       else 
          return i->get();
    }
@@ -342,7 +342,7 @@ namespace hammer{
    {
       feature* result;
       const feature_def* maybe_def = find_def(name.c_str());
-      if (maybe_def == NULL)
+      if (!maybe_def)
       {
          // no such feature definition found
          // create def with undefined attribute
@@ -366,7 +366,7 @@ namespace hammer{
       else
       {
          result = impl_->find_feature(name, value);
-         if (result == NULL)
+         if (!result)
          {
             shared_ptr<feature> f(new feature(&def, value));
             result = f.get();
@@ -384,7 +384,7 @@ namespace hammer{
 
       const feature_def* posible_feature = find_def(name.c_str());
 
-      if (posible_feature != NULL && 
+      if (posible_feature &&
           (posible_feature->attributes().free ||
            posible_feature->is_legal_value(value)))
       {
@@ -437,7 +437,7 @@ namespace hammer{
    feature_def& feature_registry::get_def(const std::string& name)
    {
       feature_def* result = impl_->find_def(name);
-      if (result == NULL)
+      if (!result)
          throw std::runtime_error("There is no feature definition for feature '" + name + "'.");
       else
          return *result;
@@ -457,7 +457,7 @@ namespace hammer{
    const feature_def* feature_registry::find_def_from_full_name(const char* feature_name) const
    {
       const feature_def* result = find_def(feature_name);
-      if (result != NULL)
+      if (result)
          return result;
       // FIXME: performance hit
       string feature_name_str(feature_name);
@@ -465,7 +465,7 @@ namespace hammer{
       if (p != string::npos)
          return find_def(feature_name_str.substr(0, p).c_str());
       else
-         return NULL;
+         return nullptr;
    }
 
    feature* feature_registry::create_feature(const feature& f, 
@@ -474,7 +474,7 @@ namespace hammer{
    {
       subfeature& sf = impl_->create_subfeature(f, subfeature_name, subfeature_value);
       feature* result = impl_->find_feature(f, sf);
-      if (result == NULL)
+      if (!result)
       {
          feature::subfeatures_t new_subfeatures(f.subfeatures());
          new_subfeatures.push_back(&sf);

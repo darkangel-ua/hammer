@@ -34,7 +34,7 @@ BOOST_AUTO_TEST_CASE(feature_def_subfeatures)
    feature_def& toolset_def = fr.add_feature_def("toolset");
    subfeature_def& toolset_version_def = toolset_def.add_subfeature("version");
    BOOST_REQUIRE_THROW(toolset_def.add_subfeature("version"), std::exception);
-   BOOST_CHECK(toolset_def.find_subfeature(toolset_version_def.name()) != NULL);
+   BOOST_CHECK(toolset_def.find_subfeature(toolset_version_def.name()));
 }
 
 BOOST_AUTO_TEST_CASE(feature_compare_with_subfeatures)

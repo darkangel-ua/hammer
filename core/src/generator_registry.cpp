@@ -104,7 +104,7 @@ generator_registry::find_viable_generators(const target_type& t,
          if ((!full_match && j->type_->equal_or_derived_from(t)) ||
              (full_match && *j->type_ == t))
          {
-            int generator_rank = i->second->constraints() != NULL ? compute_rank(build_properties, *i->second->constraints())
+            int generator_rank = i->second->constraints() ? compute_rank(build_properties, *i->second->constraints())
                                                                   : 0;
             if (generator_rank == -1) // build properties not satisfied generator constraints
                continue;

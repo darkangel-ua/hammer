@@ -15,15 +15,15 @@ pch_meta_target::pch_meta_target(hammer::project* p, const std::string& name,
                                  const requirements_decl& req, 
                                  const requirements_decl& usage_req)
   : meta_target(p, name, req, usage_req), 
-    last_constructed_main_target_(NULL),
-    last_instantiation_owner_(NULL)
+    last_constructed_main_target_(nullptr),
+    last_instantiation_owner_(nullptr)
 {
    set_explicit(true);
 }
 
 bool pch_meta_target::is_cachable(const main_target* owner) const 
 { 
-   if (last_instantiation_owner_ == NULL)
+   if (!last_instantiation_owner_)
       last_instantiation_owner_ = owner;
    else
       if (last_instantiation_owner_ != owner)
@@ -34,7 +34,7 @@ bool pch_meta_target::is_cachable(const main_target* owner) const
 
 main_target* pch_meta_target::construct_main_target(const main_target* owner, const feature_set* properties) const
 {
-   if (owner == NULL)
+   if (!owner)
       throw std::runtime_error("pch main target must have owner. Don't try to build pch targets standalone.");
 
    feature_set* modified_properties = properties->clone();
@@ -64,12 +64,12 @@ void pch_meta_target::compute_usage_requirements(feature_set& result,
    pch_feature->get_generated_data().target_ = last_constructed_main_target_;
    result.join(pch_feature);
    // add dependency on self to build pch before main target that use it
-   if (owner == NULL)
+   if (!owner)
       throw std::runtime_error("pch main target must have owner and cannot be instantiated standalone.");
 
    feature* self_dependency_feature = get_engine().feature_registry().create_feature("dependency", "");
    for(sources_decl::const_iterator i = owner->get_meta_target()->sources().begin(), last =  owner->get_meta_target()->sources().end(); i!= last; ++i)
-      if (i->type() == NULL && // that meta target
+      if (i->is_meta_target() &&
           i->target_path() == name()) // FIXME: skip self - should be more intelligent logic
       {
          self_dependency_feature->set_dependency_data(*i, &get_project());
@@ -85,7 +85,7 @@ pch_meta_target::compute_additional_sources(const instantiation_context& ctx,
 {
    sources_decl result;
    for(sources_decl::const_iterator i = owner.get_meta_target()->sources().begin(), last =  owner.get_meta_target()->sources().end(); i!= last; ++i)
-      if (i->type() == NULL && // that meta target
+      if (i->is_meta_target() &&
           i->target_path() != name()) // FIXME: skip self - should be more intelligent logic
       {
          result.push_back(*i);

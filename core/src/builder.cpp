@@ -193,8 +193,8 @@ void builder::impl_t::task_completition_handler(shared_ptr<worker_ctx_t> ctx)
          for (build_node_ptr& node : lack_of_nodes) {
             buffered_environment.output_stream()
                << "......for lack of " 
-               << (node->action() != NULL ? node->action()->target_tag(*node, buffered_environment)
-                                          : "?unknown?") 
+               << (node->action() ? node->action()->target_tag(*node, buffered_environment)
+                                  : "?unknown?")
                << '\n';
          }
       }
@@ -308,7 +308,7 @@ builder::impl_t::build(build_nodes_t& nodes,
    nodes_in_progress_t nodes_in_progress;
    
    shared_ptr<worker_ctx_t> initial_ctx(
-      new worker_ctx_t(scheduler, strand, build_queue, nodes_in_progress, NULL));
+      new worker_ctx_t(scheduler, strand, build_queue, nodes_in_progress, nullptr));
    
    scheduler.post(boost::bind(&impl_t::task_completition_handler, this, initial_ctx));
 

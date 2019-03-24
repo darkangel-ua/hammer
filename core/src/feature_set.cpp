@@ -352,7 +352,7 @@ static void dump_value(std::ostream& s, const feature& f)
       if (!dd.source_.target_name().empty())
          s << "//" << dd.source_.target_name();
 
-      if (f.get_path_data().project_ != NULL)
+      if (f.get_path_data().project_)
          s << " " << f.get_path_data().project_->location();
    } else
       s << f.value();
@@ -473,7 +473,7 @@ void apply_build_request(feature_set& dest,
       if ((**i).name() == "use")
       {
          const source_decl old = (**i).get_dependency_data().source_;
-         feature_set& new_props = old.properties() == NULL ? *build_request.clone() : old.properties()->clone()->join(build_request);
+         feature_set& new_props = old.properties() == nullptr ? *build_request.clone() : old.properties()->clone()->join(build_request);
          (**i).set_dependency_data(source_decl(old.owner_project(), old.target_path(), old.target_name(), old.type(), &new_props), (**i).get_path_data().project_);
       }
 }

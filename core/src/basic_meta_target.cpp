@@ -80,7 +80,7 @@ void instantiate_meta_targets(instantiation_context& ctx,
                               feature_set* usage_requirments)
 {
    for (auto& t : targets) {
-      t.first->instantiate(ctx, owner, t.second == NULL ? build_request : *build_request.join(*t.second),
+      t.first->instantiate(ctx, owner, t.second ? *build_request.join(*t.second) : build_request,
                            result, usage_requirments);
    }
 }
@@ -135,7 +135,7 @@ void basic_meta_target::resolve_meta_target_source(const source_decl& source,
                                                    const feature_set& build_request,
                                                    meta_targets_t* meta_targets) const
 {
-   const feature_set* build_request_with_source_properties = (source.properties() == NULL ? &build_request : build_request.join(*source.properties()));
+   const feature_set* build_request_with_source_properties = (source.properties() ? build_request.join(*source.properties()) : &build_request);
 
    if (looks_like_local_target_ref(source)) {
       const std::string target_name = source.target_name().empty() ? source.target_path() : source.target_name();

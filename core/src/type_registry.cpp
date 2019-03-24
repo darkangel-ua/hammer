@@ -66,7 +66,7 @@ namespace hammer{
    const target_type& type_registry::soft_resolve_from_target_name(const std::string& name) const
    {
       const target_type* t = resolve_from_target_name(name);
-      if (t == NULL)
+      if (!t)
          return get(types::UNKNOWN);
       else
          return *t;
@@ -74,7 +74,7 @@ namespace hammer{
    const target_type& type_registry::hard_resolve_from_target_name(const std::string& name) const
    {
       const target_type* t = resolve_from_target_name(name);
-      if (t == NULL)
+      if (!t)
          throw std::runtime_error("Can't resolve type from target name '" + name + "'.");
       
       return *t;
@@ -100,13 +100,13 @@ namespace hammer{
       if (i != types_.end())
          return i->second;
       else
-         return NULL;
+         return nullptr;
    }
 
    const target_type& type_registry::get(const type_tag& tag) const
    {
       const target_type* result = find(tag);
-      if (result != NULL)
+      if (result)
          return *result;
       else
          throw runtime_error("Can't find type with tag '" + tag.name() + "'");

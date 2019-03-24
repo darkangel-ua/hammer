@@ -476,14 +476,13 @@ void variant_rule(invocation_context& ctx,
    feature_def& def = e.feature_registry().get_def("variant");
    def.extend_legal_values(variant_name.to_string(), {});
 
-   if (base == NULL)
-      def.compose(variant_name.to_string(), &components);
-   else {
+   if (base) {
       feature_set* composite_features = e.feature_registry().make_set();
       def.expand_composites(base->to_string(), composite_features);
       composite_features->join(components);
       def.compose(variant_name.to_string(), composite_features);
-   }
+   } else
+      def.compose(variant_name.to_string(), &components);
 }
 
 static
@@ -765,8 +764,8 @@ testing_run_rule_impl(target_invocation_context& ctx,
    source_decl run_target_source(ctx.current_project_,
                                  runner_target->name(),
                                  {},
-                                 NULL /*to signal that this is meta target*/,
-                                 NULL);
+                                 nullptr /*to signal that this is meta target*/,
+                                 nullptr);
 
    ctx.current_project_.add_target(move(runner_target));
 
@@ -838,8 +837,8 @@ testing_compile_fail_rule(target_invocation_context& ctx,
    const source_decl compile_source(ctx.current_project_,
                                     mt->name(),
                                     std::string(),
-                                    NULL /*to signal that this is meta target*/,
-                                    NULL);
+                                    nullptr /*to signal that this is meta target*/,
+                                    nullptr);
 
    mt->set_local(ctx.local_);
    mt->set_explicit(ctx.explicit_);
@@ -866,8 +865,8 @@ testing_compile_rule_impl(target_invocation_context& ctx,
    const source_decl compile_source(ctx.current_project_,
                                     mt->name(),
                                     std::string(),
-                                    NULL /*to signal that this is meta target*/,
-                                    NULL);
+                                    nullptr /*to signal that this is meta target*/,
+                                    nullptr);
 
    mt->set_local(ctx.local_);
    mt->set_explicit(ctx.explicit_);
@@ -940,8 +939,8 @@ testing_link_fail_rule(target_invocation_context& ctx,
    const source_decl compile_source(ctx.current_project_,
                                     mt->name(),
                                     std::string(),
-                                    NULL /*to signal that this is meta target*/,
-                                    NULL);
+                                    nullptr /*to signal that this is meta target*/,
+                                    nullptr);
 
    mt->set_local(ctx.local_);
    mt->set_explicit(ctx.explicit_);
@@ -970,8 +969,8 @@ testing_link_rule(target_invocation_context& ctx,
    const source_decl compile_source(ctx.current_project_,
                                     mt->name(),
                                     std::string(),
-                                    NULL /*to signal that this is meta target*/,
-                                    NULL);
+                                    nullptr /*to signal that this is meta target*/,
+                                    nullptr);
 
    mt->set_local(ctx.local_);
    mt->set_explicit(ctx.explicit_);

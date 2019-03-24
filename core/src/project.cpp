@@ -273,7 +273,7 @@ project::select_best_alternative(const std::string& target_name,
 {
 
    selected_target result = try_select_best_alternative(target_name, build_request, allow_locals);
-   if (result.target_ == NULL)
+   if (!result.target_)
       throw std::runtime_error("Can't select alternative for target '" + target_name + "'.");
 
    return result;
@@ -399,7 +399,7 @@ project::select_best_alternative(const feature_set& build_request) const
    while(first != last)
    {
       selected_target t = try_select_best_alternative(first->second->name(), build_request);
-      if (t.target_ != NULL)
+      if (t.target_)
          result.push_back(t);
 
       // we just processed targets with name equal to 'first->second->name()', lets move to
@@ -423,7 +423,7 @@ project::try_resolve_local_features(const feature_set& fs) const
       if ((**i).attributes().undefined_)
       {
          const feature_def* def = local_feature_registry_.find_def_from_full_name((**i).name().c_str());
-         if (def != NULL)
+         if (def)
             result->join(local_feature_registry_.create_feature((**i).name(), (**i).value()));
          else
             result->join(*i);
@@ -652,7 +652,7 @@ loaded_projects::select_best_alternative(const std::string& target_name,
    for(projects_t::const_iterator i = projects_.begin(), last = projects_.end(); i != last; ++i)
    {
       project::selected_target st = (**i).try_select_best_alternative(target_name, build_request, allow_locals);
-      if (st.target_ != NULL)
+      if (st.target_)
          result.push_back(st);
    }
 

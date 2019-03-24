@@ -9,7 +9,7 @@ namespace hammer {
 warehouse_target::warehouse_target(const basic_meta_target& mt,
                                    const std::string& name,
                                    const feature_set& build_request)
-   : main_target(&mt, name, NULL, build_request.clone())
+   : main_target(&mt, name, nullptr, build_request.clone())
 {
 
 }

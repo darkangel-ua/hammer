@@ -124,7 +124,7 @@ const subfeature* feature::find_subfeature(const subfeature& v) const
 {
    subfeatures_t::const_iterator i = std::find(subfeatures_.begin(), subfeatures_.end(), &v);
    if (i == subfeatures_.end())
-      return NULL;
+      return nullptr;
    else
       return *i;
 }
@@ -135,7 +135,7 @@ const subfeature* feature::find_subfeature(const std::string& v) const
       if ((**i).name() == v)
          return *i;
    
-   return NULL;
+   return nullptr;
 }
 
 }

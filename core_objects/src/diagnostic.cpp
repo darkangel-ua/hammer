@@ -114,7 +114,7 @@ void diagnostic::format_message()
       add_source_snippet();
 
    report(stream_.str().c_str());
-   message_ = NULL;
+   message_ = nullptr;
 }
 
 void diagnostic::add_source_snippet()

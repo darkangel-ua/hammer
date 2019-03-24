@@ -68,10 +68,10 @@ bool build_environment_impl::run_shell_commands(std::ostream* captured_output_st
       ctx.stdin_behavior = bp::inherit_stream();
       ctx.work_directory = working_dir.string();
 
-      if (captured_output_stream != NULL)
+      if (captured_output_stream)
       {
          ctx.stdout_behavior = bp::capture_stream();
-         if (captured_error_stream != NULL)
+         if (captured_error_stream)
             ctx.stderr_behavior = bp::capture_stream();
          else
             ctx.stderr_behavior = bp::redirect_stream_to_stdout();
@@ -102,12 +102,12 @@ bool build_environment_impl::run_shell_commands(std::ostream* captured_output_st
       bp::child shell_action_child = bp::launch_shell(cmd_stream.str(), ctx);
 #endif
 
-      if (captured_output_stream != NULL)
+      if (captured_output_stream)
       {
          boost::thread_group tg;
 
          tg.create_thread(boost::bind(&stream_copy_thread, boost::ref(shell_action_child.get_stdout()), boost::ref(*captured_output_stream)));
-         if (captured_error_stream != NULL)
+         if (captured_error_stream)
             tg.create_thread(boost::bind(&stream_copy_thread, boost::ref(shell_action_child.get_stderr()), boost::ref(*captured_error_stream)));
 
          tg.join_all();
@@ -150,7 +150,7 @@ bool build_environment_impl::run_shell_commands(std::ostream* captured_output_st
 bool build_environment_impl::run_shell_commands(const std::vector<std::string>& cmds,
                                                 const location_t& working_dir) const
 {
-   return run_shell_commands(NULL, NULL, cmds, working_dir);
+   return run_shell_commands(nullptr, nullptr, cmds, working_dir);
 }
 
 bool build_environment_impl::run_shell_commands(std::string& captured_output,
@@ -158,7 +158,7 @@ bool build_environment_impl::run_shell_commands(std::string& captured_output,
                                                 const location_t& working_dir) const
 {
    std::stringstream s;
-   bool result = run_shell_commands(&s, NULL, cmds, working_dir);
+   bool result = run_shell_commands(&s, nullptr, cmds, working_dir);
    captured_output = s.str();
    return result;
 }
@@ -167,7 +167,7 @@ bool build_environment_impl::run_shell_commands(std::ostream& captured_output_st
                                                 const std::vector<std::string>& cmds,
                                                 const location_t& working_dir) const
 {
-   return run_shell_commands(&captured_output_stream, NULL, cmds, working_dir);
+   return run_shell_commands(&captured_output_stream, nullptr, cmds, working_dir);
 }
 
 bool build_environment_impl::run_shell_commands(std::ostream& captured_output_stream,

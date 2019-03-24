@@ -127,7 +127,7 @@ feature_def::find_subfeature(const std::string& name) const
 {
    subfeatures_t::const_iterator i = subfeatures_.find(name);
    if (i == subfeatures_.end())
-      return NULL;
+      return nullptr;
    else
       return i->second.get();
 }
@@ -136,7 +136,7 @@ const subfeature_def&
 feature_def::get_subfeature(const std::string& subfeature_name) const
 {
    const subfeature_def* sd = find_subfeature(subfeature_name);
-   if (sd == NULL)
+   if (!sd)
       throw std::runtime_error("Subfeature '" + subfeature_name + "' not founded in feature definition '" + name() + "'");
    else
       return *sd;
@@ -156,7 +156,7 @@ feature_def::find_subfeature_for_value(const std::string& feature_value,
       if (i->second->is_legal_value(feature_value, value))
          return i->second.get();
 
-   return NULL;
+   return nullptr;
 }
 
 feature_def::~feature_def()

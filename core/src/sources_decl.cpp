@@ -106,7 +106,7 @@ void sources_decl::insert(const project& related_project,
 void sources_decl::add_to_source_properties(const feature_set& props) {
    clone_if_needed();
    for (auto& v : impl_->values_) {
-      if (v.properties() == NULL)
+      if (!v.properties())
          v.properties(props.clone());
       else 
          v.properties(const_cast<const feature_set*>(v.properties())->join(props));

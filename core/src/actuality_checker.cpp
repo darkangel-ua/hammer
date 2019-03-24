@@ -134,7 +134,7 @@ bool actuality_checker::check(boost::posix_time::ptime& max_target_time, std::si
       products_max_time = (std::max)(products_max_time, time_info.timestamp_);
 
       const scanner* scanner = engine_.scanner_manager().find((**i).type());
-      if (scanner != NULL)
+      if (scanner)
       {
          ptime scanner_timestamp = scanner->process(**i, node, get_scanner_context((**i).type(), *scanner));
 

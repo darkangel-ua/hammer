@@ -33,7 +33,7 @@ target_type::target_type(const type_tag& tag, const suffix_def& suffix, const pr
    : tag_(tag),
      suffixes_(1, suffix),
      prefixes_(1, prefix),
-     base_(NULL),
+     base_(nullptr),
      valuable_features_(make_valuable_features(suffixes_, prefixes_))
 {
 
@@ -53,7 +53,7 @@ target_type::target_type(const type_tag& tag, const suffixes_t& suffixes, const 
    : tag_(tag),
      suffixes_(suffixes),
      prefixes_(prefixes),
-     base_(NULL),
+     base_(nullptr),
      valuable_features_(make_valuable_features(suffixes_, prefixes_))
 {
 
@@ -83,7 +83,7 @@ bool target_type::suffix_def::operator == (const suffix_def& rhs) const
 
 bool target_type::equal_or_derived_from(const target_type& rhs) const
 { 
-   assert(owner_ != NULL && "To perform this operation owner_ must be not NULL.");
+   assert(owner_ && "To perform this operation owner_ must be not NULL.");
 
    if (owner_ != rhs.owner_)
       return equal(rhs);
@@ -91,7 +91,7 @@ bool target_type::equal_or_derived_from(const target_type& rhs) const
    if (this == &rhs)
       return true;
    else
-      if (base() != NULL)
+      if (base())
          return base()->equal_or_derived_from(rhs);
       else
          return false;
@@ -99,14 +99,14 @@ bool target_type::equal_or_derived_from(const target_type& rhs) const
 
 bool target_type::equal_or_derived_from(const type_tag& rhs) const
 {
-   assert(owner_ != NULL && "To perform this operation owner_ must be not NULL.");
+   assert(owner_ && "To perform this operation owner_ must be not NULL.");
 
    return equal_or_derived_from(owner_->get(rhs));
 }
 
 bool target_type::operator == (const target_type& rhs) const
 {
-   assert(owner_ != NULL && "To perform this operation owner_ must be not NULL.");
+   assert(owner_ && "To perform this operation owner_ must be not NULL.");
    if (owner_ != rhs.owner_)
       return equal(rhs);
    
@@ -130,7 +130,7 @@ const std::string& target_type::suffix_for(const feature_set& environment) const
 {
    for(target_type::suffixes_t::const_iterator i = suffixes_.begin(), last = suffixes_.end(); i != last; ++i)
    {
-      if (i->condition_ == NULL || environment.contains(*i->condition_))
+      if (!i->condition_ || environment.contains(*i->condition_))
          return i->suffix_;
    }
 
@@ -142,7 +142,7 @@ const std::string& target_type::prefix_for(const feature_set& environment) const
 {
    for(target_type::prefixes_t::const_iterator i = prefixes_.begin(), last = prefixes_.end(); i != last; ++i)
    {
-      if (i->condition_ == NULL || environment.contains(*i->condition_))
+      if (!i->condition_ || environment.contains(*i->condition_))
          return i->suffix_;
    }
 
@@ -151,10 +151,10 @@ const std::string& target_type::prefix_for(const feature_set& environment) const
 
 std::auto_ptr<target_type> target_type::clone(const type_registry& tr) const
 {
-   if (base() != NULL && base()->owner_ != &tr)
+   if (base() && base()->owner_ != &tr)
       throw std::logic_error("[type] Can't clone because base type is not registered in owner.");
 
-   std::auto_ptr<target_type> result(base() == NULL ? new target_type(tag(), suffixes()) : new target_type(tag(), suffixes(), *base(), prefixes()));
+   std::auto_ptr<target_type> result(base() == nullptr ? new target_type(tag(), suffixes()) : new target_type(tag(), suffixes(), *base(), prefixes()));
    result->owner_ = &tr;
    return result;
 }

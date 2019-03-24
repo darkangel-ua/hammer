@@ -97,7 +97,7 @@ void linear_and_condition::eval(const feature_set& build_request,
    {
       result->join(result_);
 
-      if (is_public() && public_result != NULL)
+      if (is_public() && public_result)
          public_result->join(result_);
    }
 }
@@ -114,7 +114,7 @@ void just_feature_requirement::eval(const feature_set& build_request,
 {
    result->join(f_);
    
-   if (is_public() && public_result != NULL)
+   if (is_public() && public_result)
       public_result->join(f_);
 }
 
@@ -163,7 +163,7 @@ void requirement_condition::eval(const feature_set& build_request,
       for(const result_element& re : result_) {
          result->join(re.f_);
 
-         if ((is_public() || re.public_) && public_result != NULL)
+         if ((is_public() || re.public_) && public_result)
             public_result->join(re.f_);
       }
    }

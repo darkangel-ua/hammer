@@ -16,7 +16,7 @@ hammer::location_t get_user_config_location()
 #     error "Platform not supported"
 #endif
 
-   if (home_path != NULL)
+   if (home_path)
       return hammer::location_t(home_path) / "user-config.ham";
    else   
       throw std::runtime_error("Can't find user home directory.");

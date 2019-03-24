@@ -31,7 +31,7 @@ const scanner* scanner_manager::find(const target_type& t) const
 {
    impl_t::scanners_t::const_iterator i = impl_->scanners_.find(&t);
    if (i == impl_->scanners_.end())
-      return NULL;
+      return nullptr;
    else
       return i->second.get();
 }
@@ -39,7 +39,7 @@ const scanner* scanner_manager::find(const target_type& t) const
 const scanner& scanner_manager::get(const target_type& t) const
 {
    const scanner* result = find(t);
-   if (result == NULL)
+   if (!result)
       throw std::runtime_error("No scanner for type '" + t.tag().name() + "'.");
    else
       return *result;

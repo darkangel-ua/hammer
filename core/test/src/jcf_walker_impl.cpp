@@ -99,9 +99,8 @@ void check_feature(void* e, void* t, void* features, const pANTLR3_COMMON_TOKEN 
    engine* eng = static_cast<engine*>(e);
    const feature_def* global_def = eng->feature_registry().find_def(name);
    const feature_def* local_def = bt->get_project().local_feature_registry().find_def(name);
-   const feature_def& fd = global_def != NULL 
-                              ? *global_def 
-                              : bt->get_project().local_feature_registry().get_def(name);;
+   const feature_def& fd = global_def ? *global_def
+                                      : bt->get_project().local_feature_registry().get_def(name);
    
    if (fd.attributes().path)
    {

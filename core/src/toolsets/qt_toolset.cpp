@@ -140,7 +140,7 @@ qt_uic_rule(invocation_context& ctx,
                                                            requirements_decl()));
 
    auto result = boost::make_unique<sources_decl>();
-   result->push_back(source_decl(ctx.current_project_, "./", mt->name(), NULL, NULL));
+   result->push_back(source_decl(ctx.current_project_, "./", mt->name(), nullptr, nullptr));
 
    ctx.current_project_.add_target(std::move(mt));
 
@@ -154,7 +154,7 @@ static sources_decl convert_H_to_MOCABLE(const sources_decl& src, hammer::projec
    const target_type& qt_mocable_type = p.get_engine().get_type_registry().get(qt_mocable);
    for(sources_decl::const_iterator i = src.begin(), last = src.end(); i != last; ++i)
    {
-      if (i->type() != NULL &&
+      if (i->type() &&
           i->type()->equal_or_derived_from(h_type))
       {
          source_decl s(*i);
@@ -364,7 +364,7 @@ void add_lib(project& qt_project,
       requirements_decl usage_req;
       feature* source_feature = e.feature_registry().create_feature("source", dependencies[i]);
       {
-         source_decl sd(qt_project, "/Qt", dependencies[i], NULL, e.feature_registry().make_set());
+         source_decl sd(qt_project, "/Qt", dependencies[i], nullptr, e.feature_registry().make_set());
          source_feature->set_dependency_data(sd, &qt_project);
          auto_ptr<just_feature_requirement> source_req(new just_feature_requirement(source_feature));
          usage_req.add(auto_ptr<requirement_base>(source_req));

@@ -124,7 +124,7 @@ fs::path get_home_path()
 #if defined(_WIN32)
 
    const char* home_path = getenv("USERPROFILE");
-   if (home_path != NULL)
+   if (home_path)
       return hammer::location_t(home_path);
    else
       throw std::runtime_error("Can't find user home directory.");
@@ -133,7 +133,7 @@ fs::path get_home_path()
 #   if defined(__linux__)
 
    const char* home_path = getenv("HOME");
-   if (home_path != NULL)
+   if (home_path)
       return hammer::location_t(home_path);
    else
       throw std::runtime_error("Can't find user home directory.");

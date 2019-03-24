@@ -24,7 +24,7 @@ bool cmdline_action::execute_impl(const build_node& node, const build_environmen
    if (node.products_.empty())
       throw std::runtime_error("[cmdline_action] Can't run command for node without products.");
 
-   if (rsp_builder_.get() != NULL)
+   if (rsp_builder_.get())
    {
       location_t rsp_file_path(node.products_.front()->get_main_target()->location() / (target_tag(node, environment) + ".rsp"));
       rsp_file_path.normalize();

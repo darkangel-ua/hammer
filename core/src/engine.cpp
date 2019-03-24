@@ -101,7 +101,7 @@ project* engine::get_upper_project(const location_t& project_path)
    location_t upper_path = project_path.filename() == "." ? project_path.parent_path().parent_path() : project_path.parent_path();
    // FIXME: BUG: boost parent_path() can produce "E:" path and than "E:" / "foo" give as "E:foo" which is wrong
    if (upper_path.empty() || upper_path == project_path.root_name())
-      return NULL;
+      return nullptr;
 
    if (exists(upper_path / hamfile))
       return &load_project(upper_path);
@@ -112,7 +112,7 @@ project* engine::get_upper_project(const location_t& project_path)
    if (upper_path.has_parent_path())
       return get_upper_project(upper_path);
    else
-      return NULL;
+      return nullptr;
 }
 
 loaded_projects
@@ -252,11 +252,11 @@ engine::try_load_project(location_t fs_project_path)
       return loaded_projects{i->second.get()};
 
    fs_project_path.normalize();
-   project* upper_project = NULL;
+   project* upper_project = nullptr;
 
    if (!exists(fs_project_path)) {
       upper_project = get_upper_project(fs_project_path);
-      if (upper_project == NULL)
+      if (!upper_project)
          return {};
    }
 
@@ -266,7 +266,7 @@ engine::try_load_project(location_t fs_project_path)
       project_file = fs_project_path / hamroot;
       is_top_level = true;
    }
-   else if (upper_project == NULL)
+   else if (!upper_project)
       upper_project = get_upper_project(fs_project_path);
 
    if (!exists(project_file))

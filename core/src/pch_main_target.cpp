@@ -19,9 +19,9 @@ pch_main_target::pch_main_target(const basic_meta_target* mt,
                                 : 
                                  main_target(mt, name, t, props),
                                  owner_(owner),
-                                 pch_header_(NULL),
-                                 pch_source_(NULL),
-                                 pch_product_(NULL)
+                                 pch_header_(nullptr),
+                                 pch_source_(nullptr),
+                                 pch_product_(nullptr)
 {
 }
    

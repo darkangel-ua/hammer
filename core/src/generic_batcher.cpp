@@ -73,8 +73,8 @@ void generic_batcher::process_impl(build_node& node) const
       if (!i->source_node_->is_composite() &&
           i->source_node_->sources_.size() == 1 &&
           i->source_node_->products_.size() == 1 &&
-          i->source_node_->action() != NULL &&
-          i->source_node_->action()->batched_action() != NULL &&
+          i->source_node_->action() &&
+          i->source_node_->action()->batched_action() &&
           i->source_node_->up_to_date() != boost::tribool::true_value)
       {
          selected_sources[make_pair(&i->source_node_->build_request(), 

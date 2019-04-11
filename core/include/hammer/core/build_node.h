@@ -7,6 +7,8 @@
 #include <hammer/core/build_action_fwd.h>
 
 namespace hammer {
+
+class type_tag;
 class basic_build_target;
 class main_target;
 class target_type;
@@ -43,7 +45,11 @@ class build_node : public boost::intrusive_ref_counter<build_node, boost::thread
            action_(action)
       {}
 
-      const basic_build_target* find_product(const basic_build_target* t) const;
+      const basic_build_target*
+      find_product(const basic_build_target* t) const;
+
+      const basic_build_target*
+      find_product(const type_tag& tag) const;
 
       boost::tribool::value_t up_to_date() const { return up_to_date_.value; }
       void up_to_date(boost::tribool::value_t v);

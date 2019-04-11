@@ -1,9 +1,12 @@
 #include <iostream>
+#include <fstream>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/fstream.hpp>
 #include <boost/program_options.hpp>
 #include <boost/make_unique.hpp>
 #include <hammer/core/engine.h>
+#include <hammer/core/types.h>
 #include <hammer/core/build_environment_impl.h>
 #include <hammer/core/testing_suite_meta_target.h>
 #include <hammer/core/testing_run_meta_target.h>
@@ -11,6 +14,9 @@
 #include <hammer/core/testing_compile_base_meta_target.h>
 #include <hammer/core/testing_link_base_meta_target.h>
 #include <hammer/core/basic_target.h>
+#include <hammer/core/main_target.h>
+#include <hammer/core/basic_build_target.h>
+#include <hammer/core/collect_nodes.h>
 #include "build_request.h"
 #include "build_cmd.h"
 #include "test_cmd.h"
@@ -24,14 +30,14 @@ namespace {
 
 struct test_options_t {
    vector<string> test_request_;
-   bool generate_report_;
+   std::string report_filename_;
 } test_options;
 
 po::options_description
 test_options_description = []() {
    po::options_description desc("Test options");
    desc.add_options()
-      ("report", po::bool_switch(&test_options.generate_report_), "Print test report to stdout")
+      ("report", po::value<std::string>(&test_options.report_filename_), "Save testing report into file")
    ;
 
    return desc;
@@ -138,11 +144,79 @@ make_run_target(project& p,
    return raw_result;
 }
 
+bool test_passed(const basic_build_target& bt) {
+   auto filename = bt.location() / bt.name();
+   if (!exists(filename))
+      return false;
+
+   fs::ifstream f{filename};
+   if (!f)
+      return false;
+
+   std::string line;
+   if (!std::getline(f, line))
+      return false;
+
+   return line == "passed";
+}
+
+void generate_report(engine& e,
+                     const string& report_filename,
+                     const build_nodes_t& nodes) {
+   struct test_description {
+      std::string name_;
+      bool passed_;
+      const feature_set* properties_;
+   };
+
+   ofstream f(report_filename);
+   if (!f)
+      throw std::runtime_error("Failed to open '" + report_filename + "' for writting");
+
+   std::set<const build_node*> visited_nodes;
+   std::vector<const target_type*> types_to_collect = {
+      &e.get_type_registry().get(types::TESTING_COMPILE_SUCCESSFUL),
+      &e.get_type_registry().get(types::TESTING_COMPILE_FAIL),
+      &e.get_type_registry().get(types::TESTING_COMPILE_SUCCESSFUL),
+      &e.get_type_registry().get(types::TESTING_LINK_FAIL),
+      &e.get_type_registry().get(types::TESTING_LINK_SUCCESSFUL),
+      &e.get_type_registry().get(types::TESTING_RUN_PASSED)
+   };
+
+   build_node::sources_t testing_nodes;
+   collect_nodes(testing_nodes, visited_nodes, nodes, types_to_collect, true);
+
+   unordered_map<const project*, vector<test_description>> tests;
+   for (const auto& node : testing_nodes) {
+      const project& p = node.source_node_->products_owner().get_project();
+      const auto* bt = node.source_node_->find_product(types::TESTING_RUN_PASSED);
+      if (!bt)
+         continue;
+      test_description td = {bt->get_main_target()->name(), test_passed(*bt), &bt->get_main_target()->properties()};
+      tests[&p].push_back(std::move(td));
+   }
+
+   f << R"(<?xml version="1.0" encoding="UTF-8" standalone="no" ?>)";
+   f << "\n<projects>\n";
+
+   for (const auto& p : tests) {
+      f << "<project name = \"" << p.first->name() << "\">\n";
+         for (const auto& t : p.second) {
+            f << "<test name = \"" << t.name_ << "\" passed = \"" << std::boolalpha << t.passed_ << "\"/>\n";
+         }
+      f << "</project>\n";
+   }
+
+   f << "</projects>";
+}
+
 }
 
 int handle_test_cmd(const std::vector<std::string>& args,
                     const unsigned debug_level,
                     volatile bool& interrupt_flag) {
+   parse_options(args);
+
    auto engine = setup_engine(debug_level);
 
    if (debug_level > 0)
@@ -174,8 +248,6 @@ int handle_test_cmd(const std::vector<std::string>& args,
       if (debug_level > 0)
          cout << "Done" << endl;
    }
-
-   parse_options(args);
 
    auto build_request = resolve_build_request(*engine, test_options.test_request_, project_to_build);
    if (debug_level > 0)
@@ -250,6 +322,9 @@ int handle_test_cmd(const std::vector<std::string>& args,
    cout << "Done" << endl;
 
    build(*engine, *nodes, debug_level, interrupt_flag);
+
+   if (!test_options.report_filename_.empty())
+      generate_report(*engine, test_options.report_filename_, *nodes);
 
    return 0;
 }

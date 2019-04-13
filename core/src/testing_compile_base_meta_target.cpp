@@ -7,11 +7,6 @@
 
 namespace hammer {
 
-// defined in testing_link_base_meta_target
-const testing_suite_meta_target*
-find_suite(const project &p,
-           const instantiation_context& ctx);
-
 testing_compile_base_meta_target::testing_compile_base_meta_target(hammer::project* p,
                                                                    const std::string& name,
                                                                    const requirements_decl& req,
@@ -28,10 +23,8 @@ void testing_compile_base_meta_target::instantiate_impl(instantiation_context& c
                                                         feature_set* usage_requirements) const
 {
    auto* suite = find_suite(get_project(), ctx);
-   if (!suite) {
-      typed_meta_target::instantiate_impl(ctx, owner, build_request, result, usage_requirements);
-      return;
-   }
+   if (!suite)
+      return typed_meta_target::instantiate_impl(ctx, owner, build_request, result, usage_requirements);
 
    // we need to add <use> feature for sources found in testing.suite common-sources
    feature_set& new_build_request = *build_request.clone();
@@ -40,6 +33,9 @@ void testing_compile_base_meta_target::instantiate_impl(instantiation_context& c
       source->set_dependency_data(s, &get_project());
       new_build_request.join(source);
    }
+
+   if (!suite->common_requirements().empty())
+      add_common_requirements(new_build_request, suite->common_requirements());
 
    typed_meta_target::instantiate_impl(ctx, owner, new_build_request, result, usage_requirements);
 }

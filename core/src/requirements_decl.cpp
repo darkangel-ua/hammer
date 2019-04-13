@@ -147,6 +147,11 @@ void requirements_decl::insert(const requirements_decl& v)
       impl_->requirements_.insert(impl_->requirements_.end(), i->clone());
 }
 
+bool requirements_decl::empty() const
+{
+   return impl_->requirements_.empty();
+}
+
 requirement_condition::requirement_condition(std::unique_ptr<requirement_condition_op_base> cond,
                                              const result_t& result,
                                              const bool public_)

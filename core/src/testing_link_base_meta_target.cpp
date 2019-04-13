@@ -1,9 +1,7 @@
-#include <hammer/core/main_target.h>
-#include <hammer/core/project.h>
-#include <hammer/core/instantiation_context.h>
-#include <hammer/core/testing_suite_meta_target.h>
-#include <hammer/core/testing_run_meta_target.h>
+#include <hammer/core/engine.h>
+#include <hammer/core/feature_set.h>
 #include <hammer/core/testing_link_base_meta_target.h>
+#include <hammer/core/testing_suite_meta_target.h>
 
 namespace hammer {
 
@@ -16,29 +14,23 @@ testing_link_base_meta_target::testing_link_base_meta_target(hammer::project* p,
 
 }
 
-const testing_suite_meta_target*
-find_suite(const project &p,
-           const instantiation_context& ctx) {
-   if (ctx.get_stack().size() <= 1)
-      return nullptr;
+void testing_link_base_meta_target::instantiate_impl(instantiation_context& ctx,
+                      const main_target* owner,
+                      const feature_set& build_request,
+                      std::vector<basic_target*>* result,
+                      feature_set* usage_requirements) const
+{
+   auto* suite = find_suite(get_project(), ctx);
 
-   auto i = ctx.get_stack().rbegin();
-   auto mt1 = *(++i);
+   if (!suite || suite->common_requirements().empty())
+      return typed_meta_target::instantiate_impl(ctx, owner, build_request, result, usage_requirements);
 
-   if (mt1->get_project() == p && dynamic_cast<const testing_suite_meta_target*>(mt1))
-      return static_cast<const testing_suite_meta_target*>(mt1);
+   // FIXME: we are ignoring usage requirements, so we either need to not ignor them or print error message that
+   // prevents users to include @ in them
+   feature_set* new_build_request = build_request.clone();
+   add_common_requirements(*new_build_request, suite->common_requirements());
 
-   if (ctx.get_stack().size() >=3) {
-      auto mt2 = *(++i);
-      if (mt1->get_project() == p && mt2->get_project() == p &&
-          dynamic_cast<const testing_run_meta_target*>(mt1) &&
-          dynamic_cast<const testing_suite_meta_target*>(mt2))
-      {
-         return static_cast<const testing_suite_meta_target*>(mt2);
-      }
-   }
-
-   return nullptr;
+   return typed_meta_target::instantiate_impl(ctx, owner, *new_build_request, result, usage_requirements);
 }
 
 sources_decl

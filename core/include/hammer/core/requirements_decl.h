@@ -162,6 +162,7 @@ class requirements_decl {
       void setup_path_data(const project* p);
       void insert_infront(const requirements_decl& v);
       void insert(const requirements_decl& v); // insert in the end
+      bool empty() const;
       virtual ~requirements_decl();
 
    private:

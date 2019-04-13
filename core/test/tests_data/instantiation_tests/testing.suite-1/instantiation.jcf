@@ -1,0 +1,9 @@
+test [ type = TESTING_SUITE; ] {  
+   test_run [ type = TESTING_RUN_PASSED; ] {
+       test_run.run [ type = EXE; features = <link>static; ] {}
+   }
+   test_compile [ type = TESTING_COMPILE_SUCCESSFUL; features = <link>static; ] {}
+   test_compile_fail [ type = TESTING_COMPILE_FAIL; features = <link>static; ] {}
+   test_link [ type = TESTING_LINK_SUCCESSFUL; features = <link>static; ] {}
+   test_link_fail [ type = TESTING_LINK_FAIL; features = <link>static; ] {}
+}

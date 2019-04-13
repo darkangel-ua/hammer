@@ -1,0 +1,10 @@
+testing.suite test 
+    : sources =
+       [ testing.run test_run.cpp ]
+       [ testing.compile test_compile.cpp ]
+       [ testing.compile-fail test_compile_fail.cpp ]
+       [ testing.link test_link.cpp ]
+       [ testing.link-fail test_link_fail.cpp ]
+    : common-requirements = 
+       <link>static 
+    ;

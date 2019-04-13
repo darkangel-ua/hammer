@@ -668,12 +668,14 @@ static
 void testing_suite_rule(target_invocation_context& ctx,
                         const parscore::identifier& name,
                         const sources_decl& sources,
-                        const sources_decl* common_sources)
+                        const sources_decl* common_sources,
+                        const requirements_decl* common_requirements)
 {
    auto mt = make_unique<testing_suite_meta_target>(ctx.current_project_,
                                                     name.to_string(),
                                                     sources,
-                                                    common_sources ? *common_sources : sources_decl{});
+                                                    common_sources ? *common_sources : sources_decl{},
+                                                    common_requirements ? *common_requirements : requirements_decl{});
 
    mt->set_local(ctx.local_);
    mt->set_explicit(ctx.explicit_);
@@ -1112,7 +1114,7 @@ void install_builtin_rules(rule_manager& rm)
    rm.add_target("searched-static-lib", searched_static_lib_rule, {"name", "sources", "libname", "requirements", "usage-requirements"});
    rm.add_target("copy", copy_rule, {"name", "sources", "destination", "types", "recursive"});
    rm.add_target("obj", obj_rule, {"name", "sources", "requirements", "default-build", "usage-requirements"});
-   rm.add_target("testing.suite", testing_suite_rule, {"name", "sources", "common-sources"});
+   rm.add_target("testing.suite", testing_suite_rule, {"name", "sources", "common-sources", "common-requirements"});
    rm.add_target("testing.run", testing_run_rule, {"sources", "requirements", "args", "name"});
    rm.add_rule("testing.run-many", testing_run_many_rule, {"sources", "common-sources", "requirements", "args", "name-template"});
    rm.add_target("testing.compile-fail", testing_compile_fail_rule, {"sources", "requirements", "name"});

@@ -1,0 +1,4 @@
+exe test : a main.cpp ;
+
+local lib a : good_a.cpp ;
+local lib a : bad_a.cpp : <build>no ;

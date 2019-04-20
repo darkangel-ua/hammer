@@ -1,0 +1,6 @@
+test {
+   a { 
+       good_a.cpp {} 
+   }
+   main.cpp {}
+}

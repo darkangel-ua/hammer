@@ -38,6 +38,9 @@ feature debug-symbols : on off ;
 feature pch : off create use : generated ;
 feature mangling : full version none ;
 
+# targets with this feature will not participate in alternatives selection
+feature build : no ;
+
 feature warnings :
   on         # enable default/"reasonable" warning level for the tool
   all        # enable all possible warnings issued by the tool

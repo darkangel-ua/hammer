@@ -344,6 +344,10 @@ project::try_select_best_alternative(const std::string& target_name,
 
       feature_set* fs = engine_.feature_registry().make_set();
       first->second->requirements().eval(build_request, fs);
+
+      if (fs->find("build", "no"))
+         continue;
+
       int rank = compute_alternative_rank(*fs, build_request);
       if (rank != -1)
          selected_targets.push_back(selected_target(first->second.get(), fs, rank));

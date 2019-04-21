@@ -12,6 +12,9 @@ requirements_test (<define>FOO && <define>TTT -> <define>BAR);
 requirements_test (<define>TEST || <define>FOO && <define>TTT -> <define>BAR);
 requirements_test (<define>FOO && <define>TTT || <define>TEST -> <define>BAR);
 
+requirements_test (<define>FOO1 || <define>TTT || <define>TEST -> <define>BAR);
+requirements_test (<define>FOO1 && <define>TTT && <define>TEST -> <define>BAR);
+
 # bad 'public' usage
 requirements_test @(<define>FOO -> @<define>BAR); #error: Argument 'requirements': Public feature is not allowed here
 requirements_test @(<define>FOO -> <define>(@BAR)); #error: Argument 'requirements': Public target is not allowed here

@@ -28,8 +28,6 @@ TargetRef;
 TargetRefSpec;
 TargetRefBuildRequest;
 Wildcard;
-LogicalAnd;
-LogicalOr;
 }
 
 hamfile 
@@ -145,14 +143,10 @@ condition_condition
 	: logical_or WS* '->' WS* -> logical_or
 	;
 logical_or
-options { backtrack = true; }
-	: logical_and WS* '||' WS* logical_and -> ^(LogicalOr logical_and logical_and)
-	| logical_and
+	: logical_and (possible_spaces! '||'^ possible_spaces! logical_and)*
 	;	
 logical_and 
-options { backtrack = true; }
-	: feature WS* '&&' WS* logical_and -> ^(LogicalAnd feature logical_and)
-	| feature
+	: feature (possible_spaces! '&&'^ possible_spaces! feature)*
 	;
 condition_result 
 	: (condition_result_elem WS+ condition_result_elem)=> condition_result_elem (WS+ condition_result_elem)+ -> ^(List condition_result_elem+)
@@ -244,6 +238,10 @@ QuestionMark : '?';
 Asterix : '*';
 DoubleAsterix : '**';
 ProjectLocalRefTag: '^';
+LogicalOr : '||';
+LogicalAnd : '&&';
+
+possible_spaces : WS* ;
 
 Id : ('a'..'z' | 'A'..'Z' | '0'..'9' | '.' | '-' | '_' | '+')+
    | STRING | STRING_1

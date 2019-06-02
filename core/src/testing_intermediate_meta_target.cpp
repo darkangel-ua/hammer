@@ -13,6 +13,15 @@ testing_intermediate_meta_target::testing_intermediate_meta_target(hammer::proje
 {
 }
 
+main_target*
+testing_intermediate_meta_target::construct_main_target(const main_target* owner,
+                                                        const feature_set* properties) const
+{
+   // we don't need to construct testing_main_target as testing_base_meta_target will do
+   // we just need regular main_target
+   return typed_meta_target::construct_main_target(owner, properties);
+}
+
 testing_intermediate_meta_target::~testing_intermediate_meta_target() = default;
 
 }

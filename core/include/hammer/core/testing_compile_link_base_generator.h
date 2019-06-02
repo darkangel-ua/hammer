@@ -6,10 +6,10 @@ namespace hammer {
 class testing_compile_link_base_generator : public generator {
    public:
       testing_compile_link_base_generator(engine& e,
-                                          const std::string& name,
-                                          std::unique_ptr<generator> compile_generator,
-                                          const generator::producable_types_t& products,
-                                          const type_tag& virtual_target_type);
+                                          std::string name,
+                                          std::unique_ptr<generator> wrapped_generator,
+                                          const type_tag& main_product_type,
+                                          const bool failing_generator);
       build_nodes_t
       construct(const target_type& type_to_construct,
                 const feature_set& props,
@@ -26,8 +26,8 @@ class testing_compile_link_base_generator : public generator {
                     const produced_type& type,
                     const feature_set* f) const override;
    private:
-      std::unique_ptr<generator> compile_generator_;
-      const target_type& virtual_target_type_;
+      std::unique_ptr<generator> wrapped_generator_;
+      const bool failing_generator_;
 };
 
 }

@@ -180,7 +180,7 @@ void generate_report(engine& e,
       &e.get_type_registry().get(types::TESTING_COMPILE_SUCCESSFUL),
       &e.get_type_registry().get(types::TESTING_LINK_FAIL),
       &e.get_type_registry().get(types::TESTING_LINK_SUCCESSFUL),
-      &e.get_type_registry().get(types::TESTING_RUN_PASSED)
+      &e.get_type_registry().get(types::TESTING_RUN)
    };
 
    build_node::sources_t testing_nodes;
@@ -189,7 +189,7 @@ void generate_report(engine& e,
    unordered_map<const project*, vector<test_description>> tests;
    for (const auto& node : testing_nodes) {
       const project& p = node.source_node_->products_owner().get_project();
-      const auto* bt = node.source_node_->find_product(types::TESTING_RUN_PASSED);
+      const auto* bt = node.source_node_->find_product(types::TESTING_RUN);
       if (!bt)
          continue;
       test_description td = {bt->get_main_target()->name(), test_passed(*bt), &bt->get_main_target()->properties()};

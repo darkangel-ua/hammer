@@ -42,7 +42,8 @@ class generator_registry {
       find_viable_generators(const target_type& t,
                              bool allow_composite,
                              const feature_set& build_properties,
-                             bool full_match) const;
+                             bool full_match,
+                             const generator* excluded) const;
 };
 
 }

@@ -11,7 +11,7 @@ testing_compile_base_meta_target::testing_compile_base_meta_target(hammer::proje
                                                                    const std::string& name,
                                                                    const requirements_decl& req,
                                                                    const target_type& t)
-   : typed_meta_target(p, name, req, {}, t)
+   : testing_base_meta_target{p, name, req, t}
 {
 
 }

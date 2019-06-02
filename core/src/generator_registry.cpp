@@ -11,7 +11,7 @@
 using namespace std;
 using namespace boost;
 
-namespace hammer{
+namespace hammer {
 
 void generator_registry::insert(std::unique_ptr<generator> g)
 {
@@ -76,47 +76,46 @@ generator_registry::find_viable_generators(const target_type& t,
                                            bool allow_composite,
                                            const feature_set& build_properties) const
 {
-   viable_generators_t result = find_viable_generators(t, allow_composite, build_properties, /*full_match=*/true);
+   viable_generators_t result = find_viable_generators(t, allow_composite, build_properties, /*full_match=*/true, nullptr);
    if (!result.empty())
       return result;
    else
-      return find_viable_generators(t, allow_composite, build_properties, /*full_match=*/false);
+      return find_viable_generators(t, allow_composite, build_properties, /*full_match=*/false, nullptr);
 }
 
 generator_registry::viable_generators_t 
 generator_registry::find_viable_generators(const target_type& t, 
                                            bool allow_composite,
                                            const feature_set& build_properties,
-                                           bool full_match) const
+                                           bool full_match,
+                                           const generator* excluded) const
 {
    viable_generators_t result;
    int rank = 0; // rank show as the weight of generator (the more rank the more generator suitable for generation this type of targets)
-   for(generators_t::const_iterator i = generators_.begin(), last = generators_.end(); i != last; ++i)
-   {
-      if ((i->second->is_composite() && !allow_composite) || 
-          (!i->second->is_composite() && allow_composite))
+   for (auto& ng : generators_) {
+      const generator& g = *ng.second;
+      if ((g.is_composite() && !allow_composite) ||
+          (!g.is_composite() && allow_composite) ||
+          &g == excluded)
       {
          continue;
       }
 
-      for(generator::producable_types_t::const_iterator j = i->second->producable_types().begin(), j_last = i->second->producable_types().end(); j != j_last; ++j)
-      {
+      for (generator::producable_types_t::const_iterator j = g.producable_types().begin(), j_last = g.producable_types().end(); j != j_last; ++j) {
          if ((!full_match && j->type_->equal_or_derived_from(t)) ||
              (full_match && *j->type_ == t))
          {
-            int generator_rank = i->second->constraints() ? compute_rank(build_properties, *i->second->constraints())
-                                                                  : 0;
+            int generator_rank = g.constraints() ? compute_rank(build_properties, *g.constraints()) : 0;
             if (generator_rank == -1) // build properties not satisfied generator constraints
                continue;
 
-            if (generator_rank > rank)
-            {
+            if (generator_rank > rank) {
                rank = generator_rank;
                result.clear();
             }
 
             if (rank == generator_rank)
-               result.push_back(make_pair(i->second.get(), j->type_));
+               result.push_back(make_pair(&g, j->type_));
          }
       }
    }
@@ -136,7 +135,7 @@ generator_registry::transform(const generator& target_generator,
 {
    for(generator::consumable_types_t::const_iterator i = current_generator.consumable_types().begin(), last = current_generator.consumable_types().end(); i != last; ++i)
    {
-      viable_generators_t vg(find_viable_generators(*i->type_, current_generator.include_composite_generators(), props, /*full_match=*/true));
+      viable_generators_t vg = find_viable_generators(*i->type_, current_generator.include_composite_generators(), props, /*full_match=*/true, &current_generator);
       if (vg.empty())
          continue;
 
@@ -163,7 +162,7 @@ generator_registry::transform(const generator& target_generator,
       }
 
       // !!!!! This is copy paste from above!!!!
-      vg = find_viable_generators(*i->type_, current_generator.include_composite_generators(), props, /*full_match=*/false);
+      vg = find_viable_generators(*i->type_, current_generator.include_composite_generators(), props, /*full_match=*/false, &current_generator);
       if (vg.empty())
          continue;
 
@@ -228,13 +227,14 @@ bool generator_registry::transform_to_consumable(const generator& target_generat
 
 namespace
 {
-   struct generator_data
-   {
-      generator_data(const generator* g) : generator_(g), all_consumed_(true) {}
+   struct generator_data {
+      generator_data(const generator* g)
+         : generator_(g)
+      {}
 
       const generator* generator_;
       build_nodes_t transformed_sources_;
-      bool all_consumed_;
+      bool all_consumed_ = true;
    };
 }
 

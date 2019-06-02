@@ -1,9 +1,9 @@
 #pragma once
-#include <hammer/core/typed_meta_target.h>
+#include <hammer/core/testing_base_meta_target.h>
 
 namespace hammer {
 
-class testing_compile_base_meta_target : public typed_meta_target {
+class testing_compile_base_meta_target : public testing_base_meta_target {
    public:
       testing_compile_base_meta_target(hammer::project* p,
                                        const std::string& name,

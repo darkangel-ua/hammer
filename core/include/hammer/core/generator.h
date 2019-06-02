@@ -62,12 +62,13 @@ class generator {
 
       bool is_consumable(const target_type& t) const;
       bool is_composite() const { return composite_; }
+      // allows generator algorithm to use composite generators in transformation to suitable sources for this generator
+      // usually composite generator is used only to generate main_target build nodes
       bool include_composite_generators() const { return include_composite_generators_; }
       void include_composite_generators(bool v) { include_composite_generators_ = v; }
 
       const build_action_ptr& action() const { return action_; }
 
-   protected:
       /// composite_target_name will be presented only for composite targets
       virtual
       basic_build_target*
@@ -76,6 +77,8 @@ class generator {
                     const std::string* composite_target_name,
                     const produced_type& type,
                     const feature_set* f) const;
+
+   protected:
       static
       std::pair<std::string /*name*/, std::string /*hash*/>
       make_product_name_and_hash(const build_node::sources_t& sources,

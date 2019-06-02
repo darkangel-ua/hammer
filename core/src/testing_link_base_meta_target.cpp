@@ -9,7 +9,7 @@ testing_link_base_meta_target::testing_link_base_meta_target(hammer::project* p,
                                                              const std::string& name,
                                                              const requirements_decl& req,
                                                              const target_type& t)
-   : typed_meta_target(p, name, req, {}, t)
+   : testing_base_meta_target{p, name, req, t}
 {
 
 }

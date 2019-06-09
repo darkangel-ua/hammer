@@ -117,122 +117,122 @@ msvc_project::msvc_project(engine& e,
 {
    output_dir_.normalize();
    // configuration options
-   boost::shared_ptr<fs_argument_writer> charset(new fs_argument_writer("charset", e.feature_registry()));
+   std::shared_ptr<fs_argument_writer> charset(new fs_argument_writer("charset", e.feature_registry()));
    charset->add("<character-set>unicode", "1").
             add("<character-set>multi-byte", "2").
             add("<character-set>unknown", "0");
    configuration_options_ += charset;
 
    // compiller options
-   boost::shared_ptr<fs_argument_writer> optimization(new fs_argument_writer("optimization", e.feature_registry()));
+   std::shared_ptr<fs_argument_writer> optimization(new fs_argument_writer("optimization", e.feature_registry()));
    optimization->add("<optimization>off", "0").
                  add("<optimization>speed", "2").
                  add("<optimization>space", "1");
 
    compiller_options_ += optimization;
 
-   boost::shared_ptr<fs_argument_writer> inlining(new fs_argument_writer("inlining", e.feature_registry()));
+   std::shared_ptr<fs_argument_writer> inlining(new fs_argument_writer("inlining", e.feature_registry()));
    inlining->add("<inlining>off", "0").
              add("<inlining>on", "1").
              add("<inlining>full", "2");
    compiller_options_ += inlining;
 
-   boost::shared_ptr<free_feature_arg_writer> includes(new free_feature_arg_writer("includes", e.feature_registry(), "include", string(), string(), ";"));
+   std::shared_ptr<free_feature_arg_writer> includes(new free_feature_arg_writer("includes", e.feature_registry(), "include", string(), string(), ";"));
    compiller_options_ += includes;
 
-   boost::shared_ptr<fs_argument_writer> debug_format(new fs_argument_writer("debug_format", e.feature_registry()));
+   std::shared_ptr<fs_argument_writer> debug_format(new fs_argument_writer("debug_format", e.feature_registry()));
    debug_format->add("<debug-symbols>on/<profiling>off", "4").
                  add("<debug-symbols>on/<profiling>on",  "3").
                  add("<debug-symbols>off",  "0");
    compiller_options_ += debug_format;
 
-   boost::shared_ptr<fs_argument_writer> warning_level(new fs_argument_writer("warning_level", e.feature_registry()));
+   std::shared_ptr<fs_argument_writer> warning_level(new fs_argument_writer("warning_level", e.feature_registry()));
    warning_level->add("<warnings>on", "3").
                   add("<warnings>off", "0").
                   add("<warnings>all", "4");
    compiller_options_ += warning_level;
 
-   boost::shared_ptr<free_feature_arg_writer> defines(new free_feature_arg_writer("defines", e.feature_registry(), "define", string(), string(), ";"));
+   std::shared_ptr<free_feature_arg_writer> defines(new free_feature_arg_writer("defines", e.feature_registry(), "define", string(), string(), ";"));
    compiller_options_ += defines;
 
-   boost::shared_ptr<fs_argument_writer> exception_handling(new fs_argument_writer("exception_handling", e.feature_registry()));
+   std::shared_ptr<fs_argument_writer> exception_handling(new fs_argument_writer("exception_handling", e.feature_registry()));
    exception_handling->add("<exception-handling>off", "0").
                        add("<exception-handling>on/<asynch-exceptions>off", "1").
                        add("<asynch-exceptions>on", "2");
    compiller_options_ += exception_handling;
 
-   boost::shared_ptr<fs_argument_writer> runtime(new fs_argument_writer("runtime", e.feature_registry()));
+   std::shared_ptr<fs_argument_writer> runtime(new fs_argument_writer("runtime", e.feature_registry()));
    runtime->add("<runtime-link>static/<runtime-debugging>off", "0").
             add("<runtime-link>static/<runtime-debugging>on", "1").
             add("<runtime-link>shared/<runtime-debugging>off", "2").
             add("<runtime-link>shared/<runtime-debugging>on", "3");
    compiller_options_ += runtime;
 
-   boost::shared_ptr<fs_argument_writer> rtti(new fs_argument_writer("rtti", e.feature_registry()));
+   std::shared_ptr<fs_argument_writer> rtti(new fs_argument_writer("rtti", e.feature_registry()));
    rtti->add("<rtti>on", "true").
          add("<rtti>off", "false");
    compiller_options_ += rtti;
 
-   boost::shared_ptr<free_feature_arg_writer> cxxflags(new free_feature_arg_writer("cxxflags", e.feature_registry(), "cxxflags"));
+   std::shared_ptr<free_feature_arg_writer> cxxflags(new free_feature_arg_writer("cxxflags", e.feature_registry(), "cxxflags"));
    compiller_options_ += cxxflags;
 
-   boost::shared_ptr<free_feature_arg_writer> cflags(new free_feature_arg_writer("cflags", e.feature_registry(), "cflags"));
+   std::shared_ptr<free_feature_arg_writer> cflags(new free_feature_arg_writer("cflags", e.feature_registry(), "cflags"));
    compiller_options_ += cflags;
 
-   boost::shared_ptr<pch_argument_writer> pch_header(new pch_argument_writer("pch_header"));
+   std::shared_ptr<pch_argument_writer> pch_header(new pch_argument_writer("pch_header"));
    compiller_options_ += pch_header;
 
-   boost::shared_ptr<fs_argument_writer> pch_type(new fs_argument_writer("pch_type", e.feature_registry()));
+   std::shared_ptr<fs_argument_writer> pch_type(new fs_argument_writer("pch_type", e.feature_registry()));
    pch_type->add("<pch>use", "2").
              add("<pch>create", "1").
              add("<pch>off", "0");
    compiller_options_ += pch_type;
 
    // linker options
-   boost::shared_ptr<source_argument_writer> additional_libraries(
+   std::shared_ptr<source_argument_writer> additional_libraries(
        new source_argument_writer("additional_libraries",
                                   e.get_type_registry().get(types::PREBUILT_STATIC_LIB),
                                   true,
                                   source_argument_writer::RELATIVE_TO_WORKING_DIR));
    linker_options_ += additional_libraries;
 
-   boost::shared_ptr<source_argument_writer> additional_searched_libraries(
+   std::shared_ptr<source_argument_writer> additional_searched_libraries(
        new source_argument_writer("additional_searched_libraries",
                                   e.get_type_registry().get(types::SEARCHED_STATIC_LIB),
                                   true,
                                   source_argument_writer::WITHOUT_PATH));
    linker_options_ += additional_searched_libraries;
 
-   boost::shared_ptr<free_feature_arg_writer> additional_libraries_dirs(
+   std::shared_ptr<free_feature_arg_writer> additional_libraries_dirs(
        new free_feature_arg_writer("additional_libraries_dirs",
                                    e.feature_registry(),
                                    "search",
                                    string(), string(), ";"));
    linker_options_ += additional_libraries_dirs;
 
-   boost::shared_ptr<fs_argument_writer> link_debug_info(new fs_argument_writer("debug_info", engine_->feature_registry()));
+   std::shared_ptr<fs_argument_writer> link_debug_info(new fs_argument_writer("debug_info", engine_->feature_registry()));
    link_debug_info->add("<debug-symbols>on", "true").
                     add("<debug-symbols>off", "false");
    linker_options_ += link_debug_info;
 
-   boost::shared_ptr<fs_argument_writer> link_subsystem(new fs_argument_writer("subsystem", engine_->feature_registry()));
+   std::shared_ptr<fs_argument_writer> link_subsystem(new fs_argument_writer("subsystem", engine_->feature_registry()));
    link_subsystem->add("<user-interface>console", "1").
                    add("<user-interface>gui", "2");
    linker_options_ += link_subsystem;
 
-   boost::shared_ptr<fs_argument_writer> incremental_linking(new fs_argument_writer("incremental_linking", engine_->feature_registry()));
+   std::shared_ptr<fs_argument_writer> incremental_linking(new fs_argument_writer("incremental_linking", engine_->feature_registry()));
    incremental_linking->add("<debug-symbols>on", "2").
                         add("<debug-symbols>off", "1");
    linker_options_ += incremental_linking;
 
    // Post Build Step section
-   boost::shared_ptr<free_feature_arg_writer> path_args(
+   std::shared_ptr<free_feature_arg_writer> path_args(
        new free_feature_arg_writer("path_args",
                                    e.feature_registry(),
                                    "testing.input-file"));
    post_build_step_ += path_args;
 
-   boost::shared_ptr<free_feature_arg_writer> non_path_args(
+   std::shared_ptr<free_feature_arg_writer> non_path_args(
        new free_feature_arg_writer("non_path_args",
                                    e.feature_registry(),
                                    "testing.argument"));

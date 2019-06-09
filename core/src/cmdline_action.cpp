@@ -19,7 +19,8 @@ cmdline_action& cmdline_action::operator +=(const cmdline_builder& b)
    return *this;
 }
 
-bool cmdline_action::execute_impl(const build_node& node, const build_environment& environment) const
+bool cmdline_action::execute_impl(const build_node& node,
+                                  const build_environment& environment) const
 {
    if (node.products_.empty())
       throw std::runtime_error("[cmdline_action] Can't run command for node without products.");
@@ -56,7 +57,9 @@ bool cmdline_action::run_shell_commands(const std::vector<std::string>& commands
                                          node.products_.front()->get_main_target()->location());
 }
 
-std::string cmdline_action::target_tag(const build_node& node, const build_environment& environment) const
+std::string
+cmdline_action::target_tag(const build_node& node,
+                           const build_environment& environment) const
 {
    std::ostringstream s;
    target_writer_->write(s, node, environment);

@@ -221,7 +221,7 @@ setup_engine(const unsigned debug_level,
    if (debug_level > 0)
       cout << "...Installing scanners... " << flush;
 
-   boost::shared_ptr<scanner> c_scaner(new hammer::c_scanner);
+   auto c_scaner = std::make_shared<hammer::c_scanner>();
    engine.scanner_manager().register_scanner(engine.get_type_registry().get(types::CPP), c_scaner);
    engine.scanner_manager().register_scanner(engine.get_type_registry().get(types::C), c_scaner);
    engine.scanner_manager().register_scanner(engine.get_type_registry().get(types::RC), c_scaner);

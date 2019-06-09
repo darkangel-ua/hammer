@@ -9,25 +9,28 @@ class cmdline_action : public build_action {
    public:
       template<typename T>
       cmdline_action(const std::string& name,
-                     const boost::shared_ptr<T>& target_writer)
+                     const std::shared_ptr<T>& target_writer)
          : build_action(name),
-           target_writer_(boost::static_pointer_cast<argument_writer>(target_writer))
+           target_writer_(std::static_pointer_cast<argument_writer>(target_writer))
       {
       }
 
       template<typename T>
       cmdline_action(const std::string& name,
-                     boost::shared_ptr<T>& target_writer,
+                     std::shared_ptr<T>& target_writer,
                      const cmdline_builder& rsp_builder)
       : build_action(name),
-        target_writer_(boost::static_pointer_cast<argument_writer>(target_writer)),
+        target_writer_(std::static_pointer_cast<argument_writer>(target_writer)),
         rsp_builder_(new cmdline_builder(rsp_builder))
       {
       }
 
-      std::string target_tag(const build_node& node,
-                             const build_environment& environment) const override;
-      std::vector<const feature*> valuable_features() const override;
+      std::string
+      target_tag(const build_node& node,
+                 const build_environment& environment) const override;
+
+      std::vector<const feature*>
+      valuable_features() const override;
 
       cmdline_action& operator +=(const cmdline_builder& b);
 
@@ -43,7 +46,7 @@ class cmdline_action : public build_action {
       typedef std::vector<cmdline_builder> builders_t;
 
       builders_t builders_;
-      boost::shared_ptr<argument_writer> target_writer_;
+      std::shared_ptr<argument_writer> target_writer_;
       std::unique_ptr<cmdline_builder> rsp_builder_;
 };
 

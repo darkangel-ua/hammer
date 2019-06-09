@@ -15,9 +15,9 @@ cmdline_builder::cmdline_builder(const std::string& cmd) : cmd_(cmd)
 {
 }
 
-void cmdline_builder::add(const boost::shared_ptr<argument_writer>& v)
+void cmdline_builder::add(std::shared_ptr<argument_writer> v)
 {
-   if (!writers_.insert(make_pair(v->name(), v)).second)
+   if (!writers_.insert({v->name(), v}).second)
       throw std::runtime_error("[cmdline_builder] Argument writer '" + v->name() + "' already registered");
 }
 

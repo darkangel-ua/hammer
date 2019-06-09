@@ -390,8 +390,8 @@ void add_libs_and_generators(engine& e,
 {
    // QT_UI -> QT_UICED_H
    {
-      shared_ptr<source_argument_writer> ui_source(new source_argument_writer("ui_source", e.get_type_registry().get(qt_ui)));
-      shared_ptr<product_argument_writer> uic_product(new product_argument_writer("uic_product", e.get_type_registry().get(types::H)));
+      std::shared_ptr<source_argument_writer> ui_source(new source_argument_writer("ui_source", e.get_type_registry().get(qt_ui)));
+      std::shared_ptr<product_argument_writer> uic_product(new product_argument_writer("uic_product", e.get_type_registry().get(types::H)));
       cmdline_builder uic_cmd((*toolset_home / ("bin/uic" + bin_tag)).string<string>() + " -o \"$(uic_product)\" $(ui_source)");
 
       uic_cmd += ui_source;
@@ -411,8 +411,8 @@ void add_libs_and_generators(engine& e,
 
    // QT_RC -> QT_RCED_CPP
    {
-      shared_ptr<source_argument_writer> rcc_source(new source_argument_writer("rcc_source", e.get_type_registry().get(qt_rc)));
-      shared_ptr<product_argument_writer> rcc_product(new product_argument_writer("rcc_product", e.get_type_registry().get(qt_rced_cpp)));
+      std::shared_ptr<source_argument_writer> rcc_source(new source_argument_writer("rcc_source", e.get_type_registry().get(qt_rc)));
+      std::shared_ptr<product_argument_writer> rcc_product(new product_argument_writer("rcc_product", e.get_type_registry().get(qt_rced_cpp)));
       cmdline_builder rcc_cmd((*toolset_home / ("bin/rcc" + bin_tag)).string<string>() + " -o \"$(rcc_product)\" $(rcc_source)");
 
       rcc_cmd += rcc_source;
@@ -431,8 +431,8 @@ void add_libs_and_generators(engine& e,
 
    // QT_MOCABLE -> CPP
    {
-      shared_ptr<source_argument_writer> mocable_source(new source_argument_writer("mocable_source", e.get_type_registry().get(qt_mocable)));
-      shared_ptr<product_argument_writer> cpp_product(new product_argument_writer("cpp_product", e.get_type_registry().get(types::CPP)));
+      std::shared_ptr<source_argument_writer> mocable_source(new source_argument_writer("mocable_source", e.get_type_registry().get(qt_mocable)));
+      std::shared_ptr<product_argument_writer> cpp_product(new product_argument_writer("cpp_product", e.get_type_registry().get(types::CPP)));
       cmdline_builder moc_cmd((*toolset_home / ("bin/moc" + bin_tag)).string<string>() + " -o \"$(cpp_product)\" $(mocable_source)");
 
       moc_cmd += mocable_source;

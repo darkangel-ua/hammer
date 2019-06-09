@@ -282,7 +282,7 @@ engine::try_load_project(location_t fs_project_path)
 project&
 engine::insert(std::unique_ptr<project> p)
 {
-   projects_.insert({p->location(), boost::shared_ptr<project>(p.get())});
+   projects_.insert({p->location(), std::shared_ptr<project>{p.get()}});
    return *p.release();
 }
 
@@ -304,7 +304,7 @@ void engine::add_alias(const location_t& alias_path,
    global_project_->add_alias(alias_path.relative_path(), full_project_path, props, match_strategy);
 }
 
-void engine::output_location_strategy(boost::shared_ptr<hammer::output_location_strategy>& strategy)
+void engine::output_location_strategy(std::shared_ptr<hammer::output_location_strategy>& strategy)
 {
    if (!strategy)
       output_location_strategy_.reset(new default_output_location_strategy);

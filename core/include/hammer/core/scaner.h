@@ -22,7 +22,7 @@ class scanner {
               scanner_context& context) const = 0;
 
       virtual
-      boost::shared_ptr<scanner_context>
+      std::shared_ptr<scanner_context>
       create_context(const build_environment& env) const = 0;
 
       const std::string& name() const { return name_; }

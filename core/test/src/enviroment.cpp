@@ -49,7 +49,7 @@ complete_build_tests_environment::complete_build_tests_environment()
    hammer::types::register_standart_types(engine_.get_type_registry(), engine_.feature_registry());
    install_toolsets();
 
-   boost::shared_ptr<scanner> c_scaner(new hammer::c_scanner);
+   auto c_scaner = std::make_shared<hammer::c_scanner>();
    engine_.scanner_manager().register_scanner(engine_.get_type_registry().get(types::CPP), c_scaner);
    engine_.scanner_manager().register_scanner(engine_.get_type_registry().get(types::C), c_scaner);
    engine_.scanner_manager().register_scanner(engine_.get_type_registry().get(types::RC), c_scaner);

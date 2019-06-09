@@ -10,7 +10,7 @@
 using namespace boost::date_time;
 using namespace boost::posix_time;
 
-namespace hammer{
+namespace hammer {
 
 std::size_t actuality_checker::check(nodes_t& nodes)
 {
@@ -22,15 +22,15 @@ std::size_t actuality_checker::check(nodes_t& nodes)
    return result;
 }
 
-scanner_context& actuality_checker::get_scanner_context(const target_type& t, const scanner& s)
+scanner_context&
+actuality_checker::get_scanner_context(const target_type& t,
+                                       const scanner& s)
 {
-   scanner_contexts_t::const_iterator i = scanner_contexts_.find(&t);
-   if (i == scanner_contexts_.end())
-   {
-      scanner_contexts_.insert(std::make_pair(&t, boost::shared_ptr<scanner_context>(s.create_context(env_))));
+   auto i = scanner_contexts_.find(&t);
+   if (i == scanner_contexts_.end()){
+      scanner_contexts_.insert({&t, s.create_context(env_)});
       return get_scanner_context(t, s);
-   }
-   else
+   } else
       return *i->second;
 }
 

@@ -13,7 +13,7 @@
 #include "buffered_output_environment.h"
 #include "build_queue.h"
 
-using namespace boost;
+using boost::asio::io_service;
 using namespace hammer::details;
 using std::string;
 using std::stringstream;
@@ -21,17 +21,17 @@ using std::stringstream;
 namespace hammer {
 namespace {
 
-typedef unordered_set<build_queue_node_t*> build_queue_nodes_t;
-typedef unordered_set<build_queue_node_t*> nodes_in_progress_t;
-typedef unordered_map<const build_node*, build_queue_node_t*> nodes_to_build_t;
+typedef boost::unordered_set<build_queue_node_t*> build_queue_nodes_t;
+typedef boost::unordered_set<build_queue_node_t*> nodes_in_progress_t;
+typedef boost::unordered_map<const build_node*, build_queue_node_t*> nodes_to_build_t;
 
 struct dependency_decrementor {
    void operator()(build_queue_node_t* v) { --v->dependencies_count_; }
 };
 
 struct worker_ctx_t {
-   worker_ctx_t(asio::io_service& scheduler,
-                asio::io_service::strand& strand,
+   worker_ctx_t(io_service& scheduler,
+                io_service::strand& strand,
                 build_queue& queue,
                 nodes_in_progress_t& nodes_in_progess,
                 build_queue_node_t* current_node)
@@ -46,8 +46,8 @@ struct worker_ctx_t {
    build_node& node() { return *current_node_->node_; }
    details::build_queue_node_t& queue_node() { return *current_node_; }
 
-   asio::io_service& scheduler_;
-   asio::io_service::strand& strand_;
+   io_service& scheduler_;
+   io_service::strand& strand_;
    build_queue& queue_;
    nodes_in_progress_t& nodes_in_progess_;
    build_queue_node_t* current_node_;
@@ -70,8 +70,8 @@ struct builder::impl_t {
    result build(build_nodes_t& nodes,
                 const project* bounds);
    
-   void task_completition_handler(shared_ptr<worker_ctx_t> ctx);
-   void task_handler(shared_ptr<worker_ctx_t> ctx);
+   void task_completition_handler(std::shared_ptr<worker_ctx_t> ctx);
+   void task_handler(std::shared_ptr<worker_ctx_t> ctx);
 
    const build_environment& environment_;
    volatile bool& interrupt_flag_;
@@ -108,7 +108,7 @@ builder::build(build_nodes_t& nodes,
    return impl_->build(nodes, bounds);
 }
 
-void builder::impl_t::task_handler(shared_ptr<worker_ctx_t> ctx)
+void builder::impl_t::task_handler(std::shared_ptr<worker_ctx_t> ctx)
 {
    if (ctx->node().action()) {
       details::buffered_output_environment buffered_environment(environment_);
@@ -132,7 +132,7 @@ void mark_deps_failed_to_build(build_queue_node_t& node)
    }
 }
 
-void builder::impl_t::task_completition_handler(shared_ptr<worker_ctx_t> ctx)
+void builder::impl_t::task_completition_handler(std::shared_ptr<worker_ctx_t> ctx)
 {
    if (interrupt_flag_)
       return;
@@ -157,7 +157,7 @@ void builder::impl_t::task_completition_handler(shared_ptr<worker_ctx_t> ctx)
       auto current_node_iterator = ctx->queue_.get<0>().begin();
       build_queue_node_t& current_node = **current_node_iterator;
       if (current_node.dependencies_count_ == 0) {
-         shared_ptr<worker_ctx_t> worker_ctx(new worker_ctx_t(*ctx));
+         std::shared_ptr<worker_ctx_t> worker_ctx(new worker_ctx_t(*ctx));
          worker_ctx->current_node_ = *current_node_iterator;
          worker_ctx->action_result_ = false;
          ctx->nodes_in_progess_.insert(&current_node);
@@ -304,10 +304,10 @@ builder::impl_t::build(build_nodes_t& nodes,
       return result_;
 
    boost::asio::io_service scheduler;
-   asio::io_service::strand strand(scheduler);
+   io_service::strand strand(scheduler);
    nodes_in_progress_t nodes_in_progress;
    
-   shared_ptr<worker_ctx_t> initial_ctx(
+   std::shared_ptr<worker_ctx_t> initial_ctx(
       new worker_ctx_t(scheduler, strand, build_queue, nodes_in_progress, nullptr));
    
    scheduler.post(boost::bind(&impl_t::task_completition_handler, this, initial_ctx));
@@ -315,7 +315,7 @@ builder::impl_t::build(build_nodes_t& nodes,
    boost::thread_group thread_pool;
    if (worker_count_ > 1) {
       for (unsigned i = 0; i < worker_count_ - 1; ++i)
-         thread_pool.create_thread(boost::bind(&asio::io_service::run, &scheduler));
+         thread_pool.create_thread(boost::bind(&io_service::run, &scheduler));
    }
 
    scheduler.run();

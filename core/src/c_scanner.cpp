@@ -683,11 +683,11 @@ c_scanner::process(const basic_build_target& t,
       return result;
 }
 
-boost::shared_ptr<scanner_context> c_scanner::create_context(const build_environment& env) const
+std::shared_ptr<scanner_context>
+c_scanner::create_context(const build_environment& env) const
 {
-   boost::shared_ptr<scanner_context> result = context_.lock();   
-   if (!result)
-   {
+   auto result = context_.lock();
+   if (!result) {
       result.reset(new c_scanner_context(*this, env));
       context_ = result;
    }

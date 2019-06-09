@@ -2,7 +2,6 @@
 #include <vector>
 #include <utility>
 #include <boost/date_time/posix_time/ptime.hpp>
-#include <boost/weak_ptr.hpp>
 #include <hammer/core/scaner.h>
 #include <hammer/core/hashed_location.h>
 
@@ -21,11 +20,11 @@ class c_scanner : public scanner {
               const hammer::build_node& node,
               scanner_context& context) const override;
 
-      boost::shared_ptr<scanner_context>
+      std::shared_ptr<scanner_context>
       create_context(const build_environment& env) const override;
 
    private:
-      mutable boost::weak_ptr<scanner_context> context_;
+      mutable std::weak_ptr<scanner_context> context_;
 };
 
 }

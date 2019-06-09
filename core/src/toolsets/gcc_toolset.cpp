@@ -108,19 +108,19 @@ void init_toolset(engine& e,
    feature_set* generator_condition = e.feature_registry().make_set();
    generator_condition->join("toolset", (toolset_name + "-" + td.version_).c_str());
 
-   shared_ptr<product_argument_writer> obj_product(new product_argument_writer("obj_product", e.get_type_registry().get(types::OBJ)));
-   shared_ptr<source_argument_writer> static_lib_sources(new source_argument_writer("static_lib_sources", e.get_type_registry().get(types::STATIC_LIB), true, source_argument_writer::FULL_PATH));
-   shared_ptr<source_argument_writer> shared_lib_sources(new source_argument_writer("shared_lib_sources", e.get_type_registry().get(types::SHARED_LIB), true, source_argument_writer::FULL_PATH));
-   shared_ptr<source_argument_writer> searched_lib_sources(new source_argument_writer("searched_lib_sources", e.get_type_registry().get(types::SEARCHED_STATIC_LIB), true, source_argument_writer::WITHOUT_PATH, "", "-l"));
+   std::shared_ptr<product_argument_writer> obj_product(new product_argument_writer("obj_product", e.get_type_registry().get(types::OBJ)));
+   std::shared_ptr<source_argument_writer> static_lib_sources(new source_argument_writer("static_lib_sources", e.get_type_registry().get(types::STATIC_LIB), true, source_argument_writer::FULL_PATH));
+   std::shared_ptr<source_argument_writer> shared_lib_sources(new source_argument_writer("shared_lib_sources", e.get_type_registry().get(types::SHARED_LIB), true, source_argument_writer::FULL_PATH));
+   std::shared_ptr<source_argument_writer> searched_lib_sources(new source_argument_writer("searched_lib_sources", e.get_type_registry().get(types::SEARCHED_STATIC_LIB), true, source_argument_writer::WITHOUT_PATH, "", "-l"));
 
-   shared_ptr<free_feature_arg_writer> searched_lib_searched_dirs(
+   std::shared_ptr<free_feature_arg_writer> searched_lib_searched_dirs(
       new free_feature_arg_writer("searched_lib_searched_dirs",
                                   e.feature_registry(),
                                   "search",
                                   string("-L \""),
                                   string("\"")));
 
-   shared_ptr<fs_argument_writer> cflags(new fs_argument_writer("cflags", e.feature_registry()));
+   std::shared_ptr<fs_argument_writer> cflags(new fs_argument_writer("cflags", e.feature_registry()));
    cflags->add("<optimization>speed", "-O3").
            add("<optimization>space", "-Os").
            add("<optimization>off", "-O0").
@@ -137,27 +137,27 @@ void init_toolset(engine& e,
            add("<address-model>32", "-m32").
            add("<address-model>64", "-m64");
 
-   shared_ptr<fs_argument_writer> link_flags(new fs_argument_writer("link_flags", e.feature_registry()));
+   std::shared_ptr<fs_argument_writer> link_flags(new fs_argument_writer("link_flags", e.feature_registry()));
    link_flags->add("<debug-symbols>on", "-g").
                add("<profiling>on", "-pg").
                add("<address-model>32", "-m32").
                add("<address-model>64", "-m64").
                add("<runtime-link>static", "-static-libgcc -static-libstdc++");
 
-   shared_ptr<free_feature_arg_writer> user_linkflags(new free_feature_arg_writer("user_linkflags", e.feature_registry(), "linkflags"));
-   shared_ptr<free_feature_arg_writer> user_cxx_flags(new free_feature_arg_writer("user_cxx_flags", e.feature_registry(), "cxxflags"));
-   shared_ptr<free_feature_arg_writer> user_c_flags(new free_feature_arg_writer("user_c_flags", e.feature_registry(), "cflags"));
-   shared_ptr<free_feature_arg_writer> user_archive_flags(new free_feature_arg_writer("user_archive_flags", e.feature_registry(), "archiveflags"));
+   std::shared_ptr<free_feature_arg_writer> user_linkflags(new free_feature_arg_writer("user_linkflags", e.feature_registry(), "linkflags"));
+   std::shared_ptr<free_feature_arg_writer> user_cxx_flags(new free_feature_arg_writer("user_cxx_flags", e.feature_registry(), "cxxflags"));
+   std::shared_ptr<free_feature_arg_writer> user_c_flags(new free_feature_arg_writer("user_c_flags", e.feature_registry(), "cflags"));
+   std::shared_ptr<free_feature_arg_writer> user_archive_flags(new free_feature_arg_writer("user_archive_flags", e.feature_registry(), "archiveflags"));
 
-   shared_ptr<free_feature_arg_writer> includes(new free_feature_arg_writer("includes", e.feature_registry(), "include", "-I\"", "\""));
-   shared_ptr<free_feature_arg_writer> generated_includes(new free_feature_arg_writer("generated-includes", e.feature_registry(), "__generated-include", "-I\"", "\""));
-   shared_ptr<free_feature_arg_writer> defines(new free_feature_arg_writer("defines", e.feature_registry(), "define", "-D"));
+   std::shared_ptr<free_feature_arg_writer> includes(new free_feature_arg_writer("includes", e.feature_registry(), "include", "-I\"", "\""));
+   std::shared_ptr<free_feature_arg_writer> generated_includes(new free_feature_arg_writer("generated-includes", e.feature_registry(), "__generated-include", "-I\"", "\""));
+   std::shared_ptr<free_feature_arg_writer> defines(new free_feature_arg_writer("defines", e.feature_registry(), "define", "-D"));
 
    const string generator_prefix = toolset_name + "-" + td.version_;
 
    // C -> OBJ
    {
-      shared_ptr<source_argument_writer> c_input(new source_argument_writer("c_input", e.get_type_registry().get(types::C), /*exact_type=*/false, source_argument_writer::FULL_PATH));
+      std::shared_ptr<source_argument_writer> c_input(new source_argument_writer("c_input", e.get_type_registry().get(types::C), /*exact_type=*/false, source_argument_writer::FULL_PATH));
       cmdline_builder obj_cmd(td.compiler_.string() +
                               " -x c -c $(cflags) $(user_c_flags) $(generated-includes) $(includes) $(defines) -o \"$(obj_product)\" $(c_input)");
       obj_cmd += cflags;
@@ -181,10 +181,10 @@ void init_toolset(engine& e,
 
    // CPP -> OBJ
    {
-      shared_ptr<fs_argument_writer> cxxflags(new fs_argument_writer("cxxflags", e.feature_registry()));
+      std::shared_ptr<fs_argument_writer> cxxflags(new fs_argument_writer("cxxflags", e.feature_registry()));
       cxxflags->add("<rtti>off", "-fno-rtti");
 
-      shared_ptr<source_argument_writer> cpp_input(new source_argument_writer("cpp_input", e.get_type_registry().get(types::CPP), /*exact_type=*/false, source_argument_writer::FULL_PATH));
+      std::shared_ptr<source_argument_writer> cpp_input(new source_argument_writer("cpp_input", e.get_type_registry().get(types::CPP), /*exact_type=*/false, source_argument_writer::FULL_PATH));
       cmdline_builder obj_cmd(td.compiler_.string() +
                               " -x c++ -c -ftemplate-depth-128 $(cflags) $(cxxflags) $(user_cxx_flags) $(generated-includes) $(includes) $(defines) -o \"$(obj_product)\" $(cpp_input)");
       obj_cmd += cflags;
@@ -209,9 +209,9 @@ void init_toolset(engine& e,
 
    // ... -> SHARED_LIB
    {
-      shared_ptr<source_argument_writer> obj_sources(new source_argument_writer("obj_sources", e.get_type_registry().get(types::OBJ)));
-      shared_ptr<product_argument_writer> shared_lib_product(new product_argument_writer("shared_lib_product", e.get_type_registry().get(types::SHARED_LIB)));
-      shared_ptr<unix_libraries_argument_writer> libraries_writer(new unix_libraries_argument_writer("libraries", linker_type::GNU, e));
+      std::shared_ptr<source_argument_writer> obj_sources(new source_argument_writer("obj_sources", e.get_type_registry().get(types::OBJ)));
+      std::shared_ptr<product_argument_writer> shared_lib_product(new product_argument_writer("shared_lib_product", e.get_type_registry().get(types::SHARED_LIB)));
+      std::shared_ptr<unix_libraries_argument_writer> libraries_writer(new unix_libraries_argument_writer("libraries", linker_type::GNU, e));
       cmdline_builder shared_lib_cmd(td.linker_.string() + " -shared $(link_flags) $(user_linkflags) $(searched_lib_searched_dirs) -o \"$(shared_lib_product)\" $(obj_sources) $(libraries)\n");
       shared_lib_cmd += link_flags;
       shared_lib_cmd += user_linkflags;
@@ -240,7 +240,7 @@ void init_toolset(engine& e,
 
    // ... -> EXE
    {
-      shared_ptr<free_feature_arg_writer> ld_library_path_dirs(
+      std::shared_ptr<free_feature_arg_writer> ld_library_path_dirs(
          new free_feature_arg_writer("ld_library_path_dirs",
                                      e.feature_registry(),
                                      "search",
@@ -248,9 +248,9 @@ void init_toolset(engine& e,
                                      string(),
                                      ":"));
 
-      shared_ptr<source_argument_writer> obj_sources(new source_argument_writer("obj_sources", e.get_type_registry().get(types::OBJ)));
-      shared_ptr<product_argument_writer> exe_product(new product_argument_writer("exe_product", e.get_type_registry().get(types::EXE)));
-      shared_ptr<unix_libraries_argument_writer> libraries_writer(new unix_libraries_argument_writer("libraries", linker_type::GNU, e));
+      std::shared_ptr<source_argument_writer> obj_sources(new source_argument_writer("obj_sources", e.get_type_registry().get(types::OBJ)));
+      std::shared_ptr<product_argument_writer> exe_product(new product_argument_writer("exe_product", e.get_type_registry().get(types::EXE)));
+      std::shared_ptr<unix_libraries_argument_writer> libraries_writer(new unix_libraries_argument_writer("libraries", linker_type::GNU, e));
       auto exe_action = std::make_shared<cmdline_action>("link-exe", exe_product);
       cmdline_builder exe_cmd("LD_LIBRARY_PATH=$(ld_library_path_dirs):LD_LIBRARY_PATH " + td.linker_.string() + " $(link_flags) $(user_linkflags) $(searched_lib_searched_dirs) -o \"$(exe_product)\" $(obj_sources) $(libraries)\n");
 
@@ -281,8 +281,8 @@ void init_toolset(engine& e,
 
    // ... -> STATIC_LIB
    {
-      shared_ptr<source_argument_writer> obj_sources(new source_argument_writer("obj_sources", e.get_type_registry().get(types::OBJ)));
-      shared_ptr<product_argument_writer> static_lib_product(new product_argument_writer("static_lib_product", e.get_type_registry().get(types::STATIC_LIB)));
+      std::shared_ptr<source_argument_writer> obj_sources(new source_argument_writer("obj_sources", e.get_type_registry().get(types::OBJ)));
+      std::shared_ptr<product_argument_writer> static_lib_product(new product_argument_writer("static_lib_product", e.get_type_registry().get(types::STATIC_LIB)));
       cmdline_builder static_lib_cmd(td.librarian_.string() + " $(user_archive_flags) rc $(static_lib_product) $(obj_sources)");
 
       static_lib_cmd += static_lib_product;

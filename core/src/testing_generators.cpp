@@ -1,5 +1,4 @@
 #include <boost/make_unique.hpp>
-#include <boost/make_shared.hpp>
 #include <boost/variant/get.hpp>
 #include <hammer/core/testing_generators.h>
 #include <hammer/core/types.h>
@@ -18,7 +17,6 @@
 #include <hammer/core/testing_compile_link_base_generator.h>
 
 using boost::make_unique;
-using boost::make_shared;
 namespace fs = boost::filesystem;
 using std::string;
 
@@ -176,10 +174,10 @@ class testing_run_generator : public generator {
 void add_testing_generators(engine& e,
                             generator_registry& gr)
 {
-   auto run_product = make_shared<product_argument_writer>("run_product", e.get_type_registry().get(types::TESTING_RUN));
-   auto test_executable = make_shared<source_argument_writer>("test_executable", e.get_type_registry().get(types::EXE));
-   auto additional_dirs = make_shared<shared_lib_dirs_writer>("additional_dirs", e.get_type_registry().get(types::SHARED_LIB));
-   auto args = make_shared<testing_run_args_writer>(e.get_type_registry());
+   auto run_product = std::make_shared<product_argument_writer>("run_product", e.get_type_registry().get(types::TESTING_RUN));
+   auto test_executable = std::make_shared<source_argument_writer>("test_executable", e.get_type_registry().get(types::EXE));
+   auto additional_dirs = std::make_shared<shared_lib_dirs_writer>("additional_dirs", e.get_type_registry().get(types::SHARED_LIB));
+   auto args = std::make_shared<testing_run_args_writer>(e.get_type_registry());
 #if defined(_WIN32)
    cmdline_builder cmdline("@SET PATH=%PATH%;$(additional_dirs)\n"
                            "@$(test_executable) $(args)\n");

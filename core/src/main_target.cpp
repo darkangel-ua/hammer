@@ -22,7 +22,7 @@ using namespace std;
 namespace hammer{
 
 static
-std::shared_ptr<mksig_action> mksig_action_ = std::make_shared<mksig_action>();
+auto mksig_action_ = std::make_shared<mksig_action>();
 
 main_target::main_target(const basic_meta_target* mt,
                          const std::string& name,

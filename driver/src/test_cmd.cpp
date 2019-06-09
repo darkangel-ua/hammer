@@ -134,7 +134,7 @@ make_run_target(project& p,
       return new_args;
    };
 
-   auto result = boost::make_unique<testing_run_meta_target>(&p, run_mt.name(), make_new_args());
+   auto result = boost::make_unique<testing_run_meta_target>(&p, run_mt.name(), make_new_args(), run_mt.recheck_);
    result->sources(run_mt.sources());
    result->set_local(true);
 

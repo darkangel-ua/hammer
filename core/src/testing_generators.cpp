@@ -4,12 +4,12 @@
 #include <hammer/core/testing_generators.h>
 #include <hammer/core/types.h>
 #include <hammer/core/engine.h>
+#include <hammer/core/generated_build_target.h>
 #include <hammer/core/generator_registry.h>
 #include <hammer/core/product_argument_writer.h>
 #include <hammer/core/source_argument_writer.h>
 #include <hammer/core/shared_lib_dirs_writer.h>
 #include <hammer/core/main_target.h>
-#include <hammer/core/basic_build_target.h>
 #include <hammer/core/cmdline_action.h>
 #include <hammer/core/testing_fail_action.h>
 #include <hammer/core/testing_run_meta_target.h>
@@ -17,7 +17,6 @@
 #include <hammer/core/testing_build_environment.h>
 #include <hammer/core/testing_compile_link_base_generator.h>
 
-using std::unique_ptr;
 using boost::make_unique;
 using boost::make_shared;
 namespace fs = boost::filesystem;
@@ -128,6 +127,50 @@ class testing_action : public build_action {
       product_argument_writer passed_arg_writer_;
 };
 
+class testing_run_build_target : public generated_build_target {
+   public:
+      testing_run_build_target(const main_target* mt,
+                               const std::string& target_name,
+                               const std::string& hash,
+                               const target_type* t,
+                               const feature_set* f)
+         : generated_build_target(mt, target_name, hash, t, f)
+      {
+      }
+
+   protected:
+      void timestamp_info_impl() const override {
+         auto& mt = dynamic_cast<const testing_run_meta_target&>(*get_meta_target());
+         if (mt.recheck_)
+            timestamp_info_.timestamp_ = boost::date_time::neg_infin; // this will force it to rebuild
+         else
+            generated_build_target::timestamp_info_impl();
+      }
+};
+
+class testing_run_generator : public generator {
+   public:
+      testing_run_generator(engine& e,
+                            const consumable_types_t& source_types,
+                            const producable_types_t& target_types,
+                            const build_action_ptr& action)
+         : generator(e, "testing.run", source_types, target_types, true, action)
+      {
+         include_composite_generators(true);
+      }
+
+   protected:
+      basic_build_target*
+      create_target(const main_target* mt,
+                    const build_node::sources_t& sources,
+                    const std::string* composite_target_name,
+                    const produced_type& type,
+                    const feature_set* f) const override {
+         auto nh = make_product_name_and_hash(sources, composite_target_name, type, *f);
+         return new testing_run_build_target{mt, nh.first, nh.second, type.type_, f};
+      }
+};
+
 }
 
 void add_testing_generators(engine& e,
@@ -157,8 +200,7 @@ void add_testing_generators(engine& e,
    auto sources = make_consume_types(e, {types::EXE});
    auto products = make_product_types(e, {types::TESTING_RUN, types::TESTING_PASSED});
 
-   unique_ptr<generator> g(new generator(e, "testing.run", sources, products, true, action));
-   g->include_composite_generators(true);
+   auto g = make_unique<testing_run_generator>(e, sources, products, action);
    gr.insert(std::move(g));
 
    add_testing_suite_generator(e, gr);

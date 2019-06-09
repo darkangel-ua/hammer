@@ -738,7 +738,8 @@ testing_run_rule_impl(target_invocation_context& ctx,
                       const sources_decl& sources,
                       const requirements_decl* requirements,
                       const ast::expression* ast_args,
-                      const string& target_name)
+                      const string& target_name,
+                      const bool recheck)
 {
    const string exe_target_name = target_name + ".run";
    unique_ptr<basic_meta_target> intermediate_exe(
@@ -755,7 +756,8 @@ testing_run_rule_impl(target_invocation_context& ctx,
    auto runner_target =
       make_unique<testing_run_meta_target>(&ctx.current_project_,
                                            target_name,
-                                           make_testing_run_args(ctx, ast_args));
+                                           make_testing_run_args(ctx, ast_args),
+                                           recheck);
 
    sources_decl run_sources;
    run_sources.push_back({ctx.current_project_, "./", exe_target_name, nullptr, nullptr});
@@ -778,14 +780,35 @@ testing_run_rule_impl(target_invocation_context& ctx,
 }
 
 static
+const ast::expression*
+testing_run_recheck_validator(ast::context& ctx,
+                              diagnostic& diag,
+                              const ast::expression* recheck_) {
+   const ast::id_expr* recheck = ast::as<ast::id_expr>(recheck_);
+   if (!recheck) {
+      diag.error(recheck_->start_loc(), "Argument 'recheck': Expected identifier");
+      return new (ctx) ast::error_expression(recheck_);
+   }
+
+   auto value = recheck->id().to_string();
+   if (value == "true" || value == "false")
+      return recheck_;
+
+   diag.error(recheck_->start_loc(), "Argument 'recheck': Expected 'true' or 'false'");
+   return new (ctx) ast::error_expression(recheck_);
+}
+
+static
 std::unique_ptr<sources_decl>
 testing_run_rule(target_invocation_context& ctx,
                  const sources_decl& sources,
                  const requirements_decl* requirements,
                  const ast::expression* ast_args,
-                 const parscore::identifier* user_provided_target_name)
+                 const parscore::identifier* user_provided_target_name,
+                 const parscore::identifier* recheck_)
 {
-   return testing_run_rule_impl(ctx, sources, requirements, ast_args, testing_make_target_name(sources, user_provided_target_name));
+   const bool recheck = recheck_ && recheck_->to_string() == "true";
+   return testing_run_rule_impl(ctx, sources, requirements, ast_args, testing_make_target_name(sources, user_provided_target_name), recheck);
 }
 
 static
@@ -795,7 +818,8 @@ testing_run_many_rule(invocation_context& ctx,
                       const sources_decl* common_sources,
                       const requirements_decl* requirements,
                       const ast::expression* ast_args,
-                      const parscore::identifier* name_template)
+                      const parscore::identifier* name_template,
+                      const parscore::identifier* recheck)
 {
    auto result = boost::make_unique<sources_decl>();
    target_invocation_context tctx{ ctx, false, false };
@@ -813,7 +837,7 @@ testing_run_many_rule(invocation_context& ctx,
             return tn;
       }();
 
-      auto sd_run = testing_run_rule_impl(tctx, src, requirements, ast_args, target_name);
+      auto sd_run = testing_run_rule_impl(tctx, src, requirements, ast_args, target_name, recheck && recheck->to_string() == "true");
       assert(sd_run->size() == 1);
 
       result->insert(*sd_run);
@@ -1115,8 +1139,8 @@ void install_builtin_rules(rule_manager& rm)
    rm.add_target("copy", copy_rule, {"name", "sources", "destination", "types", "recursive"});
    rm.add_target("obj", obj_rule, {"name", "sources", "requirements", "default-build", "usage-requirements"});
    rm.add_target("testing.suite", testing_suite_rule, {"name", "sources", "common-sources", "common-requirements"});
-   rm.add_target("testing.run", testing_run_rule, {"sources", "requirements", "args", "name"});
-   rm.add_rule("testing.run-many", testing_run_many_rule, {"sources", "common-sources", "requirements", "args", "name-template"});
+   rm.add_target("testing.run", testing_run_rule, {"sources", "requirements", "args", "name", { "recheck", testing_run_recheck_validator }});
+   rm.add_rule("testing.run-many", testing_run_many_rule, {"sources", "common-sources", "requirements", "args", "name-template", { "recheck", testing_run_recheck_validator }});
    rm.add_target("testing.compile-fail", testing_compile_fail_rule, {"sources", "requirements", "name"});
    rm.add_target("testing.compile", testing_compile_rule, {"sources", "requirements", "name"});
    rm.add_rule("testing.compile-many", testing_compile_many_rule, {"sources", "common-sources", "requirements", "name-template"});

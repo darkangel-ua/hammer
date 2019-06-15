@@ -248,7 +248,7 @@ static std::string make_variant_name(const main_target& mt)
 void msvc_project::add_variant(boost::intrusive_ptr<const build_node> node)
 {
    assert(!node->products_.empty());
-   std::auto_ptr<variant> v(new variant);
+   std::unique_ptr<variant> v(new variant);
    variant* naked_variant = v.get();
 
    // if this testing runner than we actually need exe target that we run in post build step
@@ -266,7 +266,7 @@ void msvc_project::add_variant(boost::intrusive_ptr<const build_node> node)
    v->target_ = node->products_[0]->get_main_target();
    v->name_ = make_variant_name(*v->target_);
    v->owner_ = this;
-   variants_.push_back(v);
+   variants_.push_back(std::move(v));
    if (id_.empty())
    {
       meta_target_ = naked_variant->target_->get_meta_target();
@@ -313,11 +313,11 @@ void msvc_project::fill_filters()
 
 const std::string msvc_project::name() const
 {
-   string version = variants_.front().target_->version();
+   string version = variants_.front()->target_->version();
    if (version.empty())
-      return variants_.front().target_->get_meta_target()->name();
+      return variants_.front()->target_->get_meta_target()->name();
    else
-      return variants_.front().target_->get_meta_target()->name() + '-' + version;
+      return variants_.front()->target_->get_meta_target()->name() + '-' + version;
 }
 
 void msvc_project::write_header(ostream& s) const
@@ -384,7 +384,7 @@ void msvc_project::write_configurations(std::ostream& s) const
 {
    s << "   <Configurations>\n";
 
-   for(variants_t::iterator i = variants_.begin(), last = variants_.end(); i != last; ++i)
+   for (auto& i : variants_)
    {
       configuration_types::value cfg_type = resolve_configuration_type(*i);
       s << "      <Configuration\n"
@@ -615,7 +615,7 @@ void msvc_project::gether_files_impl(const build_node& node, variant& v)
 
 void msvc_project::gether_files()
 {
-   for(variants_t::iterator i = variants_.begin(), last = variants_.end(); i != last; ++i)
+   for (auto& i : variants_)
       gether_files_impl(*i->node_, *i);
 
    std::sort(dependencies_.begin(), dependencies_.end());
@@ -624,8 +624,7 @@ void msvc_project::gether_files()
 
 bool msvc_project::has_variant(const main_target* v) const
 {
-   for(variants_t::const_iterator i = variants_.begin(), last = variants_.end(); i != last; ++i)
-   {
+   for (auto& i : variants_) {
       if (i->target_ == v)
          return true;
    }

@@ -29,9 +29,7 @@
 
 using std::string;
 using std::unique_ptr;
-using std::auto_ptr;
 using std::vector;
-using namespace boost;
 namespace fs = boost::filesystem;
 
 namespace hammer{
@@ -266,57 +264,57 @@ void add_lib(project& qt_project,
    feature* include_feature = e.feature_registry().create_feature("include", "./include/" + include_tag + "/" + additional_include_path);
 #endif
    {
-      auto_ptr<just_feature_requirement> include_req(new just_feature_requirement(include_feature));
+      unique_ptr<just_feature_requirement> include_req(new just_feature_requirement(include_feature));
       include_req->set_public(true);
-      debug_req.add(auto_ptr<requirement_base>(include_req));
+      debug_req.add(std::move(include_req));
    }
    {
-      auto_ptr<just_feature_requirement> top_include_req(new just_feature_requirement(top_include_feature));
+      unique_ptr<just_feature_requirement> top_include_req(new just_feature_requirement(top_include_feature));
       top_include_req->set_public(true);
-      debug_req.add(auto_ptr<requirement_base>(top_include_req));
+      debug_req.add(std::move(top_include_req));
    }
-   debug_req.add(auto_ptr<requirement_base>(new just_feature_requirement(e.feature_registry().create_feature("variant", "debug"))));
+   debug_req.add(unique_ptr<requirement_base>(new just_feature_requirement(e.feature_registry().create_feature("variant", "debug"))));
 
    requirements_decl release_req;
    {
-      auto_ptr<just_feature_requirement> include_req(new just_feature_requirement(include_feature));
+      unique_ptr<just_feature_requirement> include_req(new just_feature_requirement(include_feature));
       include_req->set_public(true);
-      release_req.add(auto_ptr<requirement_base>(include_req));
+      release_req.add(std::move(include_req));
    }
    {
-      auto_ptr<just_feature_requirement> top_include_req(new just_feature_requirement(top_include_feature));
+      unique_ptr<just_feature_requirement> top_include_req(new just_feature_requirement(top_include_feature));
       top_include_req->set_public(true);
-      release_req.add(auto_ptr<requirement_base>(top_include_req));
+      release_req.add(std::move(top_include_req));
    }
    {
-      auto_ptr<just_feature_requirement> qt_no_debug(new just_feature_requirement(qt_no_debug_feature));
+      unique_ptr<just_feature_requirement> qt_no_debug(new just_feature_requirement(qt_no_debug_feature));
       qt_no_debug->set_public(true);
-      release_req.add(auto_ptr<requirement_base>(qt_no_debug));
+      release_req.add(std::move(qt_no_debug));
    }
-   release_req.add(auto_ptr<requirement_base>(new just_feature_requirement(e.feature_registry().create_feature("variant", "release"))));
+   release_req.add(unique_ptr<requirement_base>(new just_feature_requirement(e.feature_registry().create_feature("variant", "release"))));
 
    requirements_decl profile_req;
    {
-      auto_ptr<just_feature_requirement> include_req(new just_feature_requirement(include_feature));
+      unique_ptr<just_feature_requirement> include_req(new just_feature_requirement(include_feature));
       include_req->set_public(true);
-      profile_req.add(auto_ptr<requirement_base>(include_req));
+      profile_req.add(std::move(include_req));
    }
    {
-      auto_ptr<just_feature_requirement> top_include_req(new just_feature_requirement(top_include_feature));
+      unique_ptr<just_feature_requirement> top_include_req(new just_feature_requirement(top_include_feature));
       top_include_req->set_public(true);
-      profile_req.add(auto_ptr<requirement_base>(top_include_req));
+      profile_req.add(std::move(top_include_req));
    }
-   profile_req.add(auto_ptr<requirement_base>(new just_feature_requirement(e.feature_registry().create_feature("variant", "profile"))));
+   profile_req.add(unique_ptr<requirement_base>(new just_feature_requirement(e.feature_registry().create_feature("variant", "profile"))));
 #if defined(_WIN32)
-   auto_ptr<prebuilt_lib_meta_target> lib_debug(
+   unique_ptr<prebuilt_lib_meta_target> lib_debug(
          new prebuilt_lib_meta_target(&qt_project,
                                lib_name,
                                "./lib/" + lib_name + "d" + lib_tag + ".lib", debug_req, requirements_decl()));
-   auto_ptr<prebuilt_lib_meta_target> lib_release(
+   unique_ptr<prebuilt_lib_meta_target> lib_release(
          new prebuilt_lib_meta_target(&qt_project,
                                lib_name,
                                "./lib/" + lib_name + lib_tag + ".lib", release_req, requirements_decl()));
-   auto_ptr<prebuilt_lib_meta_target> lib_profile(
+   unique_ptr<prebuilt_lib_meta_target> lib_profile(
          new prebuilt_lib_meta_target(&qt_project,
                                lib_name,
                                "./lib/" + lib_name + lib_tag + ".lib", profile_req, requirements_decl()));
@@ -324,10 +322,10 @@ void add_lib(project& qt_project,
    feature* search_feature = e.feature_registry().create_feature("search", "./lib/");
    search_feature->get_path_data().project_ = &qt_project;
    {
-      auto_ptr<just_feature_requirement> search_req(new just_feature_requirement(search_feature));
-      debug_req.add(auto_ptr<requirement_base>(search_req));
+      unique_ptr<just_feature_requirement> search_req(new just_feature_requirement(search_feature));
+      debug_req.add(std::move(search_req));
    }
-   auto_ptr<searched_lib_meta_target> lib_debug(
+   unique_ptr<searched_lib_meta_target> lib_debug(
          new searched_lib_meta_target(&qt_project,
                                       lib_name,
                                       lib_name,
@@ -336,10 +334,10 @@ void add_lib(project& qt_project,
                                       e.get_type_registry().get(types::SEARCHED_SHARED_LIB)));
 
    {
-      auto_ptr<just_feature_requirement> search_req(new just_feature_requirement(search_feature));
-      release_req.add(auto_ptr<requirement_base>(search_req));
+      unique_ptr<just_feature_requirement> search_req(new just_feature_requirement(search_feature));
+      release_req.add(std::move(search_req));
    }
-   auto_ptr<searched_lib_meta_target> lib_release(
+   unique_ptr<searched_lib_meta_target> lib_release(
          new searched_lib_meta_target(&qt_project,
                                       lib_name,
                                       lib_name,
@@ -347,10 +345,10 @@ void add_lib(project& qt_project,
                                       requirements_decl(),
                                       e.get_type_registry().get(types::SEARCHED_SHARED_LIB)));
    {
-      auto_ptr<just_feature_requirement> search_req(new just_feature_requirement(search_feature));
-      profile_req.add(auto_ptr<requirement_base>(search_req));
+      unique_ptr<just_feature_requirement> search_req(new just_feature_requirement(search_feature));
+      profile_req.add(std::move(search_req));
    }
-   auto_ptr<searched_lib_meta_target> lib_profile(
+   unique_ptr<searched_lib_meta_target> lib_profile(
          new searched_lib_meta_target(&qt_project,
                                       lib_name,
                                       lib_name,
@@ -366,8 +364,8 @@ void add_lib(project& qt_project,
       {
          source_decl sd(qt_project, "/Qt", dependencies[i], nullptr, e.feature_registry().make_set());
          source_feature->set_dependency_data(sd, &qt_project);
-         auto_ptr<just_feature_requirement> source_req(new just_feature_requirement(source_feature));
-         usage_req.add(auto_ptr<requirement_base>(source_req));
+         unique_ptr<just_feature_requirement> source_req(new just_feature_requirement(source_feature));
+         usage_req.add(std::move(source_req));
       }
 
       lib_debug->usage_requirements().insert(usage_req);
@@ -375,9 +373,9 @@ void add_lib(project& qt_project,
       lib_profile->usage_requirements().insert(usage_req);
    }
 
-   qt_project.add_target(auto_ptr<basic_meta_target>(lib_debug));
-   qt_project.add_target(auto_ptr<basic_meta_target>(lib_release));
-   qt_project.add_target(auto_ptr<basic_meta_target>(lib_profile));
+   qt_project.add_target(std::move(lib_debug));
+   qt_project.add_target(std::move(lib_release));
+   qt_project.add_target(std::move(lib_profile));
 }
 
 static
@@ -450,7 +448,7 @@ void add_libs_and_generators(engine& e,
    }
 
    // register qt libs
-   auto_ptr<project> qt_project(new project(e, nullptr, "Qt", *toolset_home, {}, {}, {}));
+   unique_ptr<project> qt_project(new project(e, nullptr, "Qt", *toolset_home, {}, {}, {}));
    if (qt5) {
       add_lib(*qt_project, "Qt5Core", vector<string>(), e, include_tag, "QtCore", lib_tag);
       add_lib(*qt_project, "Qt5Gui", {"Qt5Core"}, e, include_tag, "QtGui", lib_tag);

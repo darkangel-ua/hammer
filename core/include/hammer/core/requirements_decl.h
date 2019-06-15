@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <memory>
+#include <boost/make_unique.hpp>
 
 namespace hammer {
 class feature_set;
@@ -14,7 +15,7 @@ class requirement_base {
       virtual void eval(const feature_set& build_request,
                         feature_set* result,
                         feature_set* public_result) const = 0;
-      virtual requirement_base* clone() const = 0;
+      virtual std::unique_ptr<requirement_base> clone() const = 0;
       virtual void setup_path_data(const project* p) = 0;
       virtual ~requirement_base() {}
       void set_public(bool v) { public_ = v; }
@@ -30,7 +31,10 @@ class just_feature_requirement : public requirement_base {
       void eval(const feature_set& build_request,
                 feature_set* result,
                 feature_set* public_result) const override;
-      requirement_base* clone() const override { return new just_feature_requirement(*this); }
+
+      std::unique_ptr<requirement_base>
+      clone() const override { return boost::make_unique<just_feature_requirement>(*this); }
+
       void setup_path_data(const project* p) override;
 
    private:
@@ -44,7 +48,10 @@ class linear_and_condition : public requirement_base {
       void eval(const feature_set& build_request,
                 feature_set* result,
                 feature_set* public_result) const override;
-      requirement_base* clone() const override { return new linear_and_condition(*this); }
+
+      std::unique_ptr<requirement_base>
+      clone() const override { return boost::make_unique<linear_and_condition>(*this); }
+
       void setup_path_data(const project* p) override;
 
    private:
@@ -57,7 +64,7 @@ class requirement_condition_op_base {
    public:
       virtual bool eval(const feature_set& build_request,
                         feature_set* result) const = 0;
-      virtual requirement_condition_op_base* clone() const = 0;
+      virtual std::unique_ptr<requirement_condition_op_base> clone() const = 0;
       virtual ~requirement_condition_op_base() {}
 };
 
@@ -86,10 +93,9 @@ class requirement_condition_op_and : public requirement_condition_op_binary {
          return lhs_->eval(build_request, result) && rhs_->eval(build_request, result);
       }
 
-      requirement_condition_op_base*
+      std::unique_ptr<requirement_condition_op_base>
       clone() const override {
-         return new requirement_condition_op_and(std::unique_ptr<requirement_condition_op_base>(lhs_->clone()),
-                                                 std::unique_ptr<requirement_condition_op_base>(rhs_->clone()));
+         return boost::make_unique<requirement_condition_op_and>(lhs_->clone(), rhs_->clone());
       }
 };
 
@@ -106,10 +112,9 @@ class requirement_condition_op_or : public requirement_condition_op_binary {
          return lhs_->eval(build_request, result) || rhs_->eval(build_request, result);
       }
 
-      requirement_condition_op_base*
+      std::unique_ptr<requirement_condition_op_base>
       clone() const override {
-         return new requirement_condition_op_or(std::unique_ptr<requirement_condition_op_base>(lhs_->clone()),
-                                                std::unique_ptr<requirement_condition_op_base>(rhs_->clone()));
+         return boost::make_unique<requirement_condition_op_or>(lhs_->clone(),rhs_->clone());
       }
 };
 
@@ -119,8 +124,8 @@ class requirement_condition_op_feature : public requirement_condition_op_base {
       bool eval(const feature_set& build_request,
                 feature_set* result) const override;
 
-      requirement_condition_op_base*
-      clone() const override { return new requirement_condition_op_feature( f_ ); }
+      std::unique_ptr<requirement_condition_op_base>
+      clone() const override { return boost::make_unique<requirement_condition_op_feature>(f_); }
 
    private:
       const feature* f_;
@@ -141,7 +146,7 @@ class requirement_condition : public requirement_base {
       void eval(const feature_set& build_request,
                 feature_set* result,
                 feature_set* public_result) const override;
-      requirement_base* clone() const override;
+      std::unique_ptr<requirement_base> clone() const override;
       void setup_path_data(const project* p) override;
 
    private:

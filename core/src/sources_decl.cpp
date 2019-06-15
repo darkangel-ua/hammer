@@ -17,7 +17,7 @@ struct sources_decl::impl_t
 
 sources_decl::impl_t*
 sources_decl::impl_t::clone() const {
-   std::auto_ptr<impl_t> result(new impl_t);
+   std::unique_ptr<impl_t> result(new impl_t);
 
    result->values_ = values_;
    return result.release();   

@@ -1,7 +1,8 @@
 #include "stdafx.h"
+#include <stdexcept>
+#include <algorithm>
 #include <hammer/core/subfeature_def.h>
 #include <hammer/core/feature_def.h>
-#include <stdexcept>
 
 namespace hammer{
 

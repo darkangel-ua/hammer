@@ -1,14 +1,12 @@
-#include <boost/make_unique.hpp>
-#include <boost/ptr_container/ptr_vector.hpp>
-#include <hammer/core/requirements_decl.h>
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature.h>
 #include <hammer/core/feature_registry.h>
+#include <hammer/core/requirements_decl.h>
 
 namespace hammer {
 
 struct requirements_decl::impl_t {
-   typedef boost::ptr_vector<requirement_base> requirements_t;
+   typedef std::vector<std::unique_ptr<requirement_base>> requirements_t;
    typedef requirements_t::const_iterator const_iterator;
    typedef requirements_t::iterator iterator;
 
@@ -23,7 +21,7 @@ requirements_decl::impl_t::clone() const {
 
    result->requirements_.reserve(requirements_.size());
    for (auto& r : requirements_)
-      result->requirements_.push_back(r.clone());
+      result->requirements_.push_back(r->clone());
 
    return result.release();
 }
@@ -50,8 +48,7 @@ requirements_decl::operator = (const requirements_decl& rhs) {
 }
 
 void requirements_decl::add(std::unique_ptr<requirement_base> r) {
-   impl_->requirements_.push_back(r.get());
-   r.release();
+   impl_->requirements_.push_back(std::move(r));
 }
 
 void requirements_decl::add(const feature& f)
@@ -68,7 +65,7 @@ void requirements_decl::eval(const feature_set& build_request,
                              feature_set* public_result) const
 {
    for (auto& r : impl_->requirements_)
-      r.eval(build_request, result, public_result);
+      r->eval(build_request, result, public_result);
 }
 
 void linear_and_condition::eval(const feature_set& build_request,
@@ -131,20 +128,20 @@ void linear_and_condition::add(feature* c)
 
 void requirements_decl::setup_path_data(const project* p)
 {
-   for(impl_t::iterator i = impl_->requirements_.begin(), last = impl_->requirements_.end(); i != last; ++i)
+   for (auto& i : impl_->requirements_)
       i->setup_path_data(p);
 }
 
 void requirements_decl::insert_infront(const requirements_decl& v)
 {
-   for(impl_t::const_iterator i = v.impl_->requirements_.begin(), last = v.impl_->requirements_.end(); i!= last; ++i)
+   for (auto& i : v.impl_->requirements_)
       impl_->requirements_.insert(impl_->requirements_.begin(), i->clone());
 }
 
 void requirements_decl::insert(const requirements_decl& v)
 {
-   for(impl_t::const_iterator i = v.impl_->requirements_.begin(), last = v.impl_->requirements_.end(); i!= last; ++i)
-      impl_->requirements_.insert(impl_->requirements_.end(), i->clone());
+   for (auto& i : v.impl_->requirements_)
+      impl_->requirements_.push_back(i->clone());
 }
 
 bool requirements_decl::empty() const
@@ -174,10 +171,10 @@ void requirement_condition::eval(const feature_set& build_request,
    }
 }
 
-requirement_base*
+std::unique_ptr<requirement_base>
 requirement_condition::clone() const
 {
-   return new requirement_condition(std::unique_ptr<requirement_condition_op_base>(cond_->clone()), result_, is_public());
+   return boost::make_unique<requirement_condition>(cond_->clone(), result_, is_public());
 }
 
 void requirement_condition::setup_path_data(const project* p)

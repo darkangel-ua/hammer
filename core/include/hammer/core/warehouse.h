@@ -1,6 +1,5 @@
 #pragma once
 #include <vector>
-#include <boost/shared_ptr.hpp>
 #include <hammer/core/location.h>
 
 namespace hammer {

@@ -1,7 +1,6 @@
 #pragma once
 #include <string>
 #include <boost/date_time/posix_time/ptime.hpp>
-#include <boost/shared_ptr.hpp>
 #include <hammer/core/scaner_context.h>
 
 namespace hammer {

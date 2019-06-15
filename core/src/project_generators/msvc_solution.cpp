@@ -3,7 +3,6 @@
 #include <vector>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/filesystem/convenience.hpp>
-#include <boost/ptr_container/ptr_map.hpp>
 #include <boost/guid.hpp>
 #include <hammer/core/engine.h>
 #include <hammer/core/feature.h>
@@ -29,7 +28,7 @@ namespace
 struct msvc_solution::impl_t
 {
    typedef msvc_project::dependencies_t dependencies_t;
-   typedef boost::ptr_map<const basic_meta_target*, msvc_project> projects_t;
+   typedef std::map<const basic_meta_target*, std::unique_ptr<msvc_project>> projects_t;
    typedef std::vector<std::string> variant_names_t;
 
    impl_t(msvc_solution* owner, const project& source_project, 
@@ -85,12 +84,12 @@ void impl_t::generate_dependencies(impl_t::dependencies_t::const_iterator first,
           !i->second->has_variant(*first)))
       {
          const build_node_ptr build_node = (**first).generate().front();
-         auto_ptr<msvc_project> p_guard(new msvc_project(engine_, project_output_dir(*build_node), variant_names_.front(), owner_->generate_id()));
+         std::unique_ptr<msvc_project> p_guard(new msvc_project(engine_, project_output_dir(*build_node), variant_names_.front(), owner_->generate_id()));
          msvc_project* p = p_guard.get();
          p->add_variant(build_node);
          p->generate();
          dependencies.insert(dependencies.end(), p->dependencies().begin(), p->dependencies().end());
-         projects_.insert(&p->meta_target(), p_guard);
+         projects_.insert({&p->meta_target(), std::move(p_guard)});
       }
    }
 
@@ -174,13 +173,13 @@ void msvc_solution::add_target(boost::intrusive_ptr<const build_node> node)
       throw std::runtime_error("MSVC solution generator can handle only one top level target.");
 
    impl_->variant_names_.push_back(node->products_[0]->get_main_target()->properties().get("variant").value());
-   std::auto_ptr<msvc_project> p_guarg(new msvc_project(impl_->engine_, 
-                                                        impl_->project_output_dir(*node), 
-                                                        impl_->variant_names_.front(), 
-                                                        generate_id()));
+   std::unique_ptr<msvc_project> p_guarg(new msvc_project(impl_->engine_,
+                                                          impl_->project_output_dir(*node),
+                                                          impl_->variant_names_.front(),
+                                                          generate_id()));
    msvc_project* p = p_guarg.get();
    p->add_variant(node);
-   impl_->projects_.insert(&p->meta_target(), p_guarg);
+   impl_->projects_.insert({&p->meta_target(), std::move(p_guarg)});
    impl_->name_ = p->meta_target().name();
 
    msvc_project::dependencies_t dependencies;
@@ -209,12 +208,11 @@ void msvc_solution::write() const
    f << "Microsoft Visual Studio Solution File, Format Version 9.00\n"
         "# Visual Studio 2005\n";
    
-   typedef impl_t::projects_t::const_iterator iter;
    typedef vector<const msvc_project*> sorted_projects_t;
 
    sorted_projects_t sorted_projects;
-   for(iter i = impl_->projects_.begin(), last = impl_->projects_.end(); i != last; ++i)
-      sorted_projects.push_back(i->second);
+   for (auto& i : impl_->projects_)
+      sorted_projects.push_back(i.second.get());
 
    sort(sorted_projects.begin(), sorted_projects.end(), less_by_name);
    for(sorted_projects_t::const_iterator i = sorted_projects.begin(), last = sorted_projects.end(); i != last; ++i)

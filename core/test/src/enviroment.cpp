@@ -70,7 +70,7 @@ void complete_build_tests_environment::install_toolsets()
    engine_.toolset_manager().add_toolset(engine_, unique_ptr<toolset>(new msvc_toolset));
    engine_.toolset_manager().add_toolset(engine_, unique_ptr<toolset>(new qt_toolset));
    install_htmpl(engine_);
-   engine_.generators().insert(std::auto_ptr<generator>(new obj_generator(engine_)));
+   engine_.generators().insert(std::unique_ptr<generator>(new obj_generator(engine_)));
 }
 
 void complete_build_tests_environment::run_test(const boost::filesystem::path& working_dir)

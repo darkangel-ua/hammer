@@ -9,7 +9,6 @@
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/multi_index/identity.hpp>
-#include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/algorithm/string/join.hpp>
 #include <hammer/core/feature_registry.h>
 #include <hammer/core/feature_set.h>
@@ -202,7 +201,7 @@ namespace hammer{
 
       typedef std::map<std::string, std::unique_ptr<feature_def> > defs_t;
       typedef std::list<feature_set*> feature_set_storage_t;
-      typedef boost::ptr_vector<feature> non_cached_features_t;
+      typedef std::vector<std::unique_ptr<feature>> non_cached_features_t;
       typedef std::unordered_map<std::string, feature_value_ns_ptr> value_namespaces;
 
       typedef multi_index_container<std::shared_ptr<feature>,
@@ -358,8 +357,7 @@ namespace hammer{
       {
          unique_ptr<feature> f(new feature(&def, value));
          result = f.get();
-         impl_->non_cached_features_.push_back(f.get());
-         f.release();
+         impl_->non_cached_features_.push_back(std::move(f));
       }
       else
       {

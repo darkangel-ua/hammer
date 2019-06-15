@@ -2,9 +2,6 @@
 #include <boost/filesystem/convenience.hpp>
 #include <boost/unordered_set.hpp>
 #include <boost/unordered_map.hpp>
-#include <boost/ptr_container/ptr_unordered_map.hpp>
-#include <boost/ptr_container/ptr_vector.hpp>
-#include <boost/scoped_ptr.hpp>
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/date_time/posix_time/time_serialize.hpp>
 #include <boost/date_time/posix_time/conversion.hpp>
@@ -125,8 +122,8 @@ struct c_scanner_context : public scanner_context
                                 const hashed_location*> normalization_cache_t;
    
    struct suffix_node;
-   typedef boost::ptr_unordered_map<const hashed_location* /* path_element */ , suffix_node> suffix_nodes_t;
-   typedef boost::ptr_vector<dir_node_t> all_dir_nodes_t;
+   typedef std::unordered_map<const hashed_location* /* path_element */ , std::unique_ptr<suffix_node>> suffix_nodes_t;
+   typedef std::vector<std::unique_ptr<dir_node_t>> all_dir_nodes_t;
 
    struct suffix_node
    {
@@ -294,7 +291,7 @@ bool c_scanner_context::load_directory(const hashed_location& dir, dir_node_t& c
             {
                suffix_nodes_t::iterator r = cur_suffix_node->nodes_.find(j->first);
                if (r != cur_suffix_node->nodes_.end())
-                  load_directory(*j->second.get().full_dir_path_, j->second, r->second);
+                  load_directory(*j->second.get().full_dir_path_, j->second, r->second.get());
             }
          }
 
@@ -319,20 +316,20 @@ bool c_scanner_context::load_directory(const hashed_location& dir, dir_node_t& c
          fs::file_status st = i->status();
          if (is_directory(st))
          {
-            auto_ptr<dir_node_t> new_dir_node(new dir_node_t);
+            std::unique_ptr<dir_node_t> new_dir_node(new dir_node_t);
             dir_node_t* new_cur_dir_node = new_dir_node.get();
             const hashed_location* element = get_cached_location(i->path().filename()).first;
             const hashed_location* full_dir_path = get_cached_location(dir.location().parent_path() / i->path().filename() / ".").first;
             new_dir_node->full_dir_path_ = full_dir_path;
             cur_dir_node.nodes_.insert(make_pair(element, boost::ref(*new_dir_node)));
             ldr.directory_content_.insert(make_pair(element, boost::ref(*new_dir_node)));
-            all_dir_nodes_.push_back(new_dir_node);
+            all_dir_nodes_.push_back(std::move(new_dir_node));
             
             if (cur_suffix_node)
             {
                suffix_nodes_t::iterator r = cur_suffix_node->nodes_.find(element);
                if (r != cur_suffix_node->nodes_.end())
-                  load_directory(*full_dir_path, *new_cur_dir_node, r->second);
+                  load_directory(*full_dir_path, *new_cur_dir_node, r->second.get());
             }
 
             continue;
@@ -396,9 +393,9 @@ void c_scanner_context::add_new_suffix_to_tree(location_t::const_iterator first,
    suffix_nodes_t::iterator i = s_node.nodes_.find(element);
    if (i == s_node.nodes_.end())
    {
-      auto_ptr<suffix_node> new_node(new suffix_node);
+      std::unique_ptr<suffix_node> new_node(new suffix_node);
       new_node->path_element_ = element;
-      i = s_node.nodes_.insert(element, new_node).first;
+      i = s_node.nodes_.insert({element, std::move(new_node)}).first;
    }
    
    add_new_suffix_to_tree(++first, last, *i->second);

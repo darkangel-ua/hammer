@@ -178,22 +178,24 @@ bool build_environment_impl::run_shell_commands(std::ostream& captured_output_st
    return run_shell_commands(&captured_output_stream, &captured_error_stream, cmds, working_dir);
 }
 
-static std::auto_ptr<std::istream> open_input_stream(const location_t& full_content_file_name)
+static
+std::unique_ptr<std::istream>
+open_input_stream(const location_t& full_content_file_name)
 {
 #if defined(_WIN32) && !defined(__MINGW32__)
 	wstring unc_path(L"\\\\?\\" + to_wide(location_t(full_content_file_name)).string<wstring>());
-	std::auto_ptr<ifstream> f(new ifstream);
+   std::unique_ptr<ifstream> f(new ifstream);
 	f->open(unc_path.c_str());
    return f;
 #else
-   std::auto_ptr<istream> f(new ifstream((full_content_file_name).string().c_str()));
+   std::unique_ptr<istream> f(new ifstream((full_content_file_name).string().c_str()));
    return f;
 #endif
 }
 
 void build_environment_impl::dump_shell_command(std::ostream& s, const location_t& full_content_file_name) const
 {
-   std::auto_ptr<istream> f(open_input_stream(full_content_file_name));
+   std::unique_ptr<istream> f(open_input_stream(full_content_file_name));
    s << '\n';
    std::copy(istreambuf_iterator<char>(*f), istreambuf_iterator<char>(), ostreambuf_iterator<char>(s));
    s << '\n';

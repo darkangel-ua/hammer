@@ -48,7 +48,8 @@ class target_type {
       bool equal_or_derived_from(const target_type& rhs) const;
       bool equal_or_derived_from(const type_tag& rhs) const;
       bool operator == (const target_type& rhs) const;
-      std::auto_ptr<target_type> clone(const type_registry& tr) const;
+      std::unique_ptr<target_type>
+      clone(const type_registry& tr) const;
 
       const std::vector<const feature*>&
       valuable_features() const { return valuable_features_; }

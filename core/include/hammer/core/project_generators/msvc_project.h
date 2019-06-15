@@ -3,8 +3,6 @@
 #include <utility>
 #include <boost/guid.hpp>
 #include <boost/intrusive_ptr.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/ptr_container/ptr_vector.hpp>
 #include <hammer/core/feature_set.h>
 #include <hammer/core/build_node.h>
 #include <hammer/core/cmdline_builder.h>
@@ -40,7 +38,7 @@ class msvc_project {
          msvc_project* owner_;
       };
 
-      typedef boost::ptr_vector<variant> variants_t;
+      typedef std::vector<std::unique_ptr<variant>> variants_t;
 
       msvc_project(engine& e,
                    const location_t& output_dir,

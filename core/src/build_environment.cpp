@@ -1,13 +1,14 @@
 #include "stdafx.h"
+#include <unordered_map>
 #include <boost/thread/mutex.hpp>
-#include <boost/ptr_container/ptr_unordered_map.hpp>
+#include <boost/make_unique.hpp>
 #include <hammer/core/build_environment.h>
 
 namespace hammer{
 
 struct build_environment::impl_t
 {
-   typedef boost::ptr_unordered_map<std::ostream*, std::ostream> streams_t;
+   typedef std::unordered_map<std::ostream*, std::unique_ptr<std::ostream>> streams_t;
    
    impl_t() : should_buffer_(false) {}   
 
@@ -31,8 +32,9 @@ std::ostream& build_environment::begin_use_output_stream() const
    boost::mutex::scoped_lock lk(impl_->m_);
    if (impl_->should_buffer_)
    {
-      std::ostream* s = new std::stringstream;
-      impl_->streams_.insert(s, s);
+      auto s = boost::make_unique<std::stringstream>();
+      auto raw_s = s.get();
+      impl_->streams_.insert({raw_s, std::move(s)});
       return *s;
    }
    else

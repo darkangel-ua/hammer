@@ -189,11 +189,18 @@ void generate_report(engine& e,
    unordered_map<const project*, vector<test_description>> tests;
    for (const auto& node : testing_nodes) {
       const project& p = node.source_node_->products_owner().get_project();
-      const auto* bt = node.source_node_->find_product(types::TESTING_RUN);
+      const auto* bt = node.source_node_->find_product(types::TESTING_PASSED);
       if (!bt)
          continue;
+
       test_description td = {bt->get_main_target()->name(), test_passed(*bt), &bt->get_main_target()->properties()};
       tests[&p].push_back(std::move(td));
+   }
+
+   for (auto& p : tests) {
+      std::sort(p.second.begin(), p.second.end(), [] (const test_description& lhs, const test_description& rhs) {
+         return lhs.name_ < rhs.name_;
+      });
    }
 
    f << R"(<?xml version="1.0" encoding="UTF-8" standalone="no" ?>)";

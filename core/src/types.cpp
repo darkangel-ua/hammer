@@ -93,14 +93,15 @@ void register_standart_types(type_registry& tr,
    tr.insert(target_type(EXE, exe_suffixes));
    tr.insert(target_type(UNKNOWN, ""));
    tr.insert(target_type(COPY, ""));
+   tr.insert(target_type(TESTING_PASSED, ".passed"));
+   tr.insert(target_type(TESTING_SUITE, string{}));
+
    const target_type& testing_output_base = tr.insert(target_type(TESTING_OUTPUT, ".output"));
    tr.insert(target_type(TESTING_RUN, ".output", testing_output_base));
-   tr.insert(target_type(TESTING_PASSED, ".passed"));
    tr.insert(target_type(TESTING_COMPILE_FAIL, ".output", testing_output_base));
    tr.insert(target_type(TESTING_COMPILE_SUCCESSFUL, ".output", testing_output_base));
    tr.insert(target_type(TESTING_LINK_FAIL, ".output", testing_output_base));
    tr.insert(target_type(TESTING_LINK_SUCCESSFUL, ".output", testing_output_base));
-   tr.insert(target_type(TESTING_SUITE, string{}));
 }
 
 }}

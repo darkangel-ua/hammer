@@ -822,7 +822,7 @@ testing_run_many_rule(invocation_context& ctx,
                       const parscore::identifier* recheck)
 {
    auto result = boost::make_unique<sources_decl>();
-   target_invocation_context tctx{ ctx, false, false };
+   target_invocation_context tctx{ ctx, true, true };
    for (const source_decl& sd : sources) {
       sources_decl src;
       src.push_back(sd);

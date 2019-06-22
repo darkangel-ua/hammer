@@ -195,7 +195,10 @@ void remove_duplicates(deduplicator_t& deduplicator,
             : build_request_;
 
       feature_set* mt_fs = build_request.clone();
-      requirements().eval(build_request, mt_fs, usage_requirements);
+      feature_set* public_requirements = get_engine().feature_registry().make_set();
+      requirements().eval(build_request, mt_fs, public_requirements);
+      apply_project_dependencies(*public_requirements, *this);
+      usage_requirements->join(*public_requirements);
 
       feature_set* local_usage_requirements = get_engine().feature_registry().make_set();
       feature_set* build_request_for_dependencies = get_engine().feature_registry().make_set();
@@ -295,6 +298,7 @@ void remove_duplicates(deduplicator_t& deduplicator,
    {
       feature_set& tmp = *get_engine().feature_registry().make_set();
       this->usage_requirements().eval(constructed_target.properties(), &tmp);
+      apply_project_dependencies(tmp, *this);
 
       // we need to transform references in dependency features to local meta-targets to './/foo' form
       adjust_dependency_features_sources(tmp, *this);
@@ -314,22 +318,27 @@ void remove_duplicates(deduplicator_t& deduplicator,
       return {};
    }
 
-   void apply_project_dependencies(sources_decl& sources,
-                                   const basic_meta_target& sources_owner) {
-      const project& p = sources_owner.get_project();
-      for (auto& s : sources) {
-         if (!s.is_meta_target())
-            continue;
+   static
+   void apply_project_dependencies(source_decl& s,
+                                   const project::dependencies_t& dependencies) {
+      if (!s.is_meta_target())
+         return;
 
-         for (auto& d : p.dependencies()) {
-            if (boost::regex_match(s.target_path(), d.target_ref_mask_)) {
-               if (s.properties())
-                  s.properties()->join(*d.properties_);
-               else
-                  s.properties(d.properties_->clone());
-            }
+      for (auto& d : dependencies) {
+         if (boost::regex_match(s.target_path(), d.target_ref_mask_)) {
+            if (s.properties())
+               s.properties()->join(*d.properties_);
+            else
+               s.properties(d.properties_->clone());
          }
       }
+   }
+
+   void apply_project_dependencies(sources_decl& sources,
+                                   const basic_meta_target& sources_owner) {
+      const auto& dependencies = sources_owner.get_project().dependencies();
+      for (auto& s : sources)
+         apply_project_dependencies(s, dependencies);
    }
 
    sources_decl
@@ -338,5 +347,18 @@ void remove_duplicates(deduplicator_t& deduplicator,
       auto s = std::move(sources);
       apply_project_dependencies(s, sources_owner);
       return std::move(s);
+   }
+
+   void apply_project_dependencies(feature_set& properties,
+                                   const basic_meta_target& sources_owner) {
+      const auto& dependencies = sources_owner.get_project().dependencies();
+      for (auto& p : properties) {
+         if (!p->attributes().dependency)
+            continue;
+
+         auto new_sd = p->get_dependency_data().source_;
+         apply_project_dependencies(new_sd, dependencies);
+         p->set_dependency_data(new_sd, p->get_path_data().project_);
+      }
    }
 }

@@ -1,0 +1,11 @@
+# test that dependency overriding correctly applies to public requirements
+project 
+    dependencies = 
+     { /foo : 1.0 }
+   ;
+
+use-project /foo : ./foo ;
+
+local lib lib1 : lib1.cpp : requirements = @<source>(/foo) ;
+
+exe test : main.cpp lib1 ;

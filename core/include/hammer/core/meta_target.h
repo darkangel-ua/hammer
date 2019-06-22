@@ -56,4 +56,7 @@ void apply_project_dependencies(sources_decl& sources,
 sources_decl
 apply_project_dependencies(sources_decl&& sources,
                            const basic_meta_target& sources_owner);
+
+void apply_project_dependencies(feature_set& properties,
+                                const basic_meta_target& sources_owner);
 }

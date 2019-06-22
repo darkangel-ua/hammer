@@ -10,17 +10,13 @@ namespace hammer {
 testing_suite_meta_target::testing_suite_meta_target(hammer::project& p,
                                                      const std::string& name,
                                                      const sources_decl& sources,
-                                                     const sources_decl& common_sources,
+                                                     sources_decl common_sources,
                                                      const requirements_decl& common_requirements)
    : typed_meta_target(&p, name, {}, {}, p.get_engine().get_type_registry().get(types::TESTING_SUITE)),
-     common_sources_(common_sources),
+     common_sources_(apply_project_dependencies(std::move(common_sources), *this)),
      common_requirements_(common_requirements)
 {
    this->sources(sources);
-}
-
-void testing_suite_meta_target::common_sources(const sources_decl& s) {
-   common_sources_ = s;
 }
 
 const testing_suite_meta_target*

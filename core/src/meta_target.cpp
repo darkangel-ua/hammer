@@ -332,4 +332,11 @@ void remove_duplicates(deduplicator_t& deduplicator,
       }
    }
 
+   sources_decl
+   apply_project_dependencies(sources_decl&& sources,
+                              const basic_meta_target& sources_owner) {
+      auto s = std::move(sources);
+      apply_project_dependencies(s, sources_owner);
+      return std::move(s);
+   }
 }

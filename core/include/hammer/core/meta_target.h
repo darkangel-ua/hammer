@@ -53,4 +53,7 @@ class meta_target : public basic_meta_target {
 void apply_project_dependencies(sources_decl& sources,
                                 const basic_meta_target& sources_owner);
 
+sources_decl
+apply_project_dependencies(sources_decl&& sources,
+                           const basic_meta_target& sources_owner);
 }

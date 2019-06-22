@@ -9,10 +9,9 @@ class testing_suite_meta_target : public typed_meta_target
       testing_suite_meta_target(hammer::project& p,
                                 const std::string& name,
                                 const sources_decl& sources,
-                                const sources_decl& common_sources,
+                                sources_decl common_sources,
                                 const requirements_decl& common_requirements);
 
-      void common_sources(const sources_decl& s);
       const sources_decl&
       common_sources() const { return common_sources_; }
 

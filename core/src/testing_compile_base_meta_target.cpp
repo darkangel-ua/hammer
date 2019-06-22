@@ -26,13 +26,27 @@ void testing_compile_base_meta_target::instantiate_impl(instantiation_context& c
    if (!suite)
       return typed_meta_target::instantiate_impl(ctx, owner, build_request, result, usage_requirements);
 
-   // we need to add <use> feature for sources found in testing.suite common-sources
    feature_set& new_build_request = *build_request.clone();
-   for (const source_decl s : suite->common_sources()) {
-      feature* source = get_engine().feature_registry().create_feature("use", "");
-      source->set_dependency_data(s, &get_project());
-      new_build_request.join(source);
-   }
+
+   // we need to instantiate all sources found in testing.suite common-sources
+   // and than attach their usage-requirements to this build-request
+   // we instantiate because sources might have <sources> in usage-requirements and this will add
+   // sources to this target and than generator will fail to find transformation because it doesn't know
+   // how to do CPP + SHARED_LIB -> TESTING_COMPILE_SUCCESSFUL
+   feature_set& common_usage_requirements = *get_engine().feature_registry().make_set();
+
+   sources_decl simple_targets;
+   meta_targets_t meta_targets;
+   std::vector<basic_target*> ignored_targets;
+   split_sources(&simple_targets, &meta_targets, suite->common_sources(), build_request);
+   instantiate_meta_targets(ctx, meta_targets, build_request, nullptr, &ignored_targets, &common_usage_requirements);
+
+   // now we need to remove any <source>/<dependency> in calculated usage requirements
+   common_usage_requirements.erase_all("source");
+   common_usage_requirements.erase_all("dependency");
+
+   // and finally join build request and common usage requirements
+   new_build_request.join(common_usage_requirements);
 
    if (!suite->common_requirements().empty())
       add_common_requirements(new_build_request, suite->common_requirements());

@@ -560,13 +560,13 @@ static
 std::unique_ptr<sources_decl>
 glob_rule_impl(invocation_context& ctx,
                const one_or_list<wcpath>& patterns,
-               const one_or_list<location_t>* exceptions,
+               const one_or_list<parscore::identifier>* exceptions,
                const bool recursive)
 {
    auto result = boost::make_unique<sources_decl>();
    std::vector<std::string> s_exceptions;
    if (exceptions)
-      transform(exceptions->begin(), exceptions->end(), back_inserter(s_exceptions), [](const location_t& l) { return l.string(); });
+      s_exceptions = to_simple_ids(exceptions);
 
    std::vector<location_t> l_patterns;
    transform(patterns.begin(), patterns.end(), back_inserter(l_patterns), [](const wcpath& p) { return p.to_location(); });
@@ -592,7 +592,7 @@ static
 std::unique_ptr<sources_decl>
 glob_rule(invocation_context& ctx,
           const one_or_list<wcpath>& patterns,
-          const one_or_list<location_t>* exceptions)
+          const one_or_list<parscore::identifier>* exceptions)
 {
    return glob_rule_impl(ctx, patterns, exceptions, false);
 }
@@ -601,7 +601,7 @@ static
 std::unique_ptr<sources_decl>
 rglob_rule(invocation_context& ctx,
            const one_or_list<wcpath>& patterns,
-           const one_or_list<location_t>* exceptions)
+           const one_or_list<parscore::identifier>* exceptions)
 {
    return glob_rule_impl(ctx, patterns, exceptions, true);
 }

@@ -213,7 +213,6 @@ void extract_sources(sources_decl& result,
                      const basic_meta_target& relative_to_target)
 {
    extract_dependency_like_sources(result, fs, relative_to_target, "source");
-   extract_dependency_like_sources(result, fs, relative_to_target, "library");
 }
 
 void extract_dependencies(sources_decl& result,

@@ -1,0 +1,2 @@
+lib a : a.cpp : : : <source>b.cpp ;
+exe test : main.cpp a : <source>e.cpp ;

@@ -23,7 +23,6 @@ feature asmflags : : free ;
 feature linkflags : : free ;
 feature archiveflags : : free ;
 feature version : : no-defaults no-checks ;
-feature library : : free dependency incidental ;
 feature source : : free dependency incidental ;
 feature use : : free dependency incidental ;
 feature dependency : : free dependency incidental ;

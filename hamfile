@@ -2,7 +2,7 @@ project hammer
    : requirements =
       <cxxflags>"-std=c++11"                                                                                                                                                                                                
       (<toolset>gcc -> <cxxflags>"-Wno-deprecated-declarations")
-      <version>0.6.0-next
+      <version>0.7.0
    ;
 
 use-project core : core/build ;

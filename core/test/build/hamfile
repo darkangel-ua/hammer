@@ -14,4 +14,5 @@ testing.run
          /boost/spirit
          /yaml-cpp
    : args = '--catch_system_errors=no' ../tests_data
+   : recheck = true
    ;

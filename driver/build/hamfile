@@ -12,11 +12,11 @@ exe hammer
       [ glob ../src/*.cpp ]
       [ glob ../src/*.h ]
       version
-      /boost/program_options/<version>1.58.0+1
-      /boost/filesystem/<version>1.58.0+1
-      /boost/format/<version>1.58.0+1
-      /boost/regex/<version>1.58.0+1
-      /hammer/core
+      ^hammer/core
+      /boost/program_options
+      /boost/filesystem
+      /boost/format
+      /boost/regex
    : requirements =
       (<target-os>linux && <variant>debug -> <name>dhammer)
       (<target-os>windows && <variant>debug -> <name>dhammer.exe)

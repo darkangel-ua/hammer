@@ -2,8 +2,8 @@ lib hammer.sema
    : sources =
       [ glob ../src/*.cpp ]
       [ rglob ../include/*.h ]
-      @/hammer/ast
-      @/hammer/core_objects
+      @^hammer/ast
+      @^hammer/core_objects
    : requirements =
       @<include>../include
       <link>static

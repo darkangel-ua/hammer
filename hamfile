@@ -3,6 +3,12 @@ project hammer
       <cxxflags>"-std=c++11"                                                                                                                                                                                                
       (<toolset>gcc -> <cxxflags>"-Wno-deprecated-declarations")
       <version>0.8.0
+   : dependencies = 
+      { ^hammer/** : 0.8.0 }
+      { /boost/** : 1.58.0+1 }
+      { /libantlr3c : 3.1.1+3 }
+      { /ext/boost/** : 0.1+1 }    
+      { /yaml-cpp : 0.6.2 }
    ;
 
 use-project core : core/build ;

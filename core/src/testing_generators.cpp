@@ -84,9 +84,11 @@ class testing_action : public build_action {
    public:
       testing_action(engine& e,
                      build_action_ptr wrapped_action,
-                     std::string name = {})
+                     std::string name = {},
+                     const bool tee = false)
          : build_action(name.empty() ? wrapped_action->name() : name + "(" + wrapped_action->name() + ")"),
            wrapped_action_(std::move(wrapped_action)),
+           tee_(tee),
            output_arg_writer_("output", e.get_type_registry().get(types::TESTING_OUTPUT), product_argument_writer::output_strategy::FULL_PATH),
            passed_arg_writer_("passed", e.get_type_registry().get(types::TESTING_PASSED), product_argument_writer::output_strategy::FULL_PATH)
       {
@@ -104,7 +106,7 @@ class testing_action : public build_action {
    protected:
       bool execute_impl(const build_node& node,
                         const build_environment& environment) const override {
-         testing_build_environment env{environment};
+         testing_build_environment env{environment, tee_};
          const bool result = wrapped_action_->execute(node, env);
          if (!result)
             return result;
@@ -121,6 +123,7 @@ class testing_action : public build_action {
 
    private:
       build_action_ptr wrapped_action_;
+      const bool tee_;
       product_argument_writer output_arg_writer_;
       product_argument_writer passed_arg_writer_;
 };
@@ -169,11 +172,8 @@ class testing_run_generator : public generator {
       }
 };
 
-}
-
-void add_testing_generators(engine& e,
-                            generator_registry& gr)
-{
+void add_testing_run_generator(engine& e,
+                               generator_registry& gr) {
    auto run_product = std::make_shared<product_argument_writer>("run_product", e.get_type_registry().get(types::TESTING_RUN));
    auto test_executable = std::make_shared<source_argument_writer>("test_executable", e.get_type_registry().get(types::EXE));
    auto additional_dirs = std::make_shared<shared_lib_dirs_writer>("additional_dirs", e.get_type_registry().get(types::SHARED_LIB));
@@ -192,7 +192,7 @@ void add_testing_generators(engine& e,
    auto action = [&] {
       auto cmd_action = std::make_shared<cmdline_action>("testing.run", run_product);
       *cmd_action += cmdline;
-      return std::make_shared<testing_action>(e, std::move(cmd_action));
+      return std::make_shared<testing_action>(e, std::move(cmd_action), std::string{}, /*tee=*/true);
    }();
 
    auto sources = make_consume_types(e, {types::EXE});
@@ -200,7 +200,14 @@ void add_testing_generators(engine& e,
 
    auto g = make_unique<testing_run_generator>(e, sources, products, action);
    gr.insert(std::move(g));
+}
 
+}
+
+void add_testing_generators(engine& e,
+                            generator_registry& gr)
+{
+   add_testing_run_generator(e, gr);
    add_testing_suite_generator(e, gr);
 }
 

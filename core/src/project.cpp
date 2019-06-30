@@ -2,6 +2,7 @@
 #include <boost/format.hpp>
 #include <boost/make_unique.hpp>
 #include <boost/filesystem/path_traits.hpp>
+#include <boost/range/iterator_range.hpp>
 #include <hammer/core/project.h>
 #include <hammer/core/engine.h>
 #include <hammer/core/feature_registry.h>

@@ -56,7 +56,7 @@ namespace hammer{
             string::size_type p = rfind(name, j->suffix_);//s_name.rfind(j->c_str());
             if (p != string::npos && 
                 p + j->suffix_.size() == name.size())
-               return i->second;
+               return i->second.get();
          }
       }
 
@@ -98,7 +98,7 @@ namespace hammer{
    {
       types_t::const_iterator i = types_.find(tag);
       if (i != types_.end())
-         return i->second;
+         return i->second.get();
       else
          return nullptr;
    }
@@ -114,21 +114,21 @@ namespace hammer{
 
    const target_type& type_registry::insert(const target_type& a_t)
    {
-      std::unique_ptr<target_type> t(a_t.clone(*this));
-      // FIXME: This is due bug in ptr_container insert method
-      type_tag tag(t->tag());
-      pair<types_t::iterator, bool> i = types_.insert(tag, t.get());
+      std::unique_ptr<target_type> t{a_t.clone(*this)};
+      auto* raw_t = t.get();
+      type_tag tag{t->tag()};
+      pair<types_t::iterator, bool> i = types_.insert({tag, std::move(t)});
       if (i.second)
       {
-         if (!t->suffixes().empty())
+         if (!raw_t->suffixes().empty())
          {
-            for(target_type::suffixes_t::const_iterator i = t->suffixes().begin(), last = t->suffixes().end(); i != last; ++i)
-               types_by_suffix_.insert(make_pair(i->suffix_, t.get()));
+            for(target_type::suffixes_t::const_iterator i = raw_t->suffixes().begin(), last = raw_t->suffixes().end(); i != last; ++i)
+               types_by_suffix_.insert(make_pair(i->suffix_, raw_t));
          }
 
-         return *t.release();
+         return *raw_t;
       }
       else
-         throw std::runtime_error("[type_registry] Can't add type '" + t->tag().name() + "' twice");
+         throw std::runtime_error("[type_registry] Can't add type '" + raw_t->tag().name() + "' twice");
    }
 }

@@ -1,5 +1,7 @@
 #include <vector>
 #include <utility>
+#include <algorithm>
+#include <ostream>
 #include <hammer/core/sources_decl.h>
 #include <hammer/core/feature_set.h>
 
@@ -131,7 +133,7 @@ void sources_decl::clear() {
 
 void sources_decl::unique() {
    clone_if_needed();
-   sort(impl_->values_.begin(), impl_->values_.end());
+   std::sort(impl_->values_.begin(), impl_->values_.end());
    impl_->values_.erase(std::unique(impl_->values_.begin(), impl_->values_.end()), impl_->values_.end());
 }
 

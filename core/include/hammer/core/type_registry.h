@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 #include <string>
-#include <boost/ptr_container/ptr_map.hpp>
+#include <map>
 #include <boost/noncopyable.hpp>
 #include <hammer/core/type_tag.h>
 
@@ -25,7 +25,7 @@ class type_registry : public boost::noncopyable {
       ~type_registry();
 
    private:
-      typedef boost::ptr_map<type_tag, target_type> types_t;
+      typedef std::map<type_tag, std::unique_ptr<target_type>> types_t;
       typedef std::multimap<std::string, target_type*> types_by_suffix_t;
 
       types_t types_;

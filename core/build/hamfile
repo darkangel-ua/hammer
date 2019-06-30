@@ -26,6 +26,7 @@ lib hammer.core
       /boost/asio/<version>1.58.0+1
       /boost/pool/<version>1.58.0+1
       /boost/thread/<version>1.58.0+1
+      /boost/range/<version>1.58.0+1
       @/boost/logic/<version>1.58.0+1
    : requirements =
       @<include>../include

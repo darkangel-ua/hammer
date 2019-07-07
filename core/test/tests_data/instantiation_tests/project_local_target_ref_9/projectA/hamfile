@@ -1,0 +1,9 @@
+project projectA 
+   : requirements =
+      <version>1.0  # this is required to resolve ^projectA references
+   : dependencies = 
+     { ^projectA/** : 1.0 }
+   ;
+
+use-project subprojectA : ./subprojectA ;
+use-project subprojectB : ./subprojectB ;

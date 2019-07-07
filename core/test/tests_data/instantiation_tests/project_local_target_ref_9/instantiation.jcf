@@ -1,0 +1,9 @@
+BsubprojectA [ features = <version>1.0 <define>A_SUBPROJECT_B; ] {
+    BsubprojectA.cpp {}
+    AsubprojectA [ features = <version>1.0; ] {
+        AsubprojectA.cpp {}
+        AsubprojectB {
+            AsubprojectB.cpp {}
+        }
+    }
+}

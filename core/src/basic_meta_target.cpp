@@ -148,7 +148,7 @@ void basic_meta_target::resolve_meta_target_source(const source_decl& source,
 
    // source has target_name_ only when it was explicitly requested (./foo//bar) where target_name_ == "bar"
    loaded_projects suitable_projects =
-      source.is_project_local_reference() ? resolve_project_local_reference(source, get_project())
+      source.is_project_local_reference() ? resolve_project_local_reference(source, source.owner_project())
                                           : get_project().load_project(source.target_path());
 
    if (source.target_name().empty()) {

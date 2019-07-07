@@ -1,0 +1,1 @@
+lib AsubprojectB : AsubprojectB.cpp : usage-requirements = <define>A_SUBPROJECT_B ;

@@ -1,0 +1,6 @@
+# test that we can use project local references in cross project usage requirements
+
+use-project /projectA : ./projectA ;
+use-project /projectB : ./projectB ;
+
+alias test : /projectB/subprojectA/<version>1.0 ;

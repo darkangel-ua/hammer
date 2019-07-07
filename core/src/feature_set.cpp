@@ -189,8 +189,8 @@ void extract_dependency_like_sources(sources_decl& result,
                                      const basic_meta_target& relative_to_target,
                                      const char* feature_name)
 {
-   feature_set::const_iterator i = fs.find(feature_name);
-   while(i != fs.end()) {
+   auto i = fs.find(feature_name);
+   while (i != fs.end()) {
       source_decl sd_copy = (**i).get_dependency_data().source_;
 
       if (!sd_copy.target_path().empty() &&

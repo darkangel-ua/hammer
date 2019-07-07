@@ -36,6 +36,7 @@ feature extern-c-nothrow : off on ;
 feature debug-symbols : on off ;
 feature pch : off create use : generated ;
 feature mangling : full version none ;
+feature pic : on off ;
 
 # targets with this feature will not participate in alternatives selection
 feature build : no : optional ;

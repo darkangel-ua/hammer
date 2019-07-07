@@ -133,7 +133,7 @@ void init_toolset(engine& e,
            add("<warnings-as-errors>on", "-Werror").
            add("<debug-symbols>on", "-g").
            add("<profiling>on", "-pg").
-           add("<link>shared/<target-os>linux", "-fPIC").
+           add("<pic>on", "-fPIC").
            add("<address-model>32", "-m32").
            add("<address-model>64", "-m64");
 

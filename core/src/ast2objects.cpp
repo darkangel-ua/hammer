@@ -63,25 +63,21 @@ ast2feature(invocation_context& ctx,
             const ast::feature& f)
 {
 
-   feature_registry* fr = &ctx.current_project_.local_feature_registry();
-   const feature_def* fdef = fr->find_def(f.name().to_string().c_str());
-   if (!fdef) {
-      fr = &ctx.current_project_.get_engine().feature_registry();
-      fdef = fr->find_def(f.name().to_string().c_str());
-   }
+   const feature_registry& fr = static_cast<const project&>(ctx.current_project_).feature_registry();
+   const feature_def* fdef = fr.find_def(f.name().to_string());
 
    if (fdef && fdef->attributes().dependency) {
-      feature* result = fr->create_feature(f.name().to_string(), {});
+      feature* result = fr.create_feature(f.name().to_string(), {});
       result->set_dependency_data(handle_one_source(ctx, ctx.current_project_.get_engine().get_type_registry(), f.value()), nullptr);
       return result;
    } else if (const ast::id_expr* id = ast::as<ast::id_expr>(f.value()))
-      return fr->create_feature(f.name().to_string(), id->id().to_string());
+      return fr.create_feature(f.name().to_string(), id->id().to_string());
    else if (ast::is_a<ast::target_ref>(f.value())) {
-      feature* result = fr->create_feature(f.name().to_string(), {});
+      feature* result = fr.create_feature(f.name().to_string(), {});
       result->set_dependency_data(handle_one_source(ctx, ctx.current_project_.get_engine().get_type_registry(), f.value()), nullptr);
       return result;
    } else if (const ast::path* p = ast::as<ast::path>(f.value())) {
-      feature* result = fr->create_feature(f.name().to_string(), p->to_string());
+      feature* result = fr.create_feature(f.name().to_string(), p->to_string());
       return result;
    } else
       throw std::runtime_error("Not implemented");

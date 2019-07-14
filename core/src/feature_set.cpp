@@ -20,7 +20,7 @@ using namespace std;
 
 namespace hammer{
 
-feature_set::feature_set(feature_registry* fr) : fr_(fr), has_undefined_(false)
+feature_set::feature_set(feature_registry* fr) : fr_(fr)
 {
 }
 
@@ -32,9 +32,6 @@ feature_set& feature_set::join(const char* name, const char* value)
 feature_set&
 feature_set::join(feature* f)
 {
-   if (f->attributes().undefined_)
-      has_undefined_ = true;
-
    if (!f->attributes().free) {
       iterator i = find(f->name(), f->get_value_ns());
       if (i != end()) {
@@ -60,7 +57,7 @@ const feature& feature_set::get(const char* name_) const
 {
    const_iterator f = find(name_);
    if (f == features_.end())
-      throw runtime_error("feature '" + string(name_) + "not founded");
+      throw runtime_error("feature '" + string(name_) + "' not founded");
    
    return **f;
 }
@@ -262,7 +259,6 @@ bool feature_set::compatible_with(const feature_set& rhs) const
       {
          if ((**i).attributes().free ||
              (**i).attributes().generated ||
-             (**i).attributes().undefined_ ||
              (**i).attributes().no_defaults)
          {
             return false;
@@ -285,7 +281,6 @@ bool feature_set::compatible_with(const feature_set& rhs) const
 void feature_set::clear()
 {
    features_.clear();
-   has_undefined_ = false;
 }
 
 bool feature_set::contains(const feature_set& rhs) const
@@ -442,18 +437,6 @@ void feature_set::erase_all(const std::string& feature_name)
          i = features_.erase(i);
       else
          ++i;
-   }
-
-   has_undefined_ = false;
-   const feature_def& def = fr_->get_def(feature_name);
-   if (def.attributes().undefined_)
-   {
-      for(features_t::const_iterator i = features_.begin(), last = features_.end(); i != last; ++i)
-         if ((**i).attributes().undefined_)
-         {
-            has_undefined_ = true;
-            break;
-         }
    }
 }
 

@@ -82,8 +82,6 @@ class basic_meta_target {
                                       const feature_set& build_request,
                                       meta_targets_t* meta_targets) const;
 
-      const feature_set& resolve_undefined_features(const feature_set& fs) const;
-
       virtual
       basic_target*
       create_simple_target(const main_target& owner,

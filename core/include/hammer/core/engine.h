@@ -44,9 +44,8 @@ class engine : public boost::noncopyable {
       loaded_projects
       try_load_project(location_t fs_project_path);
 
+      // will load script in context of global project
       void load_hammer_script(location_t filepath);
-      void load_hammer_script(const std::string& script_body,
-                              const std::string& script_name);
 
       // FIXME: this should return const, because we shouldn't (FIXME: can't) change project after it was added to engine
       project&
@@ -54,8 +53,8 @@ class engine : public boost::noncopyable {
 
       type_registry& get_type_registry() { return *type_registry_; }
       generator_registry& generators() const { return *generators_; }
-      hammer::feature_registry& feature_registry() { return *feature_registry_; }
-      const hammer::feature_registry& feature_registry() const { return *feature_registry_; }
+      hammer::feature_registry& feature_registry() { return global_project_->feature_registry(); }
+      const hammer::feature_registry& feature_registry() const { return global_project_->feature_registry(); }
       rule_manager& get_rule_manager() { return *rule_manager_; }
       const rule_manager& get_rule_manager() const { return *rule_manager_; }
       hammer::toolset_manager& toolset_manager() { return *toolset_manager_; }
@@ -88,7 +87,6 @@ class engine : public boost::noncopyable {
       std::unique_ptr<project> global_project_;
 
       std::shared_ptr<type_registry> type_registry_;
-      std::unique_ptr<hammer::feature_registry> feature_registry_;
       std::unique_ptr<rule_manager> rule_manager_;
 
       std::shared_ptr<generator_registry> generators_;
@@ -100,15 +98,15 @@ class engine : public boost::noncopyable {
 
       bool error_verbosity_ = true;
 
-      void load_hammer_script_v2(const project* parent,
-                                 location_t filepath);
-      void load_hammer_script_v2(const project* parent,
-                                 const std::string& script_body,
-                                 const std::string& script_name);
+      // will load script in context of global project
+      void load_hammer_script(const std::string& script_body,
+                              const std::string& script_name);
+      // will load script in context of global project
+      void load_hammer_script_(const location_t& filepath);
 
       std::unique_ptr<project>
-      load_project_v2(const location_t& project_path,
-                      const project* upper_project);
+      load_project(const location_t& project_path,
+                   const project* parent);
 
       project* get_upper_project(const location_t& project_path);
 };

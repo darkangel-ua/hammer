@@ -113,7 +113,13 @@ class project : public boost::noncopyable {
 
       hammer::engine& get_engine() const { return engine_; }
       const location_t& intermediate_dir() const { return intermediate_dir_; }
-      feature_registry& local_feature_registry() const { return local_feature_registry_; }
+
+      const hammer::feature_registry&
+      feature_registry() const;
+
+      hammer::feature_registry&
+      feature_registry();
+
       bool is_root() const { return is_root_; }
       void set_root(bool v) { is_root_ = v; }
 
@@ -140,7 +146,6 @@ class project : public boost::noncopyable {
       // choose best alternative for target_name satisfied build_request
       selected_target select_best_alternative(const std::string& target_name, const feature_set& build_request, const bool allow_locals = false) const;
       selected_target try_select_best_alternative(const std::string& target_name, const feature_set& build_request, const bool allow_locals = false) const;
-      feature_set* try_resolve_local_features(const feature_set& fs) const;
 
    public:
       const project* const parent_;
@@ -163,7 +168,8 @@ class project : public boost::noncopyable {
       targets_t targets_;
       location_t intermediate_dir_;
       bool is_root_ = false;
-      mutable feature_registry local_feature_registry_;
+      // mutable because we are deferring registry creation unless we want to modify it
+      mutable std::shared_ptr<hammer::feature_registry> feature_registry_;
       // mutable because we cache resolved projects
       mutable std::unique_ptr<aliases_impl> aliases_;
       dependencies_t dependencies_;

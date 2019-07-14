@@ -1,6 +1,5 @@
 #include <sstream>
 #include <boost/format.hpp>
-#include <boost/make_unique.hpp>
 #include <boost/filesystem/path_traits.hpp>
 #include <boost/range/iterator_range.hpp>
 #include <hammer/core/project.h>
@@ -160,6 +159,34 @@ project::~project() {
 
 }
 
+const hammer::feature_registry&
+project::feature_registry() const {
+   if (feature_registry_)
+      return *feature_registry_;
+
+   if (parent_)
+      return parent_->feature_registry();
+
+   feature_registry_ = std::make_shared<hammer::feature_registry>();
+   return *feature_registry_;
+}
+
+hammer::feature_registry&
+project::feature_registry() {
+   if (feature_registry_)
+      return *feature_registry_;
+
+   if (parent_) {
+      auto parent = parent_;
+      while (parent && !parent->feature_registry_)
+         parent = parent->parent_;
+      feature_registry_ = std::make_shared<hammer::feature_registry>(parent->feature_registry_);
+   } else
+      feature_registry_ = std::make_shared<hammer::feature_registry>();
+
+   return *feature_registry_;
+}
+
 void project::add_target(std::unique_ptr<basic_meta_target> t)
 {
    t->requirements().insert_infront(requirements());
@@ -245,8 +272,7 @@ int compute_alternative_rank(const feature_set& target_properties,
    unsigned rank = 0;
    for(const feature* tf : target_properties) {
       if (!(tf->attributes().free ||
-            tf->attributes().incidental ||
-            tf->attributes().undefined_))
+            tf->attributes().incidental))
       {
          feature_set::const_iterator bf = build_request.find(tf->name());
          if (bf != build_request.end())
@@ -310,8 +336,7 @@ int compute_requirements_rank(const feature_set& requirements)
    int rank = 0;
    for (const feature* f : requirements) {
       if (f->attributes().free ||
-          f->attributes().incidental ||
-          f->attributes().undefined_)
+          f->attributes().incidental)
          continue;
 
       if (!f->definition().defaults_contains(f->value()))
@@ -325,13 +350,9 @@ int compute_requirements_rank(const feature_set& requirements)
 
 project::selected_target
 project::try_select_best_alternative(const std::string& target_name,
-                                     const feature_set& build_request_param,
+                                     const feature_set& build_request,
                                      const bool allow_locals) const
 {
-   const feature_set& build_request = build_request_param.has_undefined_features()
-                                         ? *try_resolve_local_features(build_request_param)
-                                         : build_request_param;
-
    boost::iterator_range<targets_t::const_iterator> r = targets_.equal_range(target_name);
 
    if (r.empty())
@@ -382,7 +403,7 @@ project::try_select_best_alternative(const std::string& target_name,
    {
       return selected_targets_2.front();
    } else
-      error_cannot_choose_alternative(*this, target_name, build_request_param);
+      error_cannot_choose_alternative(*this, target_name, build_request);
 }
 
 void project::instantiate(const std::string& target_name,
@@ -414,27 +435,6 @@ project::select_best_alternative(const feature_set& build_request) const
          ++first, ++next;
 
       first = next;
-   }
-
-   return result;
-}
-
-feature_set*
-project::try_resolve_local_features(const feature_set& fs) const
-{
-   feature_set* result = engine_.feature_registry().make_set();
-   for(feature_set::const_iterator i = fs.begin(), last = fs.end(); i != last; ++i)
-   {
-      if ((**i).attributes().undefined_)
-      {
-         const feature_def* def = local_feature_registry_.find_def_from_full_name((**i).name().c_str());
-         if (def)
-            result->join(local_feature_registry_.create_feature((**i).name(), (**i).value()));
-         else
-            result->join(*i);
-      }
-      else
-         result->join(*i);
    }
 
    return result;

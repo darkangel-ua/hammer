@@ -172,18 +172,6 @@ basic_meta_target::~basic_meta_target()
 {
 }
 
-const feature_set& basic_meta_target::resolve_undefined_features(const feature_set& fs) const
-{
-   const feature_set* without_undefined = fs.has_undefined_features()
-                                             ? get_project().try_resolve_local_features(fs)
-                                             : &fs;
-   if (without_undefined->has_undefined_features())
-      throw std::runtime_error("Target '" + name() + "' at location '" +
-                               location().string() + "' has been instantiated with unknown features");
-
-   return *without_undefined;
-}
-
 void basic_meta_target::instantiate(instantiation_context& ctx,
                                     const main_target* owner,
                                     const feature_set& build_request,

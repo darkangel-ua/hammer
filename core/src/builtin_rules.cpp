@@ -131,7 +131,7 @@ void project_rule(invocation_context& ctx,
    if (dependencies) {
       project::dependencies_t deps;
       for (auto& d : *dependencies) {
-         feature_set* props = ctx.current_project_.get_engine().feature_registry().make_set();
+         feature_set* props = ctx.current_project_.feature_registry().make_set();
          props->join("version", d.version_.to_string().c_str());
          deps.push_back({target_ref_mask_to_regex(d.pattern_.value_.string()), props});
       }
@@ -423,22 +423,7 @@ void feature_rule(invocation_context& ctx,
       return { v, {} };
    });
 
-   ctx.current_project_.get_engine().feature_registry().add_feature_def(name.to_string(), legal_values, resolve_attributes(attributes));
-}
-
-static
-void feature_local_rule(invocation_context& ctx,
-                        const parscore::identifier& name,
-                        const one_or_list<parscore::identifier>* values_,
-                        const one_or_list<parscore::identifier>* attributes)
-{
-   std::vector<std::string> values = to_simple_ids(values_);
-   feature_def::legal_values_t legal_values;
-   transform(values.begin(), values.end(), back_inserter(legal_values), [](const string& v) -> feature_def::legal_value {
-      return { v, {} };
-   });
-
-   ctx.current_project_.local_feature_registry().add_feature_def(name.to_string(), legal_values, resolve_attributes(attributes));
+   ctx.current_project_.feature_registry().add_feature_def(name.to_string(), legal_values, resolve_attributes(attributes));
 }
 
 static
@@ -446,7 +431,7 @@ void feature_compose_rule(invocation_context& ctx,
                           const feature& f,
                           const feature_or_feature_set_t& components)
 {
-   feature_registry& fr = ctx.current_project_.get_engine().feature_registry();
+   feature_registry& fr = ctx.current_project_.feature_registry();
    feature_set* cc;
    if (auto f = boost::get<const feature*>(&components)) {
       cc = fr.make_set();
@@ -462,7 +447,7 @@ void feature_subfeature_rule(invocation_context& ctx,
                              const parscore::identifier& feature_name,
                              const parscore::identifier& subfeature_name)
 {
-   feature_def& def = ctx.current_project_.get_engine().feature_registry().get_def(feature_name.to_string());
+   feature_def& def = ctx.current_project_.feature_registry().get_def(feature_name.to_string());
    def.add_subfeature(subfeature_name.to_string());
 }
 
@@ -472,12 +457,12 @@ void variant_rule(invocation_context& ctx,
                   const parscore::identifier* base,
                   feature_set& components)
 {
-   engine& e = ctx.current_project_.get_engine();
-   feature_def& def = e.feature_registry().get_def("variant");
+   feature_registry& fr = ctx.current_project_.feature_registry();
+   feature_def& def = fr.get_def("variant");
    def.extend_legal_values(variant_name.to_string(), {});
 
    if (base) {
-      feature_set* composite_features = e.feature_registry().make_set();
+      feature_set* composite_features = fr.make_set();
       def.expand_composites(base->to_string(), composite_features);
       composite_features->join(components);
       def.compose(variant_name.to_string(), composite_features);
@@ -1123,7 +1108,6 @@ void install_builtin_rules(rule_manager& rm)
    rm.add_rule("project", project_rule, {{"id", project_id_validator}, "requirements", "usage-requirements", "dependencies"});
    rm.add_rule("use-project", use_project_rule, {{"alias", use_project_alias_validator}, "location", "requirements", {"match", use_project_match_validator}});
    rm.add_rule("feature", feature_rule, {"name", "values", {"attributes", feature_attributes_validator}});
-   rm.add_rule("feature.local", feature_local_rule, {"name", "values", {"attributes", feature_attributes_validator}});
    rm.add_rule("feature.compose", feature_compose_rule, {"feature", "components"});
    rm.add_rule("feature.subfeature", feature_subfeature_rule, {"feature-name", "subfeature-name"});
    rm.add_rule("variant", variant_rule, {"name", "base", "components"});

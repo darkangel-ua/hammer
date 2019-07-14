@@ -96,11 +96,7 @@ void check_feature(void* e, void* t, void* features, const pANTLR3_COMMON_TOKEN 
    const char* value = reinterpret_cast<const char*>(name_token->getText(value_token)->chars);
    const feature_set* fs = static_cast<const feature_set*>(features);
    const basic_target* bt = static_cast<const basic_target*>(t);
-   engine* eng = static_cast<engine*>(e);
-   const feature_def* global_def = eng->feature_registry().find_def(name);
-   const feature_def* local_def = bt->get_project().local_feature_registry().find_def(name);
-   const feature_def& fd = global_def ? *global_def
-                                      : bt->get_project().local_feature_registry().get_def(name);
+   const feature_def& fd = bt->get_project().feature_registry().get_def(name);
    
    if (fd.attributes().path)
    {

@@ -184,15 +184,10 @@ void remove_duplicates(deduplicator_t& deduplicator,
    void meta_target::instantiate_impl(instantiation_context& ctx,
                                       const main_target* owner,
                                       sources_decl sources,
-                                      const feature_set& build_request_,
+                                      const feature_set& build_request,
                                       std::vector<basic_target*>* result,
                                       feature_set* usage_requirements) const {
       apply_project_dependencies(sources, *this);
-
-      const feature_set& build_request =
-         build_request_.has_undefined_features()
-            ? resolve_undefined_features(build_request_)
-            : build_request_;
 
       feature_set* mt_fs = build_request.clone();
       feature_set* public_requirements = get_engine().feature_registry().make_set();
@@ -230,8 +225,7 @@ void remove_duplicates(deduplicator_t& deduplicator,
       deduplicator_t sources_deduplicator;
       remove_duplicates(sources_deduplicator, meta_targets);
 
-      get_engine().feature_registry().add_defaults(*mt_fs);
-      get_project().local_feature_registry().add_defaults(*mt_fs);
+      get_project().feature_registry().add_defaults(*mt_fs);
 
       main_target* mt = construct_main_target(owner, mt_fs); // construct_main_target may construct main_target with different properties PCH is example
       mt_fs = mt->properties().clone(); // FIXME ref semantic required

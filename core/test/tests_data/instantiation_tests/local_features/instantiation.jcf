@@ -1,7 +1,0 @@
-test
-{
-   lib1 [ features = <debug_build>on; ]
-   {
-      
-   }
-}

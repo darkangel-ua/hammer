@@ -6,6 +6,7 @@
 #include <boost/filesystem/fstream.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/regex.hpp>
+#include <boost/make_unique.hpp>
 #include <hammer/core/engine.h>
 #include <hammer/core/type_registry.h>
 #include <hammer/core/basic_target.h>
@@ -40,50 +41,49 @@ namespace hammer {
 
 engine::engine()
    :  global_project_(new project(*this, nullptr, {})),
-      feature_registry_(new hammer::feature_registry),
       rule_manager_(new rule_manager),
       warehouse_manager_(new hammer::warehouse_manager)
 {
    details::install_builtin_rules(*rule_manager_);
    load_hammer_script(g_builtin_features, "builtin_features");
-
+   auto& fr = feature_registry();
    {
       feature_attributes ft = {0}; ft.free = 1;
-      feature_registry_->add_feature_def("__searched_lib_name", {}, ft);
+      fr.add_feature_def("__searched_lib_name", {}, ft);
    }
 
    {
       // used to mark targets that belong to pch meta target. Needed for distinguishing PCH and OBJ generators
       feature_attributes ft = {0}; ft.free = 1;
-      feature_registry_->add_feature_def("__pch", {}, ft);
+      fr.add_feature_def("__pch", {}, ft);
    }
 
    {
       feature_attributes ft = {0}; ft.free = ft.generated = ft.path = 1;
-      feature_registry_->add_feature_def("__generated-include", {}, ft);
+      fr.add_feature_def("__generated-include", {}, ft);
    }
 
    {
       feature_attributes ft = {0};
       ft.propagated = true;
-      feature_registry_->add_feature_def("host-os", { {"windows", {}}, {"linux", {}} }, ft);
+      fr.add_feature_def("host-os", { {"windows", {}}, {"linux", {}} }, ft);
    }
 
    switch(sizeof(nullptr)) {
       case 4:
-         feature_registry_->get_def("address-model").set_default("32");
+         fr.get_def("address-model").set_default("32");
          break;
       case 8:
-         feature_registry_->get_def("address-model").set_default("64");
+         fr.get_def("address-model").set_default("64");
          break;
    }
 
 #if defined(_WIN32)
-   feature_registry_->get_def("host-os").set_default("windows");
-   feature_registry_->get_def("target-os").set_default("windows");
+   fr.get_def("host-os").set_default("windows");
+   fr.get_def("target-os").set_default("windows");
 #else
-   feature_registry_->get_def("host-os").set_default("linux");
-   feature_registry_->get_def("target-os").set_default("linux");
+   fr.get_def("host-os").set_default("linux");
+   fr.get_def("target-os").set_default("linux");
 #endif
 
    type_registry_.reset(new type_registry);
@@ -141,40 +141,26 @@ void engine::load_hammer_script(location_t filepath)
    if (i != projects_.end())
       throw std::runtime_error("Hammer script '" + filepath.string() + "' already loaded.");
 
-   load_hammer_script_v2(nullptr, filepath);
-}
-
-void engine::load_hammer_script(const string& script_body,
-                                const string& script_name)
-{
-   projects_t::iterator i = projects_.find(script_name);
-   if (i != projects_.end())
-      throw std::runtime_error("Hammer script '" + script_name + "' already loaded.");
-
-   load_hammer_script_v2(nullptr, script_body, script_name);
+   load_hammer_script_(filepath);
 }
 
 static
 void load_hammer_script_impl(engine& e,
-                             const project* parent,
                              ostringstream& s,
                              diagnostic& diag,
-                             const location_t& project_location,
+                             project& current_project,
                              const ast::hamfile& ast)
 {
    if (diag.error_count())
       throw parsing_error(s.str());
 
-   std::unique_ptr<project> loaded_project(new project(e, parent, project_location));
-   invocation_context invc_ctx = { *loaded_project, diag, e.get_rule_manager() };
+   invocation_context invc_ctx = { current_project, diag, e.get_rule_manager() };
 
    try {
       ast2objects(invc_ctx, ast);
    } catch (const ast2objects_semantic_error&) {
       throw parsing_error(s.str());
    }
-
-   e.insert(move(loaded_project));
 }
 
 struct parser_environment : sema::actions_impl::environment {
@@ -186,55 +172,50 @@ struct parser_environment : sema::actions_impl::environment {
    const feature_registry& fr_;
 };
 
-void engine::load_hammer_script_v2(const project* parent,
-                                   location_t filepath)
-{
+void engine::load_hammer_script_(const location_t& filepath) {
    ostringstream s;
-   streamed_diagnostic diag(filepath.string(), error_verbosity_, s);
+   streamed_diagnostic diag{filepath.string(), error_verbosity_, s};
    ast::context ast_ctx;
-   parser_environment env(*feature_registry_);
-   sema::actions_impl actions(ast_ctx, env, *rule_manager_, diag);
+   parser_environment env{global_project_->feature_registry()};
+   sema::actions_impl actions{ast_ctx, env, *rule_manager_, diag};
    ast_hamfile_ptr ast = parse_hammer_script(filepath, actions);
 
-   load_hammer_script_impl(*this, parent, s, diag, filepath.branch_path(), *ast);
+   load_hammer_script_impl(*this, s, diag, *global_project_, *ast);
 }
 
-void engine::load_hammer_script_v2(const project* parent,
-                                   const std::string& script_body,
-                                   const std::string& script_name)
-{
+void engine::load_hammer_script(const std::string& script_body,
+                                const std::string& script_name) {
    ostringstream s;
-   streamed_diagnostic diag(script_name, error_verbosity_, s);
+   streamed_diagnostic diag{script_name, error_verbosity_, s};
    ast::context ast_ctx;
-   parser_environment env(*feature_registry_);
-   sema::actions_impl actions(ast_ctx, env, *rule_manager_, diag);
+   parser_environment env{global_project_->feature_registry()};
+   sema::actions_impl actions{ast_ctx, env, *rule_manager_, diag};
    ast_hamfile_ptr ast = parse_hammer_script(script_body, script_name, actions);
 
-   load_hammer_script_impl(*this, parent, s, diag, script_name, *ast);
+   load_hammer_script_impl(*this, s, diag, *global_project_, *ast);
 }
 
 std::unique_ptr<project>
-engine::load_project_v2(const location_t& project_path,
-                        const project* upper_project)
-{
+engine::load_project(const location_t& project_path,
+                     const project* parent) {
+   auto loaded_project = boost::make_unique<project>(*this, parent, project_path.branch_path());
+
    ostringstream s;
-   streamed_diagnostic diag(project_path.string(), error_verbosity_, s);
+   streamed_diagnostic diag{project_path.string(), error_verbosity_, s};
    ast::context ast_ctx;
-   parser_environment env(*feature_registry_);
-   sema::actions_impl actions(ast_ctx, env, *rule_manager_, diag);
+   parser_environment env{static_cast<const project&>(*loaded_project).feature_registry()};
+   sema::actions_impl actions{ast_ctx, env, *rule_manager_, diag};
    ast_hamfile_ptr ast = parse_hammer_script(project_path, actions);
 
    if (diag.error_count())
-      throw parsing_error(s.str());
-
-   std::unique_ptr<project> loaded_project(new project(*this, upper_project, project_path.branch_path()));
+      throw parsing_error{s.str()};
 
    invocation_context invc_ctx = { *loaded_project, diag, *rule_manager_ };
 
    try {
       ast2objects(invc_ctx, *ast);
    } catch (const ast2objects_semantic_error&) {
-      throw parsing_error(s.str());
+      throw parsing_error{s.str()};
    }
 
    return loaded_project;
@@ -272,11 +253,11 @@ engine::try_load_project(location_t fs_project_path)
    if (!exists(project_file))
       return {};
 
-   std::unique_ptr<project> loaded_project = load_project_v2(project_file, is_top_level ? nullptr : upper_project);
+   auto loaded_project = load_project(project_file, is_top_level ? global_project_.get() : upper_project);
    if (is_top_level)
       loaded_project->set_root(true);
 
-   return loaded_projects{&insert(move(loaded_project))};
+   return loaded_projects{&insert(std::move(loaded_project))};
 }
 
 project&

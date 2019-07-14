@@ -1,1 +1,0 @@
-exe test : main.cpp ./lib1/<version>1.0/<debug_build>on ;

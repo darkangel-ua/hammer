@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include <list>
 #include <map>
 #include <cassert>
@@ -9,6 +8,7 @@
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/multi_index/identity.hpp>
+#include <boost/make_unique.hpp>
 #include <boost/algorithm/string/join.hpp>
 #include <hammer/core/feature_registry.h>
 #include <hammer/core/feature_set.h>
@@ -21,10 +21,13 @@ using std::unique_ptr;
 using std::pair;
 using namespace boost::multi_index;
 
-namespace hammer{
+namespace hammer {
 
-   struct feature_registry::impl_t
-   {
+   struct feature_registry::impl_t {
+      impl_t(std::shared_ptr<feature_registry> parent)
+         : parent_(std::move(parent))
+      {}
+
       ~impl_t();
 
       struct generic_less_comparator
@@ -121,7 +124,8 @@ namespace hammer{
 
       struct feature_storage_comparator
       {
-         bool operator()(const feature& lhs, const feature& rhs) const 
+         bool operator()(const feature& lhs,
+                         const feature& rhs) const
          {
             if (&lhs == &rhs)
                return false;
@@ -153,7 +157,9 @@ namespace hammer{
          }
 
          template<typename Comparator>
-         bool compare_impl(const feature& lhs, const find_feature_data& rhs, Comparator comparator) const
+         bool compare_impl(const feature& lhs,
+                           const find_feature_data& rhs,
+                           Comparator comparator) const
          {
             if (&lhs.definition() != &rhs.def_)
                return comparator(&lhs.definition(), &rhs.def_);
@@ -222,40 +228,41 @@ namespace hammer{
                             const subfeature& sf);
       subfeature& create_subfeature(const feature& f, const string& name, const string& value);
 
+      std::shared_ptr<feature_registry> parent_;
       defs_t defs_;
       feature_set_storage_t feature_set_list_;
       features_t features_;
       non_cached_features_t non_cached_features_;
       subfeatures_t subfeatures_;
-      feature_set* singleton_;
       value_namespaces value_namespaces_;
    };
 
-   feature_def* feature_registry::impl_t::find_def(const std::string& name)
+   feature_def*
+   feature_registry::impl_t::find_def(const std::string& name)
    {
-      defs_t::iterator i = defs_.find(name);
-      if (i == defs_.end())
-         return nullptr;
-      else
-         return i->second.get();
+      auto i = defs_.find(name);
+      return i == defs_.end() ? nullptr : i->second.get();
    }
 
-   feature* feature_registry::impl_t::find_feature(const string& name, const string& value)
+   feature*
+   feature_registry::impl_t::find_feature(const string& name,
+                                          const string& value)
    {
       feature_def* def = find_def(name);
       if (!def)
          return nullptr;
 
-       main_feature_index_t::iterator i = features_.get<0>().find(find_feature_data(*def, value, feature::subfeatures_t()));
+       auto i = features_.get<0>().find(find_feature_data(*def, value, feature::subfeatures_t()));
        if (i == features_.get<0>().end())
           return nullptr;
        else 
           return i->get();
    }
 
-   subfeature& feature_registry::impl_t::create_subfeature(const feature& f,
-                                                           const string& name,
-                                                           const string& value)
+   subfeature&
+   feature_registry::impl_t::create_subfeature(const feature& f,
+                                               const string& name,
+                                               const string& value)
    {
       const subfeature_def* sdef = f.definition().find_subfeature(name);
       if (!sdef)
@@ -278,8 +285,9 @@ namespace hammer{
       }
    }
 
-   feature* feature_registry::impl_t::find_feature(const feature& f, 
-                                                   const subfeature& sf)
+   feature*
+   feature_registry::impl_t::find_feature(const feature& f,
+                                          const subfeature& sf)
    {
       feature::subfeatures_t subfeatures(f.subfeatures());
       subfeatures.push_back(&sf);
@@ -298,18 +306,18 @@ namespace hammer{
 
    typedef feature_registry::impl_t impl_t;
 
-   feature_registry::feature_registry() : impl_(new impl_t)
+   feature_registry::feature_registry(std::shared_ptr<feature_registry> parent)
+      : impl_{new impl_t{std::move(parent)}}
    {
-      impl_->singleton_ = make_set();
-      impl_->value_namespaces_.insert({ string(), feature_value_ns_ptr()});
+      impl_->value_namespaces_.insert({ string{}, feature_value_ns_ptr{}});
    }
 
    feature_registry::~feature_registry()
    {
-      delete impl_;
    }
 
-   feature_set* feature_registry::make_set()
+   feature_set*
+   feature_registry::make_set()
    {
       unique_ptr<feature_set> r(new feature_set(this));
       impl_->feature_set_list_.push_back(r.get());
@@ -317,54 +325,35 @@ namespace hammer{
       return r.release();
    }
 
-   const feature_set& feature_registry::singleton() const
-   {
-      return *impl_->singleton_;
-   }
-
    feature_def&
    feature_registry::add_feature_def(const std::string& name,
                                      const feature_def::legal_values_t& legal_values,
                                      feature_attributes attributes)
    {
-      auto i = impl_->defs_.find(name);
-      if (i != impl_->defs_.end())
+      auto i = impl_->find_def(name);
+      if (i)
          throw std::runtime_error("Definition for feature '" + name + "' already registered");
 
-      auto r = impl_->defs_.insert(std::move(std::make_pair(name, unique_ptr<feature_def>(new feature_def(name, legal_values, attributes)))));
+      auto r = impl_->defs_.insert({name, unique_ptr<feature_def>(new feature_def{name, legal_values, attributes})});
       return *r.first->second;
    }
 
-   feature* feature_registry::simply_create_feature(const std::string& name, const std::string& value)
-   {
+   feature*
+   feature_registry::simply_create_feature(const feature_def& def,
+                                           const std::string& value) const {
       feature* result;
-      const feature_def* maybe_def = find_def(name.c_str());
-      if (!maybe_def)
-      {
-         // no such feature definition found
-         // create def with undefined attribute
-         feature_attributes fa = {0};
-         fa.undefined_ = fa.no_checks = 1;
-         maybe_def = &add_feature_def(name, feature_def::legal_values_t(), fa);
-      }
-
-      const feature_def& def = *maybe_def;
 
       if (def.attributes().path || 
           def.attributes().dependency ||
-          def.attributes().generated ||
-          def.attributes().undefined_)
+          def.attributes().generated)
       {
          unique_ptr<feature> f(new feature(&def, value));
          result = f.get();
          impl_->non_cached_features_.push_back(std::move(f));
-      }
-      else
-      {
-         result = impl_->find_feature(name, value);
-         if (!result)
-         {
-            auto f = std::shared_ptr<feature>{new feature{&def, value}};
+      } else {
+         result = impl_->find_feature(def.name(), value);
+         if (!result) {
+            auto f = std::shared_ptr<feature>(new feature{&def, value});
             result = f.get();
             impl_->features_.get<0>().insert(f);
          }
@@ -373,18 +362,25 @@ namespace hammer{
       return result;
    }
 
-   feature* feature_registry::create_feature(const std::string& name, const std::string& value)
+   feature*
+   feature_registry::create_feature(const std::string& name,
+                                    const std::string& value) const
    {
       if (name.empty())
          throw std::runtime_error("Can't create feature without name");
 
-      const feature_def* posible_feature = find_def(name.c_str());
+      const feature_def* posible_feature = impl_->find_def(name);
+      if (!posible_feature) {
+         if (impl_->parent_)
+            return impl_->parent_->create_feature(name, value);
+         else
+            throw std::runtime_error("There is no definition for feature '" + name + "'");
+      }
 
-      if (posible_feature &&
-          (posible_feature->attributes().free ||
-           posible_feature->is_legal_value(value)))
+      if (posible_feature->attributes().free ||
+          posible_feature->is_legal_value(value))
       {
-         return simply_create_feature(name, value);
+         return simply_create_feature(*posible_feature, value);
       }
 
       typedef boost::tokenizer<boost::char_separator<char>, const char*> tokenizer;
@@ -392,7 +388,7 @@ namespace hammer{
                     boost::char_separator<char>("-"));
       tokenizer::const_iterator first = tok.begin(), last = tok.end();
       if (first != last) {
-         feature* result = simply_create_feature(name, *first);
+         feature* result = simply_create_feature(*posible_feature, *first);
          const string feature_value = *first;
          ++first;
 
@@ -400,7 +396,7 @@ namespace hammer{
             const subfeature_def* sdef = result->definition().find_subfeature_for_value(feature_value, *first);
             if (!sdef) {
                if (result->attributes().no_checks)
-                  return simply_create_feature(name, value);
+                  return simply_create_feature(*posible_feature, value);
                else
                   throw std::runtime_error("Can't find subfeature with legal value '" + *first + "' for feature <" + name + ">" + result->value());
             } else
@@ -410,64 +406,19 @@ namespace hammer{
          return result;
       }
 
-      return simply_create_feature(name, value);
+      return simply_create_feature(*posible_feature, value);
    }
 
-   feature_set&
-   feature_registry::add_defaults(feature_set& s)
+   feature*
+   feature_registry::create_feature(const feature& f,
+                                    const string& subfeature_name,
+                                    const string& subfeature_value) const
    {
-      for (auto& fd : impl_->defs_) {
-         if (!fd.second->attributes().optional &&
-             !fd.second->attributes().free &&
-             !fd.second->attributes().no_defaults &&
-             s.find(fd.first.c_str()) == s.end())
-         {
-            for (auto& d : fd.second->get_defaults())
-               s.join(create_feature(fd.first, d.value_));
-         }
-      }
+      // we create feature in registry where it was originally registered
+      auto feature_def = impl_->find_def(f.name());
+      if (!feature_def && impl_->parent_)
+         return impl_->parent_->create_feature(f, subfeature_name, subfeature_value);
 
-      return s;
-   }
-
-   feature_def& feature_registry::get_def(const std::string& name)
-   {
-      feature_def* result = impl_->find_def(name);
-      if (!result)
-         throw std::runtime_error("There is no feature definition for feature '" + name + "'.");
-      else
-         return *result;
-   }
-
-   const feature_def*
-   feature_registry::find_def(const std::string& name) const
-   {
-      return const_cast<impl_t*>(impl_)->find_def(name);
-   }
-
-   const feature_def* feature_registry::find_def(const char* feature_name) const
-   {
-      return impl_->find_def(feature_name);
-   }
-
-   const feature_def* feature_registry::find_def_from_full_name(const char* feature_name) const
-   {
-      const feature_def* result = find_def(feature_name);
-      if (result)
-         return result;
-      // FIXME: performance hit
-      string feature_name_str(feature_name);
-      string::size_type p = feature_name_str.find('-');
-      if (p != string::npos)
-         return find_def(feature_name_str.substr(0, p).c_str());
-      else
-         return nullptr;
-   }
-
-   feature* feature_registry::create_feature(const feature& f, 
-                                             const string& subfeature_name, 
-                                             const string& subfeature_value)
-   {
       subfeature& sf = impl_->create_subfeature(f, subfeature_name, subfeature_value);
       feature* result = impl_->find_feature(f, sf);
       if (!result)
@@ -482,7 +433,82 @@ namespace hammer{
       return result;
    }
 
-   feature* feature_registry::clone_feature(const feature& f)
+   feature_set&
+   feature_registry::add_defaults(feature_set& s) const
+   {
+      if (impl_->parent_)
+         impl_->parent_->add_defaults(s);
+
+      for (auto& fd : impl_->defs_) {
+         if (!fd.second->attributes().optional &&
+             !fd.second->attributes().free &&
+             !fd.second->attributes().no_defaults &&
+             s.find(fd.first.c_str()) == s.end())
+         {
+            for (auto& d : fd.second->get_defaults())
+               s.join(create_feature(fd.first, d.value_));
+         }
+      }
+
+      return s;
+   }
+
+   feature_def&
+   feature_registry::get_def(const std::string& name) {
+      return const_cast<feature_def&>(static_cast<const feature_registry*>(this)->get_def(name));
+   }
+
+   const feature_def&
+   feature_registry::get_def(const std::string& name) const
+   {
+      feature_def* result = impl_->find_def(name);
+      if (!result) {
+         if (impl_->parent_)
+            return impl_->parent_->get_def(name);
+         else
+            throw std::runtime_error("There is no feature definition for feature '" + name + "'.");
+      } else
+         return *result;
+   }
+
+   const feature_def*
+   feature_registry::find_def(const std::string& name) const
+   {
+      return const_cast<feature_registry*>(this)->find_def(name);
+   }
+
+   feature_def*
+   feature_registry::find_def(const std::string& name) {
+      auto* result = impl_->find_def(name);
+      if (!result && impl_->parent_)
+         return impl_->parent_->find_def(name);
+
+      return result;
+   }
+
+   const feature_def*
+   feature_registry::find_def(const char* feature_name) const
+   {
+      return impl_->find_def(feature_name);
+   }
+
+   const feature_def*
+   feature_registry::find_def_from_full_name(const char* feature_name) const
+   {
+      const feature_def* result = find_def(feature_name);
+      if (result)
+         return result;
+      // FIXME: performance hit
+      string feature_name_str(feature_name);
+      string::size_type p = feature_name_str.find('-');
+      if (p != string::npos)
+         return find_def(feature_name_str.substr(0, p).c_str());
+      else
+         return nullptr;
+   }
+
+   feature*
+   feature_registry::clone_feature(const feature& f)
    {
       feature* result;
 
@@ -521,5 +547,4 @@ namespace hammer{
       else
          return i->second;
    }
-
 }

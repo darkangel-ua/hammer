@@ -1,14 +1,14 @@
 #include "stdafx.h"
+#include <iostream>
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/bind.hpp>
-#include "enviroment.h"
 #include <hammer/core/engine.h>
-#include "jcf_parser.h"
 #include <hammer/core/feature_registry.h>
 #include <hammer/core/feature_set.h>
-#include <iostream>
+#include "enviroment.h"
 #include "options.h"
+#include "jcf_parser.h"
 
 using namespace hammer;
 using namespace std;

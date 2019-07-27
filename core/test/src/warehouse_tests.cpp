@@ -1,13 +1,13 @@
 #include <boost/test/unit_test.hpp>
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/fstream.hpp>
+#include <boost/format.hpp>
+#include <boost/bind.hpp>
 #include <hammer/core/warehouse_impl.h>
 #include <hammer/core/warehouse_manager.h>
 #include <hammer/core/basic_target.h>
 #include <hammer/core/feature_set.h>
 #include <hammer/core/warehouse_target.h>
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/fstream.hpp>
-#include <boost/format.hpp>
-#include <boost/bind.hpp>
 #include "enviroment.h"
 #include "options.h"
 #include "jcf_parser.h"

@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "enviroment.h"
 #include <fstream>
 #include <stdlib.h>
 #include <boost/filesystem/operations.hpp>
@@ -18,12 +17,12 @@
 #include <hammer/core/actuality_checker.h>
 #include <hammer/core/c_scanner.h>
 #include <hammer/core/scaner_manager.h>
-
 #include <hammer/core/toolsets/gcc_toolset.h>
 #include <hammer/core/toolsets/msvc_toolset.h>
 #include <hammer/core/toolsets/qt_toolset.h>
 #include <hammer/core/htmpl/htmpl.h>
 #include "options.h"
+#include "enviroment.h"
 
 using namespace hammer;
 using namespace std;

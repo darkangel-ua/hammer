@@ -1,0 +1,9 @@
+test {
+    main.cpp {}
+    lib1 [ features = !<bar>on; ]{ 
+        lib1.cpp {} 
+        lib2 [ features = <bar>on; ] {
+            lib2.cpp {}
+        }
+    }
+}

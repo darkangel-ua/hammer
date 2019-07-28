@@ -1,0 +1,9 @@
+test {
+    main.cpp {}
+    lib1 [ features = <local_feature>on; ] { 
+        lib1_on.cpp {} 
+    }
+    lib2 [ features = <local_feature>off; ] {
+        lib2_off.cpp {}
+    }
+}

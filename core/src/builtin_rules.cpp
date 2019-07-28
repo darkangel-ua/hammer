@@ -745,7 +745,7 @@ testing_run_rule_impl(target_invocation_context& ctx,
                                            recheck);
 
    sources_decl run_sources;
-   run_sources.push_back({ctx.current_project_, "./", exe_target_name, nullptr, nullptr});
+   run_sources.push_back({ctx.current_project_, "./", exe_target_name, nullptr});
    runner_target->sources(run_sources);
    runner_target->set_local(ctx.local_);
    runner_target->set_explicit(ctx.explicit_);
@@ -753,8 +753,7 @@ testing_run_rule_impl(target_invocation_context& ctx,
    source_decl run_target_source(ctx.current_project_,
                                  runner_target->name(),
                                  {},
-                                 nullptr /*to signal that this is meta target*/,
-                                 nullptr);
+                                 nullptr /*to signal that this is meta target*/);
 
    ctx.current_project_.add_target(move(runner_target));
 
@@ -848,8 +847,7 @@ testing_compile_fail_rule(target_invocation_context& ctx,
    const source_decl compile_source(ctx.current_project_,
                                     mt->name(),
                                     std::string(),
-                                    nullptr /*to signal that this is meta target*/,
-                                    nullptr);
+                                    nullptr /*to signal that this is meta target*/);
 
    mt->set_local(ctx.local_);
    mt->set_explicit(ctx.explicit_);
@@ -876,8 +874,7 @@ testing_compile_rule_impl(target_invocation_context& ctx,
    const source_decl compile_source(ctx.current_project_,
                                     mt->name(),
                                     std::string(),
-                                    nullptr /*to signal that this is meta target*/,
-                                    nullptr);
+                                    nullptr /*to signal that this is meta target*/);
 
    mt->set_local(ctx.local_);
    mt->set_explicit(ctx.explicit_);
@@ -950,8 +947,7 @@ testing_link_fail_rule(target_invocation_context& ctx,
    const source_decl compile_source(ctx.current_project_,
                                     mt->name(),
                                     std::string(),
-                                    nullptr /*to signal that this is meta target*/,
-                                    nullptr);
+                                    nullptr /*to signal that this is meta target*/);
 
    mt->set_local(ctx.local_);
    mt->set_explicit(ctx.explicit_);
@@ -980,8 +976,7 @@ testing_link_rule(target_invocation_context& ctx,
    const source_decl compile_source(ctx.current_project_,
                                     mt->name(),
                                     std::string(),
-                                    nullptr /*to signal that this is meta target*/,
-                                    nullptr);
+                                    nullptr /*to signal that this is meta target*/);
 
    mt->set_local(ctx.local_);
    mt->set_explicit(ctx.explicit_);
@@ -1094,9 +1089,11 @@ c_as_cpp_rule(invocation_context& ctx,
    const target_type& c_as_cpp_type = ctx.current_project_.get_engine().get_type_registry().get(types::C_AS_CPP);
    const target_type& c_type = ctx.current_project_.get_engine().get_type_registry().get(types::C);
    for (const source_decl& s : sources) {
-      if (s.type() && s.type()->equal_or_derived_from(c_type))
-         result->push_back(source_decl{ctx.current_project_, s.target_path(), s.target_name(), &c_as_cpp_type, s.properties() ? s.properties()->clone() : nullptr});
-      else
+      if (s.type() && s.type()->equal_or_derived_from(c_type)) {
+         auto new_sd = s;
+         new_sd.set_type(&c_as_cpp_type);
+         result->push_back(new_sd);
+      } else
          result->push_back(s);
    }
 

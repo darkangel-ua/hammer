@@ -1,0 +1,4 @@
+# test that we can parse target build request that includes features defined 
+# in lib1 and not visible before instantiation
+
+exe test : main.cpp ./lib1/<local_feature>on ;

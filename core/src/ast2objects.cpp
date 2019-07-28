@@ -10,6 +10,7 @@
 #include <hammer/core/engine.h>
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature.h>
+#include <hammer/core/build_request.h>
 #include <hammer/core/diagnostic.h>
 #include <hammer/ast/sources.h>
 #include <hammer/ast/path.h>
@@ -60,13 +61,11 @@ make_one_arg(invocation_context& ctx,
 static
 feature*
 ast2feature(invocation_context& ctx,
-            const ast::feature& f)
+            const ast::feature& f,
+            const feature_registry& fr,
+            const feature_def& fdef)
 {
-
-   const feature_registry& fr = static_cast<const project&>(ctx.current_project_).feature_registry();
-   const feature_def* fdef = fr.find_def(f.name().to_string());
-
-   if (fdef && fdef->attributes().dependency) {
+   if (fdef.attributes().dependency) {
       feature* result = fr.create_feature(f.name().to_string(), {});
       result->set_dependency_data(handle_one_source(ctx, ctx.current_project_.get_engine().get_type_registry(), f.value()), nullptr);
       return result;
@@ -84,14 +83,36 @@ ast2feature(invocation_context& ctx,
 }
 
 static
-feature_set*
-ast2feature_set(invocation_context& ctx,
-                const ast::features_t& features)
+feature*
+ast2feature(invocation_context& ctx,
+            const ast::feature& f)
 {
-   feature_set* result = ctx.current_project_.get_engine().feature_registry().make_set();
 
-   for (auto f : features)
-      result->join(ast2feature(ctx, *f));
+   const feature_registry& fr = static_cast<const project&>(ctx.current_project_).feature_registry();
+   const feature_def& fdef = fr.get_def(f.name().to_string());
+
+   return ast2feature(ctx, f, fr, fdef);
+}
+
+static
+build_request
+ast2target_build_request(invocation_context& ctx,
+                         const ast::features_t& features)
+{
+   // only global features will be resolved in target build request
+   // any others will be resoved in alternative selection process
+   const feature_registry& fr = ctx.current_project_.get_engine().feature_registry();
+
+   auto result = build_request{fr};
+   for (auto f : features) {
+      const feature_def* fdef = fr.find_def(f->name().to_string());
+      if (fdef)
+         result.join(ast2feature(ctx, *f, fr, *fdef));
+      else if (const ast::id_expr* id = ast::as<ast::id_expr>(f->value()))
+         result.join_unresolved(f->name().to_string(), id->id().to_string());
+      else
+         throw std::runtime_error("Unexpected unresolved feature value in target build request");
+   }
 
    return result;
 }
@@ -135,16 +156,17 @@ handle_one_source(invocation_context& ctx,
                   const ast::expression* e)
 {
    if (const ast::id_expr* v = ast::as<ast::id_expr>(e))
-      return source_decl(ctx.current_project_, v->id().to_string(), std::string(), tr.resolve_from_target_name(v->id().to_string()), nullptr);
+      return source_decl(ctx.current_project_, v->id().to_string(), std::string(), tr.resolve_from_target_name(v->id().to_string()));
    else if (const ast::path* v = ast::as<ast::path>(e))
-      return source_decl(ctx.current_project_, v->to_string(), std::string(), tr.resolve_from_target_name(v->to_string()), nullptr);
+      return source_decl(ctx.current_project_, v->to_string(), std::string(), tr.resolve_from_target_name(v->to_string()));
    else if (const ast::public_expr* pe = ast::as<ast::public_expr>(e)) {
       source_decl result = handle_one_source(ctx, tr, pe->value());
       result.set_public(true);
       return result;
    } else if (const ast::target_ref* v = ast::as<ast::target_ref>(e)) {
-      feature_set* build_request = v->build_request().empty() ? nullptr : ast2feature_set(ctx, v->build_request());
-      source_decl sd(ctx.current_project_, (v->is_project_local_ref() ? "^" : "") + v->target_path()->to_string(), v->target_name().valid() ? v->target_name().to_string() : std::string(), nullptr, build_request);
+      source_decl sd(ctx.current_project_, (v->is_project_local_ref() ? "^" : "") + v->target_path()->to_string(), v->target_name().valid() ? v->target_name().to_string() : std::string(), nullptr);
+      if (!v->build_request().empty())
+         sd.build_request(ast2target_build_request(ctx, v->build_request()));
       sd.set_public(v->is_public());
       return sd;
    } else
@@ -172,13 +194,13 @@ void handle_one_source(invocation_context& ctx,
 
             case rule_argument_type::identifier: {
                const parscore::identifier& id = *static_cast<const parscore::identifier*>(invocation_result->value());
-               result.push_back(source_decl(ctx.current_project_, id.to_string(), std::string(), tr.resolve_from_target_name(id.to_string()), nullptr));
+               result.push_back(source_decl(ctx.current_project_, id.to_string(), std::string(), tr.resolve_from_target_name(id.to_string())));
                break;
             }
 
             case rule_argument_type::path: {
                const location_t& p = *static_cast<const location_t*>(invocation_result->value());
-               result.push_back(source_decl(ctx.current_project_, p.string(), std::string(), tr.resolve_from_target_name(p.string()), nullptr));
+               result.push_back(source_decl(ctx.current_project_, p.string(), std::string(), tr.resolve_from_target_name(p.string())));
                break;
             }
 

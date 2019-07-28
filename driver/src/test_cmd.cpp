@@ -229,7 +229,12 @@ int handle_test_cmd(const std::vector<std::string>& args,
    if (debug_level > 0)
       cout << "...Loading project at '" << fs::current_path() << "'... " << flush;
 
-   project* project_to_build = has_project_file(fs::current_path()) ? &engine->load_project(fs::current_path()) : nullptr;
+   // FIXME: we are doing const cast because engine::load_project returns const
+   // and general idea that projects are immutable.
+   // We need to invent a way to remove const in some legal and clear way when we need
+   project* project_to_build = has_project_file(fs::current_path())
+                                 ? const_cast<project*>(&engine->load_project(fs::current_path()))
+                                 : nullptr;
 
    if (debug_level > 0)
       cout << static_cast<const char*>(project_to_build ? "Done" : "Done (Not Found)") << endl;

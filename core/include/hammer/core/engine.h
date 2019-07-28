@@ -38,7 +38,7 @@ class engine : public boost::noncopyable {
       load_project(const global_project_ref& project_ref);
 
       // FIXME: this should return const, because we shouldn't (FIXME: can't) change project after it was added to engine
-      project&
+      const project&
       load_project(location_t fs_project_path);
 
       loaded_projects
@@ -108,7 +108,8 @@ class engine : public boost::noncopyable {
       load_project(const location_t& project_path,
                    const project* parent);
 
-      project* get_upper_project(const location_t& project_path);
+      const project*
+      get_upper_project(const location_t& project_path);
 };
 
 boost::optional<boost::filesystem::path>

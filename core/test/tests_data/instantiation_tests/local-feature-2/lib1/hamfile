@@ -1,0 +1,2 @@
+feature local_feature : on off ;
+lib lib1 : lib1.cpp ../lib2/<local_feature>on ;

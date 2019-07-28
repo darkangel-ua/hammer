@@ -7,6 +7,7 @@
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature.h>
 #include <hammer/core/fs_helpers.h>
+#include <hammer/core/build_request.h>
 
 using namespace std;
 
@@ -42,10 +43,7 @@ void alias_meta_target::instantiate_impl(instantiation_context& ctx,
          source_decl new_sd = sd;
 
          // apply build request to a target
-         if (new_sd.properties())
-            new_sd.properties()->join(build_request);
-         else
-            new_sd.properties(build_request.clone());
+         new_sd.build_request_join(build_request);
 
          if (looks_like_local_target_ref(sd))
             new_sd.set_locals_allowed(true);
@@ -65,7 +63,7 @@ void alias_meta_target::instantiate_impl(instantiation_context& ctx,
       sources_decl simple_targets;
       meta_targets_t meta_targets;
       split_sources(&simple_targets, &meta_targets, sources, build_request);
-      instantiate_meta_targets(ctx, meta_targets, build_request, nullptr, result, usage_requirements);
+      instantiate_meta_targets(ctx, meta_targets, nullptr, result, usage_requirements);
    }
 }
 

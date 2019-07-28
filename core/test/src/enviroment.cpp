@@ -74,7 +74,7 @@ void complete_build_tests_environment::install_toolsets()
 
 void complete_build_tests_environment::run_test(const boost::filesystem::path& working_dir)
 {
-   project& p = engine_.load_project(working_dir);
+   const project& p = engine_.load_project(working_dir);
 
    feature_set* build_request = engine_.feature_registry().make_set();
 #if defined(_WIN32)

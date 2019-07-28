@@ -39,7 +39,7 @@ void testing_compile_base_meta_target::instantiate_impl(instantiation_context& c
    meta_targets_t meta_targets;
    std::vector<basic_target*> ignored_targets;
    split_sources(&simple_targets, &meta_targets, suite->common_sources(), build_request);
-   instantiate_meta_targets(ctx, meta_targets, build_request, nullptr, &ignored_targets, &common_usage_requirements);
+   instantiate_meta_targets(ctx, meta_targets, nullptr, &ignored_targets, &common_usage_requirements);
 
    // now we need to remove any <source>/<dependency> in calculated usage requirements
    common_usage_requirements.erase_all("source");

@@ -109,7 +109,6 @@ class basic_meta_target {
 
 void instantiate_meta_targets(instantiation_context& ctx,
                               const meta_targets_t& targets,
-                              const feature_set& build_request,
                               const main_target* owner,
                               std::vector<basic_target*>* result,
                               feature_set* usage_requirments);

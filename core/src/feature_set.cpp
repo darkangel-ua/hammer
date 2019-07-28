@@ -14,6 +14,7 @@
 #include <boost/spirit/include/classic_core.hpp>
 #include <boost/spirit/include/classic_lists.hpp>
 #include <hammer/core/subfeature.h>
+#include <hammer/core/build_request.h>
 #include <boost/crypto/md5.hpp>
 
 using namespace std;
@@ -454,9 +455,9 @@ void apply_build_request(feature_set& dest,
    for(feature_set::iterator i = dest.begin(), last = dest.end(); i != last; ++i)
       if ((**i).name() == "use")
       {
-         const source_decl old = (**i).get_dependency_data().source_;
-         feature_set& new_props = old.properties() == nullptr ? *build_request.clone() : old.properties()->clone()->join(build_request);
-         (**i).set_dependency_data(source_decl(old.owner_project(), old.target_path(), old.target_name(), old.type(), &new_props), (**i).get_path_data().project_);
+         auto new_source = (**i).get_dependency_data().source_;
+         new_source.build_request_join(build_request);
+         (**i).set_dependency_data(new_source, (**i).get_path_data().project_);
       }
 }
 

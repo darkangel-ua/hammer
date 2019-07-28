@@ -77,7 +77,7 @@ void test_function_phase_1(const fs::path& test_data_path)
    if (opts.exists("skip"))
       return;
 
-   project& p = env.engine_.load_project(test_data_path);
+   const project& p = env.engine_.load_project(test_data_path);
    if (!exists(test_data_path / "instantiation.jcf"))
       return;
 
@@ -121,7 +121,7 @@ void test_function_phase_2(const fs::path& test_data_path)
    // Phase 2
    warehouse_test env_2(false, false);
 
-   project& p = env_2.engine_.load_project(test_data_path);
+   const project& p = env_2.engine_.load_project(test_data_path);
 
    feature_set* build_request = env_2.engine_.feature_registry().make_set();
 #if defined(_WIN32)

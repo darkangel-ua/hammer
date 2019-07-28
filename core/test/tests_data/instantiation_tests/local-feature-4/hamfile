@@ -1,0 +1,6 @@
+# lib1 contains local conposite propagated feature and we want to use it to build lib2
+# but because build request will be resolved in target context we need proxy target to 
+# apply this feature to lib2
+
+feature bar : on off : no-defaults ;
+exe test : main.cpp ./lib1 ;

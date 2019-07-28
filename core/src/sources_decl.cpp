@@ -4,6 +4,7 @@
 #include <ostream>
 #include <hammer/core/sources_decl.h>
 #include <hammer/core/feature_set.h>
+#include <hammer/core/build_request.h>
 
 namespace hammer {
 
@@ -89,7 +90,7 @@ void sources_decl::push_back(const project& related_project,
                              const std::string& v,
                              const type_registry& tr) {
    clone_if_needed();
-   impl_->values_.push_back(source_decl(related_project, v, {}, tr.resolve_from_target_name(v), nullptr));
+   impl_->values_.push_back(source_decl{related_project, v, {}, tr.resolve_from_target_name(v)});
 }
 
 void sources_decl::push_back(const source_decl& v) {
@@ -108,10 +109,10 @@ void sources_decl::insert(const project& related_project,
 void sources_decl::add_to_source_properties(const feature_set& props) {
    clone_if_needed();
    for (auto& v : impl_->values_) {
-      if (!v.properties())
-         v.properties(props.clone());
+      if (!v.build_request())
+         v.build_request(hammer::build_request{props});
       else 
-         v.properties(const_cast<const feature_set*>(v.properties())->join(props));
+         v.build_request()->join(props);
    }
 }
 
@@ -151,10 +152,8 @@ void sources_decl::dump_for_hash(std::ostream& s) const {
       if (src.is_public())
          s << "@";
       s << src.target_path() << "|" << src.target_name();
-      if (src.properties()) {
-         s << "|";
-         hammer::dump_for_hash(s, *src.properties());
-      }
+      if (src.build_request())
+         s << "|" << src.build_request()->string();
    }
 }
 

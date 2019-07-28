@@ -38,7 +38,7 @@ class feature_registry {
       find_def(const char* feature_name) const;
 
       feature_set*
-      make_set();
+      make_set() const;
 
       // feature will belongs to registry that owns definition
       feature*

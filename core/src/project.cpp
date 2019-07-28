@@ -8,6 +8,7 @@
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature.h>
 #include <hammer/core/instantiation_context.h>
+#include <hammer/core/build_request.h>
 
 using namespace std;
 
@@ -293,19 +294,6 @@ int compute_alternative_rank(const feature_set& target_properties,
    return rank;
 }
 
-project::selected_target
-project::select_best_alternative(const std::string& target_name,
-                                 const feature_set& build_request,
-                                 const bool allow_locals) const
-{
-
-   selected_target result = try_select_best_alternative(target_name, build_request, allow_locals);
-   if (!result.target_)
-      throw std::runtime_error("Can't select alternative for target '" + target_name + "'.");
-
-   return result;
-}
-
 static
 bool s_great(const project::selected_target& lhs,
              const project::selected_target& rhs)
@@ -348,6 +336,45 @@ int compute_requirements_rank(const feature_set& requirements)
    return rank;
 }
 
+void project::instantiate(const std::string& target_name,
+                          const feature_set& build_request,
+                          std::vector<basic_target*>* result) const
+{
+   selected_target best_target = select_best_alternative(target_name, hammer::build_request{build_request});
+   feature_set* usage_requirements = engine_.feature_registry().make_set();
+   instantiation_context ctx;
+   best_target.target_->instantiate(ctx, nullptr, build_request, result, usage_requirements);
+}
+
+project::selected_target
+project::select_best_alternative(const std::string& target_name,
+                                 const build_request& build_request,
+                                 const bool allow_locals) const
+{
+
+   selected_target result = try_select_best_alternative(target_name, build_request, allow_locals);
+   if (!result.target_)
+      throw std::runtime_error("Can't select alternative for target '" + target_name + "'.");
+
+   return result;
+}
+
+project::selected_target
+project::try_select_best_alternative(const std::string& target_name,
+                                     const build_request& build_request,
+                                     const bool allow_locals) const {
+   if (build_request.resolved_completely())
+      return try_select_best_alternative(target_name, build_request.resolved_request(), allow_locals);
+
+   auto resolved_build_request = build_request.resolve(feature_registry());
+   if (resolved_build_request.resolved_completely())
+      return try_select_best_alternative(target_name, resolved_build_request.resolved_request(), allow_locals);
+
+   // if we still has unresolved features there is no sense to try select anything
+   // because some of requested features doesn't belongs to this project at all
+   return {};
+}
+
 project::selected_target
 project::try_select_best_alternative(const std::string& target_name,
                                      const feature_set& build_request,
@@ -358,6 +385,7 @@ project::try_select_best_alternative(const std::string& target_name,
    if (r.empty())
       return {};
 
+   auto cloned_build_request = build_request.clone();
    vector<selected_target> selected_targets;
 
    for(targets_t::const_iterator first = r.begin(), last = r.end(); first != last; ++first) {
@@ -372,12 +400,12 @@ project::try_select_best_alternative(const std::string& target_name,
 
       int rank = compute_alternative_rank(*fs, build_request);
       if (rank != -1)
-         selected_targets.push_back(selected_target(first->second.get(), fs, rank));
+         selected_targets.push_back(selected_target{first->second.get(), fs, static_cast<unsigned>(rank), cloned_build_request});
    }
 
    sort(selected_targets.begin(), selected_targets.end(), s_great);
    if (selected_targets.empty())
-      return selected_target();
+      return {};
 
    if (selected_targets.size() == 1)
       return selected_targets.front();
@@ -390,7 +418,7 @@ project::try_select_best_alternative(const std::string& target_name,
    for (const selected_target& t : selected_targets) {
       const int rank = compute_requirements_rank(*t.resolved_requirements_);
       if (rank >= 0)
-         selected_targets_2.push_back(selected_target(t.target_, t.resolved_requirements_, static_cast<unsigned>(rank)));
+         selected_targets_2.push_back(selected_target(t.target_, t.resolved_requirements_, static_cast<unsigned>(rank), cloned_build_request));
    }
 
    sort(selected_targets_2.begin(), selected_targets_2.end(), s_great);
@@ -406,18 +434,22 @@ project::try_select_best_alternative(const std::string& target_name,
       error_cannot_choose_alternative(*this, target_name, build_request);
 }
 
-void project::instantiate(const std::string& target_name,
-                          const feature_set& build_request,
-                          std::vector<basic_target*>* result) const
-{
-   selected_target best_target = select_best_alternative(target_name, build_request);
-   feature_set* usage_requirements = engine_.feature_registry().make_set();
-   instantiation_context ctx;
-   best_target.target_->instantiate(ctx, nullptr, build_request, result, usage_requirements);
+project::selected_targets_t
+project::try_select_best_alternative(const build_request& build_request) const {
+   if (build_request.resolved_completely())
+      return try_select_best_alternative(build_request.resolved_request());
+
+   auto resolved_build_request = build_request.resolve(feature_registry());
+   if (resolved_build_request.resolved_completely())
+      return try_select_best_alternative(resolved_build_request.resolved_request());
+
+   // if we still has unresolved features there is no sense to try select anything
+   // because some of requsted featured doesn't belongs to this project at all
+   return {};
 }
 
 project::selected_targets_t
-project::select_best_alternative(const feature_set& build_request) const
+project::try_select_best_alternative(const feature_set& build_request) const
 {
    selected_targets_t result;
 
@@ -535,7 +567,7 @@ void project::aliases_impl::load_project(loaded_projects& result,
       if (i->second->match_strategy_ == alias::match::exact && first != last)
          continue;
 
-      project& p = e.load_project(i->second->full_fs_path_);
+      const project& p = e.load_project(i->second->full_fs_path_);
       result.push_back(&p);
       if (first != last) {
          // FIXME: stupid boost::filesystem::path can't be constructed from two iterators
@@ -567,7 +599,7 @@ void project::aliases_impl::load_project(loaded_projects& result,
       node& n = *i->second;
 
       if (!n.full_fs_path_.empty()) {
-         project& p = e.load_project(n.full_fs_path_);
+         const project& p = e.load_project(n.full_fs_path_);
 
          auto first_copy = first;
          if (++first_copy == last && n.match_strategy_ == alias::match::always)
@@ -589,7 +621,7 @@ void project::aliases_impl::load_project(loaded_projects& result,
    }
 }
 
-void loaded_projects::push_back(project* v)
+void loaded_projects::push_back(const project* v)
 {
    // no duplicates allowed, but project::load_project will try to add some projects multiple times
    // so we need to be prepared
@@ -599,29 +631,27 @@ void loaded_projects::push_back(project* v)
 
 loaded_projects&
 loaded_projects::operator +=(const loaded_projects& rhs) {
-   for (project* v : rhs)
+   for (const project* v : rhs)
       push_back(v);
 
    return *this;
 }
 
 project::selected_targets_t
-loaded_projects::select_best_alternative(const feature_set& build_request) const
+loaded_projects::select_best_alternative(const build_request& build_request) const
 {
    project::selected_targets_t result;
    for(projects_t::const_iterator i = projects_.begin(), last = projects_.end(); i != last; ++i)
    {
-      project::selected_targets_t targets((**i).select_best_alternative(build_request));
+      project::selected_targets_t targets((**i).try_select_best_alternative(build_request));
       for(project::selected_targets_t::const_iterator t = targets.begin(), t_last = targets.end(); t != t_last; ++t)
          if (!t->target_->is_explicit())
             result.push_back(*t);
    }
 
    if (result.empty()) {
-      stringstream s;
-      dump_for_hash(s, build_request);
       throw std::runtime_error("Can't select best alternative - no one founded\n"
-                               "Build request: " + s.str());
+                               "Build request: " + build_request.string());
    }
 
    // Check for targets with same name. They already have same symbolic names so we should check names.
@@ -633,12 +663,10 @@ loaded_projects::select_best_alternative(const feature_set& build_request) const
    auto second = ++result.begin();
    for(; second != result.end();) {
       if (first->target_->name() == second->target_->name()) {
-         stringstream s;
-         dump_for_hash(s, build_request);
          throw std::runtime_error("Can't select best alternative for target '"+ first->target_->name() + "' from projects:\n"
                                   "1) '" + first->target_->location().string() + "' \n"
                                   "2) '" + second->target_->location().string() + "' \n"
-                                  "Build request: " + s.str());
+                                  "Build request: " + build_request.string());
       } else {
          ++first;
          ++second;
@@ -650,7 +678,7 @@ loaded_projects::select_best_alternative(const feature_set& build_request) const
 
 project::selected_target
 loaded_projects::select_best_alternative(const std::string& target_name,
-                                         const feature_set& build_request,
+                                         const build_request& build_request,
                                          bool allow_locals) const
 {
    project::selected_targets_t result;
@@ -667,8 +695,7 @@ loaded_projects::select_best_alternative(const std::string& target_name,
            "Projects to search are:\n";
       for (const project* p : projects_)
          s << "'" << p->location().string() << "'\n";
-      s << "Build request: ";
-      dump_for_hash(s, build_request);
+      s << "Build request: " << build_request.string();
 
       throw std::runtime_error(s.str());
    }
@@ -683,12 +710,10 @@ loaded_projects::select_best_alternative(const std::string& target_name,
    if (result[0].resolved_requirements_rank_ != result[1].resolved_requirements_rank_)
       return result.front();
    else {
-      stringstream s;
-      dump_for_hash(s, build_request);
       throw std::runtime_error("Can't select best alternative for target '"+ result[0].target_->name() + "' from projects:\n"
                                "1) '" + result[0].target_->location().string() + "' \n"
                                "2) '" + result[1].target_->location().string() + "' \n"
-                               "Build request: " + s.str());
+                               "Build request: " + build_request.string());
    }
 }
 

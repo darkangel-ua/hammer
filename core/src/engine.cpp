@@ -95,7 +95,8 @@ engine::engine()
    output_location_strategy_.reset(new default_output_location_strategy);
 }
 
-project* engine::get_upper_project(const location_t& project_path)
+const project*
+engine::get_upper_project(const location_t& project_path)
 {
    // FIXME: BUG: boost parent_path() on "foo/bar/.  produce "foo/bar" instead of "foo"
    location_t upper_path = project_path.filename() == "." ? project_path.parent_path().parent_path() : project_path.parent_path();
@@ -122,7 +123,8 @@ engine::load_project(const global_project_ref& project_ref)
    return global_project_->load_project(project_ref.value_.relative_path());
 }
 
-project& engine::load_project(location_t fs_project_path)
+const project&
+engine::load_project(location_t fs_project_path)
 {
    loaded_projects result{try_load_project(fs_project_path)};
    if (result.empty())
@@ -233,7 +235,7 @@ engine::try_load_project(location_t fs_project_path)
       return loaded_projects{i->second.get()};
 
    fs_project_path.normalize();
-   project* upper_project = nullptr;
+   const project* upper_project = nullptr;
 
    if (!exists(fs_project_path)) {
       upper_project = get_upper_project(fs_project_path);

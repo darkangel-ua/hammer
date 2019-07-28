@@ -79,7 +79,7 @@ void qt_uic_meta_target::compute_usage_requirements(feature_set& result,
 
    // making dependency on self :)
    feature* dependency = result.owner().create_feature("dependency", "");
-   dependency->set_dependency_data(source_decl(get_project(), name(), std::string(), nullptr, nullptr), &get_project());
+   dependency->set_dependency_data(source_decl{get_project(), name(), {}, nullptr}, &get_project());
 
    result.join(uic_inc).join(dependency);
 }
@@ -138,7 +138,7 @@ qt_uic_rule(invocation_context& ctx,
                                                            requirements_decl()));
 
    auto result = boost::make_unique<sources_decl>();
-   result->push_back(source_decl(ctx.current_project_, "./", mt->name(), nullptr, nullptr));
+   result->push_back(source_decl{ctx.current_project_, "./", mt->name(), nullptr});
 
    ctx.current_project_.add_target(std::move(mt));
 
@@ -362,7 +362,7 @@ void add_lib(project& qt_project,
       requirements_decl usage_req;
       feature* source_feature = e.feature_registry().create_feature("source", dependencies[i]);
       {
-         source_decl sd(qt_project, "/Qt", dependencies[i], nullptr, e.feature_registry().make_set());
+         auto sd = source_decl{qt_project, "/Qt", dependencies[i], nullptr};
          source_feature->set_dependency_data(sd, &qt_project);
          unique_ptr<just_feature_requirement> source_req(new just_feature_requirement(source_feature));
          usage_req.add(std::move(source_req));

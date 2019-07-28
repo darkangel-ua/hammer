@@ -84,8 +84,7 @@ void remove_duplicates(deduplicator_t& deduplicator,
                                  const main_target& owner_for_new_targets)
    {
       feature_set& local_usage_requirements = *this_.get_engine().feature_registry().make_set();
-      instantiate_meta_targets(ctx, meta_targets, build_request, &owner_for_new_targets,
-                               &instantiated_meta_targets, &local_usage_requirements);
+      instantiate_meta_targets(ctx, meta_targets, &owner_for_new_targets, &instantiated_meta_targets, &local_usage_requirements);
 
       sources_decl sources_from_features;
       extract_sources(sources_from_features, local_usage_requirements, this_);
@@ -122,7 +121,7 @@ void remove_duplicates(deduplicator_t& deduplicator,
       remove_duplicates(sources_deduplicator, ignored_meta_targets);
       std::vector<basic_target*> ignored_instantiated_meta_targets;
       feature_set* local_usage_requirements = this_.get_engine().feature_registry().make_set();
-      instantiate_meta_targets(ctx, ignored_meta_targets, build_request, &owner_for_new_targets,
+      instantiate_meta_targets(ctx, ignored_meta_targets, &owner_for_new_targets,
                                &ignored_instantiated_meta_targets, local_usage_requirements);
 
       sources_decl sources_from_uses;
@@ -319,12 +318,8 @@ void remove_duplicates(deduplicator_t& deduplicator,
          return;
 
       for (auto& d : dependencies) {
-         if (boost::regex_match(s.target_path(), d.target_ref_mask_)) {
-            if (s.properties())
-               s.properties()->join(*d.properties_);
-            else
-               s.properties(d.properties_->clone());
-         }
+         if (boost::regex_match(s.target_path(), d.target_ref_mask_))
+            s.build_request_join(*d.properties_);
       }
    }
 

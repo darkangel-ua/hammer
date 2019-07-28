@@ -317,9 +317,9 @@ namespace hammer {
    }
 
    feature_set*
-   feature_registry::make_set()
+   feature_registry::make_set() const
    {
-      unique_ptr<feature_set> r(new feature_set(this));
+      unique_ptr<feature_set> r(new feature_set(const_cast<feature_registry*>(this)));
       impl_->feature_set_list_.push_back(r.get());
 
       return r.release();

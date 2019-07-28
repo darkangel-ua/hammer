@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "options.h"
 #include <boost/filesystem/fstream.hpp>
+#include <boost/algorithm/string/trim.hpp>
 #include <boost/spirit/include/classic_core.hpp>
 #include <boost/spirit/include/classic_lists.hpp>
 #include <boost/spirit/include/classic_insert_at_actor.hpp>
@@ -14,11 +15,13 @@ void options::parse_and_add(const std::string& line,
    std::string key, value;
    parse(line.begin(), 
          line.end(), 
-          ch_p("#") >> *space_p >> "options:" >> +space_p >> 
+          ch_p("#") >> *space_p >> "options:" >> *space_p >>
           list_p(((+(anychar_p - '='))[assign_a(key)] >> 
                   !('=' >> (+(anychar_p - ' '))[assign_a(value)]))[insert_at_a(options_, key, value)]
              [assign_a(value, std::string())],
          +space_p));
+
+
 }
 
 bool options::exists(const std::string& key) const

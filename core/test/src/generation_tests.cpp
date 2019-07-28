@@ -107,7 +107,7 @@ struct generation_tests : public complete_build_tests_environment {
          return;
       }
 
-      project& p = engine_.load_project(test_data_path);
+      const project& p = engine_.load_project(test_data_path);
 
       // if instantiation.jcf presents than run checker
       // FIXME: else we just parse project for now

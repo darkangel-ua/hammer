@@ -2,6 +2,7 @@
 #include <hammer/core/feature.h>
 #include <hammer/core/project.h>
 #include <hammer/core/engine.h>
+#include <hammer/core/build_request.h>
 #include "build_request.h"
 
 using namespace std;
@@ -63,14 +64,14 @@ resolved_targets_t
 resolve_target_ids(hammer::engine& e,
                    const hammer::project* project,
                    const vector<string>& targets,
-                   const feature_set& build_request)
+                   const feature_set& build_request_)
 {
    using selected_targets_t = hammer::project::selected_targets_t;
 
    resolved_targets_t result;
-
+   auto build_request = hammer::build_request{build_request_};
    if (targets.empty() && project) {
-      for (const auto& st : project->select_best_alternative(build_request))
+      for (const auto& st : loaded_projects{project}.select_best_alternative(build_request))
          result.targets_.push_back(st.target_);
 
       return result;

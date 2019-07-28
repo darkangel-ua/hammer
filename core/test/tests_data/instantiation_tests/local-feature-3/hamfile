@@ -1,0 +1,4 @@
+# test that we correctly select alternatives based on features local to target
+# lib2 is a copy of lib1 and used to take different branch to cover all variants in one test
+
+exe test : main.cpp ./lib1/<local_feature>on ./lib2/<local_feature>off ;

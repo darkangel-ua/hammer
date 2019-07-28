@@ -1,0 +1,5 @@
+feature propagated-bar : on : propagated composite no-defaults ;                                                                                                                                                                           
+feature.compose <propagated-bar>on : <bar>on ;
+
+local alias lib2.proxy : ../lib2 ;
+lib lib1 : lib1.cpp lib2.proxy/<propagated-bar>on ;

@@ -1,6 +1,7 @@
 #include <stdlib.h>
-#include <hammer/core/warehouse_impl.h>
-#include <hammer/core/engine.h>
+#include <cassert>
+#include <unordered_set>
+#include <unordered_map>
 //#define BOOST_SPIRIT_DEBUG
 #include <boost/spirit/include/classic_core.hpp>
 #include <boost/spirit/include/classic_lists.hpp>
@@ -19,15 +20,15 @@
 #include <boost/crypto/md5.hpp>
 #include <boost/make_unique.hpp>
 #include <boost/regex.hpp>
+#include <hammer/core/warehouse_impl.h>
+#include <hammer/core/engine.h>
 #include <hammer/core/warehouse_project.h>
 #include <hammer/core/warehouse_meta_target.h>
 #include <hammer/core/warehouse_target.h>
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature.h>
 #include <hammer/core/virtual_project.h>
-#include <cassert>
-#include <unordered_set>
-#include <unordered_map>
+#include <hammer/core/build_request.h>
 
 using namespace std;
 using namespace boost::spirit::classic;
@@ -427,7 +428,7 @@ void warehouse_impl::resolve_dependency(unresolved_packages_t& packages,
    loaded_projects loaded_projects = e.load_project(engine::global_project_ref{"/" + d.public_id_});
    feature_set* build_request = e.feature_registry().make_set();
    build_request->join("version", d.version_.c_str());
-   project::selected_targets_t targets = loaded_projects.select_best_alternative(*build_request);
+   project::selected_targets_t targets = loaded_projects.select_best_alternative(hammer::build_request{*build_request});
    if (targets.size() != 1)
       throw std::runtime_error("Failed to resolve dependency for package " + d.public_id_ + ":" + d.version_);
 
@@ -706,8 +707,9 @@ warehouse_impl::gather_dependencies(const project& p)
 
    vector<dependency_t> dependencies;
    for(const source_decl& s : source_dependencies) {
-      feature_set::const_iterator i = s.properties()->find("version");
-      if (i == s.properties()->end())
+      auto& build_request = s.build_request()->resolved_request();
+      feature_set::const_iterator i = build_request.find("version");
+      if (i == build_request.end())
          throw std::runtime_error("Dependency '" + s.target_path() + "' doesn't have version specified");
 
       dependency_t d;

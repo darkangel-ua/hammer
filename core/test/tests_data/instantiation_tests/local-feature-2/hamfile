@@ -1,0 +1,6 @@
+#options: should-fail=true
+# because features in target's build request resolves in target's project context
+# we should fail to find ./lib2 alternative because lib1 references lib2 with feature local to lib1 project
+# and invisible to lib2
+
+exe test : main.cpp ./lib1 ;

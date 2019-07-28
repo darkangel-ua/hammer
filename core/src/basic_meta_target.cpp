@@ -12,10 +12,11 @@
 #include <hammer/core/feature_registry.h>
 #include <hammer/core/fs_helpers.h>
 #include <hammer/core/instantiation_context.h>
+#include <hammer/core/build_request.h>
 
 using namespace std;
 
-namespace hammer{
+namespace hammer {
 
 basic_meta_target::basic_meta_target(hammer::project* p,
                                      const std::string& name,
@@ -74,15 +75,12 @@ basic_meta_target::create_simple_target(const main_target& owner,
 
 void instantiate_meta_targets(instantiation_context& ctx,
                               const meta_targets_t& targets,
-                              const feature_set& build_request,
                               const main_target* owner,
                               std::vector<basic_target*>* result,
                               feature_set* usage_requirments)
 {
-   for (auto& t : targets) {
-      t.first->instantiate(ctx, owner, t.second ? *build_request.join(*t.second) : build_request,
-                           result, usage_requirments);
-   }
+   for (auto& t : targets)
+      t.first->instantiate(ctx, owner, *t.second, result, usage_requirments);
 }
 
 void basic_meta_target::split_one_source(sources_decl* simple_targets,
@@ -135,13 +133,17 @@ void basic_meta_target::resolve_meta_target_source(const source_decl& source,
                                                    const feature_set& build_request,
                                                    meta_targets_t* meta_targets) const
 {
-   const feature_set* build_request_with_source_properties = (source.properties() ? build_request.join(*source.properties()) : &build_request);
+   const auto build_request_with_source_properties = [&] {
+      auto result = source.build_request() ? *source.build_request() : hammer::build_request{get_project().feature_registry()};
+      result.join(build_request);
+      return result;
+   }();
 
    if (looks_like_local_target_ref(source)) {
       const std::string target_name = source.target_name().empty() ? source.target_path() : source.target_name();
       if (project_->find_target(target_name)) {
-         project::selected_target selected_target = project_->select_best_alternative(target_name, *build_request_with_source_properties, /*allow_locals=*/true);
-         meta_targets->push_back({selected_target.target_, source.properties()});
+         auto selected_target = project_->select_best_alternative(target_name, build_request_with_source_properties, /*allow_locals=*/true);
+         meta_targets->push_back({selected_target.target_, selected_target.resolved_build_request_});
          return;
 		}
    }
@@ -153,18 +155,18 @@ void basic_meta_target::resolve_meta_target_source(const source_decl& source,
 
    if (source.target_name().empty()) {
       try {
-         hammer::project::selected_targets_t selected_targets(suitable_projects.select_best_alternative(*build_request_with_source_properties));
-         for(hammer::project::selected_targets_t::const_iterator i = selected_targets.begin(), last = selected_targets.end(); i != last; ++i)
-            meta_targets->push_back({i->target_, source.properties()});
+         auto selected_targets = suitable_projects.select_best_alternative(build_request_with_source_properties);
+         for (hammer::project::selected_targets_t::const_iterator i = selected_targets.begin(), last = selected_targets.end(); i != last; ++i)
+            meta_targets->push_back({i->target_, i->resolved_build_request_});
       } catch(const std::exception& e) {
          throw std::runtime_error("While resolving meta target '" + source.target_path() +
                                   "' at '" + location().string() + "\n" + e.what());
       }
    } else {
-      project::selected_target selected_target = suitable_projects.select_best_alternative(source.target_name(),
-                                                                                           *build_request_with_source_properties,
-                                                                                           source.locals_allowed());
-      meta_targets->push_back({selected_target.target_, source.properties()});
+      auto selected_target = suitable_projects.select_best_alternative(source.target_name(),
+                                                                       build_request_with_source_properties,
+                                                                       source.locals_allowed());
+      meta_targets->push_back({selected_target.target_, selected_target.resolved_build_request_});
    }
 }
 

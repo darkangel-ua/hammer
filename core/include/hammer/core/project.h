@@ -11,26 +11,31 @@ namespace hammer {
 
 class engine;
 class loaded_projects;
+class build_request;
 
 class project : public boost::noncopyable {
    public:
       struct selected_target {
          selected_target(const basic_meta_target* t,
                          const feature_set* resolved_requirements,
-                         unsigned resolved_requirements_rank)
+                         unsigned resolved_requirements_rank,
+                         const feature_set* resolved_build_request)
                         : target_(t),
                           resolved_requirements_(resolved_requirements),
-                          resolved_requirements_rank_(resolved_requirements_rank)
+                          resolved_requirements_rank_(resolved_requirements_rank),
+                          resolved_build_request_(resolved_build_request)
          {}
 
          selected_target()
             : target_(nullptr),
-              resolved_requirements_(nullptr)
+              resolved_requirements_(nullptr),
+              resolved_build_request_(nullptr)
          {}
 
          const basic_meta_target* target_;
          const feature_set* resolved_requirements_;
          unsigned resolved_requirements_rank_;
+         const feature_set* resolved_build_request_;
       };
 
       typedef std::multimap<std::string /* target name */, std::unique_ptr<basic_meta_target>> targets_t;
@@ -140,12 +145,25 @@ class project : public boost::noncopyable {
       bool operator == (const project& rhs) const { return this == &rhs; }
       bool operator != (const project& rhs) const { return !(*this == rhs); }
 
-      // select targets in project that satisfied build_request. Can return empty list.
-      selected_targets_t select_best_alternative(const feature_set& build_request) const;
+      // select targets in project that satisfied build_request. Can return empty list
+      selected_targets_t
+      try_select_best_alternative(const build_request& build_request) const;
+      selected_targets_t
+      try_select_best_alternative(const feature_set& build_request) const;
 
       // choose best alternative for target_name satisfied build_request
-      selected_target select_best_alternative(const std::string& target_name, const feature_set& build_request, const bool allow_locals = false) const;
-      selected_target try_select_best_alternative(const std::string& target_name, const feature_set& build_request, const bool allow_locals = false) const;
+      selected_target
+      select_best_alternative(const std::string& target_name,
+                              const build_request& build_request,
+                              const bool allow_locals = false) const;
+      selected_target
+      try_select_best_alternative(const std::string& target_name,
+                                  const build_request& build_request,
+                                  const bool allow_locals = false) const;
+      selected_target
+      try_select_best_alternative(const std::string& target_name,
+                                  const feature_set& build_request,
+                                  const bool allow_locals = false) const;
 
    public:
       const project* const parent_;
@@ -176,31 +194,29 @@ class project : public boost::noncopyable {
 };
 
 class loaded_projects {
-      typedef std::vector<project*> projects_t;
+      typedef std::vector<const project*> projects_t;
 
    public:
       typedef projects_t::const_iterator const_iterator;
 
       loaded_projects() {}
-      explicit loaded_projects(project* v) : projects_(1, v) {}
-      void push_back(project* v);
+      explicit loaded_projects(const project* v) : projects_(1, v) {}
+      void push_back(const project* v);
       const_iterator begin() const { return projects_.begin(); }
       const_iterator end() const { return projects_.end(); }
-      project& front() const { return *projects_.front(); }
+      const project& front() const { return *projects_.front(); }
       bool is_single() const { return projects_.size() == 1; }
 
       loaded_projects&
       operator +=(const loaded_projects& rhs);
 
       project::selected_targets_t
-      select_best_alternative(const feature_set& build_request) const;
+      select_best_alternative(const build_request& build_request) const;
 
       project::selected_target
       select_best_alternative(const std::string& target_name,
-                              const feature_set& build_request,
+                              const build_request& build_request,
                               bool allow_locals) const;
-      feature_set*
-      resolve_undefined_features(const feature_set& s);
 
       bool empty() const { return projects_.empty(); }
 

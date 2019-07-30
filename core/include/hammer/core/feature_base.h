@@ -33,6 +33,9 @@ class feature_base : public boost::noncopyable {
       feature_base(const feature_def* def,
                    const std::string& value);
 
+      const feature_def&
+      definition() const { return *definition_; }
+
       const std::string&
       name() const { return definition_->name(); }
 

@@ -11,9 +11,6 @@ class feature : public feature_base {
       friend class feature_registry;
       typedef std::vector<const subfeature*> subfeatures_t;
 
-      const feature_def&
-      definition() const { return *static_cast<const feature_def*>(definition_); }
-
       // FIXME: will not work when rhs and lhs from different feature_registries
       const subfeature*
       find_subfeature(const subfeature& v) const;

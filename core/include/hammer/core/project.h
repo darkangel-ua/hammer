@@ -76,10 +76,13 @@ class project : public boost::noncopyable {
               const location_t& l);
       virtual ~project();
 
-      const std::string& name() const { return name_; }
+      const std::string&
+      name() const { return name_; }
+
       void name(const std::string& new_name) { name_ = new_name; }
 
-      const location_t& location() const { return location_; }
+      const location_t&
+      location() const { return location_; }
 
       void local_requirements(const requirements_decl& req);
       void local_usage_requirements(const requirements_decl& req);
@@ -109,15 +112,23 @@ class project : public boost::noncopyable {
       publishable_version() const;
 
       void add_target(std::unique_ptr<basic_meta_target> t);
-      const targets_t& targets() const { return targets_; }
+
+      const targets_t&
+      targets() const { return targets_; }
 
       // FIXME: there is can be many metatargets with same name
-      const basic_meta_target* find_target(const std::string& name) const;
-      // FIXME: there is can be many metatargets with same name
-      basic_meta_target* find_target(const std::string& name);
+      const basic_meta_target*
+      find_target(const std::string& name) const;
 
-      hammer::engine& get_engine() const { return engine_; }
-      const location_t& intermediate_dir() const { return intermediate_dir_; }
+      // FIXME: there is can be many metatargets with same name
+      basic_meta_target*
+      find_target(const std::string& name);
+
+      hammer::engine&
+      get_engine() const { return engine_; }
+
+      const location_t&
+      intermediate_dir() const { return intermediate_dir_; }
 
       const hammer::feature_registry&
       feature_registry() const;
@@ -136,7 +147,9 @@ class project : public boost::noncopyable {
                      const location_t& fs_path,
                      const feature_set* requirements,
                      const alias::match match_strategy = alias::match::always);
-      const aliases_t& aliases() const;
+
+      const aliases_t&
+      aliases() const;
 
       void instantiate(const std::string& target_name,
                        const feature_set& build_request,

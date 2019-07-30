@@ -11,11 +11,18 @@ class feature : public feature_base {
       friend class feature_registry;
       typedef std::vector<const subfeature*> subfeatures_t;
 
-      const feature_def& definition() const { return *static_cast<const feature_def*>(definition_); }
+      const feature_def&
+      definition() const { return *static_cast<const feature_def*>(definition_); }
+
       // FIXME: will not work when rhs and lhs from different feature_registries
-      const subfeature* find_subfeature(const subfeature& v) const;
-      const subfeature* find_subfeature(const std::string& v) const;
-      const subfeatures_t& subfeatures() const { return subfeatures_; }
+      const subfeature*
+      find_subfeature(const subfeature& v) const;
+
+      const subfeature*
+      find_subfeature(const std::string& v) const;
+
+      const subfeatures_t&
+      subfeatures() const { return subfeatures_; }
 
       // <toolset>gcc will be equal only to <toolset>gcc - full match, including subfeatures
       bool operator == (const feature& rhs) const;
@@ -29,8 +36,11 @@ class feature : public feature_base {
    private:
       subfeatures_t subfeatures_;
 
-      feature(const feature_def* def, const std::string& value);
-      feature(const feature_def* def, const std::string& value, const subfeatures_t& subfeatures);
+      feature(const feature_def* def,
+              const std::string& value);
+      feature(const feature_def* def,
+              const std::string& value,
+              const subfeatures_t& subfeatures);
 
       bool equal_without_subfeatures(const feature& rhs) const;
 };

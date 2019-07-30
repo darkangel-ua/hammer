@@ -147,8 +147,7 @@ bool project::publishable() const {
 }
 
 string
-project::publishable_version() const
-{
+project::publishable_version() const {
    string version = find_version(get_engine(), local_requirements());
    if (version.empty())
       throw std::runtime_error("Project is not publishable");
@@ -188,23 +187,22 @@ project::feature_registry() {
    return *feature_registry_;
 }
 
-void project::add_target(std::unique_ptr<basic_meta_target> t)
-{
+void project::add_target(std::unique_ptr<basic_meta_target> t) {
    t->requirements().insert_infront(requirements());
    t->usage_requirements().insert_infront(usage_requirements());
    targets_.insert(std::make_pair(t->name(), move(t)));
 }
 
-const basic_meta_target* project::find_target(const std::string& name) const
-{
+const basic_meta_target*
+project::find_target(const std::string& name) const {
    return const_cast<project*>(this)->find_target(name);
 }
 
-basic_meta_target* project::find_target(const std::string& name)
-{
+basic_meta_target*
+project::find_target(const std::string& name) {
    auto i = targets_.find(name);
    if (i == targets_.end())
-      return 0;
+      return nullptr;
    else
       return i->second.get();
 }
@@ -212,8 +210,7 @@ basic_meta_target* project::find_target(const std::string& name)
 void project::add_alias(const location_t& alias,
                         const location_t& fs_path,
                         const feature_set* requirements,
-                        const alias::match match_strategy)
-{
+                        const alias::match match_strategy) {
    if (alias.has_root_path())
       throw std::runtime_error("[project::add_alias]: alias can be only relative");
 
@@ -238,14 +235,12 @@ void project::add_alias(const location_t& alias,
 }
 
 const project::aliases_t&
-project::aliases() const
-{
+project::aliases() const {
    return aliases_->aliases_;
 }
 
 loaded_projects
-project::load_project(const location_t& path) const
-{
+project::load_project(const location_t& path) const {
    if (path.has_root_path())
       return get_engine().load_project(engine::global_project_ref{path});
 
@@ -268,14 +263,13 @@ project::load_project(const location_t& path) const
 // > -1 == suitable with computed rank. Zero IS valid rank
 static
 int compute_alternative_rank(const feature_set& target_properties,
-                             const feature_set& build_request)
-{
+                             const feature_set& build_request) {
    unsigned rank = 0;
-   for(const feature* tf : target_properties) {
+   for (const feature* tf : target_properties) {
       if (!(tf->attributes().free ||
             tf->attributes().incidental))
       {
-         feature_set::const_iterator bf = build_request.find(tf->name());
+         auto bf = build_request.find(tf->name());
          if (bf != build_request.end())
             if (tf->value() != (**bf).value())
                return -1;
@@ -296,8 +290,7 @@ int compute_alternative_rank(const feature_set& target_properties,
 
 static
 bool s_great(const project::selected_target& lhs,
-             const project::selected_target& rhs)
-{
+             const project::selected_target& rhs) {
    return lhs.resolved_requirements_rank_ > rhs.resolved_requirements_rank_;
 }
 
@@ -307,8 +300,7 @@ bool s_great(const project::selected_target& lhs,
 static
 void error_cannot_choose_alternative(const project& p,
                                      const std::string& target_name,
-                                     const feature_set& build_request_param)
-{
+                                     const feature_set& build_request_param) {
    auto fmt = boost::format("Failed to selecting best alternatives for target '%s' in project '%s'\n"
                             "Build request: %s\n");
 
@@ -319,8 +311,7 @@ void error_cannot_choose_alternative(const project& p,
 }
 
 static
-int compute_requirements_rank(const feature_set& requirements)
-{
+int compute_requirements_rank(const feature_set& requirements) {
    int rank = 0;
    for (const feature* f : requirements) {
       if (f->attributes().free ||
@@ -338,8 +329,7 @@ int compute_requirements_rank(const feature_set& requirements)
 
 void project::instantiate(const std::string& target_name,
                           const feature_set& build_request,
-                          std::vector<basic_target*>* result) const
-{
+                          std::vector<basic_target*>* result) const {
    selected_target best_target = select_best_alternative(target_name, hammer::build_request{build_request});
    feature_set* usage_requirements = engine_.feature_registry().make_set();
    instantiation_context ctx;
@@ -349,8 +339,7 @@ void project::instantiate(const std::string& target_name,
 project::selected_target
 project::select_best_alternative(const std::string& target_name,
                                  const build_request& build_request,
-                                 const bool allow_locals) const
-{
+                                 const bool allow_locals) const {
 
    selected_target result = try_select_best_alternative(target_name, build_request, allow_locals);
    if (!result.target_)
@@ -378,8 +367,7 @@ project::try_select_best_alternative(const std::string& target_name,
 project::selected_target
 project::try_select_best_alternative(const std::string& target_name,
                                      const feature_set& build_request,
-                                     const bool allow_locals) const
-{
+                                     const bool allow_locals) const {
    boost::iterator_range<targets_t::const_iterator> r = targets_.equal_range(target_name);
 
    if (r.empty())
@@ -388,19 +376,19 @@ project::try_select_best_alternative(const std::string& target_name,
    auto cloned_build_request = build_request.clone();
    vector<selected_target> selected_targets;
 
-   for(targets_t::const_iterator first = r.begin(), last = r.end(); first != last; ++first) {
-      if (!allow_locals && first->second->is_local())
+   for (auto& target : r) {
+      if (!allow_locals && target.second->is_local())
          continue;
 
       feature_set* fs = engine_.feature_registry().make_set();
-      first->second->requirements().eval(build_request, fs);
+      target.second->requirements().eval(build_request, fs);
 
       if (fs->find("build", "no"))
          continue;
 
       int rank = compute_alternative_rank(*fs, build_request);
       if (rank != -1)
-         selected_targets.push_back(selected_target{first->second.get(), fs, static_cast<unsigned>(rank), cloned_build_request});
+         selected_targets.push_back(selected_target{target.second.get(), fs, static_cast<unsigned>(rank), cloned_build_request});
    }
 
    sort(selected_targets.begin(), selected_targets.end(), s_great);
@@ -449,21 +437,20 @@ project::try_select_best_alternative(const build_request& build_request) const {
 }
 
 project::selected_targets_t
-project::try_select_best_alternative(const feature_set& build_request) const
-{
+project::try_select_best_alternative(const feature_set& build_request) const {
    selected_targets_t result;
 
-   targets_t::const_iterator first = targets_.begin(), last = targets_.end();
-   while(first != last)
-   {
+   auto first = targets_.begin(),
+         last = targets_.end();
+   while (first != last) {
       selected_target t = try_select_best_alternative(first->second->name(), build_request);
       if (t.target_)
          result.push_back(t);
 
       // we just processed targets with name equal to 'first->second->name()', lets move to
       // group of targets with different name
-      targets_t::const_iterator next = first; std::advance(next, 1);
-      while(next != last && first->first == next->first)
+      auto next = first; std::advance(next, 1);
+      while (next != last && first->first == next->first)
          ++first, ++next;
 
       first = next;
@@ -476,8 +463,7 @@ bool project::aliases_impl::add_alias(nodes& nodes,
                                       const boost::filesystem::path& alias,
                                       const location_t& fs_path,
                                       const feature_set* requirements,
-                                      const alias::match match_strategy)
-{
+                                      const alias::match match_strategy) {
    const bool r = add_alias(nodes, alias.begin(), alias.end(), fs_path, requirements, match_strategy);
    if (r)
       aliases_.push_back({alias, fs_path, requirements ? requirements->clone() : nullptr, match_strategy});
@@ -490,8 +476,7 @@ bool project::aliases_impl::add_alias(nodes& nodes,
                                       location_t::const_iterator last,
                                       const location_t& fs_path,
                                       const feature_set* requirements,
-                                      const alias::match match_strategy)
-{
+                                      const alias::match match_strategy) {
    auto has_same_fs_path = [&]() {
       for (auto& n : nodes) {
          if (n.second->full_fs_path_ == fs_path)
@@ -559,8 +544,7 @@ bool project::aliases_impl::add_alias(nodes& nodes,
 void project::aliases_impl::load_project(loaded_projects& result,
                                          engine& e,
                                          boost::filesystem::path::const_iterator first,
-                                         boost::filesystem::path::const_iterator last)
-{
+                                         boost::filesystem::path::const_iterator last) {
    // first of all add transparent proxied projects
    auto ri = nodes_.equal_range({});
    for (auto i = ri.first; i != ri.second; ++i) {
@@ -585,8 +569,7 @@ void project::aliases_impl::load_project(loaded_projects& result,
                                          nodes& nodes,
                                          engine& e,
                                          boost::filesystem::path::const_iterator first,
-                                         boost::filesystem::path::const_iterator last)
-{
+                                         boost::filesystem::path::const_iterator last) {
    // ignore dots if any
    while (first != last && *first == ".")
       ++first;
@@ -621,8 +604,7 @@ void project::aliases_impl::load_project(loaded_projects& result,
    }
 }
 
-void loaded_projects::push_back(const project* v)
-{
+void loaded_projects::push_back(const project* v) {
    // no duplicates allowed, but project::load_project will try to add some projects multiple times
    // so we need to be prepared
    if (find(projects_.begin(), projects_.end(), v) == projects_.end())
@@ -630,7 +612,7 @@ void loaded_projects::push_back(const project* v)
 }
 
 loaded_projects&
-loaded_projects::operator +=(const loaded_projects& rhs) {
+loaded_projects::operator += (const loaded_projects& rhs) {
    for (const project* v : rhs)
       push_back(v);
 
@@ -638,15 +620,14 @@ loaded_projects::operator +=(const loaded_projects& rhs) {
 }
 
 project::selected_targets_t
-loaded_projects::select_best_alternative(const build_request& build_request) const
-{
+loaded_projects::select_best_alternative(const build_request& build_request) const {
    project::selected_targets_t result;
-   for(projects_t::const_iterator i = projects_.begin(), last = projects_.end(); i != last; ++i)
-   {
-      project::selected_targets_t targets((**i).try_select_best_alternative(build_request));
-      for(project::selected_targets_t::const_iterator t = targets.begin(), t_last = targets.end(); t != t_last; ++t)
-         if (!t->target_->is_explicit())
-            result.push_back(*t);
+   for (auto& p : projects_) {
+      const auto selected_targets = p->try_select_best_alternative(build_request);
+      for (const auto& selected_target : selected_targets) {
+         if (!selected_target.target_->is_explicit())
+            result.push_back(selected_target);
+      }
    }
 
    if (result.empty()) {
@@ -661,7 +642,7 @@ loaded_projects::select_best_alternative(const build_request& build_request) con
 
    auto first = result.begin();
    auto second = ++result.begin();
-   for(; second != result.end();) {
+   for (; second != result.end();) {
       if (first->target_->name() == second->target_->name()) {
          throw std::runtime_error("Can't select best alternative for target '"+ first->target_->name() + "' from projects:\n"
                                   "1) '" + first->target_->location().string() + "' \n"
@@ -679,12 +660,10 @@ loaded_projects::select_best_alternative(const build_request& build_request) con
 project::selected_target
 loaded_projects::select_best_alternative(const std::string& target_name,
                                          const build_request& build_request,
-                                         bool allow_locals) const
-{
+                                         bool allow_locals) const {
    project::selected_targets_t result;
-   for(projects_t::const_iterator i = projects_.begin(), last = projects_.end(); i != last; ++i)
-   {
-      project::selected_target st = (**i).try_select_best_alternative(target_name, build_request, allow_locals);
+   for (const auto& p : projects_) {
+      const auto st = p->try_select_best_alternative(target_name, build_request, allow_locals);
       if (st.target_)
          result.push_back(st);
    }
@@ -697,7 +676,7 @@ loaded_projects::select_best_alternative(const std::string& target_name,
          s << "'" << p->location().string() << "'\n";
       s << "Build request: " << build_request.string();
 
-      throw std::runtime_error(s.str());
+      throw std::runtime_error{s.str()};
    }
 
    if (result.size() == 1)

@@ -26,20 +26,41 @@ class basic_meta_target {
                         const requirements_decl& usage_req);
       basic_meta_target() {}
       virtual ~basic_meta_target();
-      const project& get_project() const { return *project_; }
-      engine& get_engine() const;
-      const std::string& name() const { return name_; }
+
+      const project&
+      get_project() const { return *project_; }
+
+      engine&
+      get_engine() const;
+
+      const std::string&
+      name() const { return name_; }
+
       void name(const std::string& v) { name_ = v; }
-      void sources(const sources_decl& s);
       void add_sources(const sources_decl& s);
-      const sources_decl& sources() const { return sources_; }
-      const requirements_decl& usage_requirements() const { return usage_requirements_; }
-      const requirements_decl& requirements() const { return requirements_; }
-      requirements_decl& usage_requirements() { return usage_requirements_; }
-      requirements_decl& requirements() { return requirements_; }
+
+      const sources_decl&
+      sources() const { return sources_; }
+      void sources(const sources_decl& s);
+
+      const requirements_decl&
+      usage_requirements() const { return usage_requirements_; }
+
+      const requirements_decl&
+      requirements() const { return requirements_; }
+
+      requirements_decl&
+      usage_requirements() { return usage_requirements_; }
+
+      requirements_decl&
+      requirements() { return requirements_; }
+
       void usage_requirements(const requirements_decl& r) { usage_requirements_ = r; }
       void requirements(const requirements_decl& r) { requirements_ = r; }
-      virtual const location_t& location() const;
+
+      virtual
+      const location_t&
+      location() const;
 
       void split_sources(sources_decl* simple_targets,
                          meta_targets_t* meta_targets,
@@ -60,7 +81,8 @@ class basic_meta_target {
 
    protected:
       // returns true if instantiate() can cache instantiation for build_request
-      virtual bool is_cachable(const main_target* owner) const { return true; }
+      virtual
+      bool is_cachable(const main_target* owner) const { return true; }
 
       virtual
       void instantiate_impl(instantiation_context& ctx,

@@ -96,8 +96,7 @@ engine::engine()
 }
 
 const project*
-engine::get_upper_project(const location_t& project_path)
-{
+engine::get_upper_project(const location_t& project_path) {
    // FIXME: BUG: boost parent_path() on "foo/bar/.  produce "foo/bar" instead of "foo"
    location_t upper_path = project_path.filename() == "." ? project_path.parent_path().parent_path() : project_path.parent_path();
    // FIXME: BUG: boost parent_path() can produce "E:" path and than "E:" / "foo" give as "E:foo" which is wrong
@@ -117,29 +116,26 @@ engine::get_upper_project(const location_t& project_path)
 }
 
 loaded_projects
-engine::load_project(const global_project_ref& project_ref)
-{
+engine::load_project(const global_project_ref& project_ref) {
    assert(project_ref.value_.has_root_directory());
    return global_project_->load_project(project_ref.value_.relative_path());
 }
 
 const project&
-engine::load_project(location_t fs_project_path)
-{
-   loaded_projects result{try_load_project(fs_project_path)};
+engine::load_project(location_t fs_project_path) {
+   auto result = try_load_project(fs_project_path);
    if (result.empty())
-      throw  runtime_error("Can't load project at '"  + fs_project_path.string() + "': no such path.");
+      throw runtime_error("Can't load project at '"  + fs_project_path.string() + "': no such path.");
 
    return result.front();
 }
 
-void engine::load_hammer_script(location_t filepath)
-{
+void engine::load_hammer_script(location_t filepath) {
    filepath.normalize();
    if (!exists(filepath))
       return throw std::runtime_error("Hammer script '" + filepath.string() + "' doesn't exists.");
 
-   projects_t::iterator i = projects_.find(filepath);
+   auto i = projects_.find(filepath);
    if (i != projects_.end())
       throw std::runtime_error("Hammer script '" + filepath.string() + "' already loaded.");
 
@@ -151,8 +147,7 @@ void load_hammer_script_impl(engine& e,
                              ostringstream& s,
                              diagnostic& diag,
                              project& current_project,
-                             const ast::hamfile& ast)
-{
+                             const ast::hamfile& ast) {
    if (diag.error_count())
       throw parsing_error(s.str());
 
@@ -224,8 +219,7 @@ engine::load_project(const location_t& project_path,
 }
 
 loaded_projects
-engine::try_load_project(location_t fs_project_path)
-{
+engine::try_load_project(location_t fs_project_path) {
    location_t path_with_dot(fs_project_path);
    path_with_dot /= ".";
    path_with_dot.normalize();
@@ -263,8 +257,7 @@ engine::try_load_project(location_t fs_project_path)
 }
 
 project&
-engine::insert(std::unique_ptr<project> p)
-{
+engine::insert(std::unique_ptr<project> p) {
    projects_.insert({p->location(), std::shared_ptr<project>{p.get()}});
    return *p.release();
 }
@@ -280,15 +273,13 @@ bool has_project_file(const boost::filesystem::path& folder) {
 void engine::add_alias(const location_t& alias_path,
                        const location_t& full_project_path,
                        feature_set* props,
-                       const project::alias::match match_strategy)
-{
+                       const project::alias::match match_strategy) {
    assert(full_project_path.has_root_path());
    assert(alias_path.has_root_directory());
    global_project_->add_alias(alias_path.relative_path(), full_project_path, props, match_strategy);
 }
 
-void engine::output_location_strategy(std::shared_ptr<hammer::output_location_strategy>& strategy)
-{
+void engine::output_location_strategy(std::shared_ptr<hammer::output_location_strategy>& strategy) {
    if (!strategy)
       output_location_strategy_.reset(new default_output_location_strategy);
    else

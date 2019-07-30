@@ -33,26 +33,23 @@ basic_meta_target::basic_meta_target(hammer::project* p,
    usage_requirements_.setup_path_data(p);
 }
 
-void basic_meta_target::sources(const sources_decl& s)
-{
+void basic_meta_target::sources(const sources_decl& s) {
    sources_ = s;
 }
 
-void basic_meta_target::add_sources(const sources_decl& s)
-{
+void basic_meta_target::add_sources(const sources_decl& s) {
    sources_.insert(s);
 }
 
-const location_t& basic_meta_target::location() const
-{
+const location_t&
+basic_meta_target::location() const {
    return get_project().location();
 }
 
 void basic_meta_target::instantiate_simple_targets(const sources_decl& targets,
                                                    const feature_set& build_request,
                                                    const main_target& owner,
-                                                   std::vector<basic_target*>* result) const
-{
+                                                   std::vector<basic_target*>* result) const {
    for (const source_decl& sd : targets) {
       const hammer::target_type* tp = sd.type();
       if (!tp)
@@ -68,17 +65,19 @@ basic_target*
 basic_meta_target::create_simple_target(const main_target& owner,
                                         const location_t& source_location,
                                         const target_type& tp,
-                                        const feature_set* properties) const
-{
-   return new source_target(&owner, source_location.branch_path(), source_location.filename().string(), &tp, properties);
+                                        const feature_set* properties) const {
+   return new source_target(&owner,
+                            source_location.branch_path(),
+                            source_location.filename().string(),
+                            &tp,
+                            properties);
 }
 
 void instantiate_meta_targets(instantiation_context& ctx,
                               const meta_targets_t& targets,
                               const main_target* owner,
                               std::vector<basic_target*>* result,
-                              feature_set* usage_requirments)
-{
+                              feature_set* usage_requirments) {
    for (auto& t : targets)
       t.first->instantiate(ctx, owner, *t.second, result, usage_requirments);
 }
@@ -87,20 +86,20 @@ void basic_meta_target::split_one_source(sources_decl* simple_targets,
                                          meta_targets_t* meta_targets,
                                          const source_decl& source,
                                          const feature_set& build_request,
-                                         const type_registry& tr) const
-{
+                                         const type_registry& tr) const {
    if (source.type())
       simple_targets->push_back(source);
    else
       resolve_meta_target_source(source, build_request, meta_targets);
 }
 
-void basic_meta_target::split_sources(sources_decl* simple_targets, meta_targets_t* meta_targets,
-                                      const sources_decl& sources, const feature_set& build_request) const
-{
+void basic_meta_target::split_sources(sources_decl* simple_targets,
+                                      meta_targets_t* meta_targets,
+                                      const sources_decl& sources,
+                                      const feature_set& build_request) const {
    const type_registry& tr = get_engine().get_type_registry();
-   for(sources_decl::const_iterator i = sources.begin(), last = sources.end(); i != last; ++i)
-      split_one_source(simple_targets, meta_targets, *i, build_request, tr);
+   for (auto s : sources)
+      split_one_source(simple_targets, meta_targets, s, build_request, tr);
 }
 
 static
@@ -131,8 +130,7 @@ resolve_project_local_reference(const source_decl& s,
 
 void basic_meta_target::resolve_meta_target_source(const source_decl& source,
                                                    const feature_set& build_request,
-                                                   meta_targets_t* meta_targets) const
-{
+                                                   meta_targets_t* meta_targets) const {
    const auto build_request_with_source_properties = [&] {
       auto result = source.build_request() ? *source.build_request() : hammer::build_request{get_project().feature_registry()};
       result.join(build_request);
@@ -156,8 +154,8 @@ void basic_meta_target::resolve_meta_target_source(const source_decl& source,
    if (source.target_name().empty()) {
       try {
          auto selected_targets = suitable_projects.select_best_alternative(build_request_with_source_properties);
-         for (hammer::project::selected_targets_t::const_iterator i = selected_targets.begin(), last = selected_targets.end(); i != last; ++i)
-            meta_targets->push_back({i->target_, i->resolved_build_request_});
+         for (auto t : selected_targets)
+            meta_targets->push_back({t.target_, t.resolved_build_request_});
       } catch(const std::exception& e) {
          throw std::runtime_error("While resolving meta target '" + source.target_path() +
                                   "' at '" + location().string() + "\n" + e.what());
@@ -170,16 +168,14 @@ void basic_meta_target::resolve_meta_target_source(const source_decl& source,
    }
 }
 
-basic_meta_target::~basic_meta_target()
-{
+basic_meta_target::~basic_meta_target() {
 }
 
 void basic_meta_target::instantiate(instantiation_context& ctx,
                                     const main_target* owner,
                                     const feature_set& build_request,
                                     std::vector<basic_target*>* result,
-                                    feature_set* usage_requirements) const
-{
+                                    feature_set* usage_requirements) const {
    instantiation_context::guard ig = {ctx, *this};
 
    if (is_cachable(owner)) {
@@ -201,13 +197,12 @@ void basic_meta_target::instantiate(instantiation_context& ctx,
       usage_requirements->join(*cache_item.computed_usage_requirements_);
 
       return;
-   } else {
+   } else
       instantiate_impl(ctx, owner, build_request, result, usage_requirements);
-   }
 }
 
-engine& basic_meta_target::get_engine() const
-{
+engine&
+basic_meta_target::get_engine() const {
    return project_->get_engine();
 }
 

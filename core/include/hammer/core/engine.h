@@ -51,19 +51,43 @@ class engine : public boost::noncopyable {
       project&
       insert(std::unique_ptr<project> p);
 
-      type_registry& get_type_registry() { return *type_registry_; }
-      generator_registry& generators() const { return *generators_; }
-      hammer::feature_registry& feature_registry() { return global_project_->feature_registry(); }
-      const hammer::feature_registry& feature_registry() const { return global_project_->feature_registry(); }
-      rule_manager& get_rule_manager() { return *rule_manager_; }
-      const rule_manager& get_rule_manager() const { return *rule_manager_; }
-      hammer::toolset_manager& toolset_manager() { return *toolset_manager_; }
-      hammer::scanner_manager& scanner_manager() { return *scanner_manager_; }
-      const hammer::scanner_manager& scanner_manager() const { return *scanner_manager_; }
-      hammer::warehouse_manager& warehouse_manager() { return *warehouse_manager_; }
-      hammer::output_location_strategy& output_location_strategy() { return *output_location_strategy_; }
+      type_registry&
+      get_type_registry() { return *type_registry_; }
+
+      generator_registry&
+      generators() const { return *generators_; }
+
+      hammer::feature_registry&
+      feature_registry() { return global_project_->feature_registry(); }
+
+      const hammer::feature_registry&
+      feature_registry() const { return global_project_->feature_registry(); }
+
+      rule_manager&
+      get_rule_manager() { return *rule_manager_; }
+
+      const rule_manager&
+      get_rule_manager() const { return *rule_manager_; }
+
+      hammer::toolset_manager&
+      toolset_manager() { return *toolset_manager_; }
+
+      hammer::scanner_manager&
+      scanner_manager() { return *scanner_manager_; }
+
+      const hammer::scanner_manager&
+      scanner_manager() const { return *scanner_manager_; }
+
+      hammer::warehouse_manager&
+      warehouse_manager() { return *warehouse_manager_; }
+
+      hammer::output_location_strategy&
+      output_location_strategy() { return *output_location_strategy_; }
+
       void output_location_strategy(std::shared_ptr<hammer::output_location_strategy>& strategy);
-      void use_project(const project& p, const std::string& project_id_alias, const location_t& project_location);
+      void use_project(const project& p,
+                       const std::string& project_id_alias,
+                       const location_t& project_location);
 
       const project::aliases_t&
       global_aliases() const { return global_project_->aliases(); }

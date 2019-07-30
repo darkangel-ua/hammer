@@ -1,17 +1,15 @@
-#include "stdafx.h"
-#include <hammer/core/feature.h>
-#include <hammer/core/subfeature.h>
 #include <algorithm>
 #include <stdexcept>
+#include <hammer/core/feature.h>
+#include <hammer/core/subfeature.h>
 
 using namespace std;
 
-namespace hammer{
+namespace hammer {
 
 feature::feature(const feature_def* def,
                  const string& value)
-                : 
-                 feature_base(def, value)
+   : feature_base(def, value)
 {
    if (!attributes().free && 
        !attributes().no_checks && 
@@ -24,15 +22,13 @@ feature::feature(const feature_def* def,
 feature::feature(const feature_def* def,
                  const string& value,
                  const subfeatures_t& subfeatures)
-                : 
-                 feature_base(def, value),
-                 subfeatures_(subfeatures)
+   : feature_base(def, value),
+     subfeatures_(subfeatures)
 {
 
 }
 
-bool feature::equal_without_subfeatures(const feature& rhs) const
-{
+bool feature::equal_without_subfeatures(const feature& rhs) const {
    if (name() != rhs.name())
       return false;
 
@@ -55,8 +51,7 @@ bool feature::equal_without_subfeatures(const feature& rhs) const
    return true;
 }
 
-bool feature::operator == (const feature& rhs) const
-{
+bool feature::operator == (const feature& rhs) const {
    if (!equal_without_subfeatures(rhs))
       return false;
 
@@ -74,8 +69,7 @@ bool feature::operator == (const feature& rhs) const
    return true;
 }
 
-bool feature::contains(const feature& f) const
-{
+bool feature::contains(const feature& f) const {
    if (!equal_without_subfeatures(f))
       return false;
 
@@ -87,8 +81,7 @@ bool feature::contains(const feature& f) const
    return true;
 }
 
-bool feature::operator < (const feature& rhs) const
-{
+bool feature::operator < (const feature& rhs) const {
    if (this == &rhs)
       return false;
 
@@ -113,27 +106,24 @@ bool feature::operator < (const feature& rhs) const
    if (subfeatures_.size() != rhs.subfeatures_.size())
       return subfeatures_.size() < rhs.subfeatures_.size();
 
-   for(subfeatures_t::const_iterator i = subfeatures_.begin(), last = subfeatures_.end(), outer = rhs.subfeatures_.begin(); i != last; ++i, ++outer)
+   for (auto i = subfeatures_.begin(), last = subfeatures_.end(), outer = rhs.subfeatures_.begin(); i != last; ++i, ++outer)
       if (*i != *outer)
          return *i < *outer;
 
    return false;
 }
 
-const subfeature* feature::find_subfeature(const subfeature& v) const
-{
-   subfeatures_t::const_iterator i = std::find(subfeatures_.begin(), subfeatures_.end(), &v);
-   if (i == subfeatures_.end())
-      return nullptr;
-   else
-      return *i;
+const subfeature*
+feature::find_subfeature(const subfeature& v) const {
+   auto i = std::find(subfeatures_.begin(), subfeatures_.end(), &v);
+   return i == subfeatures_.end() ? nullptr : *i;
 }
 
-const subfeature* feature::find_subfeature(const std::string& v) const
-{
-   for(subfeatures_t::const_iterator i = subfeatures_.begin(), last = subfeatures_.end(); i != last; ++i)
-      if ((**i).name() == v)
-         return *i;
+const subfeature*
+feature::find_subfeature(const std::string& v) const {
+   for (auto& i : subfeatures_)
+      if (i->name() == v)
+         return i;
    
    return nullptr;
 }

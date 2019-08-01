@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cassert>
 #include <stdexcept>
 #include <hammer/core/feature.h>
 #include <hammer/core/subfeature.h>
@@ -7,25 +8,32 @@ using namespace std;
 
 namespace hammer {
 
-feature::feature(const feature_def* def,
-                 const string& value)
-   : feature_base(def, value)
-{
-   if (!attributes().free && 
-       !attributes().no_checks && 
-       !def->is_legal_value(value))
-   {
-      throw std::runtime_error("Value '" + value + "' is not legal for feature '" + name() + "'");
-   }
+static
+feature_value_ns_ptr global_ns;
+
+const feature_value_ns_ptr&
+feature::get_value_ns() const {
+   if (attributes().no_checks)
+      return global_ns;
+   else
+      return definition_->get_legal_value_ns(value());
 }
 
 feature::feature(const feature_def* def,
-                 const string& value,
-                 const subfeatures_t& subfeatures)
-   : feature_base(def, value),
-     subfeatures_(subfeatures)
+                 std::string value,
+                 subfeatures_t subfeatures)
+   : definition_(def),
+     value_(std::move(value)),
+     subfeatures_(std::move(subfeatures))
 {
+   assert(def && "Definition cannot be NULL");
 
+   if (!attributes().free &&
+       !attributes().no_checks && 
+       !def->is_legal_value(value_))
+   {
+      throw std::runtime_error("Value '" + value_ + "' is not legal for feature '" + name() + "'");
+   }
 }
 
 bool feature::equal_without_subfeatures(const feature& rhs) const {

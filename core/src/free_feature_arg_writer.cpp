@@ -89,7 +89,7 @@ free_feature_arg_writer* free_feature_arg_writer::clone() const
 std::vector<const feature*>
 free_feature_arg_writer::valuable_features() const
 {
-   return {1, fr_.create_feature(feature_def_.name(), {})};
+   return {1, fr_.create_feature(feature_def_.name(), std::string())};
 }
 
 }

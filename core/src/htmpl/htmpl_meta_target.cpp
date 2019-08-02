@@ -88,8 +88,7 @@ void htmpl_meta_target::compute_usage_requirements(feature_set& result,
 {
    if (type().equal_or_derived_from(types::H)) {
       // generated include dir should apear first, so generated includes will be found earlier
-      feature* generated_include = get_engine().feature_registry().create_feature("__generated-include", "");
-      generated_include->get_generated_data().target_ = &constructed_target;
+      feature* generated_include = get_engine().feature_registry().create_feature("__generated-include", {}, constructed_target);
       result.join(generated_include);
    }
 

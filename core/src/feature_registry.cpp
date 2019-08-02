@@ -363,6 +363,67 @@ namespace hammer {
    }
 
    feature*
+   feature_registry::simply_create_feature(const feature_def& def,
+                                           const std::string& value,
+                                           const std::function<feature*(const feature_def& def)>& constructor) const {
+      feature* result;
+
+      if (def.attributes().path ||
+          def.attributes().dependency ||
+          def.attributes().generated)
+      {
+         unique_ptr<feature> f(constructor(def));
+         result = f.get();
+         impl_->non_cached_features_.push_back(std::move(f));
+      } else {
+         result = impl_->find_feature(def.name(), value);
+         if (!result) {
+            auto f = std::shared_ptr<feature>(constructor(def));
+            result = f.get();
+            impl_->features_.get<0>().insert(f);
+         }
+      }
+
+      return result;
+   }
+
+   feature*
+   feature_registry::create_feature(const std::string& name,
+                                    const std::string& value,
+                                    const std::function<feature*(const feature_def& def)>& constructor) const {
+      if (name.empty())
+         throw std::runtime_error("Can't create feature without name");
+
+      const feature_def* posible_feature = impl_->find_def(name);
+      if (!posible_feature) {
+         if (impl_->parent_)
+            return impl_->parent_->create_feature(name, value, constructor);
+         else
+            throw std::runtime_error("There is no definition for feature '" + name + "'");
+      }
+
+      return simply_create_feature(*posible_feature, value, constructor);
+   }
+
+   feature*
+   feature_registry::create_feature(const std::string& name,
+                                    const std::string& value,
+                                    const project& p) const {
+      return create_feature(name, value, [&] (const feature_def& def) {
+         return new feature(&def, value, p);
+      });
+   }
+
+   feature*
+   feature_registry::create_feature(const std::string& name,
+                                    const std::string& value,
+                                    const basic_target& t) const {
+      return create_feature(name, value, [&] (const feature_def& def) {
+         return new feature(&def, value, t);
+      });
+   }
+
+   feature*
    feature_registry::create_feature(const std::string& name,
                                     const std::string& value) const
    {
@@ -508,8 +569,7 @@ namespace hammer {
    }
 
    feature*
-   feature_registry::clone_feature(const feature& f)
-   {
+   feature_registry::clone_feature(const feature& f) {
       feature* result;
 
       if (f.subfeatures().empty())
@@ -531,9 +591,6 @@ namespace hammer {
 
       if (f.attributes().path)
          result->get_path_data() = f.get_path_data();
-
-      if (f.attributes().generated)
-         result->get_generated_data() = f.get_generated_data();
 
       return result;
    }

@@ -18,7 +18,7 @@ class feature : public boost::noncopyable {
       typedef std::vector<const subfeature*> subfeatures_t;
 
       struct path_data {
-         const project* project_ = nullptr;
+         const project* project_;
          bool operator < (const path_data& rhs) const { return project_ < rhs.project_; }
          bool operator != (const path_data& rhs) const { return project_ != rhs.project_; }
       };
@@ -70,10 +70,6 @@ class feature : public boost::noncopyable {
       const generated_data&
       get_generated_data() const { return generated_data_; }
 
-      generated_data&
-      get_generated_data() { return generated_data_; }
-
-
       // FIXME: will not work when rhs and lhs from different feature_registries
       const subfeature*
       find_subfeature(const subfeature& v) const;
@@ -104,6 +100,20 @@ class feature : public boost::noncopyable {
       feature(const feature_def* def,
               std::string value,
               subfeatures_t subfeatures = {});
+
+      // path feature - always has project it belongs to
+      feature(const feature_def* def,
+              std::string value,
+              const project& p);
+
+      // depedency feature always has source as value
+      feature(const feature_def* def,
+              source_decl s);
+
+      // generated feature always has generated target as value
+      feature(const feature_def* def,
+              std::string value,
+              const basic_target& generated_target);
 
       bool equal_without_subfeatures(const feature& rhs) const;
 };

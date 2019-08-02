@@ -481,7 +481,7 @@ void append_valuable_feature(std::vector<const feature*>& result,
       });
 
       if (i == result.end())
-         result.push_back(f_owner.create_feature(f.name(), {}));
+         result.push_back(f_owner.create_feature(f.name(), std::string()));
 
    } else {
       auto i = std::find_if(result.begin(), result.end(), [&](const feature* v) {
@@ -507,7 +507,7 @@ void append_valuable_features(std::vector<const feature*>& result,
          });
 
          if (i == result.end())
-            result.push_back(fs.owner().create_feature(f->name(), {}));
+            result.push_back(fs.owner().create_feature(f->name(), std::string()));
 
       } else {
          auto i = std::find_if(result.begin(), result.end(), [&](const feature* v) {

@@ -66,13 +66,13 @@ ast2feature(invocation_context& ctx,
             const feature_def& fdef)
 {
    if (fdef.attributes().dependency) {
-      feature* result = fr.create_feature(f.name().to_string(), {});
+      feature* result = fr.create_feature(f.name().to_string(), std::string());
       result->set_dependency_data(handle_one_source(ctx, ctx.current_project_.get_engine().get_type_registry(), f.value()), nullptr);
       return result;
    } else if (const ast::id_expr* id = ast::as<ast::id_expr>(f.value()))
       return fr.create_feature(f.name().to_string(), id->id().to_string());
    else if (ast::is_a<ast::target_ref>(f.value())) {
-      feature* result = fr.create_feature(f.name().to_string(), {});
+      feature* result = fr.create_feature(f.name().to_string(), std::string());
       result->set_dependency_data(handle_one_source(ctx, ctx.current_project_.get_engine().get_type_registry(), f.value()), nullptr);
       return result;
    } else if (const ast::path* p = ast::as<ast::path>(f.value())) {

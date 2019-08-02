@@ -74,8 +74,7 @@ void qt_uic_meta_target::compute_usage_requirements(feature_set& result,
 {
    typed_meta_target::compute_usage_requirements(result, constructed_target, build_request, computed_usage_requirements, owner);
 
-   feature* uic_inc = result.owner().create_feature("__generated-include", "");
-   uic_inc->get_generated_data().target_ = &constructed_target;
+   feature* uic_inc = result.owner().create_feature("__generated-include", {}, constructed_target);
 
    // making dependency on self :)
    feature* dependency = result.owner().create_feature("dependency", "");

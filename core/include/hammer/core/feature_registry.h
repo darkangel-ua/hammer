@@ -1,5 +1,6 @@
 #pragma once
 #include <map>
+#include <functional>
 #include <hammer/core/feature_def.h>
 #include <hammer/core/feature_value_ns_fwd.h>
 
@@ -8,6 +9,9 @@ namespace hammer {
 class feature_set;
 class feature;
 class pool;
+class project;
+class source_decl;
+class basic_target;
 
 class feature_registry {
    public:
@@ -44,6 +48,21 @@ class feature_registry {
       feature*
       create_feature(const std::string& name,
                      const std::string& value) const;
+      // path feature
+      feature*
+      create_feature(const std::string& name,
+                     const std::string& value,
+                     const project& p) const;
+      // dependency feature
+      feature*
+      create_feature(const std::string& name,
+                     const source_decl& s) const;
+      // generated feature
+      feature*
+      create_feature(const std::string& name,
+                     const std::string& value,
+                     const basic_target& t) const;
+
       feature*
       create_feature(const feature& f,
                      const std::string& subfeature_name,
@@ -71,6 +90,14 @@ class feature_registry {
       feature*
       simply_create_feature(const feature_def& def,
                             const std::string& value) const;
+      feature*
+      simply_create_feature(const feature_def& def,
+                            const std::string& value,
+                            const std::function<feature*(const feature_def& def)>& constructor) const;
+      feature*
+      create_feature(const std::string& name,
+                     const std::string& value,
+                     const std::function<feature*(const feature_def& def)>& constructor) const;
 };
 
 }

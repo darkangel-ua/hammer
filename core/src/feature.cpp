@@ -21,6 +21,31 @@ feature::get_value_ns() const {
 
 feature::feature(const feature_def* def,
                  std::string value,
+                 const project& p)
+   : definition_(def),
+     value_(std::move(value)),
+     path_data_{&p}
+{
+}
+
+feature::feature(const feature_def* def,
+                 source_decl s)
+   : definition_(def),
+     dependency_data_{std::move(s)}
+{
+}
+
+feature::feature(const feature_def* def,
+                 std::string value,
+                 const basic_target& generated_target)
+   : definition_(def),
+     value_(std::move(value)),
+     generated_data_{&generated_target}
+{
+}
+
+feature::feature(const feature_def* def,
+                 std::string value,
                  subfeatures_t subfeatures)
    : definition_(def),
      value_(std::move(value)),

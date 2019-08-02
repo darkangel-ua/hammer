@@ -36,19 +36,20 @@ main_target* pch_meta_target::construct_main_target(const main_target* owner, co
 {
    if (!owner)
       throw std::runtime_error("pch main target must have owner. Don't try to build pch targets standalone.");
-
-   feature_set* modified_properties = properties->clone();
-   feature* create_pch_feature = get_engine().feature_registry().create_feature("pch", "create");
-   modified_properties->join(create_pch_feature);
-   modified_properties->join("__pch", "");
+//   FIXME: I commented this out when did feature immutability and possibly broke pch support,
+//          if it ever worked
+//   feature_set* modified_properties = properties->clone();
+//   feature* create_pch_feature = get_engine().feature_registry().create_feature("pch", "create");
+//   modified_properties->join(create_pch_feature);
+//   modified_properties->join("__pch", "");
    
    last_constructed_main_target_ = new pch_main_target(this, 
                                                        *owner,
                                                        name(), 
                                                        &get_engine().get_type_registry().get(types::PCH),
-                                                       modified_properties);
+                                                       properties);
 
-   create_pch_feature->get_generated_data().target_ = last_constructed_main_target_;
+//   create_pch_feature->get_generated_data().target_ = last_constructed_main_target_;
    return last_constructed_main_target_;
 }
 
@@ -60,8 +61,7 @@ void pch_meta_target::compute_usage_requirements(feature_set& result,
 {
    // adding pch feature to usage requirements to mark dependent targets as built with pch
    this->usage_requirements().eval(constructed_target.properties(), &result);
-   feature* pch_feature = get_engine().feature_registry().create_feature("pch", "use");
-   pch_feature->get_generated_data().target_ = last_constructed_main_target_;
+   feature* pch_feature = get_engine().feature_registry().create_feature("pch", "use", *last_constructed_main_target_);
    result.join(pch_feature);
    // add dependency on self to build pch before main target that use it
    if (!owner)

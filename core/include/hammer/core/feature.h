@@ -53,19 +53,8 @@ class feature : public boost::noncopyable {
       const path_data&
       get_path_data() const { return path_data_; }
 
-      path_data&
-      get_path_data() { return path_data_; }
-
       const dependency_data&
       get_dependency_data() const { return dependency_data_; }
-
-      // dependency data ALWAYS has target relative to which source_decl.target_path was calculated
-      void set_dependency_data(const source_decl& sd,
-                               const project* relative_to_project)
-      {
-         dependency_data_.source_ = sd;
-         path_data_.project_ = relative_to_project;
-      }
 
       const generated_data&
       get_generated_data() const { return generated_data_; }

@@ -29,8 +29,6 @@ basic_meta_target::basic_meta_target(hammer::project* p,
                                      usage_requirements_(usage_req),
                                      is_explicit_(false)
 {
-   requirements_.setup_path_data(p);
-   usage_requirements_.setup_path_data(p);
 }
 
 void basic_meta_target::sources(const sources_decl& s) {
@@ -206,20 +204,20 @@ basic_meta_target::get_engine() const {
    return project_->get_engine();
 }
 
-void adjust_dependency_features_sources(feature_set& set_to_adjust,
-                                        const basic_meta_target& relative_to_target) {
-   for (feature* f : set_to_adjust) {
-      if (!f->attributes().dependency)
+void adjust_dependency_features_sources(feature_set& set_to_adjust) {
+   for (auto i = set_to_adjust.begin(), last = set_to_adjust.end(); i != last; ++i) {
+      const feature& f = **i;
+      if (!f.attributes().dependency)
          continue;
 
-      const source_decl& source = f->get_dependency_data().source_;
+      const source_decl& source = f.get_dependency_data().source_;
       if (looks_like_local_target_ref(source) && source.target_name().empty()) {
          source_decl adjusted_source = source;
          adjusted_source.target_path("./", nullptr);
          adjusted_source.target_name(source.target_path());
          adjusted_source.set_locals_allowed(true);
 
-         f->set_dependency_data(adjusted_source, &relative_to_target.get_project());
+         set_to_adjust.replace(i, set_to_adjust.owner().create_feature(f.name(), adjusted_source));
       }
    }
 }

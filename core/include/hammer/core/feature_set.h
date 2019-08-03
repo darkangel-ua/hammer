@@ -42,12 +42,15 @@ class feature_set : public boost::noncopyable {
       feature_set& join(feature* f);
       feature_set& join(const char* name, const char* value);
       feature_set& join(const feature_set& v);
+      void replace(iterator where,
+                   feature* new_value);
       feature_set* clone() const;
       void copy_propagated(const feature_set& rhs);
       void erase_all(const std::string& feature_name);
       size_t size() const { return features_.size(); }
       bool empty() const { return features_.empty(); }
       void clear();
+      void swap(feature_set& fs);
 
       bool operator == (const feature_set& rhs) const;
       bool compatible_with(const feature_set& rhs) const;

@@ -77,9 +77,7 @@ void qt_uic_meta_target::compute_usage_requirements(feature_set& result,
    feature* uic_inc = result.owner().create_feature("__generated-include", {}, constructed_target);
 
    // making dependency on self :)
-   feature* dependency = result.owner().create_feature("dependency", "");
-   dependency->set_dependency_data(source_decl{get_project(), name(), {}, nullptr}, &get_project());
-
+   feature* dependency = result.owner().create_feature("dependency", source_decl{get_project(), name(), {}, nullptr});
    result.join(uic_inc).join(dependency);
 }
 
@@ -256,11 +254,11 @@ void add_lib(project& qt_project,
 
    feature* qt_no_debug_feature = e.feature_registry().create_feature("define", "QT_NO_DEBUG");
 #if defined(_WIN32)
-   feature* top_include_feature = e.feature_registry().create_feature("include", "./include");
-   feature* include_feature = e.feature_registry().create_feature("include", "./include/" + additional_include_path);
+   feature* top_include_feature = e.feature_registry().create_feature("include", "./include", qt_project);
+   feature* include_feature = e.feature_registry().create_feature("include", "./include/" + additional_include_path, qt_project);
 #else
-   feature* top_include_feature = e.feature_registry().create_feature("include", "./include/" + include_tag);
-   feature* include_feature = e.feature_registry().create_feature("include", "./include/" + include_tag + "/" + additional_include_path);
+   feature* top_include_feature = e.feature_registry().create_feature("include", "./include/" + include_tag, qt_project);
+   feature* include_feature = e.feature_registry().create_feature("include", "./include/" + include_tag + "/" + additional_include_path, qt_project);
 #endif
    {
       unique_ptr<just_feature_requirement> include_req(new just_feature_requirement(include_feature));
@@ -318,8 +316,7 @@ void add_lib(project& qt_project,
                                lib_name,
                                "./lib/" + lib_name + lib_tag + ".lib", profile_req, requirements_decl()));
 #else
-   feature* search_feature = e.feature_registry().create_feature("search", "./lib/");
-   search_feature->get_path_data().project_ = &qt_project;
+   feature* search_feature = e.feature_registry().create_feature("search", "./lib/", qt_project);
    {
       unique_ptr<just_feature_requirement> search_req(new just_feature_requirement(search_feature));
       debug_req.add(std::move(search_req));
@@ -359,13 +356,9 @@ void add_lib(project& qt_project,
    for(size_t i = 0; i < dependencies.size(); ++i)
    {
       requirements_decl usage_req;
-      feature* source_feature = e.feature_registry().create_feature("source", dependencies[i]);
-      {
-         auto sd = source_decl{qt_project, "/Qt", dependencies[i], nullptr};
-         source_feature->set_dependency_data(sd, &qt_project);
-         unique_ptr<just_feature_requirement> source_req(new just_feature_requirement(source_feature));
-         usage_req.add(std::move(source_req));
-      }
+      auto sd = source_decl{qt_project, "/Qt", dependencies[i], nullptr};
+      feature* source_feature = e.feature_registry().create_feature("source", sd);
+      usage_req.add(boost::make_unique<just_feature_requirement>(source_feature));
 
       lib_debug->usage_requirements().insert(usage_req);
       lib_release->usage_requirements().insert(usage_req);

@@ -67,16 +67,14 @@ void pch_meta_target::compute_usage_requirements(feature_set& result,
    if (!owner)
       throw std::runtime_error("pch main target must have owner and cannot be instantiated standalone.");
 
-   feature* self_dependency_feature = get_engine().feature_registry().create_feature("dependency", "");
    for(sources_decl::const_iterator i = owner->get_meta_target()->sources().begin(), last =  owner->get_meta_target()->sources().end(); i!= last; ++i)
       if (i->is_meta_target() &&
           i->target_path() == name()) // FIXME: skip self - should be more intelligent logic
       {
-         self_dependency_feature->set_dependency_data(*i, &get_project());
+         feature* self_dependency_feature = get_engine().feature_registry().create_feature("dependency", *i);
+         result.join(self_dependency_feature);
          break;
       }
-
-   result.join(self_dependency_feature);
 }
 
 sources_decl

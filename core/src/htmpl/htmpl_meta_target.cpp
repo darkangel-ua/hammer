@@ -37,13 +37,12 @@ static
 requirements_decl
 make_usage_requirements(feature_registry& fr,
                         const std::string& target_name,
-                        const basic_meta_target* this_)
+                        const project& p)
 {
    requirements_decl result;
 
    // making dependency on self :) because this will build this target before any targets that belongs to owner
-   feature* dependency = fr.create_feature("dependency", "");
-   dependency->set_dependency_data(source_decl{this_->get_project(), "./", target_name, nullptr}, &this_->get_project());
+   feature* dependency = fr.create_feature("dependency", source_decl{p, "./", target_name, nullptr});
    result.add(*dependency);
 
    return result;
@@ -55,7 +54,7 @@ htmpl_meta_target::htmpl_meta_target(project* p,
    : typed_meta_target(p,
                        name,
                        requirements_decl(),
-                       make_usage_requirements(p->get_engine().feature_registry(), name, this),
+                       make_usage_requirements(p->get_engine().feature_registry(), name, *p),
                        resolve_target_type(src.target_path(), p->get_engine()))
 {
    set_explicit(true);

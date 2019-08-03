@@ -39,7 +39,6 @@ void alias_meta_target::instantiate_impl(instantiation_context& ctx,
       apply_project_dependencies(sources, *this);
 
       for (const source_decl& sd : sources) {
-         feature* f = get_engine().feature_registry().create_feature("source", "");
          source_decl new_sd = sd;
 
          // apply build request to a target
@@ -48,12 +47,11 @@ void alias_meta_target::instantiate_impl(instantiation_context& ctx,
          if (looks_like_local_target_ref(sd))
             new_sd.set_locals_allowed(true);
 
-         f->set_dependency_data(new_sd, &get_project());
-
+         feature* f = get_engine().feature_registry().create_feature("source", new_sd);
          sources_as_features.join(f);
       }
 
-      adjust_dependency_features_sources(sources_as_features, *this);
+      adjust_dependency_features_sources(sources_as_features);
       usage_requirements->join(sources_as_features);
    } else {
       // top level alias instantiation

@@ -157,27 +157,23 @@ void remove_duplicates(deduplicator_t& deduplicator,
       usage_requirements.join(*local_usage_requirements);
    }
 
-   static void transfer_public_sources(feature_set& dest,
-                                       const sources_decl& sources, 
-                                       const feature_set& build_request,
-                                       feature_registry& fr,
-                                       const basic_meta_target& relative_to_target)
+   static
+   void transfer_public_sources(feature_set& dest,
+                                const sources_decl& sources,
+                                const feature_set& build_request,
+                                feature_registry& fr,
+                                const basic_meta_target& relative_to_target)
    {
       // when transferring public sources we should make <use> with current build request applied
       // because this is the only way to produce correct usage requirements in dependent targets
       // same as in compute_usage_requirements
-      feature_set& uses = *fr.make_set();
       for (const source_decl& source : sources) {
          if (source.is_public()) {
-            feature* f = fr.create_feature("use", "");
-            f->set_dependency_data(source, &relative_to_target.get_project());
-
-            uses.join(f);
+            source_decl sd_copy = source;
+            sd_copy.build_request_join(build_request);
+            dest.join(fr.create_feature("use", sd_copy));
          }
       }
-
-      apply_build_request(uses, build_request);
-      dest.join(uses);
    }
    
    void meta_target::instantiate_impl(instantiation_context& ctx,
@@ -269,7 +265,7 @@ void remove_duplicates(deduplicator_t& deduplicator,
       compute_usage_requirements(*usage_requirements, *mt, *build_request_for_dependencies, *local_usage_requirements, owner);
 
       // we need to transform references in dependency features to local meta-targets to './/foo' form
-      adjust_dependency_features_sources(*usage_requirements, *this);
+      adjust_dependency_features_sources(*usage_requirements);
 
       result->push_back(mt);
    }
@@ -294,7 +290,7 @@ void remove_duplicates(deduplicator_t& deduplicator,
       apply_project_dependencies(tmp, *this);
 
       // we need to transform references in dependency features to local meta-targets to './/foo' form
-      adjust_dependency_features_sources(tmp, *this);
+      adjust_dependency_features_sources(tmp);
 
       // when transferring public sources we should make <use> with current build request applied
       // because this is the only way to produce correct usage requirements in dependent targets
@@ -341,13 +337,14 @@ void remove_duplicates(deduplicator_t& deduplicator,
    void apply_project_dependencies(feature_set& properties,
                                    const basic_meta_target& sources_owner) {
       const auto& dependencies = sources_owner.get_project().dependencies();
-      for (auto& p : properties) {
-         if (!p->attributes().dependency)
+      for (auto i = properties.begin(), last = properties.end(); i != last; ++i) {
+         const feature& f = **i;
+         if (!f.attributes().dependency)
             continue;
 
-         auto new_sd = p->get_dependency_data().source_;
+         auto new_sd = f.get_dependency_data().source_;
          apply_project_dependencies(new_sd, dependencies);
-         p->set_dependency_data(new_sd, p->get_path_data().project_);
+         properties.replace(i, properties.owner().create_feature(f.name(), new_sd));
       }
    }
 }

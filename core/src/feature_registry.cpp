@@ -416,6 +416,14 @@ namespace hammer {
 
    feature*
    feature_registry::create_feature(const std::string& name,
+                                    const source_decl& s) const {
+      return create_feature(name, {}, [&] (const feature_def& def) {
+         return new feature(&def, s);
+      });
+   }
+
+   feature*
+   feature_registry::create_feature(const std::string& name,
                                     const std::string& value,
                                     const basic_target& t) const {
       return create_feature(name, value, [&] (const feature_def& def) {
@@ -437,6 +445,10 @@ namespace hammer {
          else
             throw std::runtime_error("There is no definition for feature '" + name + "'");
       }
+
+      assert(!posible_feature->attributes().path &&
+//             !posible_feature->attributes().dependency &&
+             !posible_feature->attributes().generated);
 
       if (posible_feature->attributes().free ||
           posible_feature->is_legal_value(value))
@@ -585,12 +597,6 @@ namespace hammer {
 
          result = create_feature(f.name(), boost::join(subfeatures, "-"));
       }
-
-      if (f.attributes().dependency)
-         result->set_dependency_data(f.get_dependency_data().source_, f.get_path_data().project_);
-
-      if (f.attributes().path)
-         result->get_path_data() = f.get_path_data();
 
       return result;
    }

@@ -89,7 +89,10 @@ free_feature_arg_writer* free_feature_arg_writer::clone() const
 std::vector<const feature*>
 free_feature_arg_writer::valuable_features() const
 {
-   return {1, fr_.create_feature(feature_def_.name(), std::string())};
+   if (feature_def_.attributes().path)
+      return {1, fr_.create_feature(feature_def_.name(), std::string(), *static_cast<const project*>(nullptr))};
+   else
+      return {1, fr_.create_feature(feature_def_.name(), std::string())};
 }
 
 }

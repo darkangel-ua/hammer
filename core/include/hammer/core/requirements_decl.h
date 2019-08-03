@@ -16,7 +16,6 @@ class requirement_base {
                         feature_set* result,
                         feature_set* public_result) const = 0;
       virtual std::unique_ptr<requirement_base> clone() const = 0;
-      virtual void setup_path_data(const project* p) = 0;
       virtual ~requirement_base() {}
       void set_public(bool v) { public_ = v; }
       bool is_public() const { return public_; }
@@ -35,8 +34,6 @@ class just_feature_requirement : public requirement_base {
       std::unique_ptr<requirement_base>
       clone() const override { return boost::make_unique<just_feature_requirement>(*this); }
 
-      void setup_path_data(const project* p) override;
-
    private:
       feature* f_;
 };
@@ -51,8 +48,6 @@ class linear_and_condition : public requirement_base {
 
       std::unique_ptr<requirement_base>
       clone() const override { return boost::make_unique<linear_and_condition>(*this); }
-
-      void setup_path_data(const project* p) override;
 
    private:
       typedef std::vector<const feature*> features_t;
@@ -147,7 +142,6 @@ class requirement_condition : public requirement_base {
                 feature_set* result,
                 feature_set* public_result) const override;
       std::unique_ptr<requirement_base> clone() const override;
-      void setup_path_data(const project* p) override;
 
    private:
       std::unique_ptr<requirement_condition_op_base> cond_;
@@ -164,7 +158,6 @@ class requirements_decl {
       void eval(const feature_set& build_request,
                 feature_set* result,
                 feature_set* public_result = NULL) const;
-      void setup_path_data(const project* p);
       void insert_infront(const requirements_decl& v);
       void insert(const requirements_decl& v); // insert in the end
       bool empty() const;

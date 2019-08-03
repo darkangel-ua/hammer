@@ -133,6 +133,14 @@ feature_set& feature_set::join(const feature_set& rhs)
    return *this;
 }
 
+void feature_set::replace(iterator where,
+                          feature* new_value) {
+   assert((**where).definition().attributes().free &&
+          (**where).definition() == new_value->definition());
+
+   *where = new_value;
+}
+
 feature_set* feature_set::clone() const
 {
    feature_set* result = fr_->make_set();
@@ -194,9 +202,9 @@ void extract_dependency_like_sources(sources_decl& result,
       if (!sd_copy.target_path().empty() &&
           !sd_copy.target_path_is_global() &&
           !sd_copy.is_project_local_reference() &&
-          &relative_to_target.get_project() != (**i).get_path_data().project_)
+          &relative_to_target.get_project() != &sd_copy.owner_project())
       {
-         const location_t full_target_path = ((**i).get_path_data().project_->location() / sd_copy.target_path()).normalize();
+         const location_t full_target_path = (sd_copy.owner_project().location() / sd_copy.target_path()).normalize();
          const boost::filesystem::path p = relative_path(full_target_path, relative_to_target.location());
          sd_copy.target_path(p.string(), sd_copy.type());
       }
@@ -253,7 +261,7 @@ bool feature_set::compatible_with(const feature_set& rhs) const
    const feature_set* lhs_p = this;
    
    if (size() < rhs.size())
-      swap(lhs_p, rhs_p);
+      std::swap(lhs_p, rhs_p);
 
    for(features_t::const_iterator i = lhs_p->begin(), last = lhs_p->end(); i != last; ++i)
       if (rhs_p->find(**i) == rhs_p->end())
@@ -282,6 +290,11 @@ bool feature_set::compatible_with(const feature_set& rhs) const
 void feature_set::clear()
 {
    features_.clear();
+}
+
+void feature_set::swap(feature_set& fs) {
+   std::swap(fr_, fs.fr_);
+   features_.swap(fs.features_);
 }
 
 bool feature_set::contains(const feature_set& rhs) const
@@ -452,13 +465,13 @@ md5(const feature_set& fs, bool use_all)
 void apply_build_request(feature_set& dest,
                          const feature_set& build_request)
 {
-   for(feature_set::iterator i = dest.begin(), last = dest.end(); i != last; ++i)
-      if ((**i).name() == "use")
-      {
+   for (auto i = dest.begin(), last = dest.end(); i != last; ++i) {
+      if ((**i).name() == "use") {
          auto new_source = (**i).get_dependency_data().source_;
          new_source.build_request_join(build_request);
-         (**i).set_dependency_data(new_source, (**i).get_path_data().project_);
+         dest.replace(i, dest.owner().create_feature((**i).name(), new_source));
       }
+   }
 }
 
 std::vector<const feature*>

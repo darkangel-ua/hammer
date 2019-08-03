@@ -99,12 +99,6 @@ void linear_and_condition::eval(const feature_set& build_request,
    }
 }
 
-void linear_and_condition::setup_path_data(const project* p)
-{
-   if (result_->attributes().path || result_->attributes().dependency)
-      result_->get_path_data().project_ = p;
-}
-
 void just_feature_requirement::eval(const feature_set& build_request,
                                     feature_set* result,
                                     feature_set* public_result) const
@@ -115,21 +109,9 @@ void just_feature_requirement::eval(const feature_set& build_request,
       public_result->join(f_);
 }
 
-void just_feature_requirement::setup_path_data(const project* p)
-{
-   if (f_->attributes().path || f_->attributes().dependency)
-      f_->get_path_data().project_ = p;
-}
-
 void linear_and_condition::add(feature* c)
 {
    features_.push_back(c);
-}
-
-void requirements_decl::setup_path_data(const project* p)
-{
-   for (auto& i : impl_->requirements_)
-      i->setup_path_data(p);
 }
 
 void requirements_decl::insert_infront(const requirements_decl& v)
@@ -175,14 +157,6 @@ std::unique_ptr<requirement_base>
 requirement_condition::clone() const
 {
    return boost::make_unique<requirement_condition>(cond_->clone(), result_, is_public());
-}
-
-void requirement_condition::setup_path_data(const project* p)
-{
-   for (result_element& re : result_) {
-      if (re.f_->attributes().path || re.f_->attributes().dependency)
-         re.f_->get_path_data().project_ = p;
-   }
 }
 
 bool requirement_condition_op_feature::eval(const feature_set& build_request,

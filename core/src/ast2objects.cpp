@@ -65,18 +65,25 @@ ast2feature(invocation_context& ctx,
             const feature_registry& fr,
             const feature_def& fdef)
 {
-   if (fdef.attributes().dependency) {
-      feature* result = fr.create_feature(f.name().to_string(), std::string());
-      result->set_dependency_data(handle_one_source(ctx, ctx.current_project_.get_engine().get_type_registry(), f.value()), nullptr);
-      return result;
-   } else if (const ast::id_expr* id = ast::as<ast::id_expr>(f.value()))
-      return fr.create_feature(f.name().to_string(), id->id().to_string());
-   else if (ast::is_a<ast::target_ref>(f.value())) {
-      feature* result = fr.create_feature(f.name().to_string(), std::string());
-      result->set_dependency_data(handle_one_source(ctx, ctx.current_project_.get_engine().get_type_registry(), f.value()), nullptr);
-      return result;
-   } else if (const ast::path* p = ast::as<ast::path>(f.value())) {
-      feature* result = fr.create_feature(f.name().to_string(), p->to_string());
+   if (fdef.attributes().dependency)
+      return fr.create_feature(f.name().to_string(),
+                               handle_one_source(ctx,
+                                                 ctx.current_project_.get_engine().get_type_registry(),
+                                                 f.value()));
+   else if (const ast::id_expr* id = ast::as<ast::id_expr>(f.value())) {
+      const std::string feature_name = f.name().to_string();
+      const feature_def& fdef = fr.get_def(feature_name);
+      if (fdef.attributes().path)
+         return fr.create_feature(f.name().to_string(), id->id().to_string(), ctx.current_project_);
+      else
+         return fr.create_feature(f.name().to_string(), id->id().to_string());
+   } else if (ast::is_a<ast::target_ref>(f.value()))
+      return fr.create_feature(f.name().to_string(),
+                               handle_one_source(ctx,
+                                                 ctx.current_project_.get_engine().get_type_registry(),
+                                                 f.value()));
+   else if (const ast::path* p = ast::as<ast::path>(f.value())) {
+      feature* result = fr.create_feature(f.name().to_string(), p->to_string(), ctx.current_project_);
       return result;
    } else
       throw std::runtime_error("Not implemented");

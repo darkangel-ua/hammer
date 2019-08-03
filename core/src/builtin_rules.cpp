@@ -118,15 +118,11 @@ void project_rule(invocation_context& ctx,
 {
    process_project_id(ctx, id);
 
-   if (requirements) {
-      requirements->setup_path_data(&ctx.current_project_);
+   if (requirements)
       ctx.current_project_.local_requirements(*requirements);
-   }
 
-   if (usage_requirements) {
-      usage_requirements->setup_path_data(&ctx.current_project_);
+   if (usage_requirements)
       ctx.current_project_.local_usage_requirements(static_cast<const requirements_decl&>(*usage_requirements));
-   }
 
    if (dependencies) {
       project::dependencies_t deps;

@@ -137,6 +137,6 @@ void instantiate_meta_targets(instantiation_context& ctx,
 
 // we need to convert source_decl from just 'foo' form to './/foo' form
 // this will helps 'extract_sources' to correctly adjust target_path later
-void adjust_dependency_features_sources(feature_set& set_to_adjust,
-                                        const basic_meta_target& relative_to_target);
+void adjust_dependency_features_sources(feature_set& set_to_adjust);
+
 }

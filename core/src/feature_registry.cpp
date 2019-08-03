@@ -207,7 +207,8 @@ namespace hammer {
 
       typedef std::map<std::string, std::unique_ptr<feature_def> > defs_t;
       typedef std::list<feature_set*> feature_set_storage_t;
-      typedef std::vector<std::unique_ptr<feature>> non_cached_features_t;
+      typedef std::unique_ptr<feature, void (*)(feature*)> non_cached_feature_t;
+      typedef std::vector<non_cached_feature_t> non_cached_features_t;
       typedef std::unordered_map<std::string, feature_value_ns_ptr> value_namespaces;
 
       typedef multi_index_container<std::shared_ptr<feature>,
@@ -347,13 +348,13 @@ namespace hammer {
           def.attributes().dependency ||
           def.attributes().generated)
       {
-         unique_ptr<feature> f(new feature(&def, value));
+         auto f = impl_t::non_cached_feature_t{new feature(def, value), [](feature* f){ delete f; }};
          result = f.get();
          impl_->non_cached_features_.push_back(std::move(f));
       } else {
          result = impl_->find_feature(def.name(), value);
          if (!result) {
-            auto f = std::shared_ptr<feature>(new feature{&def, value});
+            auto f = std::shared_ptr<feature>(new feature{def, value}, [](feature* f){ delete f; });
             result = f.get();
             impl_->features_.get<0>().insert(f);
          }
@@ -372,13 +373,13 @@ namespace hammer {
           def.attributes().dependency ||
           def.attributes().generated)
       {
-         unique_ptr<feature> f(constructor(def));
+         auto f = impl_t::non_cached_feature_t{constructor(def), [](feature* f){ delete f; }};
          result = f.get();
          impl_->non_cached_features_.push_back(std::move(f));
       } else {
          result = impl_->find_feature(def.name(), value);
          if (!result) {
-            auto f = std::shared_ptr<feature>(constructor(def));
+            auto f = std::shared_ptr<feature>(constructor(def), [](feature* f){ delete f;});
             result = f.get();
             impl_->features_.get<0>().insert(f);
          }
@@ -410,7 +411,7 @@ namespace hammer {
                                     const std::string& value,
                                     const project& p) const {
       return create_feature(name, value, [&] (const feature_def& def) {
-         return new feature(&def, value, p);
+         return new feature(def, value, p);
       });
    }
 
@@ -418,7 +419,7 @@ namespace hammer {
    feature_registry::create_feature(const std::string& name,
                                     const source_decl& s) const {
       return create_feature(name, {}, [&] (const feature_def& def) {
-         return new feature(&def, s);
+         return new feature(def, s);
       });
    }
 
@@ -427,7 +428,7 @@ namespace hammer {
                                     const std::string& value,
                                     const basic_target& t) const {
       return create_feature(name, value, [&] (const feature_def& def) {
-         return new feature(&def, value, t);
+         return new feature(def, value, t);
       });
    }
 
@@ -498,7 +499,7 @@ namespace hammer {
       {
          feature::subfeatures_t new_subfeatures(f.subfeatures());
          new_subfeatures.push_back(&sf);
-         auto shared_result = std::shared_ptr<feature>{new feature{&f.definition(), f.value(), new_subfeatures}};
+         auto shared_result = std::shared_ptr<feature>{new feature{f.definition(), f.value(), new_subfeatures}, [](feature* f){ delete f;}};
          result = shared_result.get();
          impl_->features_.get<0>().insert(shared_result);
       }

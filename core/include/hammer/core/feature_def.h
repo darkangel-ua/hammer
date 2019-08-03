@@ -60,6 +60,8 @@ class feature_def {
 
       ~feature_def();
       bool operator ==(const feature_def& rhs) const { return this == &rhs; }
+      bool operator !=(const feature_def& rhs) const { return !(this == &rhs); }
+      bool operator <(const feature_def& rhs) const { return this < &rhs; }
 
    private:
       struct component_t

@@ -1,5 +1,4 @@
 #pragma once
-#include <boost/noncopyable.hpp>
 #include <hammer/core/feature_attributes.h>
 #include <hammer/core/feature_def.h>
 #include <hammer/core/source_decl.h>
@@ -12,7 +11,8 @@ class basic_meta_target;
 class basic_target;
 class project;
 
-class feature : public boost::noncopyable {
+// managed by feature_registry
+class feature {
    public:
       friend class feature_registry;
       typedef std::vector<const subfeature*> subfeatures_t;
@@ -36,10 +36,10 @@ class feature : public boost::noncopyable {
       };
 
       const feature_def&
-      definition() const { return *definition_; }
+      definition() const { return definition_; }
 
       const std::string&
-      name() const { return definition_->name(); }
+      name() const { return definition_.name(); }
 
       const std::string&
       value() const { return value_; }
@@ -48,7 +48,7 @@ class feature : public boost::noncopyable {
       get_value_ns() const;
 
       feature_attributes
-      attributes() const { return definition_->attributes(); }
+      attributes() const { return definition_.attributes(); }
 
       const path_data&
       get_path_data() const { return path_data_; }
@@ -79,30 +79,32 @@ class feature : public boost::noncopyable {
       bool operator < (const feature& rhs) const;
 
    private:
-      const feature_def* definition_;
+      const feature_def& definition_;
       std::string value_;
       path_data path_data_;
       dependency_data dependency_data_;
       generated_data generated_data_;
       subfeatures_t subfeatures_;
 
-      feature(const feature_def* def,
+      feature(const feature_def& def,
               std::string value,
               subfeatures_t subfeatures = {});
 
       // path feature - always has project it belongs to
-      feature(const feature_def* def,
+      feature(const feature_def& def,
               std::string value,
               const project& p);
 
       // depedency feature always has source as value
-      feature(const feature_def* def,
+      feature(const feature_def& def,
               source_decl s);
 
       // generated feature always has generated target as value
-      feature(const feature_def* def,
+      feature(const feature_def& def,
               std::string value,
               const basic_target& generated_target);
+
+      ~feature() = default;
 
       bool equal_without_subfeatures(const feature& rhs) const;
 };

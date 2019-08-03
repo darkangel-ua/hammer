@@ -28,6 +28,12 @@ using boost::make_unique;
 
 namespace hammer {
 
+// need this since feature::~feature is private
+template<>
+struct rule_manager_arg<feature> : public rule_manager_arg_base {
+   rule_manager_arg(const feature& v) : rule_manager_arg_base(&const_cast<feature&>(v)) {}
+};
+
 static
 source_decl
 handle_one_source(invocation_context& ctx,

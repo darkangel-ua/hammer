@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <cassert>
 #include <stdexcept>
 #include <hammer/core/feature.h>
 #include <hammer/core/subfeature.h>
@@ -16,10 +15,10 @@ feature::get_value_ns() const {
    if (attributes().no_checks)
       return global_ns;
    else
-      return definition_->get_legal_value_ns(value());
+      return definition_.get_legal_value_ns(value());
 }
 
-feature::feature(const feature_def* def,
+feature::feature(const feature_def& def,
                  std::string value,
                  const project& p)
    : definition_(def),
@@ -28,14 +27,14 @@ feature::feature(const feature_def* def,
 {
 }
 
-feature::feature(const feature_def* def,
+feature::feature(const feature_def& def,
                  source_decl s)
    : definition_(def),
      dependency_data_{std::move(s)}
 {
 }
 
-feature::feature(const feature_def* def,
+feature::feature(const feature_def& def,
                  std::string value,
                  const basic_target& generated_target)
    : definition_(def),
@@ -44,18 +43,16 @@ feature::feature(const feature_def* def,
 {
 }
 
-feature::feature(const feature_def* def,
+feature::feature(const feature_def& def,
                  std::string value,
                  subfeatures_t subfeatures)
    : definition_(def),
      value_(std::move(value)),
      subfeatures_(std::move(subfeatures))
 {
-   assert(def && "Definition cannot be NULL");
-
    if (!attributes().free &&
        !attributes().no_checks && 
-       !def->is_legal_value(value_))
+       !def.is_legal_value(value_))
    {
       throw std::runtime_error("Value '" + value_ + "' is not legal for feature '" + name() + "'");
    }

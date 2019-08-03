@@ -40,6 +40,7 @@ class feature_set : public boost::noncopyable {
       iterator find(iterator from, const char* name); // find next occurrence
       feature_set* join(const feature_set& rhs) const;
       feature_set& join(feature* f);
+      feature_set& join(const feature* f) { return join(const_cast<feature*>(f)); }
       feature_set& join(const char* name, const char* value);
       feature_set& join(const feature_set& v);
       void replace(iterator where,

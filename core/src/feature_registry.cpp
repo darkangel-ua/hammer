@@ -580,27 +580,6 @@ namespace hammer {
          return nullptr;
    }
 
-   feature*
-   feature_registry::clone_feature(const feature& f) {
-      feature* result;
-
-      if (f.subfeatures().empty())
-         result = create_feature(f.name(), f.value());
-      else {
-         std::vector<string> subfeatures{f.value()};
-
-         std::transform(f.subfeatures().begin(), f.subfeatures().end(),
-                        std::back_inserter(subfeatures),
-                        [](const subfeature* sf) {
-            return sf->value();
-         });
-
-         result = create_feature(f.name(), boost::join(subfeatures, "-"));
-      }
-
-      return result;
-   }
-
    const feature_value_ns_ptr&
    feature_registry::get_or_create_feature_value_ns(const std::string& ns)
    {

@@ -68,9 +68,6 @@ class feature_registry {
                      const std::string& subfeature_name,
                      const std::string& subfeature_value) const;
 
-      feature*
-      clone_feature(const feature& f);
-
       // get over over hierarchy
       // create only in THIS
       const feature_value_ns_ptr&

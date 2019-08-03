@@ -431,7 +431,7 @@ void feature_compose_rule(invocation_context& ctx,
    feature_set* cc;
    if (auto f = boost::get<const feature*>(&components)) {
       cc = fr.make_set();
-      cc->join(fr.clone_feature(**f));
+      cc->join(*f);
    } else
       cc = (**boost::get<const feature_set*>(&components)).clone();
 

@@ -286,7 +286,7 @@ generator::make_valuable_properties(const feature_set& target_props,
          }
       } else {
          if (const feature* tpf = target_props.find(f->name().c_str(), f->value().c_str()))
-            result->join(target_props.owner().clone_feature(*tpf));
+            result->join(tpf);
       }
    };
 

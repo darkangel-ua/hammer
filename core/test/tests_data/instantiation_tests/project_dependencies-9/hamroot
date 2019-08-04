@@ -1,0 +1,9 @@
+# test that <use> in requirements working correctly
+project 
+    dependencies = 
+     { /foo : 1.0 }
+   ;
+
+use-project /foo : ./foo ;
+
+exe test : main.cpp : <use>(/foo);

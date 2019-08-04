@@ -1,0 +1,2 @@
+lib foo : foo.cpp : <version>1.0 : usage-requirements = <define>FOO_1;
+lib foo : foo.cpp : <version>2.0 : usage-requirements = <define>FOO_2;

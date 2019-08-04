@@ -190,7 +190,6 @@ void remove_duplicates(deduplicator_t& deduplicator,
       apply_project_dependencies(*public_requirements, *this);
       usage_requirements->join(*public_requirements);
 
-      feature_set* local_usage_requirements = get_engine().feature_registry().make_set();
       feature_set* build_request_for_dependencies = get_engine().feature_registry().make_set();
       build_request_for_dependencies->copy_propagated(build_request);
       build_request_for_dependencies->copy_propagated(*mt_fs);
@@ -225,6 +224,7 @@ void remove_duplicates(deduplicator_t& deduplicator,
       main_target* mt = construct_main_target(owner, mt_fs); // construct_main_target may construct main_target with different properties PCH is example
       mt_fs = mt->properties().clone(); // FIXME ref semantic required
 
+      feature_set* local_usage_requirements = get_engine().feature_registry().make_set();
       if (!meta_targets.empty())
          instantiate_meta_targets(ctx, simple_targets, instantiated_meta_targets, sources_deduplicator, sources_from_features,
                                   *local_usage_requirements, *this, meta_targets,
@@ -244,6 +244,7 @@ void remove_duplicates(deduplicator_t& deduplicator,
 
       sources_decl sources_from_uses;
       extract_uses(sources_from_uses, *mt_fs, *this);
+      apply_project_dependencies(sources_from_uses, *this);
       extract_uses(sources_from_uses, *local_usage_requirements, *this);
       if (!sources_from_uses.empty()) {
          deduplicator_t use_sources_deduplicator;

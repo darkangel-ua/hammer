@@ -1,0 +1,6 @@
+# testing nesting transparent project proxing
+# this differs from use_project_9 because we resolve global link
+# and this will take different path when descending into transparent proxies hole
+use-project /lib1 : ./lib1;
+
+exe test : main.cpp /lib1 ;

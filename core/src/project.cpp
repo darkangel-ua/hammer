@@ -553,13 +553,12 @@ void project::aliases_impl::load_project(loaded_projects& result,
 
       const project& p = e.load_project(i->second->full_fs_path_);
       result.push_back(&p);
-      if (first != last) {
-         // FIXME: stupid boost::filesystem::path can't be constructed from two iterators
-         boost::filesystem::path pp;
-         for (auto f = first; f != last; ++f)
-            pp /= *f;
-         result += p.load_project(pp);
-      }
+
+      // FIXME: stupid boost::filesystem::path can't be constructed from two iterators
+      boost::filesystem::path pp;
+      for (auto f = first; f != last; ++f)
+         pp /= *f;
+      result += p.load_project(pp);
    }
 
    return load_project(result, nodes_, e, first, last);

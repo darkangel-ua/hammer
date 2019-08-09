@@ -1,0 +1,2 @@
+# one more level on indirection :)
+use-project location = ./lib1 ;

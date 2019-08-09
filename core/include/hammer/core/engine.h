@@ -51,6 +51,11 @@ class engine : public boost::noncopyable {
       project&
       insert(std::unique_ptr<project> p);
 
+      // this will remove project 'p' and all projects that depends on it
+      // e.i. has it as parent
+      // after this call 'project_to_unload' reference is no longer valid
+      void unload_project(const project& project_to_unload);
+
       type_registry&
       get_type_registry() { return *type_registry_; }
 

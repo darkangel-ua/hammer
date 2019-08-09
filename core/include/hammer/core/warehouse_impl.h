@@ -66,6 +66,7 @@ class warehouse_impl : public warehouse {
 
       std::string repository_url_;
       packages_t packages_;
+      project* global_trap_project_;
 
       static
       packages_t::iterator find_package(packages_t& packages,
@@ -82,6 +83,7 @@ class warehouse_impl : public warehouse {
       void update_package(engine& e,
                           package_t& package_to_update);
       void remove_package(const package_t& package_to_remove);
+      void reload(engine& e);
 
       static
       packages_t load_packages(const boost::filesystem::path& filepath);

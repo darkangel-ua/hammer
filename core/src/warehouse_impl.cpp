@@ -194,6 +194,7 @@ class global_trap_wh_project : public virtual_project {
 
       loaded_projects
       load_project(const location_t& path) const override;
+      void reset_traps() { traps_.clear(); }
 
    private:
       using traps = boost::unordered_map<location_t, std::unique_ptr<project>>;
@@ -264,8 +265,15 @@ warehouse_impl::warehouse_impl(engine& e,
       download_file(storage_dir_, url + "/" + packages_filename.string());
 
    packages_ = load_packages(packages_full_filename);
-   e.load_project(storage_dir_);
-   e.add_alias(location_t{"/"}, e.insert(std::unique_ptr<project>(new global_trap_wh_project(e, *this))).location(), nullptr);
+
+   // adding global alias on our storage dir and it will be automaticaly loaded
+   // on engine.load_project for global projects
+   e.add_alias(location_t{"/"}, storage_dir_, nullptr);
+
+   auto global_trap_project = boost::make_unique<global_trap_wh_project>(e, *this);
+   global_trap_project_ = global_trap_project.get();
+   e.insert(std::move(global_trap_project));
+   e.add_alias(location_t{"/"}, global_trap_project_->location(), nullptr);
 }
 
 warehouse_impl::packages_t
@@ -385,7 +393,7 @@ bool warehouse_impl::has_project(const location_t& project_path,
    const string name = project_path.string();
 
    auto packages = packages_.equal_range(name);
-   if (packages.first == packages_.end())
+   if (packages.first == packages.second)
       return false;
 
    if (version.empty())
@@ -534,7 +542,7 @@ void add_new_target(const fs::path& filename,
 static
 string make_package_proxy_line(const string& package_version)
 {
-   return "use-project location = ./" + package_version + "/build : requirements = <version>" + package_version + ";";
+   return "use-project location = ./" + package_version + " : requirements = <version>" + package_version + ";";
 }
 
 void warehouse_impl::install_package(const package_t& p,
@@ -571,6 +579,12 @@ void warehouse_impl::install_package(const package_t& p,
    add_new_target(package_hamfile, make_package_proxy_line(p.version_));
 }
 
+void warehouse_impl::reload(engine& e) {
+   e.unload_project(e.load_project(storage_dir_));
+
+   static_cast<global_trap_wh_project*>(global_trap_project_)->reset_traps();
+}
+
 void warehouse_impl::download_and_install(engine& e,
                                           const std::vector<package_info>& packages,
                                           iwarehouse_download_and_install& notifier)
@@ -599,11 +613,13 @@ void warehouse_impl::download_and_install(engine& e,
       install_package(pi->second, storage_dir_);
       if (!project_already_materilized) {
          const fs::path repository_hamroot = storage_dir_ / "hamroot";
-         append_line(repository_hamroot, "use-project /" + pi->second.public_id_ + " : ./libs/" + pi->second.public_id_ + ";");
+         append_line(repository_hamroot, "use-project " + pi->second.public_id_ + " : ./libs/" + pi->second.public_id_ + ";");
       }
 
       notifier.on_install_end(index, bpi);
    }
+
+   reload(e);
 }
 
 void warehouse_impl::write_packages(const location_t& packages_db_path,
@@ -795,7 +811,15 @@ gather_targets(const project& p,
    }
 
    for (auto& alias : p.aliases()) {
-      string alias_prefix = alias.alias_.empty() ? prefix : prefix + "/" + alias.alias_.string();
+      string alias_prefix = [&] {
+         if (alias.alias_.empty())
+            return prefix;
+
+         if (prefix.empty())
+            return alias.alias_.string() + "/";
+         else
+            return prefix + "/" + alias.alias_.string();
+      }();
       result.merge(gather_targets(p.get_engine().load_project(alias.full_fs_path_), alias_prefix));
    }
 

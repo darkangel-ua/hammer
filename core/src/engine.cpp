@@ -19,7 +19,6 @@
 #include <hammer/core/toolset_manager.h>
 #include <hammer/core/scaner_manager.h>
 #include <hammer/core/default_output_location_strategy.h>
-#include <hammer/core/warehouse_impl.h>
 #include <hammer/parser/parser.h>
 #include <hammer/sema/actions_impl.h>
 #include <hammer/core/diagnostic.h>
@@ -260,6 +259,38 @@ project&
 engine::insert(std::unique_ptr<project> p) {
    projects_.insert({p->location(), std::shared_ptr<project>{p.get()}});
    return *p.release();
+}
+
+void engine::unload_project(const project& project_to_unload) {
+   // very simple and maybe inefficient implementation but OK for now
+   auto is_child_of = [&] (const project* p) {
+      unsigned level = 1;
+      while (p) {
+         if (*p->parent_ == project_to_unload)
+            return level;
+         p = p->parent_;
+         ++level;
+      }
+
+      return 0u;
+   };
+
+   std::vector<std::pair<unsigned, projects_t::iterator>> projects_to_unload;
+   for (auto i = projects_.begin(), last = projects_.end(); i != last; ++i) {
+      if (int level = is_child_of(i->second.get()))
+         projects_to_unload.push_back({level, i});
+   }
+
+   std::sort(projects_to_unload.begin(), projects_to_unload.end(),
+             [] (const std::pair<unsigned, projects_t::iterator>& lhs,
+                 const std::pair<unsigned, projects_t::iterator>& rhs) {
+      return lhs.first > rhs.first;
+   });
+
+   for (auto& i : projects_to_unload)
+      projects_.erase(i.second);
+
+   projects_.erase(projects_.find(project_to_unload.location()));
 }
 
 engine::~engine()

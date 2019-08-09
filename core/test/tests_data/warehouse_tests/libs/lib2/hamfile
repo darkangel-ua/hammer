@@ -1,2 +1,2 @@
-use-project location = ./1.0/build ;
-use-project location = ./2.0/build ;
+use-project location = ./1.0 ;
+use-project location = ./2.0 ;

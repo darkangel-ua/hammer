@@ -202,28 +202,62 @@ class global_trap_wh_project : public virtual_project {
       warehouse_impl& warehouse_;
 };
 
+std::vector<std::string>
+warehouse_impl::calc_possible_projects(location_t path) const {
+   std::vector<std::string> result;
+
+   while (!path.empty()) {
+      auto i = packages_.equal_range(path.string());
+      if (i.first != i.second)
+         result.push_back(i.first->second.public_id_);
+      path = path.parent_path();
+   }
+
+   return result;
+}
+
+static
+std::string
+calc_internal_path(const std::string& public_id,
+                   const std::string& full_path) {
+   if (public_id.length() == full_path.length())
+      return {};
+
+   return full_path.substr(public_id.length() + 1);
+}
+
 loaded_projects
-global_trap_wh_project::load_project(const location_t& path) const
-{
-   if (!warehouse_.has_project(path, {}))
+global_trap_wh_project::load_project(const location_t& path) const {
+   const auto possible_projects = warehouse_.calc_possible_projects(path);
+   if (possible_projects.empty())
       return {};
 
-   // if it's already materialized we already installed traps so we don't need to do anything
-   if (warehouse_.already_materialized(path))
-      return {};
+   const auto spath = path.string();
+   loaded_projects result;
+   for (const auto& public_id : possible_projects) {
+      // if it's already materialized we already installed traps so we don't need to do anything
+      if (warehouse_.already_materialized(public_id))
+         continue;
 
-   // aha, it doesn't - we need to create one, that contains traps
-   auto i = traps_.find(path);
-   if (i != traps_.end())
-      return loaded_projects{i->second.get()};
-   else {
-      auto trap_project = boost::make_unique<trap_wh_project>(get_engine(), this, path.string());
+      // aha, it doesn't
+
+      // look for existing trap project
+      auto i = traps_.find(path);
+      if (i != traps_.end()) {
+         result.push_back(i->second.get());
+         continue;
+      }
+
+      // we need to create one, that contains traps
+      auto trap_project = boost::make_unique<trap_wh_project>(get_engine(), this, public_id);
       project* raw_trap_project = trap_project.get();
-      add_traps(warehouse_, *trap_project, path.string());
+      add_traps(warehouse_, *trap_project, public_id, calc_internal_path(public_id, spath));
       traps_.insert({path, std::move(trap_project)}) ;
 
-      return loaded_projects{raw_trap_project};
+      result.push_back(raw_trap_project);
    }
+
+   return result;
 }
 
 static

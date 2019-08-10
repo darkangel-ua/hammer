@@ -105,5 +105,6 @@ find_all_warehouse_unresolved_targets(const std::vector<basic_target*>& targets)
 void install_warehouse_rules(hammer::engine& engine);
 void add_traps(warehouse& wh,
                project& p,
-               const std::string& public_id);
+               const std::string& public_id,
+               const std::string& internal_path);
 }

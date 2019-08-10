@@ -1,0 +1,6 @@
+test {
+   main.cpp {}
+   lib1.nested {
+       lib1.nested.cpp {}
+   }
+}

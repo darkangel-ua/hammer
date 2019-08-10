@@ -57,8 +57,8 @@ find_all_warehouse_unresolved_targets(const vector<basic_target*>& targets)
 
 void add_traps(warehouse& wh,
                project& p,
-               const std::string& public_id)
-{
+               const std::string& public_id,
+               const std::string& internal_path) {
    warehouse::versions_t all_versions = wh.get_package_versions(public_id);
    vector<string> installed_versions = wh.get_installed_versions(public_id);
 
@@ -70,8 +70,7 @@ void add_traps(warehouse& wh,
          return lhs.version_ < rhs.version_;
       });
 
-   struct pred
-   {
+   struct pred {
       bool operator()(const warehouse::version_info& lhs, const string& rhs) const { return lhs.version_ < rhs; }
       bool operator()(const string& lhs, const warehouse::version_info& rhs) const { return lhs < rhs.version_; }
       // These two need by msvc debug implementation
@@ -84,8 +83,31 @@ void add_traps(warehouse& wh,
                   back_inserter(not_installed_versions), pred());
 
    for (const auto& v : not_installed_versions) {
-      for (const string& target_name : v.targets_)
-         p.add_target(boost::make_unique<warehouse_meta_target>(p, target_name, v.version_));
+      for (const string& full_target_name : v.targets_) {
+         auto target_name_offset = [&] {
+            std::string::size_type offset = full_target_name.front() == '@' ? 1 : 0;
+            if (full_target_name.length() - offset < internal_path.length())
+               return std::string::npos;
+
+            if (!internal_path.empty()) {
+               if (!std::equal(internal_path.begin(), internal_path.end(), full_target_name.begin() + offset))
+                  return std::string::npos;
+            }
+
+            offset += internal_path.length();
+            // non-empty internal path means we have '/' after it
+            if (!internal_path.empty())
+               ++offset;
+
+            if (full_target_name.find('/', offset) != std::string::npos)
+               return std::string::npos;
+
+            return offset;
+         } ();
+
+         if (target_name_offset != std::string::npos)
+            p.add_target(boost::make_unique<warehouse_meta_target>(p, full_target_name.substr(target_name_offset), v.version_));
+      }
    }
 }
 
@@ -100,7 +122,7 @@ void warehouse_trap_rule(invocation_context& ctx,
    if (!wh.has_project(location_t(public_id.to_string()), warehouse::any_version))
       throw std::runtime_error("Can't find '" + public_id.to_string() + "' in warehouse");
 
-   add_traps(wh, ctx.current_project_, public_id.to_string());
+   add_traps(wh, ctx.current_project_, public_id.to_string(), {});
 }
 
 void install_warehouse_rules(engine& engine)

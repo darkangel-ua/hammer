@@ -1,0 +1,2 @@
+# test this we can correctly access public target explicitly
+exe test : main.cpp /lib1//lib1/<version>1.0 ;

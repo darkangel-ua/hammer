@@ -1,0 +1,6 @@
+test {
+   main.cpp {}
+   lib1 [ features = <version>1.0; ] {
+       lib1.cpp {}
+   }
+}

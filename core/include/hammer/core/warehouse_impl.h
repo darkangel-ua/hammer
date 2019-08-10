@@ -9,8 +9,11 @@ namespace hammer {
 class main_target;
 class feature_set;
 class basic_target;
+class global_trap_wh_project;
 
 class warehouse_impl : public warehouse {
+      friend class global_trap_wh_project;
+
    public:
       warehouse_impl(engine& e,
                      const std::string& id,
@@ -84,6 +87,9 @@ class warehouse_impl : public warehouse {
                           package_t& package_to_update);
       void remove_package(const package_t& package_to_remove);
       void reload(engine& e);
+
+      std::vector<std::string>
+      calc_possible_projects(location_t path) const;
 
       static
       packages_t load_packages(const boost::filesystem::path& filepath);

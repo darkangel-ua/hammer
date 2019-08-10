@@ -1,3 +1,4 @@
 project lib1 : requirements = <version>1.0 ;
 
 use-project location = ./build : match = exact ;
+use-project nested : location = ./nested ;

@@ -1,0 +1,2 @@
+# testing that we can match and use nested aliases inside some warehouse project
+exe test : main.cpp /lib1/nested/<version>1.0 ;

@@ -265,73 +265,66 @@ int handle_test_cmd(const std::vector<std::string>& args,
    if (debug_level > 0)
       cout << build_request << flush;
 
-   // here we resolve only top level targets
-   auto resolved_targets = resolve_target_ids(*engine, project_to_build, build_request.target_ids_, *build_request.build_request_);
+   auto instantiator = [&] {
+      // here we resolve only top level targets
+      auto resolved_targets = resolve_target_ids(*engine, project_to_build, build_request.target_ids_, *build_request.build_request_);
 
-   if (debug_level > 0)
-      cout << "Top level test targets are:\n"
-           << resolved_targets
-           << flush;
+      if (debug_level > 0)
+         cout << "Top level test targets are:\n"
+              << resolved_targets
+              << flush;
 
-   for (auto& mt : resolved_targets.targets_) {
-      if (!is_testing_meta_target(*mt)) {
-         cout << "Failed: Target '" << mt->name() << "' at '" << mt->location() << "' is not a testing meta target!\n" << flush;
-         return 1;
+      for (auto& mt : resolved_targets.targets_) {
+         if (!is_testing_meta_target(*mt))
+            throw std::runtime_error("Target '" + mt->name() + "' at '" + mt->location().string() + "' is not a testing meta target!");
       }
-   }
 
-   cout << "...instantiating top level targets... " << flush;
-   vector<basic_target*> instantiated_targets = instantiate(*engine, resolved_targets.targets_, *build_request.build_request_);
-   cout << "Done" << endl;
-
-   if (!resolved_targets.unresolved_target_ids_.empty() && project_to_build) {
-      auto test_suites = gather_test_suites(*project_to_build);
-
-      cout << "...instantiating test suites... " << flush;
-      auto instantiated_suites = instantiate(*engine, test_suites, *build_request.build_request_);
+      cout << "...instantiating top level targets... " << flush;
+      auto instantiated_targets = instantiate(*engine, resolved_targets.targets_, *build_request.build_request_);
       cout << "Done" << endl;
 
-      auto test_targets = resolve_test_ids(resolved_targets.unresolved_target_ids_, instantiated_suites);
-      if (!test_targets.unresolved_target_ids_.empty()) {
-         // ok, lets check if this is testing.run internal target
-         auto single_run_target = find_single_run_target(*project_to_build);
-         if (single_run_target) {
-            auto& new_run_target = make_run_target(*project_to_build, *single_run_target, test_targets.unresolved_target_ids_);
-            auto instantiated_new_run_target = instantiate(*engine, {&new_run_target}, *build_request.build_request_);
+      if (!resolved_targets.unresolved_target_ids_.empty() && project_to_build) {
+         auto test_suites = gather_test_suites(*project_to_build);
+
+         cout << "...instantiating test suites... " << flush;
+         auto instantiated_suites = instantiate(*engine, test_suites, *build_request.build_request_);
+         cout << "Done" << endl;
+
+         auto test_targets = resolve_test_ids(resolved_targets.unresolved_target_ids_, instantiated_suites);
+         if (!test_targets.unresolved_target_ids_.empty()) {
+            // ok, lets check if this is testing.run internal target
+            auto single_run_target = find_single_run_target(*project_to_build);
+            if (single_run_target) {
+               auto& new_run_target = make_run_target(*project_to_build, *single_run_target, test_targets.unresolved_target_ids_);
+               auto instantiated_new_run_target = instantiate(*engine, {&new_run_target}, *build_request.build_request_);
+
+               resolved_targets.unresolved_target_ids_.clear();
+               instantiated_targets.insert(instantiated_targets.end(), instantiated_new_run_target.begin(), instantiated_new_run_target.end());
+            } else
+               throw std::runtime_error("Unable to resolved passed target ids: " + boost::join(test_targets.unresolved_target_ids_, ", "));
+         } else {
+            if (debug_level > 0)
+               cout << "\nTest suite targets are: " << boost::join(resolved_targets.unresolved_target_ids_, ", ") << "\n\n" << flush;
 
             resolved_targets.unresolved_target_ids_.clear();
-            instantiated_targets.insert(instantiated_targets.end(), instantiated_new_run_target.begin(), instantiated_new_run_target.end());
-         } else {
-            cout << "Failed: unable to resolved passed target ids: " << boost::join(test_targets.unresolved_target_ids_, ", ") << endl;
-            return 1;
+            instantiated_targets.insert(instantiated_targets.end(), test_targets.targets_.begin(), test_targets.targets_.end());
          }
-      } else {
-         if (debug_level > 0)
-            cout << "\nTest suite targets are: " << boost::join(resolved_targets.unresolved_target_ids_, ", ") << "\n\n" << flush;
-
-         resolved_targets.unresolved_target_ids_.clear();
-         instantiated_targets.insert(instantiated_targets.end(), test_targets.targets_.begin(), test_targets.targets_.end());
       }
-   }
 
-   if (!resolved_targets.unresolved_target_ids_.empty()) {
-      cout << "Failed: Unable to resolve passed target ids: " << boost::join(resolved_targets.unresolved_target_ids_, ", ") << endl;
-      return 1;
-   }
+      if (!resolved_targets.unresolved_target_ids_.empty())
+         throw std::runtime_error("Unable to resolve passed target ids: " + boost::join(resolved_targets.unresolved_target_ids_, ", "));
 
-   if (instantiated_targets.empty()) {
-      cout << "Failed: Nothing to test!" << endl;
-      return 1;
-   }
+      if (instantiated_targets.empty())
+         throw std::runtime_error("Nothing to test!");
 
-   cout << "...generating build graph... " << flush;
-   boost::optional<build_nodes_t> nodes = generate(*engine, instantiated_targets);
+      return instantiated_targets;
+   };
+
+   boost::optional<build_nodes_t> nodes = generate(*engine, instantiator);
    if (!nodes) {
-      cout << "Build failed\n";
+      cout << "Build failed" << endl;
       return 1;
    }
-
-   cout << "Done" << endl;
 
    build(*engine, *nodes, debug_level, interrupt_flag);
 

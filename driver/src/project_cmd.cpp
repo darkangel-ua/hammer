@@ -65,19 +65,20 @@ int handle_project_cmd(const std::vector<std::string>& args,
    if (debug_level > 0)
       cout << build_request << endl;
 
-   auto resolved_targets = resolve_target_ids(*engine, project_to_build, build_request.target_ids_, *build_request.build_request_);
+   auto instantiator = [&] {
+      auto resolved_targets = resolve_target_ids(*engine, project_to_build, build_request.target_ids_, *build_request.build_request_);
 
-   cout << "...instantiating... " << flush;
-   vector<basic_target*> instantiated_targets = instantiate(*engine, resolved_targets.targets_, *build_request.build_request_);
-   cout << "Done" << endl;
+      cout << "...instantiating... " << flush;
+      auto instantiated_targets = instantiate(*engine, resolved_targets.targets_, *build_request.build_request_);
+      cout << "Done" << endl;
+      return instantiated_targets;
+   };
 
-   cout << "...generating build graph... " << flush;
-   boost::optional<build_nodes_t> nodes = generate(*engine, instantiated_targets);
+   boost::optional<build_nodes_t> nodes = generate(*engine, instantiator);
    if (!nodes) {
       cout << "Failed" << endl;
       return 1;
    }
-   cout << "Done" << endl;
 
    auto i_toolset = build_request.build_request_->find("toolset");
    assert(i_toolset != build_request.build_request_->end());

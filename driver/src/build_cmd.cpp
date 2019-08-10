@@ -284,14 +284,19 @@ instantiate(engine& e,
 
 boost::optional<hammer::build_nodes_t>
 generate(engine& engine,
-         const std::vector<basic_target*> targets) {
+         std::function<std::vector<hammer::basic_target*>()> instantiator) {
    while (true) {
+      auto targets = instantiator();
       try {
+         cout << "...generating build graph... " << flush;
+
          build_nodes_t result;
          for (basic_target* t : targets) {
             build_nodes_t n = t->generate();
             result.insert(result.end(), n.begin(), n.end());
          }
+
+         cout << "Done" << endl;
 
          return result;
       } catch (const warehouse_unresolved_target_exception& e) {
@@ -414,32 +419,36 @@ int handle_build_cmd(const std::vector<std::string>& args,
    parse_options(args);
 
    auto build_request = resolve_build_request(*engine, build_options.build_request_, project_to_build);
-   auto resolved_targets = resolve_target_ids(*engine, project_to_build, build_request.target_ids_, *build_request.build_request_);
 
-   if (debug_level > 0)
-      cout << build_request
-           << "\nTargets to build are:\n"
-           << resolved_targets;
+   auto instantiator = [&] {
+      auto resolved_targets = resolve_target_ids(*engine, project_to_build, build_request.target_ids_, *build_request.build_request_);
 
-   cout << "...instantiating... " << flush;
-   vector<basic_target*> instantiated_targets = instantiate(*engine, resolved_targets.targets_, *build_request.build_request_);
-   cout << "Done" << endl;
+      if (debug_level > 0)
+         cout << build_request
+              << "\nTargets to build are:\n"
+              << resolved_targets;
+
+      cout << "...instantiating... " << flush;
+      auto instantiated_targets = instantiate(*engine, resolved_targets.targets_, *build_request.build_request_);
+      cout << "Done" << endl;
+      return instantiated_targets;
+   };
 
    if (build_options.write_instantiation_graph_) {
-      write_instantiation_graph(instantiated_targets);
+      write_instantiation_graph(instantiator());
       return 0;
    }
 
-   if (build_options.only_instantiate_)
+   if (build_options.only_instantiate_) {
+      instantiator();
       return 0;
+   }
 
-   cout << "...generating build graph... " << flush;
-   boost::optional<build_nodes_t> nodes = generate(*engine, instantiated_targets);
+   boost::optional<build_nodes_t> nodes = generate(*engine, instantiator);
    if (!nodes) {
       cout << "Build failed\n";
       return 1;
    }
-   cout << "Done" << endl;
 
    if (build_options.only_generate_)
       return 0;

@@ -31,7 +31,7 @@ instantiate(hammer::engine& e,
 // generate targets + handle warehouse
 boost::optional<hammer::build_nodes_t>
 generate(hammer::engine& engine,
-         const std::vector<hammer::basic_target*> targets);
+         std::function<std::vector<hammer::basic_target*>()> instantiator);
 
 void build(hammer::engine& e,
            hammer::build_nodes_t& nodes,

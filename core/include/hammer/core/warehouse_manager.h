@@ -2,6 +2,7 @@
 #include <string>
 #include <memory>
 #include <unordered_map>
+#include <yaml-cpp/node/node.h>
 #include <boost/noncopyable.hpp>
 #include <hammer/core/location.h>
 
@@ -24,12 +25,18 @@ class warehouse_manager : public boost::noncopyable {
       const_iterator end() const { return warehouses_.end(); }
       const_iterator find(const std::string& warehouse_id) const;
       const_iterator find(const project& p) const;
+      warehouses_t::size_type size() const { return warehouses_.size(); }
 
       // use warehouse::any_version to look up project regardless of version
       bool has_project(const location_t& project_id,
                        const std::string& version) const;
 
-      warehouse* get_default() const { return default_; }
+      warehouse*
+      get_default() const { return default_; }
+
+      YAML::Node
+      info() const;
+
       ~warehouse_manager();
 
    private:

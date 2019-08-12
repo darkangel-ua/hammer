@@ -17,6 +17,7 @@ exe hammer
       /boost/filesystem
       /boost/format
       /boost/regex
+      /yaml-cpp
    : requirements =
       (<target-os>linux && <variant>debug -> <name>dhammer)
       (<target-os>windows && <variant>debug -> <name>dhammer.exe)

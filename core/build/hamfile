@@ -28,6 +28,7 @@ lib hammer.core
       /boost/thread
       /boost/range
       @/boost/logic
+      @/yaml-cpp
    : requirements =
       @<include>../include
       <include>../src

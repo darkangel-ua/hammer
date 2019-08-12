@@ -1,3 +1,7 @@
+#include <algorithm>
+#include <boost/unordered_set.hpp>
+#include <boost/bind.hpp>
+#include <boost/make_unique.hpp>
 #include <hammer/core/warehouse.h>
 #include <hammer/core/warehouse_target.h>
 #include <hammer/core/warehouse_meta_target.h>
@@ -7,10 +11,6 @@
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature.h>
 #include <hammer/core/rule_argument_types.h>
-#include <boost/unordered_set.hpp>
-#include <boost/bind.hpp>
-#include <boost/make_unique.hpp>
-#include <algorithm>
 #include <hammer/core/warehouse_manager.h>
 
 using namespace std;

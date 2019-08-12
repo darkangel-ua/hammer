@@ -1,5 +1,5 @@
 #include <iostream>
-#include <iomanip>
+#include <yaml-cpp/emitter.h>
 #include <hammer/core/engine.h>
 #include <hammer/core/warehouse.h>
 #include <hammer/core/warehouse_manager.h>
@@ -7,12 +7,15 @@
 #include "build_cmd.h"
 
 using namespace hammer;
-using namespace std;
 
-struct warehouse_desc {
-   string id_;
-   boost::filesystem::path storage_dir_;
+namespace {
+
+struct winfo {
+   const std::string& id_;
+   YAML::Node info_;
 };
+
+}
 
 int handle_warehouse_cmd(const std::vector<std::string>& args,
                          const unsigned debug_level) {
@@ -23,35 +26,50 @@ int handle_warehouse_cmd(const std::vector<std::string>& args,
       return 1;
    }
 
+   std::cout << "Configured warehouses are:\n" << std::endl;
+
    warehouse_manager& whm = engine->warehouse_manager();
-   vector<warehouse_desc> whl;
-   transform(whm.begin(), whm.end(), back_inserter(whl), [](const warehouse_manager::value_type& wh) {
-      return warehouse_desc{ wh.second->id_, wh.second->storage_dir_ };
-   });
-
-   sort(whl.begin(), whl.end(), [](const warehouse_desc& rhs, const warehouse_desc& lhs) {
-      return rhs.id_ < lhs.id_;
-   });
-
-   unsigned id_len = 0;
-   for (const auto& i : whl)
-      id_len = std::max(id_len, (unsigned)i.id_.size());
-
-   cout << "Configured warehouses are:\n" << endl;
-   for (const auto& i : whl) {
-      cout << setw(id_len + 3) << left << i.id_ << i.storage_dir_.string() << endl;
+   if (whm.size() == 0) {
+      std::cout << "   No warehouses were configured!\n" << std::endl;
+      return 0;
    }
 
-   cout << endl;
+   // FIXME: YAML::Node cannot handle simple std::swap, so we doing indirect sorts
+   // and use std::list just in case
+   std::list<winfo> infos;
+   for (const auto& wh : whm)
+      infos.push_back({wh.second->id_, wh.second->info()});
+
+   infos.sort([] (const winfo& lhs,
+                  const winfo& rhs) {
+      return lhs.id_ < rhs.id_;
+   });
+
+   YAML::Emitter em(std::cout);
+   em << YAML::BeginSeq;
+      for (const auto& info : infos) {
+         em << YAML::BeginMap
+            << YAML::Key;
+
+         if (info.id_ == whm.get_default()->id_)
+            em << (info.id_ + " [default]");
+         else
+            em << info.id_;
+
+         em << YAML::Value << info.info_
+            << YAML::EndMap;
+      }
+   em << YAML::EndSeq;
+   std::cout << "\n" << std::endl;
 
    return 0;
 }
 
 void show_warehouse_cmd_help() {
-   cout << R"(usage: hammer warehouse <command>
+   std::cout << R"(usage: hammer warehouse <command>
 
 commands are:
    list     list configured warehouses
 
-)" << flush;
+)" << std::flush;
 }

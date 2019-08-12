@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <yaml-cpp/yaml.h>
 #include <hammer/core/location.h>
 
 namespace hammer {
@@ -60,6 +61,11 @@ class warehouse : public boost::noncopyable {
       // FIXME: this is temporal hack. I will remove this when web part will be implemented
       virtual void add_to_packages(const project& p) = 0;
       virtual versions_t get_package_versions(const std::string& public_id) const = 0;
+
+      // Generic information about warehouse in hierarchical form
+      virtual
+      YAML::Node
+      info() const = 0;
 
    public:
       const std::string id_;

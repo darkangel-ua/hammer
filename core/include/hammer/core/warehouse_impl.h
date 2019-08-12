@@ -39,7 +39,8 @@ class warehouse_impl : public warehouse {
       std::vector<std::string>
       get_installed_versions(const std::string& public_id) const override;
 
-      bool already_materialized(const location_t& public_id) const;
+      YAML::Node
+      info() const override;
 
    protected:
       package_infos_t update_impl() override;
@@ -87,6 +88,8 @@ class warehouse_impl : public warehouse {
                           package_t& package_to_update);
       void remove_package(const package_t& package_to_remove);
       void reload(engine& e);
+
+      bool already_materialized(const location_t& public_id) const;
 
       std::vector<std::string>
       calc_possible_projects(location_t path) const;

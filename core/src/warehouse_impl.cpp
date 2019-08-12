@@ -951,6 +951,15 @@ warehouse_impl::get_installed_versions(const std::string& public_id) const
    return result;
 }
 
+YAML::Node
+warehouse_impl::info() const {
+   YAML::Node info;
+   info["remote"] = repository_url_;
+   info["local"] = storage_dir_.string();
+
+   return info;
+}
+
 bool warehouse_impl::already_materialized(const location_t& public_id) const
 {
    return fs::exists(storage_dir_ / "libs" / public_id);

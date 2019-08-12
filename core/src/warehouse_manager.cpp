@@ -36,4 +36,11 @@ bool warehouse_manager::has_project(const location_t& project_id,
    }) != warehouses_.end();
 }
 
+YAML::Node
+warehouse_manager::info() const {
+   YAML::Node result;
+
+   return result;
+}
+
 }

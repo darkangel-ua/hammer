@@ -129,6 +129,7 @@ struct invocation_context {
 	project& current_project_;
 	diagnostic& diag_;
 	rule_manager& rule_manager_;
+   parscore::source_location rule_location_;
 };
 
 struct target_invocation_context : invocation_context {
@@ -497,6 +498,11 @@ make_rule_argument_struct_desc(const std::string& type,
    return details::make_rule_argument_struct_desc_impl(type, boost::function<f_type>(constructor), fields_decl);
 }
 
+template< class Ret, class T, class ...Args >
+auto bind_this(T* this_, Ret (T::* f)(Args...)) -> boost::function<Ret(Args...)> {
+    return [=]( Args... args ) { return (this_->*f)(std::forward<Args>(args)...); };
+}
+
 // FIXME: ast_expression can't be optional
 class rule_manager {
    public:
@@ -565,6 +571,17 @@ class rule_manager {
 		{
 			typedef typename boost::remove_pointer<FunctionPointer>::type f_type;
 		   return make_rule_declaration(id, boost::function<f_type>(f), args_decl);
+		}
+
+      template<typename T, typename R>
+		static
+		rule_declaration
+		make_rule_declaration(const parscore::identifier& id,
+                            T* this_,
+		                      R T::* f,
+		                      const rule_args_decl& args_decl)
+		{
+		   return make_rule_declaration(id, bind_this(this_, f), args_decl);
 		}
 
    private:

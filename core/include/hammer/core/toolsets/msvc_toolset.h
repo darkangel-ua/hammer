@@ -6,9 +6,9 @@ namespace hammer {
 class msvc_toolset : public toolset {
 	public:
 		msvc_toolset();
-		void autoconfigure(engine& e) const override;
+		void autoconfigure(engine& e) override;
 		void configure(engine& e,
-							const std::string& version) const override;
+							const std::string& version) override;
 
 	private:
 		void use_toolset_rule(invocation_context& ctx,
@@ -16,7 +16,7 @@ class msvc_toolset : public toolset {
 									 const parscore::identifier* path_to_vc_folder);
 		void init_toolset(engine& e,
 								const std::string& version_id,
-								const location_t& toolset_home) const;
+								const location_t& toolset_home);
 };
 
 }

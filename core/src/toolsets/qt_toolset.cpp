@@ -1,4 +1,3 @@
-#include <boost/bind.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/regex.hpp>
 #include <boost/make_unique.hpp>
@@ -26,6 +25,7 @@
 #include <hammer/core/output_location_strategy.h>
 #include <hammer/core/rule_argument_types.h>
 #include <hammer/core/generated_build_target.h>
+#include <hammer/core/diagnostic.h>
 
 using std::string;
 using std::unique_ptr;
@@ -33,10 +33,6 @@ using std::vector;
 namespace fs = boost::filesystem;
 
 namespace hammer{
-
-typedef boost::function<void(invocation_context& ctx,
-                             const parscore::identifier& version,
-                             const location_t& root_folder)> rule_t;
 
 const type_tag qt_mocable("QT_MOCABLE");
 const type_tag qt_ui("QT_UI");
@@ -161,8 +157,7 @@ static sources_decl convert_H_to_MOCABLE(const sources_decl& src, hammer::projec
    return result;
 }
 
-class qt_moc_meta_target : public alias_meta_target
-{
+class qt_moc_meta_target : public alias_meta_target {
    public:
       qt_moc_meta_target(hammer::project* p,
                          const std::string& name,
@@ -171,7 +166,6 @@ class qt_moc_meta_target : public alias_meta_target
                          const requirements_decl& usage_req)
          : alias_meta_target(p, name, convert_H_to_MOCABLE(sources, *p), req, usage_req)
       {
-
       }
 };
 
@@ -180,9 +174,7 @@ void qt_moc_rule(target_invocation_context& ctx,
                  const sources_decl& sources,
                  requirements_decl* requirements,
                  const feature_set* default_build,
-                 requirements_decl* usage_requirements)
-
-{
+                 requirements_decl* usage_requirements) {
    unique_ptr<basic_meta_target> mt(new qt_moc_meta_target(&ctx.current_project_,
                                                            id.to_string(),
                                                            sources,
@@ -197,7 +189,7 @@ void qt_moc_rule(target_invocation_context& ctx,
 qt_toolset::qt_toolset()
    : toolset("qt",
              rule_manager::make_rule_declaration("use-toolset-qt",
-                                                 rule_t(boost::bind(&qt_toolset::use_toolset_rule, this, _1, _2, _3)),
+                                                 this, &qt_toolset::use_toolset_rule,
                                                  {"version", "root"}))
 {
 }
@@ -216,8 +208,7 @@ string determinate_version(const location_t& toolset_home)
    return string();
 }
 
-void qt_toolset::autoconfigure(engine& e) const
-{
+void qt_toolset::autoconfigure(engine& e) {
 //    const char* qt_dir = getenv("QTDIR");
 //    if (qt_dir != NULL) {
 //      location_t toolset_home(qt_dir);
@@ -236,8 +227,7 @@ void qt_toolset::autoconfigure(engine& e) const
 }
 
 void qt_toolset::configure(engine& e,
-                           const std::string& version) const
-{
+                           const std::string& version) {
    throw std::runtime_error("Qt toolset cannot be simply configured specifying version");
 }
 
@@ -248,8 +238,7 @@ void add_lib(project& qt_project,
              engine& e,
              const string& include_tag,
              const string& additional_include_path,
-             const string& lib_tag)
-{
+             const string& lib_tag) {
    requirements_decl debug_req;
 
    feature* qt_no_debug_feature = e.feature_registry().create_feature("define", "QT_NO_DEBUG");
@@ -453,11 +442,27 @@ void add_libs_and_generators(engine& e,
    e.add_alias(location_t{"/Qt"}, e.insert(std::move(qt_project)).location(), nullptr);
 }
 
+static
+YAML::Node
+make_toolset_info(const std::string& root_folder) {
+   YAML::Node info;
+
+   info["root"] = root_folder;
+
+   return info;
+}
+
 void qt_toolset::use_toolset_rule(invocation_context& ctx,
                                   const parscore::identifier& version,
                                   const location_t& root_folder)
 {
    engine& e = ctx.current_project_.get_engine();
+   const feature_set& constraints = *e.feature_registry().make_set();
+   const string s_version=version.to_string();
+   if (is_already_configured(s_version, constraints)) {
+      ctx.diag_.error(ctx.rule_location_, "Same version already configured");
+      return;
+   }
 
    feature_def& toolset_def = e.feature_registry().get_def("toolset");
    if (!toolset_def.is_legal_value("qt")) {
@@ -475,11 +480,12 @@ void qt_toolset::use_toolset_rule(invocation_context& ctx,
       e.get_type_registry().insert(target_type(qt_uiced_h, ".h", e.get_type_registry().get(types::H), "ui_"));
    }
 
-   const string s_version=version.to_string();
    if (!s_version.empty() && s_version[0] == '4')
       add_libs_and_generators(e, &root_folder, "-qt4", "4", "qt4", false);
    else
       add_libs_and_generators(e, &root_folder, "", "", "", true);
+
+   register_configured(s_version, constraints, make_toolset_info(root_folder.string()));
 }
 
 //void qt_toolset::init_impl(engine& e,

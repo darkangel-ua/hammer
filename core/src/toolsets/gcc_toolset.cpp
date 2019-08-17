@@ -1,4 +1,3 @@
-#include <boost/bind.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/make_unique.hpp>
 #include <hammer/core/toolsets/gcc_toolset.h>
@@ -31,27 +30,7 @@ namespace hammer {
 
 namespace {
 
-struct toolset_data {
-   std::string version_;
-   fs::path compiler_;
-   fs::path linker_;
-   fs::path librarian_;
-   feature_set* c_flags_;
-   feature_set* cxx_flags_;
-   feature_set* link_flags_;
-};
-
-typedef boost::function<void(invocation_context& ctx,
-                             const parscore::identifier* version,
-                             const location_t* path_to_cxx_compiler,
-                             const location_t* path_to_linker,
-                             const location_t* path_to_ar,
-                             const parscore::identifier* compiler_flags,
-                             const parscore::identifier* cxx_flags,
-                             const parscore::identifier* link_flags)> rule_t;
-
-class gcc_generator : public generator
-{
+class gcc_generator : public generator {
    public:
       gcc_generator(engine& e,
                     const std::string& name,
@@ -73,8 +52,7 @@ class gcc_generator : public generator
                     const build_node::sources_t& sources,
                     const std::string* composite_target_name,
                     const produced_type& type,
-                    const feature_set* target_properties) const override
-      {
+                    const feature_set* target_properties) const override {
          if (additional_target_properties_) {
             feature_set* new_target_properties = target_properties->clone();
             new_target_properties->join(*additional_target_properties_);
@@ -86,27 +64,60 @@ class gcc_generator : public generator
 
 }
 
+struct gcc_toolset::toolset_data {
+   std::string version_;
+   std::string version_suffix_;
+   fs::path compiler_;
+   fs::path linker_;
+   fs::path librarian_;
+   feature_set* c_flags_;
+   feature_set* cxx_flags_;
+   feature_set* link_flags_;
+   const feature_set* constraints_;
+};
+
 gcc_toolset::gcc_toolset()
    : toolset("gcc",
              rule_manager::make_rule_declaration("use-toolset-gcc",
-                                                 rule_t{boost::bind(&gcc_toolset::use_toolset_rule, this, _1, _2, _3, _4, _5, _6, _7, _8)},
-                                                 {"version", "c++-compiler", "linker", "librarian", "c-flags", "cxx-flags", "link-flags"}))
+                                                 this, &gcc_toolset::use_toolset_rule,
+                                                 {"version", "c++-compiler", "linker", "librarian", "c-flags", "cxx-flags", "link-flags", "constrains"}))
 {
 }
 
-static
-void init_toolset(engine& e,
-                  const string& toolset_name,
-                  const toolset_data& td)
-{
-   feature_def& toolset_def = e.feature_registry().get_def("toolset");
-   if (!toolset_def.is_legal_value(toolset_name))
-      toolset_def.extend_legal_values(toolset_name, e.feature_registry().get_or_create_feature_value_ns("c/c++"));
+YAML::Node
+gcc_toolset::make_toolset_info(const toolset_data& td) {
+   YAML::Node info;
+   auto fs2str = [](const feature_set* fs) {
+      if (!fs || fs->empty())
+         return YAML::Node();
 
-   toolset_def.get_subfeature("version").extend_legal_values(toolset_name, td.version_);
+      return YAML::Node(dump_for_hash(*fs, true));
+   };
+
+   info["constraints"] = fs2str(td.constraints_);
+   info["cxx-compiler"] = td.compiler_.string();
+   info["cxx-flags"] = fs2str(td.cxx_flags_);
+   info["c-flags"] = fs2str(td.c_flags_);
+   info["linker"] = td.linker_.string();
+   info["linker-flags"] = fs2str(td.link_flags_);
+   info["librarian"] = td.librarian_.string();
+
+   return info;
+}
+
+void gcc_toolset::init_toolset(engine& e,
+                               const toolset_data& td) {
+   if (is_already_configured(td.version_, *td.constraints_))
+      throw std::runtime_error("Version '" + td.version_ + "' already registered with similar constraints");
+
+   feature_def& toolset_def = e.feature_registry().get_def("toolset");
+   if (!toolset_def.is_legal_value(name()))
+      toolset_def.extend_legal_values(name(), e.feature_registry().get_or_create_feature_value_ns("c/c++"));
+
+   toolset_def.get_subfeature("version").extend_legal_values(name(), td.version_);
 
    feature_set* generator_condition = e.feature_registry().make_set();
-   generator_condition->join("toolset", (toolset_name + "-" + td.version_).c_str());
+   generator_condition->join("toolset", (name() + "-" + td.version_).c_str());
 
    std::shared_ptr<product_argument_writer> obj_product(new product_argument_writer("obj_product", e.get_type_registry().get(types::OBJ)));
    std::shared_ptr<source_argument_writer> static_lib_sources(new source_argument_writer("static_lib_sources", e.get_type_registry().get(types::STATIC_LIB), true, source_argument_writer::FULL_PATH));
@@ -153,7 +164,7 @@ void init_toolset(engine& e,
    std::shared_ptr<free_feature_arg_writer> generated_includes(new free_feature_arg_writer("generated-includes", e.feature_registry(), "__generated-include", "-I\"", "\""));
    std::shared_ptr<free_feature_arg_writer> defines(new free_feature_arg_writer("defines", e.feature_registry(), "define", "-D"));
 
-   const string generator_prefix = toolset_name + "-" + td.version_;
+   const string generator_prefix = name() + "-" + td.version_;
 
    // C -> OBJ
    {
@@ -304,6 +315,8 @@ void init_toolset(engine& e,
       unique_ptr<generator> g(new static_lib_generator(e, generator_prefix + ".linker.static_lib", source, target, true, static_lib_action, generator_condition));
       e.generators().insert(std::move(g));
    }
+
+   register_configured(td.version_, *td.constraints_, make_toolset_info(td));
 }
 
 void gcc_toolset::use_toolset_rule(invocation_context& ctx,
@@ -313,55 +326,51 @@ void gcc_toolset::use_toolset_rule(invocation_context& ctx,
                                    const location_t* path_to_ar,
                                    const parscore::identifier* c_flags,
                                    const parscore::identifier* cxx_flags,
-                                   const parscore::identifier* link_flags)
-{
+                                   const parscore::identifier* link_flags,
+                                   const feature_set* constraints) {
    if (!version && (path_to_cxx_compiler || path_to_linker || path_to_ar)) {
-      ctx.diag_.error(version->start_loc(), "Toolset version expected when you specify path to compiler/linker/...");
+      ctx.diag_.error(ctx.rule_location_, "Toolset version expected when you specify path to compiler/linker/...");
       return;
    }
 
    if (path_to_cxx_compiler && !path_to_cxx_compiler->has_root_path()) {
-      ctx.diag_.error({}, "Compiler path should be absolute");
+      ctx.diag_.error(ctx.rule_location_, "Compiler path should be absolute");
       return;
    }
 
    if (path_to_linker && !path_to_linker->has_root_path()) {
-      ctx.diag_.error({}, "Linker path should be absolute");
+      ctx.diag_.error(ctx.rule_location_, "Linker path should be absolute");
       return;
    }
 
    if (path_to_ar && !path_to_ar->has_root_path()) {
-      ctx.diag_.error({}, "Librarian path should be absolute");
-      return;
-   }
-
-   if (!version && !path_to_cxx_compiler && !path_to_linker && !path_to_ar) {
-      configure(ctx.current_project_.get_engine(), "system");
-      return;
-   }
-
-   if (version && !path_to_cxx_compiler && !path_to_linker && !path_to_ar) {
-      configure(ctx.current_project_.get_engine(), version->to_string());
+      ctx.diag_.error(ctx.rule_location_, "Librarian path should be absolute");
       return;
    }
 
    toolset_data td;
-   td.version_ = version->to_string();
+
+   if (!version)
+      td.version_ = "system";
+   else {
+      td.version_ = version->to_string();
+      td.version_suffix_ = "-" + td.version_;
+   }
 
    if (path_to_cxx_compiler)
       td.compiler_ = *path_to_cxx_compiler;
    else
-      td.compiler_ = "/usr/bin/g++-" + td.version_;
+      td.compiler_ = "/usr/bin/g++" + td.version_suffix_;
 
    if (path_to_linker)
       td.linker_ = *path_to_linker;
    else
-      td.linker_ = "/usr/bin/g++-" + td.version_;
+      td.linker_ = "/usr/bin/g++" + td.version_suffix_;
 
    if (path_to_ar)
       td.librarian_ = *path_to_ar;
    else
-      td.librarian_ = "/usr/bin/gcc-ar-" + td.version_;
+      td.librarian_ = "/usr/bin/gcc-ar" + td.version_suffix_;
 
    feature_registry& fr = ctx.current_project_.get_engine().feature_registry();
 
@@ -383,24 +392,32 @@ void gcc_toolset::use_toolset_rule(invocation_context& ctx,
    } else
       td.link_flags_ = nullptr;
 
-   init_toolset(ctx.current_project_.get_engine(), name(), td);
-}
+   if (constraints)
+      td.constraints_ = constraints;
+   else
+      td.constraints_ = fr.make_set();
 
-void gcc_toolset::configure(engine& e,
-                            const std::string& version) const
-{
-   if (version == "system") {
-      toolset_data td{"system", "/usr/bin/g++", "/usr/bin/g++", "/usr/bin/gcc-ar"};
-      init_toolset(e, name(), td);
+   if (is_already_configured(td.version_, *td.constraints_)) {
+      ctx.diag_.error(ctx.rule_location_, "Same version with similar constraints already configured");
       return;
    }
 
-   toolset_data td{version, "/usr/bin/g++-" + version, "/usr/bin/g++-" + version, "/usr/bin/gcc-ar-" + version};
-   init_toolset(e, name(), td);
+   init_toolset(ctx.current_project_.get_engine(), td);
 }
 
-void gcc_toolset::autoconfigure(engine& e) const
-{
+void gcc_toolset::configure(engine& e,
+                            const std::string& version) {
+   auto td = [&] {
+      if (version == "system")
+         return toolset_data{"system", "/usr/bin/g++", "/usr/bin/g++", "/usr/bin/gcc-ar"};
+      else
+         return toolset_data{version, "/usr/bin/g++-" + version, "/usr/bin/g++-" + version, "/usr/bin/gcc-ar-" + version};
+   }();
+
+   init_toolset(e, td);
+}
+
+void gcc_toolset::autoconfigure(engine& e) {
    if (exists(location_t("/usr/bin/gcc")))
       configure(e, "system");
 }

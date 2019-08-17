@@ -6,8 +6,7 @@
 namespace hammer {
 
 void toolset_manager::add_toolset(engine& e,
-                                  std::unique_ptr<toolset> t)
-{
+                                  std::unique_ptr<toolset> t) {
    auto r = toolsets_.emplace(t->name(), std::move(t));
    if (!r.second)
       throw std::runtime_error("Toolset '" + t->name() + "' already registered");
@@ -18,27 +17,23 @@ void toolset_manager::add_toolset(engine& e,
 void toolset_manager::init_toolset(engine& e,
                                    const std::string& toolset_name,
                                    const std::string& toolset_version,
-                                   const location_t* toolset_home) const
-{
-   toolsets_t::const_iterator i = toolsets_.find(toolset_name);
+                                   const location_t* toolset_home) const {
+   auto i = toolsets_.find(toolset_name);
    if (i == toolsets_.end())
       throw std::runtime_error("Toolset '" + toolset_name + "' is not registered");
 
    i->second->configure(e, toolset_version);
 }
 
-void toolset_manager::autoconfigure(engine& e) const
-{
-   for(toolsets_t::const_iterator i = toolsets_.begin(), last = toolsets_.end(); i != last; ++i)
+void toolset_manager::autoconfigure(engine& e) const {
+   for (auto& toolset : toolsets_)
       if (const feature_def* fd = e.feature_registry().find_def("toolset")) {
-         if (!fd->is_legal_value(i->first))
-            i->second->autoconfigure(e);
+         if (!fd->is_legal_value(toolset.first))
+            toolset.second->autoconfigure(e);
       }
 }
 
-toolset_manager::~toolset_manager()
-{
-
+toolset_manager::~toolset_manager(){
 }
 
 }

@@ -1,4 +1,3 @@
-#include <boost/bind.hpp>
 #include <boost/filesystem/convenience.hpp>
 #include <boost/make_unique.hpp>
 #include <hammer/core/toolsets/msvc_toolset.h>
@@ -28,7 +27,7 @@ using std::string;
 using std::unique_ptr;
 using namespace boost;
 
-namespace hammer{
+namespace hammer {
 
 namespace {
 
@@ -41,23 +40,38 @@ struct msvc_data {
    location_t resource_compiler_;
 };
 
-typedef boost::function<void(invocation_context& ctx,
-                             const parscore::identifier& version,
-                             const parscore::identifier* path_to_vc_folder)> rule_t;
 }
 
 msvc_toolset::msvc_toolset()
    : toolset("msvc",
              rule_manager::make_rule_declaration("use-toolset-msvc",
-                                                 rule_t{boost::bind(&msvc_toolset::use_toolset_rule, this, _1, _2,_3)},
+                                                 this, &msvc_toolset::use_toolset_rule,
                                                  {"version", "path-to-vc-dir"}))
 {
 }
 
+static
+YAML::Node
+make_toolset_info(const msvc_data& td) {
+   YAML::Node info;
+
+   info["setup-script"] = td.setup_script_.string();
+   info["compiler"] = td.compiler_.string();
+   info["linker"] = td.linker_.string();
+   info["librarian"] = td.librarian_.string();
+   info["manifest-tool"] = td.manifest_tool_.string();
+   info["resource-compiler"] = td.resource_compiler_.string();
+
+   return info;
+}
+
 void msvc_toolset::init_toolset(engine& e,
                                 const std::string& version_id,
-                                const location_t& toolset_home) const
-{
+                                const location_t& toolset_home) {
+   const feature_set& constraints = *e.feature_registry().make_set();
+   if (is_already_configured(version_id, constraints))
+      throw std::runtime_error("Version '" + version_id + "' already configured");
+
    feature_def& toolset_def = e.feature_registry().get_def("toolset");
    if (!toolset_def.is_legal_value(name()))
       toolset_def.extend_legal_values(name(), e.feature_registry().get_or_create_feature_value_ns("c/c++"));
@@ -404,6 +418,8 @@ void msvc_toolset::init_toolset(engine& e,
       unique_ptr<generator> g(new exe_and_shared_lib_generator(e, generator_prefix + ".linker.shared_lib", source, target, true, shared_lib_action, generator_condition, nullptr));
       e.generators().insert(std::move(g));
    }
+
+   register_configured(version_id, constraints, make_toolset_info(config_data));
 }
 
 static
@@ -420,26 +436,29 @@ known_versions_m(known_versions_v.begin(), known_versions_v.end());
 
 void msvc_toolset::use_toolset_rule(invocation_context& ctx,
                                     const parscore::identifier& version,
-                                    const parscore::identifier* path_to_vc_folder)
-{
+                                    const parscore::identifier* path_to_vc_folder) {
+   const auto sversion = version.to_string();
+   location_t toolset_home;
+
    engine& e = ctx.current_project_.get_engine();
-   if (path_to_vc_folder) {
-      init_toolset(e, version.to_string(), path_to_vc_folder->to_string());
-      return;
+
+   if (path_to_vc_folder)
+      toolset_home = path_to_vc_folder->to_string();
+   else {
+      auto i = known_versions_m.find(sversion);
+      if (i == known_versions_m.end()) {
+         ctx.diag_.error(version.start_loc(), "Don't know how to configure this version");
+         return;
+      }
+
+      toolset_home = i->second;
    }
 
-   auto i = known_versions_m.find(version.to_string());
-   if (i == known_versions_m.end()) {
-      ctx.diag_.error(version.start_loc(), "Don't know how to configure this version");
-      return;
-   }
-
-   init_toolset(e, i->first, i->second);
+   init_toolset(e, sversion, toolset_home);
 }
 
 void msvc_toolset::configure(engine& e,
-                             const std::string& version) const
-{
+                             const std::string& version) {
    auto i = known_versions_m.find(version);
    if (i == known_versions_m.end())
       throw std::runtime_error("[msvc_toolset] Don't know how to configure '" + version + "' version");
@@ -447,8 +466,7 @@ void msvc_toolset::configure(engine& e,
    init_toolset(e, i->first, i->second);
 }
 
-void msvc_toolset::autoconfigure(engine& e) const
-{
+void msvc_toolset::autoconfigure(engine& e) {
    for (const auto& v : known_versions_v) {
       if (exists(v.second))
          init_toolset(e, v.first, v.second);

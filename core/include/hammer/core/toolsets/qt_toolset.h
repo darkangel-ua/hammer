@@ -6,9 +6,9 @@ namespace hammer {
 class qt_toolset : public toolset {
 	public:
     	qt_toolset();
-    	void autoconfigure(engine& e) const override;
+    	void autoconfigure(engine& e) override;
 		void configure(engine& e,
-		               const std::string& version) const override;
+		               const std::string& version) override;
 
 	protected:
 		void use_toolset_rule(invocation_context& ctx,

@@ -26,6 +26,7 @@
 #include <hammer/core/rule_manager.h>
 #include <hammer/core/ast2objects.h>
 #include <hammer/core/warehouse_manager.h>
+#include <hammer/core/toolset.h>
 #include "wildcard.hpp"
 #include "builtin_rules.h"
 #include "builtin_features.h"
@@ -157,6 +158,9 @@ void load_hammer_script_impl(engine& e,
    } catch (const ast2objects_semantic_error&) {
       throw parsing_error(s.str());
    }
+
+   if (diag.error_count())
+      throw parsing_error(s.str());
 }
 
 struct parser_environment : sema::actions_impl::environment {

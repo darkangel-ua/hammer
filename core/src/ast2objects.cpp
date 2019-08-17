@@ -28,6 +28,27 @@ using boost::make_unique;
 
 namespace hammer {
 
+namespace {
+
+struct rule_source_location_guard {
+   rule_source_location_guard(invocation_context& ctx,
+                              const parscore::source_location& new_loc)
+      : ctx_(ctx),
+        saved_loc_(ctx.rule_location_)
+   {
+      ctx.rule_location_ = new_loc;
+   }
+
+   ~rule_source_location_guard() {
+      ctx_.rule_location_ = saved_loc_;
+   }
+
+   invocation_context& ctx_;
+   const parscore::source_location saved_loc_;
+};
+
+}
+
 // need this since feature::~feature is private
 template<>
 struct rule_manager_arg<feature> : public rule_manager_arg_base {
@@ -554,6 +575,7 @@ rule_invocation_impl(invocation_context& ctx,
                      const ast::rule_invocation& ri)
 {
    assert(ctx.rule_manager_.find(ri.name()) != ctx.rule_manager_.end());
+   rule_source_location_guard rslg(ctx, ri.name().start_loc());
    const rule_declaration& rd = ctx.rule_manager_.find(ri.name())->second;
    auto i_ri = ri.arguments().begin();
    // skipping first argument because it will always be context

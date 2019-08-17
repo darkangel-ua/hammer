@@ -325,7 +325,7 @@ template<typename Callback>
 void map_over_aliases(engine& e,
                       const project::aliases_t& aliases,
                       const std::string& prefix,
-                      Callback&& cb) {
+                      const Callback& cb) {
    for (auto& alias : aliases) {
       if (alias.is_transparent())
          map_over_aliases(e, e.load_project(alias.full_fs_path_).aliases(), prefix, cb);
@@ -369,7 +369,11 @@ resolve_project_query(engine& e,
 
    const boost::regex rquery{regexyfied_query};
    vector<reference_wrapper<const project>> result;
-   map_over_aliases(e, e.global_aliases(), {}, [&](const std::string& alias, const project& p) {
+   // FIXME:
+   // temporal hack to overcome old warehouse logic which allowed changing global aliases
+   // from within warehouse hamroot files
+   const auto global_aliases = e.global_aliases();
+   map_over_aliases(e, global_aliases, {}, [&](const std::string& alias, const project& p) {
       if (boost::regex_match(alias, rquery) && p.publishable())
          result.push_back(std::cref(p));
    });

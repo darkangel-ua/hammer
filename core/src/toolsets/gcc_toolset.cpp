@@ -1,3 +1,4 @@
+#include <boost/algorithm/string/replace.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/make_unique.hpp>
 #include <hammer/core/toolsets/gcc_toolset.h>
@@ -80,7 +81,7 @@ gcc_toolset::gcc_toolset()
    : toolset("gcc",
              rule_manager::make_rule_declaration("use-toolset-gcc",
                                                  this, &gcc_toolset::use_toolset_rule,
-                                                 {"version", "c++-compiler", "linker", "librarian", "c-flags", "cxx-flags", "link-flags", "constrains"}))
+                                                 {"version", "c++-compiler", "linker", "librarian", "c-flags", "cxx-flags", "link-flags", "constraints"}))
 {
 }
 
@@ -91,7 +92,7 @@ gcc_toolset::make_toolset_info(const toolset_data& td) {
       if (!fs || fs->empty())
          return YAML::Node();
 
-      return YAML::Node(dump_for_hash(*fs, true));
+      return YAML::Node(boost::replace_all_copy(dump_for_hash(*fs, true), "\n", " "));
    };
 
    info["constraints"] = fs2str(td.constraints_);
@@ -99,7 +100,7 @@ gcc_toolset::make_toolset_info(const toolset_data& td) {
    info["cxx-flags"] = fs2str(td.cxx_flags_);
    info["c-flags"] = fs2str(td.c_flags_);
    info["linker"] = td.linker_.string();
-   info["linker-flags"] = fs2str(td.link_flags_);
+   info["link-flags"] = fs2str(td.link_flags_);
    info["librarian"] = td.librarian_.string();
 
    return info;
@@ -114,10 +115,12 @@ void gcc_toolset::init_toolset(engine& e,
    if (!toolset_def.is_legal_value(name()))
       toolset_def.extend_legal_values(name(), e.feature_registry().get_or_create_feature_value_ns("c/c++"));
 
-   toolset_def.get_subfeature("version").extend_legal_values(name(), td.version_);
+   if (!toolset_def.get_subfeature("version").is_legal_value(name(), td.version_))
+      toolset_def.get_subfeature("version").extend_legal_values(name(), td.version_);
 
    feature_set* generator_condition = e.feature_registry().make_set();
    generator_condition->join("toolset", (name() + "-" + td.version_).c_str());
+   generator_condition->join(*td.constraints_);
 
    std::shared_ptr<product_argument_writer> obj_product(new product_argument_writer("obj_product", e.get_type_registry().get(types::OBJ)));
    std::shared_ptr<source_argument_writer> static_lib_sources(new source_argument_writer("static_lib_sources", e.get_type_registry().get(types::STATIC_LIB), true, source_argument_writer::FULL_PATH));
@@ -382,7 +385,7 @@ void gcc_toolset::use_toolset_rule(invocation_context& ctx,
 
    if (cxx_flags) {
       td.cxx_flags_ = fr.make_set();
-      td.cxx_flags_->join("cflags", cxx_flags->to_string().c_str());
+      td.cxx_flags_->join("cxxflags", cxx_flags->to_string().c_str());
    } else
       td.cxx_flags_ = nullptr;
 

@@ -1,16 +1,22 @@
 #pragma once
-#include <unordered_map>
-#include <hammer/core/generator.h>
+#include <vector>
+#include <memory>
+#include <hammer/core/build_node.h>
 
 namespace hammer {
 
 class basic_target;
 class main_target;
+class generator;
+class target_type;
 
 class generator_registry {
    public:
-      typedef std::unordered_map<std::string, std::unique_ptr<generator>> generators_t;
-      typedef std::vector<std::pair<const generator*, const target_type* /* type_to_construct */ > > viable_generators_t;
+      using generators_t = std::vector<std::unique_ptr<generator>>;
+      using viable_generators_t = std::vector<std::pair<const generator*, const target_type* /* type_to_construct */>>;
+
+      generator_registry();
+      ~generator_registry();
 
       void insert(std::unique_ptr<generator> g);
       build_nodes_t construct(const main_target* mt) const;
@@ -22,7 +28,6 @@ class generator_registry {
 
    private:
       generators_t generators_;
-
 
       bool transform_to_consumable(const generator& target_generator,
                                    const generator& current_generator,

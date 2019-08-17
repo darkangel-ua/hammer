@@ -1,9 +1,10 @@
-#include <hammer/core/generator_registry.h>
 #include <stdexcept>
+#include <boost/format.hpp>
+#include <hammer/core/generator_registry.h>
+#include <hammer/core/generator.h>
 #include <hammer/core/main_target.h>
 #include <hammer/core/basic_build_target.h>
 #include <hammer/core/target_type.h>
-#include <boost/format.hpp>
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature.h>
 #include <hammer/core/subfeature.h>
@@ -13,11 +14,12 @@ using namespace boost;
 
 namespace hammer {
 
-void generator_registry::insert(std::unique_ptr<generator> g)
-{
-   std::string g_name = g->name();
-   if (!generators_.emplace(g_name, std::move(g)).second)
-      throw std::runtime_error("Generator '" + g_name + "' already registered.");
+generator_registry::generator_registry() = default;
+
+generator_registry::~generator_registry() = default;
+
+void generator_registry::insert(std::unique_ptr<generator> g) {
+   generators_.push_back(std::move(g));
 }
 
 // build request: <toolset>gcc
@@ -92,8 +94,8 @@ generator_registry::find_viable_generators(const target_type& t,
 {
    viable_generators_t result;
    int rank = 0; // rank show as the weight of generator (the more rank the more generator suitable for generation this type of targets)
-   for (auto& ng : generators_) {
-      const generator& g = *ng.second;
+   for (auto& pg : generators_) {
+      const generator& g = *pg;
       if ((g.is_composite() && !allow_composite) ||
           (!g.is_composite() && allow_composite) ||
           &g == excluded)

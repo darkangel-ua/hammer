@@ -289,10 +289,8 @@ void use_project_rule(invocation_context& ctx,
       else {
          const ast::target_ref* tr = ast::as<ast::target_ref>(alias);
          // FIXME: we need a way to move this check upper, to ast processing
-         if (tr->target_path()->root_name().valid() && ctx.current_project_.is_root()) {
-            ctx.diag_.error(alias->start_loc(), "Argument 'alias': Global aliases can be declared only in homroot file");
-            throw std::runtime_error("Sematic error");
-         }
+         if (tr->target_path()->root_name().valid() && ctx.current_project_.is_root())
+            throw ast2objects_semantic_error(alias->start_loc(), "Argument 'alias': Global aliases can be declared only in homroot file");
 
          project_alias = location_t{tr->target_path()->to_string()};
       }
@@ -600,19 +598,16 @@ void copy_rule(target_invocation_context& ctx,
 
    for (const parscore::identifier& id : ast_types_to_copy) {
       const target_type* type = tr.find(type_tag(id.to_string()));
-      if (!type) {
-         ctx.diag_.error(id.start_loc(), "Argument 'types': Unknown type '%s'") << id;
-         throw ast2objects_semantic_error();
-      } else
+      if (!type)
+         throw ast2objects_semantic_error(id.start_loc(), "Argument 'types': Unknown type '" + id.to_string() + "'");
+      else
          types_to_copy.push_back(type);
    }
 
    bool recursive = false;
    if (ast_recursive) {
-      if (ast_recursive->to_string() != "true" && ast_recursive->to_string() != "false") {
-         ctx.diag_.error(ast_recursive->start_loc(), "Argument 'recursive': Use 'true' or 'false' constants");
-         throw ast2objects_semantic_error();
-      }
+      if (ast_recursive->to_string() != "true" && ast_recursive->to_string() != "false")
+         throw ast2objects_semantic_error(ast_recursive->start_loc(), "Argument 'recursive': Use 'true' or 'false' constants");
 
       recursive = (ast_recursive->to_string() == "true");
    }
@@ -679,14 +674,10 @@ make_testing_run_args(target_invocation_context& ctx,
       else if (const ast::path* p = ast::as<ast::path>(e)) {
          if (!p->has_wildcard())
             result.push_back(fs::path(p->to_string()));
-         else {
-            ctx.diag_.error(p->start_loc(), "Paths with wildcard elements are not supported here");
-            throw ast2objects_semantic_error();
-         }
-      } else {
-         ctx.diag_.error(e->start_loc(), "Unexpected type");
-         throw ast2objects_semantic_error();
-      }
+         else
+            throw ast2objects_semantic_error(p->start_loc(), "Paths with wildcard elements are not supported here");
+      } else
+         throw ast2objects_semantic_error(e->start_loc(), "Unexpected type");
    };
 
    if (const ast::list_of* l = ast::as<ast::list_of>(ast_args)) {

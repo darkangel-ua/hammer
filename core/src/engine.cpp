@@ -155,12 +155,13 @@ void load_hammer_script_impl(engine& e,
 
    try {
       ast2objects(invc_ctx, ast);
-   } catch (const ast2objects_semantic_error&) {
-      throw parsing_error(s.str());
-   }
 
-   if (diag.error_count())
-      throw parsing_error(s.str());
+      // we shouldn't report error through diag - only exceptions allowed
+      assert(diag.error_count() == 0);
+   } catch (const ast2objects_semantic_error& e) {
+      diag.error(e.where_, e.what());
+      throw parsing_error{s.str()};
+   }
 }
 
 struct parser_environment : sema::actions_impl::environment {
@@ -214,7 +215,11 @@ engine::load_project(const location_t& project_path,
 
    try {
       ast2objects(invc_ctx, *ast);
-   } catch (const ast2objects_semantic_error&) {
+
+      // we shouldn't report error through diag - only exceptions allowed
+      assert(diag.error_count() == 0);
+   } catch (const ast2objects_semantic_error& e) {
+      diag.error(e.where_, e.what());
       throw parsing_error{s.str()};
    }
 

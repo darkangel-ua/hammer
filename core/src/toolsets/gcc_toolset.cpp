@@ -19,8 +19,7 @@
 #include <hammer/core/unix_libraries_argument_writer.h>
 #include <hammer/core/testing_generators.h>
 #include <hammer/core/rule_manager.h>
-#include <hammer/core/diagnostic.h>
-#include <hammer/core/rule_argument_types.h>
+#include <hammer/core/ast2objects.h>
 
 using namespace boost;
 namespace fs = boost::filesystem;
@@ -331,25 +330,17 @@ void gcc_toolset::use_toolset_rule(invocation_context& ctx,
                                    const parscore::identifier* cxx_flags,
                                    const parscore::identifier* link_flags,
                                    const feature_set* constraints) {
-   if (!version && (path_to_cxx_compiler || path_to_linker || path_to_ar)) {
-      ctx.diag_.error(ctx.rule_location_, "Toolset version expected when you specify path to compiler/linker/...");
-      return;
-   }
+   if (!version && (path_to_cxx_compiler || path_to_linker || path_to_ar))
+      throw ast2objects_semantic_error(ctx.rule_location_, "Toolset version expected when you specify path to compiler/linker/...");
 
-   if (path_to_cxx_compiler && !path_to_cxx_compiler->has_root_path()) {
-      ctx.diag_.error(ctx.rule_location_, "Compiler path should be absolute");
-      return;
-   }
+   if (path_to_cxx_compiler && !path_to_cxx_compiler->has_root_path())
+      throw ast2objects_semantic_error(ctx.rule_location_, "Compiler path should be absolute");
 
-   if (path_to_linker && !path_to_linker->has_root_path()) {
-      ctx.diag_.error(ctx.rule_location_, "Linker path should be absolute");
-      return;
-   }
+   if (path_to_linker && !path_to_linker->has_root_path())
+      throw ast2objects_semantic_error(ctx.rule_location_, "Linker path should be absolute");
 
-   if (path_to_ar && !path_to_ar->has_root_path()) {
-      ctx.diag_.error(ctx.rule_location_, "Librarian path should be absolute");
-      return;
-   }
+   if (path_to_ar && !path_to_ar->has_root_path())
+      throw ast2objects_semantic_error(ctx.rule_location_, "Librarian path should be absolute");
 
    toolset_data td;
 
@@ -400,10 +391,8 @@ void gcc_toolset::use_toolset_rule(invocation_context& ctx,
    else
       td.constraints_ = fr.make_set();
 
-   if (is_already_configured(td.version_, *td.constraints_)) {
-      ctx.diag_.error(ctx.rule_location_, "Same version with similar constraints already configured");
-      return;
-   }
+   if (is_already_configured(td.version_, *td.constraints_))
+      throw ast2objects_semantic_error(ctx.rule_location_, "Same version with similar constraints already configured");
 
    init_toolset(ctx.current_project_.get_engine(), td);
 }

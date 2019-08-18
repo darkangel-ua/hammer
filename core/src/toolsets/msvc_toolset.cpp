@@ -20,8 +20,8 @@
 #include <hammer/core/pch_argument_writer.h>
 #include <hammer/core/output_dir_argument_writer.h>
 #include <hammer/core/batched_cmdline_action.h>
-#include <hammer/core/diagnostic.h>
 #include <hammer/core/testing_generators.h>
+#include <hammer/core/ast2objects.h>
 
 using std::string;
 using std::unique_ptr;
@@ -446,10 +446,8 @@ void msvc_toolset::use_toolset_rule(invocation_context& ctx,
       toolset_home = path_to_vc_folder->to_string();
    else {
       auto i = known_versions_m.find(sversion);
-      if (i == known_versions_m.end()) {
-         ctx.diag_.error(version.start_loc(), "Don't know how to configure this version");
-         return;
-      }
+      if (i == known_versions_m.end())
+         throw ast2objects_semantic_error(version.start_loc(), "Don't know how to configure this version");
 
       toolset_home = i->second;
    }

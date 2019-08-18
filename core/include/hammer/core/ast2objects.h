@@ -18,7 +18,17 @@ class invocation_context;
 
 class ast2objects_semantic_error : public std::exception {
 	public:
-		ast2objects_semantic_error() {}
+		ast2objects_semantic_error(const parscore::source_location& where,
+                                 const std::string what)
+         : where_(where),
+           what_(what)
+      {}
+
+      const char*
+      what() const noexcept override { return what_.c_str(); }
+
+      const parscore::source_location where_;
+      const std::string what_;
 };
 
 void ast2objects(invocation_context& ctx,

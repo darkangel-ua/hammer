@@ -24,9 +24,8 @@
 #include <hammer/core/fs_helpers.h>
 #include <hammer/core/feature_set.h>
 #include <hammer/core/output_location_strategy.h>
-#include <hammer/core/rule_argument_types.h>
+#include <hammer/core/ast2objects.h>
 #include <hammer/core/generated_build_target.h>
-#include <hammer/core/diagnostic.h>
 
 using std::string;
 using std::unique_ptr;
@@ -460,10 +459,8 @@ void qt_toolset::use_toolset_rule(invocation_context& ctx,
    engine& e = ctx.current_project_.get_engine();
    const feature_set& constraints = *e.feature_registry().make_set();
    const string s_version=version.to_string();
-   if (is_already_configured(s_version, constraints)) {
-      ctx.diag_.error(ctx.rule_location_, "Same version already configured");
-      return;
-   }
+   if (is_already_configured(s_version, constraints))
+      throw ast2objects_semantic_error(ctx.rule_location_, "Same version already configured");
 
    feature_def& toolset_def = e.feature_registry().get_def("toolset");
    if (!toolset_def.is_legal_value("qt")) {

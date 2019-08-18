@@ -1,0 +1,2 @@
+use-project location = ./build : match = exact ;
+use-project test : ./test/build ;

@@ -1,8 +1,12 @@
 feature all-static : on : propagated composite no-defaults ;
 feature.compose <all-static>on : <link>static <runtime-link>static ;
 
+# we need this proxy target because local feature <all-static>
+# can be resolved only in current project context
+local alias proxy-build : sources = ../build ;
+
 copy install 
-   : sources = ../build/<all-static>on
+   : sources = proxy-build/<all-static>on
    : destination = ./
    : types = EXE
    ;

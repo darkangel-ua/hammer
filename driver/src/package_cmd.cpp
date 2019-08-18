@@ -1,5 +1,6 @@
 #include <iostream>
 #include <iomanip>
+#include <functional>
 #include <boost/program_options.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <hammer/core/engine.h>
@@ -86,7 +87,7 @@ int handle_publish_cmd(engine& e,
    cout << endl;
 
    for (auto& p : projects_to_publish) {
-      cout << "Publishing project at '" << p.get().location().string() << "' ... " << flush;
+      cout << "Publishing project at '" << p.get().location().string() << "' into warehouse '" << target_warehouse.id_ << "' ... " << flush;
       target_warehouse.add_to_packages(p.get());
       cout << "Done" << endl;
    }
@@ -137,6 +138,47 @@ get_warehouse(engine& e,
    }
 }
 
+std::vector<std::reference_wrapper<warehouse>>
+get_warehouses(engine& e,
+               const std::string& warehouse_id) {
+   if (warehouse_id.empty()) {
+      std::vector<std::reference_wrapper<warehouse>> result;
+      for (auto& wp : e.warehouse_manager())
+         result.push_back(*wp.second);
+
+      return result;
+   } else {
+      auto i = e.warehouse_manager().find(warehouse_id);
+      if (i == e.warehouse_manager().end())
+         throw std::runtime_error("Warehouse '" + warehouse_id + "' not found!");
+
+      return {1, *i->second};
+   }
+}
+
+void update(engine& e,
+            std::ostream& os) {
+   auto warehouses = get_warehouses(e, warehouse_options.warehouse_id_);
+   if (warehouses.empty()) {
+      os << "Nothing to update! Looks like no warehouses were configured\n";
+      return;
+   }
+
+   os << "Updating warehouses:\n" << std::endl;
+
+   for (warehouse& w : warehouses) {
+      os << w.id_ << " ... " << std::flush;
+      try {
+         w.update();
+         os << "Done" << std::endl;
+      } catch (const std::exception& e) {
+         os << "Failed: " << e.what() << std::endl;
+      }
+   }
+
+   os << std::endl;
+}
+
 }
 
 int handle_package_cmd(std::vector<std::string> args,
@@ -154,7 +196,7 @@ int handle_package_cmd(std::vector<std::string> args,
 
    if (cmd == "update") {
       parse_options(args);
-      get_warehouse(*engine, warehouse_options.warehouse_id_).update();
+      update(*engine, std::cout);
    } else if (cmd == "refresh") {
       parse_options(args);
       get_warehouse(*engine, warehouse_options.warehouse_id_).update_all_packages(*engine);

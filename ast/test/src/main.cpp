@@ -413,7 +413,7 @@ void test_function(const fs::path& hamfile)
    ast::context ctx;
    sema_env env;
    sema::actions_impl actions(ctx, env, rule_manager, diag);
-   ast_hamfile_ptr ast_top = parse_hammer_script(hamfile, actions);
+   ast_hamfile_ptr ast_top = parse_hammer_script(hamfile, actions, diag);
    
    BOOST_REQUIRE(ast_top);
 

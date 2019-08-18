@@ -178,7 +178,7 @@ void engine::load_hammer_script_(const location_t& filepath) {
    ast::context ast_ctx;
    parser_environment env{global_project_->feature_registry()};
    sema::actions_impl actions{ast_ctx, env, *rule_manager_, diag};
-   ast_hamfile_ptr ast = parse_hammer_script(filepath, actions);
+   ast_hamfile_ptr ast = parse_hammer_script(filepath, actions, diag);
 
    load_hammer_script_impl(*this, s, diag, *global_project_, *ast);
 }
@@ -190,7 +190,7 @@ void engine::load_hammer_script(const std::string& script_body,
    ast::context ast_ctx;
    parser_environment env{global_project_->feature_registry()};
    sema::actions_impl actions{ast_ctx, env, *rule_manager_, diag};
-   ast_hamfile_ptr ast = parse_hammer_script(script_body, script_name, actions);
+   ast_hamfile_ptr ast = parse_hammer_script(script_body, script_name, actions, diag);
 
    load_hammer_script_impl(*this, s, diag, *global_project_, *ast);
 }
@@ -205,7 +205,7 @@ engine::load_project(const location_t& project_path,
    ast::context ast_ctx;
    parser_environment env{static_cast<const project&>(*loaded_project).feature_registry()};
    sema::actions_impl actions{ast_ctx, env, *rule_manager_, diag};
-   ast_hamfile_ptr ast = parse_hammer_script(project_path, actions);
+   ast_hamfile_ptr ast = parse_hammer_script(project_path, actions, diag);
 
    if (diag.error_count())
       throw parsing_error{s.str()};

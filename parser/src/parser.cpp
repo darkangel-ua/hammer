@@ -1,10 +1,13 @@
 #include <boost/filesystem/operations.hpp>
+
 #include <hammer/parser/parser.h>
+#include <hammer/ast/context.h>
+#include <hammer/ast/hamfile.h>
+#include <hammer/core/diagnostic.h>
+
 #include "hammer_v2Lexer.h"
 #include "hammer_v2Parser.h"
 #include "hammer_sema_v2.h"
-#include <hammer/ast/context.h>
-#include <hammer/ast/hamfile.h>
 
 namespace hammer {
 
@@ -72,11 +75,32 @@ createTokenFromToken(pANTLR3_BASE_TREE_ADAPTOR adaptor,
 }
 
 static
+void displayRecognitionError(struct ANTLR3_BASE_RECOGNIZER_struct* recognizer,
+                             pANTLR3_UINT8* tokenNames) {
+   pANTLR3_LEXER lexer = (pANTLR3_LEXER)(recognizer->super);
+   diagnostic& diag = *static_cast<diagnostic*>(lexer->super);
+
+   pANTLR3_EXCEPTION	ex = lexer->rec->state->exception;
+
+   // dirty hack to introduce fake token so diagnostic can write proper message
+   pANTLR3_COMMON_TOKEN errorToken = lexer->rec->state->tokFactory->newToken(lexer->rec->state->tokFactory);
+   errorToken->setLine(errorToken, ex->line);
+   errorToken->setCharPositionInLine(errorToken, ex->charPositionInLine);
+   errorToken->lineStart = lexer->input->currentLine;
+
+   diag.error(parscore::source_location(errorToken), "Unexpected symbol");
+}
+
+static
 ast_hamfile_ptr
 parse(std::unique_ptr<parser_context> ctx,
-      sema::actions& actions)
+      sema::actions& actions,
+      diagnostic& diag)
 {
    ctx->lexer_ = hammer_v2LexerNew(ctx->input_);
+   ctx->lexer_->pLexer->rec->displayRecognitionError = displayRecognitionError;
+   ctx->lexer_->pLexer->super = &diag;
+
    ctx->tstream_ = antlr3CommonTokenStreamSourceNew(ANTLR3_SIZE_HINT, TOKENSOURCE(ctx->lexer_));
    ctx->parser_ = hammer_v2ParserNew(ctx->tstream_);
    ctx->parser_->adaptor->createTokenFromToken = createTokenFromToken;
@@ -105,26 +129,26 @@ parse(std::unique_ptr<parser_context> ctx,
 
 ast_hamfile_ptr
 parse_hammer_script(const boost::filesystem::path& hamfile,
-                    sema::actions& actions)
-{
+                    sema::actions& actions,
+                    diagnostic& diag) {
    if (!exists(hamfile))
       throw std::runtime_error("Path does not exists '" + hamfile.string() + "'");
 
    std::unique_ptr<parser_context> ctx(new parser_context);
    ctx->input_ = antlr3AsciiFileStreamNew((pANTLR3_UINT8)hamfile.string().c_str());
 
-   return parse(std::move(ctx), actions);
+   return parse(std::move(ctx), actions, diag);
 }
 
 ast_hamfile_ptr
 parse_hammer_script(const std::string content,
                     const std::string content_name,
-                    sema::actions& actions)
-{
+                    sema::actions& actions,
+                    diagnostic& diag) {
    std::unique_ptr<parser_context> ctx(new parser_context);
    ctx->input_ = antlr3NewAsciiStringCopyStream((pANTLR3_UINT8)content.c_str(), content.size(), (pANTLR3_UINT8)content_name.c_str());
 
-   return parse(std::move(ctx), actions);
+   return parse(std::move(ctx), actions, diag);
 }
 
 }

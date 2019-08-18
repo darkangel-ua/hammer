@@ -7,9 +7,6 @@ namespace hammer { namespace ast {
 class expression : public node {
    public:
       virtual parscore::source_location start_loc() const = 0;
-
-   private:
-      parscore::source_location loc_;
 };
 
 class error_expression : public expression {

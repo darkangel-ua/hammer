@@ -33,9 +33,12 @@ const scanner*
 scanner_manager::find(const target_type& t) const
 {
    impl_t::scanners_t::const_iterator i = impl_->scanners_.find(&t);
-   if (i == impl_->scanners_.end())
-      return nullptr;
-   else
+   if (i == impl_->scanners_.end()) {
+      if (t.base())
+         return find(*t.base());
+      else
+         return nullptr;
+   } else
       return i->second.get();
 }
 

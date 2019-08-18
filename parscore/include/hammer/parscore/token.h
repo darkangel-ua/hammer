@@ -12,7 +12,7 @@ class token {
       token(source_location lok,
             unsigned int length)
          : loc_(lok),
-           v_(NULL),
+           v_(nullptr),
            length_(length),
            no_loc_(false)
       {}

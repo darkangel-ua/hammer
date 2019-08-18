@@ -630,8 +630,18 @@ loaded_projects::select_best_alternative(const build_request& build_request) con
    }
 
    if (result.empty()) {
-      throw std::runtime_error("Can't select best alternative - no one founded\n"
-                               "Build request: " + build_request.string());
+      stringstream s;
+      s << "Can't select best alternative - no one founded";
+      if (!build_request.resolved_completely())
+         s << " and Build request not completely resolved.\n";
+      else
+         s << ".\n";
+      s << "Projects to search are:\n";
+      for (const project* p : projects_)
+         s << "   '" << p->location().string() << "'\n";
+      s << "Build request:\n   " << build_request.string();
+
+      throw std::runtime_error(s.str());
    }
 
    // Check for targets with same name. They already have same symbolic names so we should check names.
@@ -669,11 +679,15 @@ loaded_projects::select_best_alternative(const std::string& target_name,
 
    if (result.empty()) {
       stringstream s;
-      s << "Can't select best alternative for target '"+ target_name + "' - no one founded. \n"
-           "Projects to search are:\n";
+      s << "Can't select best alternative for target '"+ target_name + "' - no one founded";
+      if (!build_request.resolved_completely())
+         s << " and Build request not completely resolved.\n";
+      else
+         s << ".\n";
+      s << "Projects to search are:\n";
       for (const project* p : projects_)
-         s << "'" << p->location().string() << "'\n";
-      s << "Build request: " << build_request.string();
+         s << "   '" << p->location().string() << "'\n";
+      s << "\nBuild request:\n   " << build_request.string();
 
       throw std::runtime_error{s.str()};
    }

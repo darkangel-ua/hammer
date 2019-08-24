@@ -1,0 +1,7 @@
+test [ features = <foo>off; ] {
+    main.cpp {}
+    lib1 [ features = <foo>off; ] { 
+        lib1.cpp {}
+    }
+}
+

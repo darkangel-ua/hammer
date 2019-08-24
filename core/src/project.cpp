@@ -127,6 +127,18 @@ void project::dependencies(dependencies_t&& v) {
       dependencies_ = std::move(v);
 }
 
+void project::default_build(const feature_set& v) {
+   if (parent_) {
+      if (parent_->default_build())
+         default_build_ = parent_->default_build()->clone();
+      else
+         default_build_ = get_engine().feature_registry().make_set();
+   } else if (!default_build_)
+      default_build_ = get_engine().feature_registry().make_set();
+
+   default_build_->join(v);
+}
+
 string
 find_version(engine& e,
              const requirements_decl& meta_requirements) {

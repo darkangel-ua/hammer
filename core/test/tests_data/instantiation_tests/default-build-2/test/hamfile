@@ -1,0 +1,12 @@
+project test 
+   : default-build = <foo>off
+   ;
+
+exe test 
+   : sources = main.cpp lib1 
+   ;
+
+local
+lib lib1 
+   : sources = lib1.cpp
+   ;

@@ -58,6 +58,10 @@ class basic_meta_target {
       void usage_requirements(const requirements_decl& r) { usage_requirements_ = r; }
       void requirements(const requirements_decl& r) { requirements_ = r; }
 
+      void default_build(const feature_set& v);
+      const feature_set*
+      default_build() const { return default_build_; }
+
       virtual
       const location_t&
       location() const;
@@ -124,6 +128,7 @@ class basic_meta_target {
       sources_decl sources_;
       requirements_decl requirements_;
       requirements_decl usage_requirements_;
+      feature_set* default_build_;
       bool is_explicit_;
       bool is_local_ = false;
       mutable instantiation_cache_t instantiation_cache_;

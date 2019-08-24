@@ -1,0 +1,10 @@
+test {
+    main.cpp {}
+    lib1 [ features = <foo>on; ] { 
+        lib1.cpp {}
+    }
+    lib2 [ features = <foo>off; ] {
+        lib2.cpp {}
+    }
+}
+

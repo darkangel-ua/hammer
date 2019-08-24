@@ -114,7 +114,8 @@ void project_rule(invocation_context& ctx,
                   const ast::expression* id,
                   requirements_decl* requirements,
                   usage_requirements_decl* usage_requirements,
-                  const one_or_list<details::project_dependency>* dependencies)
+                  const one_or_list<details::project_dependency>* dependencies,
+                  const feature_set* default_build)
 {
    process_project_id(ctx, id);
 
@@ -133,6 +134,9 @@ void project_rule(invocation_context& ctx,
       }
       ctx.current_project_.dependencies(std::move(deps));
    }
+
+   if (default_build)
+      ctx.current_project_.default_build(*default_build);
 }
 
 static
@@ -149,6 +153,8 @@ void exe_rule(target_invocation_context& ctx,
                                                           usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl(),
                                                           ctx.current_project_.get_engine().get_type_registry().get(types::EXE)));
    mt->sources(sources);
+   if (default_build)
+      mt->default_build(*default_build);
    mt->set_local(ctx.local_);
    mt->set_explicit(ctx.explicit_);
 
@@ -186,6 +192,8 @@ void lib_rule(target_invocation_context& ctx,
                                                         requirements ? *requirements : requirements_decl(),
                                                         usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl()));
    mt->sources(sources);
+   if (default_build)
+      mt->default_build(*default_build);
    mt->set_local(ctx.local_);
    mt->set_explicit(ctx.explicit_);
 
@@ -207,6 +215,8 @@ void header_lib_rule(target_invocation_context& ctx,
                                                                usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl()));
    if (sources)
       mt->sources(*sources);
+   if (default_build)
+      mt->default_build(*default_build);
 
    mt->set_local(ctx.local_);
    mt->set_explicit(ctx.explicit_);
@@ -635,6 +645,8 @@ void obj_rule(target_invocation_context& ctx,
                                                         requirements ? *requirements : requirements_decl(),
                                                         usage_requirements ? static_cast<const requirements_decl&>(*usage_requirements) : requirements_decl()));
    mt->sources(sources);
+   if (default_build)
+      mt->default_build(*default_build);
    mt->set_local(ctx.local_);
    mt->set_explicit(ctx.explicit_);
    ctx.current_project_.add_target(move(mt));
@@ -1089,7 +1101,7 @@ c_as_cpp_rule(invocation_context& ctx,
 
 void install_builtin_rules(rule_manager& rm)
 {
-   rm.add_rule("project", project_rule, {{"id", project_id_validator}, "requirements", "usage-requirements", "dependencies"});
+   rm.add_rule("project", project_rule, {{"id", project_id_validator}, "requirements", "usage-requirements", "dependencies", "default-build"});
    rm.add_rule("use-project", use_project_rule, {{"alias", use_project_alias_validator}, "location", "requirements", {"match", use_project_match_validator}});
    rm.add_rule("feature", feature_rule, {"name", "values", {"attributes", feature_attributes_validator}});
    rm.add_rule("feature.compose", feature_compose_rule, {"feature", "components"});

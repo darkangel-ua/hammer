@@ -660,11 +660,12 @@ void ast2objects(invocation_context& ctx,
       process_rule_invocation(ctx, *p);
    else {
       rule_manager_arg_ptr id_arg(new rule_manager_arg<ast::expression>(empty_project_id));
-      rule_manager_arg_ptr requirements_arg, usage_requirements_arg, dependencies;
+      rule_manager_arg_ptr requirements_arg, usage_requirements_arg, dependencies, default_build;
       args.push_back(move(id_arg));
       args.push_back(move(requirements_arg));
       args.push_back(move(usage_requirements_arg));
       args.push_back(move(dependencies));
+      args.push_back(move(default_build));
       project_rd.invoke(args);
    }
 

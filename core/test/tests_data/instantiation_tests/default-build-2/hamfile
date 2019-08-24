@@ -1,0 +1,8 @@
+# basic test that we are correctly propagate project default-build
+
+feature foo 
+   : values = on off
+   : attributes = optional 
+   ;
+
+alias test : sources = ./test//test ;

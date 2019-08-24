@@ -1,0 +1,23 @@
+# basic test that we are correctly handle default-build
+
+feature foo 
+   : values = on off
+   : attributes = optional 
+   ;
+
+exe test 
+   : sources = 
+      main.cpp 
+      lib1          # no <foo> in build request leads to <foo> in target properties
+      lib2/<foo>off # <foo>off should override <foo>on from default build
+   ;
+
+lib lib1 
+   : sources = lib1.cpp
+   : default-build = <foo>on
+   ;
+
+lib lib2
+   : sources = lib2.cpp
+   : default-build = <foo>on
+   ;

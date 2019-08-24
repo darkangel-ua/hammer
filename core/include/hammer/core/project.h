@@ -106,6 +106,11 @@ class project : public boost::noncopyable {
       void dependencies(const dependencies_t& v);
       void dependencies(dependencies_t&& v);
 
+      void default_build(const feature_set& v);
+
+      const feature_set*
+      default_build() const { return default_build_; }
+
       bool publishable() const;
 
       std::string
@@ -195,6 +200,8 @@ class project : public boost::noncopyable {
       requirements_decl local_usage_requirements_;
       // this is merged parent + local usage requirements
       requirements_decl usage_requirements_;
+      // this is merged parent + local default build
+      feature_set* default_build_ = nullptr;
       const location_t location_;
       targets_t targets_;
       location_t intermediate_dir_;

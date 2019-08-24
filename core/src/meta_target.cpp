@@ -176,6 +176,16 @@ void remove_duplicates(deduplicator_t& deduplicator,
       }
    }
    
+   static
+   void apply_default_build(feature_set& requirements,
+                            const feature_set& build_request,
+                            const feature_set& default_build) {
+      for (auto* df : default_build ) {
+         if (build_request.find(df->name()) == build_request.end())
+            requirements.join(df);
+      }
+   }
+
    void meta_target::instantiate_impl(instantiation_context& ctx,
                                       const main_target* owner,
                                       sources_decl sources,
@@ -187,6 +197,8 @@ void remove_duplicates(deduplicator_t& deduplicator,
       feature_set* mt_fs = build_request.clone();
       feature_set* public_requirements = get_engine().feature_registry().make_set();
       requirements().eval(build_request, mt_fs, public_requirements);
+      if (default_build())
+         apply_default_build(*mt_fs, build_request, *default_build());
       apply_project_dependencies(*public_requirements, *this);
       usage_requirements->join(*public_requirements);
 

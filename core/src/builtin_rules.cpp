@@ -316,9 +316,9 @@ static
 boost::unordered_set<std::string>
 valid_feature_attributes = {
    "propagated", "composite", "free", "path",
-  "incidental", "optional", "symmetric",
-  "dependency", "no-defaults", "no-checks",
-  "generated"
+   "incidental", "optional",
+   "dependency", "no-defaults", "no-checks",
+   "generated"
 };
 
 // FIXME: we need to create ast::error_expression instead of just diagnose errors
@@ -379,10 +379,6 @@ resolve_attributes(const one_or_list<parscore::identifier>* attributes)
    i = find(attributes->begin(), attributes->end(), "optional");
    if (i != attributes->end())
       result.optional = true;
-
-   i = find(attributes->begin(), attributes->end(), "symmetric");
-   if (i != attributes->end())
-      result.symmetric = true;
 
    i = find(attributes->begin(), attributes->end(), "dependency");
    if (i != attributes->end())

@@ -119,14 +119,6 @@ void feature_set::join_impl(feature_set* lhs, const feature_set& rhs) const
       lhs->join(*i);
 }
 
-feature_set* feature_set::join(const feature_set& rhs) const
-{
-   feature_set* result = owner().make_set();
-   result->features_ = features_;
-   join_impl(result, rhs);
-   return result;
-}
-
 feature_set& feature_set::join(const feature_set& rhs)
 {
    join_impl(this, rhs);
@@ -290,11 +282,6 @@ bool feature_set::compatible_with(const feature_set& rhs) const
 void feature_set::clear()
 {
    features_.clear();
-}
-
-void feature_set::swap(feature_set& fs) {
-   std::swap(fr_, fs.fr_);
-   features_.swap(fs.features_);
 }
 
 bool feature_set::contains(const feature_set& rhs) const

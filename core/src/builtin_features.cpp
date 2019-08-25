@@ -41,6 +41,11 @@ feature pic : on off ;
 # targets with this feature will not participate in alternatives selection
 feature build : no : optional ;
 
+feature cxxstd
+    : values = 98 03 0x 11 1y 14 1z 17 2a latest
+    : attributes = ordered optional
+    ;
+
 feature warnings :
   on         # enable default/"reasonable" warning level for the tool
   all        # enable all possible warnings issued by the tool

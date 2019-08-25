@@ -31,7 +31,7 @@ feature_set& feature_set::join(const char* name, const char* value)
 }
 
 feature_set&
-feature_set::join(feature* f)
+feature_set::join(feature_ref f)
 {
    if (!f->attributes().free) {
       iterator i = find(f->name(), f->get_value_ns());
@@ -94,11 +94,12 @@ feature_set::iterator feature_set::find(iterator from, const char* name)
    return deconstify(static_cast<const feature_set*>(this)->find(from, name));
 }
 
-const feature* feature_set::find(const char* name, const char* value) const
-{
-   for(features_t::const_iterator i = features_.begin(), last = features_.end(); i != last; ++i)
+const feature*
+feature_set::find(const char* name,
+                  const char* value) const {
+   for (features_t::const_iterator i = features_.begin(), last = features_.end(); i != last; ++i)
       if ((**i).definition().name() == name && (**i).value() == value)
-         return *i;
+         return &i->get();
 
    return 0;
 }
@@ -107,7 +108,7 @@ feature_set::iterator
 feature_set::find(const std::string& name,
                   const feature_value_ns_ptr& ns)
 {
-   return find_if(features_.begin(), features_.end(), [&](const feature* v) {
+   return find_if(features_.begin(), features_.end(), [&] (feature_ref v) {
       return v->name() == name && v->get_value_ns() == ns;
    });
 }
@@ -137,7 +138,7 @@ void feature_set::replace(iterator where,
    assert((**where).definition().attributes().free &&
           (**where).definition() == new_value->definition());
 
-   *where = const_cast<feature*>(&new_value.get());
+   *where = new_value;
 }
 
 feature_set* feature_set::clone() const
@@ -333,8 +334,9 @@ static bool subf_less_by_name(const subfeature* lhs, const subfeature* rhs)
    return lhs->name() < rhs->name();
 }
 
-static bool less_by_name(const feature* lhs, const feature* rhs)
-{
+static
+bool less_by_name(feature_ref lhs,
+                  feature_ref rhs) {
    return lhs->name() < rhs->name();
 }
 
@@ -406,32 +408,30 @@ void dump_for_hash(std::ostream& s, const feature_set& fs, bool dump_all)
       return;
    }
 
-   typedef vector<const feature*> features_t;
+   typedef vector<feature_ref> features_t;
    features_t features;
-   for(feature_set::const_iterator i = fs.begin(), last = fs.end(); i != last; ++i)
-   {
+   for (auto& i : fs) {
       if (dump_all || 
-          !((**i).attributes().free || 
-            (**i).attributes().incidental ||
-            (**i).attributes().path || 
-            (**i).attributes().dependency ||
-            (**i).attributes().generated))
+          !(i->attributes().free ||
+            i->attributes().incidental ||
+            i->attributes().path ||
+            i->attributes().dependency ||
+            i->attributes().generated))
       {
-         features.push_back(*i);
+         features.push_back(i);
       }
    }
    
-   std::stable_sort(features.begin(), features.end(), &less_by_name);
+   std::stable_sort(features.begin(), features.end(), less_by_name);
 
    bool first = true;
-   for(features_t::const_iterator i = features.begin(), last = features.end(); i != last; ++i)
-   {
+   for (auto& i : features) {
       if (!first)
          s << (dump_all ? '\n' : ' ');
       else
          first = false;
 
-      dump_for_hash(s, **i);
+      dump_for_hash(s, i);
    }
 }
 
@@ -444,9 +444,8 @@ std::string dump_for_hash(const feature_set& fs, bool dump_all)
 
 void feature_set::erase_all(const std::string& feature_name)
 {
-   for(features_t::iterator i = features_.begin(); i != features_.end();)
-   {
-      if ((**i).name() == feature_name)
+   for (auto i = features_.begin(); i != features_.end();) {
+      if ((*i)->name() == feature_name)
          i = features_.erase(i);
       else
          ++i;
@@ -508,7 +507,7 @@ void append_valuable_feature(std::vector<feature_ref>& result,
 void append_valuable_features(std::vector<feature_ref>& result,
                               const feature_set& fs)
 {
-   for (const feature* f : fs) {
+   for (feature_ref f : fs) {
 //      FIXME: add this later
 //      if (f->attributes().incidental)
 //         continue;
@@ -523,7 +522,7 @@ void append_valuable_features(std::vector<feature_ref>& result,
 
       } else {
          auto i = std::find_if(result.begin(), result.end(), [&](feature_ref v) {
-            return &v.get() == f;
+            return v == f;
          });
 
          if (i == result.end())

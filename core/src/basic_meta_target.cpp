@@ -216,7 +216,7 @@ basic_meta_target::get_engine() const {
 
 void adjust_dependency_features_sources(feature_set& set_to_adjust) {
    for (auto i = set_to_adjust.begin(), last = set_to_adjust.end(); i != last; ++i) {
-      const feature& f = **i;
+      const feature& f = i->get();
       if (!f.attributes().dependency)
          continue;
 

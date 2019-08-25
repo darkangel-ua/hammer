@@ -277,7 +277,7 @@ static
 int compute_alternative_rank(const feature_set& target_properties,
                              const feature_set& build_request) {
    unsigned rank = 0;
-   for (const feature* tf : target_properties) {
+   for (feature_ref tf : target_properties) {
       if (!(tf->attributes().free ||
             tf->attributes().incidental))
       {
@@ -325,7 +325,7 @@ void error_cannot_choose_alternative(const project& p,
 static
 int compute_requirements_rank(const feature_set& requirements) {
    int rank = 0;
-   for (const feature* f : requirements) {
+   for (feature_ref f : requirements) {
       if (f->attributes().free ||
           f->attributes().incidental)
          continue;

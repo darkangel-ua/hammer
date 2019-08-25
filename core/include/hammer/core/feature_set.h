@@ -15,9 +15,9 @@ class sources_decl;
 
 class feature_set {
    public:
-      typedef std::vector<feature*> features_t;
-      typedef features_t::const_iterator const_iterator;
-      typedef features_t::iterator iterator;
+      using features_t = std::vector<feature_ref>;
+      using const_iterator = features_t::const_iterator;
+      using iterator = features_t::iterator;
 
       feature_set(feature_registry& fr);
       const_iterator begin() const { return features_.begin(); }
@@ -40,9 +40,7 @@ class feature_set {
       const_iterator find(const_iterator from, const std::string& name) const { return find(from, name.c_str()); }
       iterator find(iterator from, const char* name); // find next occurrence
       feature_set* join(const feature_set& rhs) const;
-      feature_set& join(feature* f);
-      feature_set& join(feature_ref f) { return join(&const_cast<feature&>(static_cast<const feature&>(f))); }
-      feature_set& join(const feature* f) { return join(const_cast<feature*>(f)); }
+      feature_set& join(feature_ref f);
       feature_set& join(const char* name, const char* value);
       feature_set& join(const feature_set& v);
       void replace(iterator where,

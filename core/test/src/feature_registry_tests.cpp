@@ -89,7 +89,7 @@ BOOST_FIXTURE_TEST_CASE(add_defaults_1, feature_registry_test)
    BOOST_REQUIRE_EQUAL(fs.size(), 1);
    auto i = fs.find("toolset");
    BOOST_REQUIRE(i != fs.end());
-   feature& f = **i;
+   const feature& f = i->get();
    BOOST_CHECK_EQUAL(f.name(), "toolset");
    BOOST_CHECK_EQUAL(f.value(), "gcc");
 }
@@ -107,7 +107,7 @@ BOOST_FIXTURE_TEST_CASE(add_defaults_2, feature_registry_test)
 
    vector<feature_ref> defaults;
    for (auto i = fs.find("toolset"); i != fs.end(); i = fs.find(i + 1, "toolset"))
-      defaults.push_back(**i);
+      defaults.push_back(*i);
 
    sort(defaults.begin(), defaults.end(), [](feature_ref lhs, feature_ref rhs) { return lhs < rhs; });
    BOOST_REQUIRE_EQUAL(defaults.size(), 2);

@@ -180,7 +180,7 @@ void remove_duplicates(deduplicator_t& deduplicator,
    void apply_default_build(feature_set& requirements,
                             const feature_set& build_request,
                             const feature_set& default_build) {
-      for (auto* df : default_build ) {
+      for (auto& df : default_build ) {
          if (build_request.find(df->name()) == build_request.end())
             requirements.join(df);
       }
@@ -351,7 +351,7 @@ void remove_duplicates(deduplicator_t& deduplicator,
                                    const basic_meta_target& sources_owner) {
       const auto& dependencies = sources_owner.get_project().dependencies();
       for (auto i = properties.begin(), last = properties.end(); i != last; ++i) {
-         const feature& f = **i;
+         const feature& f = i->get();
          if (!f.attributes().dependency)
             continue;
 

@@ -243,8 +243,8 @@ void add_lib(project& qt_project,
 
    feature_ref qt_no_debug_feature = e.feature_registry().create_feature("define", "QT_NO_DEBUG");
 #if defined(_WIN32)
-   feature* top_include_feature = e.feature_registry().create_feature("include", "./include", qt_project);
-   feature* include_feature = e.feature_registry().create_feature("include", "./include/" + additional_include_path, qt_project);
+   feature_ref top_include_feature = e.feature_registry().create_feature("include", "./include", qt_project);
+   feature_ref include_feature = e.feature_registry().create_feature("include", "./include/" + additional_include_path, qt_project);
 #else
    feature_ref top_include_feature = e.feature_registry().create_feature("include", "./include/" + include_tag, qt_project);
    feature_ref include_feature = e.feature_registry().create_feature("include", "./include/" + include_tag + "/" + additional_include_path, qt_project);

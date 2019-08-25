@@ -127,7 +127,7 @@ resolve_build_request(hammer::engine& e,
       if (p == string::npos) {
          const feature* posible_implicit_feature = try_resolve_implicit_feature(fr, arg);
          if (posible_implicit_feature)
-            result.build_request_->join(posible_implicit_feature);
+            result.build_request_->join(*posible_implicit_feature);
          else
             result.target_ids_.push_back(arg);
       } else {

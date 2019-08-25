@@ -29,6 +29,7 @@ free_feature_arg_writer::free_feature_arg_writer(const std::string& name,
      global_prefix_(global_prefix), global_suffix_(global_suffix)
 {
    assert(feature_def_.attributes().free);
+   std::unique_ptr<int> a;
 }
 
 void free_feature_arg_writer::write_impl(std::ostream& output,

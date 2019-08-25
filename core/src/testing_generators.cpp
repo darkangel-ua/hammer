@@ -26,7 +26,7 @@ namespace {
 struct testing_run_args_writer : public argument_writer {
    testing_run_args_writer(const type_registry& tr) : argument_writer("args"), runner_type_(tr.get(types::TESTING_RUN)) {}
    argument_writer* clone() const override { return new testing_run_args_writer(*this); }
-   std::vector<const feature*> valuable_features() const override { return {}; }
+   std::vector<feature_ref> valuable_features() const override { return {}; }
    void write_impl(std::ostream& output,
                    const build_node& node,
                    const build_environment& environment) const override;
@@ -100,7 +100,7 @@ class testing_action : public build_action {
          return wrapped_action_->target_tag(node, environment);
       }
 
-      std::vector<const feature*>
+      std::vector<feature_ref>
       valuable_features() const override { return wrapped_action_->valuable_features(); }
 
    protected:

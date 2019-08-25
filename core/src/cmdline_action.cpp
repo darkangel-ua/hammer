@@ -66,10 +66,10 @@ cmdline_action::target_tag(const build_node& node,
    return s.str();
 }
 
-std::vector<const feature*>
+std::vector<feature_ref>
 cmdline_action::valuable_features() const
 {
-   std::vector<const feature*> result;
+   std::vector<feature_ref> result;
 
    for (const cmdline_builder& b : builders_)
       merge(result, b.valuable_features());

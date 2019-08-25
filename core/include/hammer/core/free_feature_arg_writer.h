@@ -18,7 +18,7 @@ class free_feature_arg_writer : public argument_writer {
                               const std::string& global_prefix = std::string(),
                               const std::string& global_suffix = std::string());
       free_feature_arg_writer* clone() const override;
-      std::vector<const feature*> valuable_features() const override;
+      std::vector<feature_ref> valuable_features() const override;
 
    private:
       const feature_def& feature_def_;

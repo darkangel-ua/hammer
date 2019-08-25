@@ -14,7 +14,7 @@ class shared_lib_dirs_writer : public argument_writer {
 		{}
 
 		argument_writer* clone() const override { return new shared_lib_dirs_writer(*this); }
-		std::vector<const feature*> valuable_features() const override { return {}; }
+		std::vector<feature_ref> valuable_features() const override { return {}; }
 
 	protected:
 		void write_impl(std::ostream& output,

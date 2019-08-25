@@ -4,6 +4,7 @@
 #include <utility>
 #include <memory>
 #include <hammer/core/build_node.h>
+#include <hammer/core/feature_ref.h>
 
 namespace hammer {
 
@@ -97,14 +98,14 @@ class generator {
       bool include_composite_generators_; // include composite generators while searching for sources indirect transformations
 
    protected:
-      const std::vector<const feature*> action_valuable_features_;
-      const std::vector<const feature*> constraints_valuable_features_;
-      const std::vector<const feature*> generator_valuable_features_;
+      const std::vector<feature_ref> action_valuable_features_;
+      const std::vector<feature_ref> constraints_valuable_features_;
+      const std::vector<feature_ref> generator_valuable_features_;
 
       feature_set*
       make_valuable_properties(const feature_set& target_props,
-                               const std::vector<const feature*>& target_type_valuable_features,
-                               const std::vector<const feature*>& source_target_valuable_features) const;
+                               const std::vector<feature_ref>& target_type_valuable_features,
+                               const std::vector<feature_ref>& source_target_valuable_features) const;
 };
 
 // we must not change order in nodes, because if that we use multi_index

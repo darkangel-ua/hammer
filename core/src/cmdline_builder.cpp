@@ -58,10 +58,10 @@ void cmdline_builder::write(std::ostream& output, const build_node& node, const 
       output.write(c_str_cmd, static_cast<std::streamsize>(end_c_str_cmd - c_str_cmd));
 }
 
-std::vector<const feature*>
+std::vector<feature_ref>
 cmdline_builder::valuable_features() const
 {
-   std::vector<const feature*> result;
+   std::vector<feature_ref> result;
 
    for(const auto& writer : writers_)
       merge(result, writer.second->valuable_features());

@@ -2,6 +2,7 @@
 #include <vector>
 #include <memory>
 #include <boost/make_unique.hpp>
+#include <hammer/core/feature_ref.h>
 
 namespace hammer {
 class feature_set;
@@ -26,7 +27,7 @@ class requirement_base {
 
 class just_feature_requirement : public requirement_base {
    public:
-      just_feature_requirement(feature* f) : f_(f) {}
+      just_feature_requirement(feature_ref f) : f_(f) {}
       void eval(const feature_set& build_request,
                 feature_set* result,
                 feature_set* public_result) const override;
@@ -35,24 +36,7 @@ class just_feature_requirement : public requirement_base {
       clone() const override { return boost::make_unique<just_feature_requirement>(*this); }
 
    private:
-      feature* f_;
-};
-
-class linear_and_condition : public requirement_base {
-   public:
-      void add(feature* c);
-      void result(feature *r) { result_ = r; }
-      void eval(const feature_set& build_request,
-                feature_set* result,
-                feature_set* public_result) const override;
-
-      std::unique_ptr<requirement_base>
-      clone() const override { return boost::make_unique<linear_and_condition>(*this); }
-
-   private:
-      typedef std::vector<const feature*> features_t;
-      feature* result_;
-      features_t features_;
+      feature_ref f_;
 };
 
 class requirement_condition_op_base {
@@ -115,7 +99,7 @@ class requirement_condition_op_or : public requirement_condition_op_binary {
 
 class requirement_condition_op_feature : public requirement_condition_op_base {
    public:
-      requirement_condition_op_feature(const feature* f) : f_(f) {}
+      requirement_condition_op_feature(feature_ref f) : f_(f) {}
       bool eval(const feature_set& build_request,
                 feature_set* result) const override;
 
@@ -123,13 +107,13 @@ class requirement_condition_op_feature : public requirement_condition_op_base {
       clone() const override { return boost::make_unique<requirement_condition_op_feature>(f_); }
 
    private:
-      const feature* f_;
+      feature_ref f_;
 };
 
 class requirement_condition : public requirement_base {
    public:
       struct result_element {
-         feature* f_;
+         feature_ref f_;
          const bool public_;
       };
       typedef std::vector<result_element> result_t;
@@ -154,10 +138,10 @@ class requirements_decl {
       requirements_decl(const requirements_decl& rhs);
       requirements_decl& operator = (const requirements_decl& rhs);
       void add(std::unique_ptr<requirement_base> r);
-      void add(const feature& f);
+      void add(feature_ref f);
       void eval(const feature_set& build_request,
                 feature_set* result,
-                feature_set* public_result = NULL) const;
+                feature_set* public_result = nullptr) const;
       void insert_infront(const requirements_decl& v);
       void insert(const requirements_decl& v); // insert in the end
       bool empty() const;

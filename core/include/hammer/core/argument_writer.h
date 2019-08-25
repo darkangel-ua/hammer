@@ -2,12 +2,12 @@
 #include <string>
 #include <vector>
 #include <iosfwd>
+#include <hammer/core/feature_ref.h>
 
 namespace hammer {
 
 class build_node;
 class build_environment;
-class feature;
 
 class argument_writer {
    public:
@@ -24,7 +24,7 @@ class argument_writer {
       }
 
       virtual argument_writer* clone() const = 0;
-      virtual std::vector<const feature*> valuable_features() const = 0;
+      virtual std::vector<feature_ref> valuable_features() const = 0;
 
       virtual ~argument_writer() {}
 

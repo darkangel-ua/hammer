@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #include <hammer/core/fs_argument_writer.h>
 #include <hammer/core/feature_set.h>
-#include <hammer/core/build_node.h>
 #include <hammer/core/feature.h>
+#include <hammer/core/build_node.h>
 
 namespace hammer{
 
@@ -57,10 +57,10 @@ fs_argument_writer* fs_argument_writer::clone() const
    return new fs_argument_writer(*this);
 }
 
-std::vector<const feature*>
+std::vector<feature_ref>
 fs_argument_writer::valuable_features() const
 {
-   std::vector<const feature*> result;
+   std::vector<feature_ref> result;
 
    for (auto& p : patterns_)
       append_valuable_features(result, *p.first);

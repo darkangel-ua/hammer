@@ -42,8 +42,8 @@ make_usage_requirements(feature_registry& fr,
    requirements_decl result;
 
    // making dependency on self :) because this will build this target before any targets that belongs to owner
-   feature* dependency = fr.create_feature("dependency", source_decl{p, "./", target_name, nullptr});
-   result.add(*dependency);
+   feature_ref dependency = fr.create_feature("dependency", source_decl{p, "./", target_name, nullptr});
+   result.add(dependency);
 
    return result;
 }
@@ -87,7 +87,7 @@ void htmpl_meta_target::compute_usage_requirements(feature_set& result,
 {
    if (type().equal_or_derived_from(types::H)) {
       // generated include dir should apear first, so generated includes will be found earlier
-      feature* generated_include = get_engine().feature_registry().create_feature("__generated-include", {}, constructed_target);
+      feature_ref generated_include = get_engine().feature_registry().create_feature("__generated-include", {}, constructed_target);
       result.join(generated_include);
    }
 

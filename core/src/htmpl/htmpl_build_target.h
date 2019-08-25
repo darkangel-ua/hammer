@@ -11,11 +11,11 @@ class htmpl_build_target : public source_build_target {
                          const target_type* t,
                          const feature_set* f);
 
-      const std::vector<const feature*>&
+      const std::vector<feature_ref>&
       valuable_features() const override { return valuable_features_; }
 
 	private:
-      std::vector<const feature*> valuable_features_;
+      std::vector<feature_ref> valuable_features_;
 };
 
 }

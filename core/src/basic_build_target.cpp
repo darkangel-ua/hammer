@@ -48,9 +48,9 @@ basic_build_target::timestamp_info() const
 }
 
 static
-std::vector<const feature*> empty_valuable_features;
+std::vector<feature_ref> empty_valuable_features;
 
-const std::vector<const feature*>&
+const std::vector<feature_ref>&
 basic_build_target::valuable_features() const
 {
    return empty_valuable_features;

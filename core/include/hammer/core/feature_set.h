@@ -1,8 +1,9 @@
 #pragma once
 #include <vector>
 #include <string>
-#include <boost/noncopyable.hpp>
+#include <functional>
 #include <hammer/core/feature_value_ns_fwd.h>
+#include <hammer/core/feature_ref.h>
 
 namespace hammer {
 
@@ -12,13 +13,13 @@ class feature_def;
 class basic_meta_target;
 class sources_decl;
 
-class feature_set : public boost::noncopyable {
+class feature_set {
    public:
       typedef std::vector<feature*> features_t;
       typedef features_t::const_iterator const_iterator;
       typedef features_t::iterator iterator;
 
-      feature_set(feature_registry* fr);
+      feature_set(feature_registry& fr);
       const_iterator begin() const { return features_.begin(); }
       const_iterator end() const { return features_.end(); }
       iterator begin(){ return features_.begin(); }
@@ -30,7 +31,7 @@ class feature_set : public boost::noncopyable {
       const_iterator find(const feature& f) const;
       // differs from find in terms of equality operator. It uses feature::contains(), so
       // gcc and gcc-6 will match gcc-6, while find will return only gcc-6
-      const_iterator contains(const feature& f) const;
+      const_iterator contains(feature_ref f) const;
       iterator find(const std::string& name) { return find(name.c_str()); }
       iterator find(const std::string& name,
                     const feature_value_ns_ptr& ns);
@@ -40,11 +41,12 @@ class feature_set : public boost::noncopyable {
       iterator find(iterator from, const char* name); // find next occurrence
       feature_set* join(const feature_set& rhs) const;
       feature_set& join(feature* f);
+      feature_set& join(feature_ref f) { return join(&const_cast<feature&>(static_cast<const feature&>(f))); }
       feature_set& join(const feature* f) { return join(const_cast<feature*>(f)); }
       feature_set& join(const char* name, const char* value);
       feature_set& join(const feature_set& v);
       void replace(iterator where,
-                   feature* new_value);
+                   feature_ref new_value);
       feature_set* clone() const;
       void copy_propagated(const feature_set& rhs);
       void erase_all(const std::string& feature_name);
@@ -58,11 +60,11 @@ class feature_set : public boost::noncopyable {
       bool operator != (const feature_set& rhs) const { return !(*this == rhs); }
       bool contains(const feature_set& rhs) const;
 
-      feature_registry& owner() { return *fr_; }
-      feature_registry& owner() const { return *fr_; }
+      feature_registry& owner() { return fr_; }
+      feature_registry& owner() const { return fr_; }
 
    private:
-      feature_registry* fr_;
+      std::reference_wrapper<feature_registry> fr_;
       features_t features_;
 
       void join_impl(feature_set* lhs, const feature_set& rhs) const;
@@ -89,14 +91,13 @@ std::string md5(const feature_set& fs, bool use_all);
 // been used in target constuction
 void apply_build_request(feature_set& dest, const feature_set& build_request);
 
-void append_valuable_feature(std::vector<const feature*>& result,
-                             const feature& f,
+void append_valuable_feature(std::vector<feature_ref>& result,
+                             feature_ref f,
                              feature_registry& f_owner);
-void append_valuable_features(std::vector<const feature*>& result,
+void append_valuable_features(std::vector<feature_ref>& result,
                               const feature_set& fs);
-std::vector<const feature*>
-make_valuable_features(const feature_set& fs);
+std::vector<feature_ref> make_valuable_features(const feature_set& fs);
 
-void merge(std::vector<const feature*>& result,
-           const std::vector<const feature*>& features);
+void merge(std::vector<feature_ref>& result,
+           const std::vector<feature_ref>& features);
 }

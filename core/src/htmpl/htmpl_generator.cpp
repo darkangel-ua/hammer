@@ -37,7 +37,7 @@ class htmpl_action : public build_action
 
       string target_tag(const build_node& node,
                         const build_environment& environment) const override;
-      std::vector<const feature*> valuable_features() const override { return {}; }
+      std::vector<feature_ref> valuable_features() const override { return {}; }
 
    protected:
       bool execute_impl(const build_node& node,

@@ -10,7 +10,7 @@ using namespace hammer;
 
 namespace {
 
-feature*
+const feature*
 try_resolve_implicit_feature(feature_registry& fr,
                              feature_def& fd,
                              const std::string& value) {
@@ -27,13 +27,13 @@ try_resolve_implicit_feature(feature_registry& fr,
          return nullptr;
    }
 
-   return fr.create_feature(fd.name(), value);
+   return &fr.create_feature(fd.name(), value).get();
 }
 
-feature*
+const feature*
 try_resolve_implicit_feature(feature_registry& fr,
                              const std::string& value) {
-   feature* result = try_resolve_implicit_feature(fr, fr.get_def("toolset"), value);
+   const feature* result = try_resolve_implicit_feature(fr, fr.get_def("toolset"), value);
    if (result)
       return result;
    else
@@ -125,7 +125,7 @@ resolve_build_request(hammer::engine& e,
    for (const string& arg : build_request_args) {
       auto p = arg.find('=');
       if (p == string::npos) {
-         feature* posible_implicit_feature = try_resolve_implicit_feature(fr, arg);
+         const feature* posible_implicit_feature = try_resolve_implicit_feature(fr, arg);
          if (posible_implicit_feature)
             result.build_request_->join(posible_implicit_feature);
          else

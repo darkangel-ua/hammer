@@ -208,8 +208,7 @@ class project : public boost::noncopyable {
       bool is_root_ = false;
       // mutable because we are deferring registry creation unless we want to modify it
       mutable std::shared_ptr<hammer::feature_registry> feature_registry_;
-      // mutable because we cache resolved projects
-      mutable std::unique_ptr<aliases_impl> aliases_;
+      std::unique_ptr<aliases_impl> aliases_;
       dependencies_t dependencies_;
 };
 

@@ -105,14 +105,14 @@ BOOST_FIXTURE_TEST_CASE(add_defaults_2, feature_registry_test)
    BOOST_REQUIRE_NO_THROW(registry_.add_defaults(fs));
    BOOST_REQUIRE_EQUAL(fs.size(), 2);
 
-   vector<const feature*> defaults;
+   vector<feature_ref> defaults;
    for (auto i = fs.find("toolset"); i != fs.end(); i = fs.find(i + 1, "toolset"))
-      defaults.push_back(*i);
+      defaults.push_back(**i);
 
-   sort(defaults.begin(), defaults.end(), [](const feature* lhs, const feature* rhs) { return *lhs < *rhs; });
+   sort(defaults.begin(), defaults.end(), [](feature_ref lhs, feature_ref rhs) { return lhs < rhs; });
    BOOST_REQUIRE_EQUAL(defaults.size(), 2);
 
-   const vector<const feature*> expected_defaults =
+   const vector<feature_ref> expected_defaults =
       { registry_.create_feature("toolset", "gcc"),
         registry_.create_feature("toolset", "qt")
       };
@@ -142,14 +142,14 @@ struct complex_feature_registry_test : public feature_registry_test
 
 BOOST_FIXTURE_TEST_CASE(create_subfeature, complex_feature_registry_test)
 {
-   feature* toolset = nullptr;
-   BOOST_REQUIRE_NO_THROW(toolset = registry_.create_feature("toolset", "msvc"));
+   const feature* toolset = nullptr;
+   BOOST_REQUIRE_NO_THROW(toolset = &registry_.create_feature("toolset", "msvc").get());
    BOOST_REQUIRE(toolset);
-   feature* same_toolset = nullptr;
-   BOOST_REQUIRE_NO_THROW(same_toolset = registry_.create_feature("toolset", "msvc"));
+   const feature* same_toolset = nullptr;
+   BOOST_REQUIRE_NO_THROW(same_toolset = &registry_.create_feature("toolset", "msvc").get());
    BOOST_REQUIRE(same_toolset);
    BOOST_CHECK(toolset == same_toolset);
-   BOOST_REQUIRE_NO_THROW(toolset = registry_.create_feature(*toolset, "version", "8.0"));
+   BOOST_REQUIRE_NO_THROW(toolset = &registry_.create_feature(*toolset, "version", "8.0").get());
    const subfeature* version = nullptr;
    BOOST_REQUIRE_NO_THROW(version = toolset->find_subfeature("version"));
    BOOST_CHECK_EQUAL(version->name(), "version");
@@ -158,12 +158,12 @@ BOOST_FIXTURE_TEST_CASE(create_subfeature, complex_feature_registry_test)
 
 BOOST_FIXTURE_TEST_CASE(parse_feature, complex_feature_registry_test)
 {
-   feature* toolset_msvc = nullptr;
-   BOOST_REQUIRE_NO_THROW(toolset_msvc = registry_.create_feature("toolset", "msvc"));
+   const feature* toolset_msvc = nullptr;
+   BOOST_REQUIRE_NO_THROW(toolset_msvc = &registry_.create_feature("toolset", "msvc").get());
    BOOST_CHECK_EQUAL(toolset_msvc->name(), "toolset");
    BOOST_CHECK_EQUAL(toolset_msvc->value(), "msvc");
 
-   BOOST_REQUIRE_NO_THROW(toolset_msvc = registry_.create_feature("toolset", "msvc-8.0"));
+   BOOST_REQUIRE_NO_THROW(toolset_msvc = &registry_.create_feature("toolset", "msvc-8.0").get());
    BOOST_CHECK_EQUAL(toolset_msvc->name(), "toolset");
    BOOST_CHECK_EQUAL(toolset_msvc->value(), "msvc");
 }

@@ -13,7 +13,7 @@ testing_fail_action::testing_fail_action(engine& e,
      failing_action_(std::move(failing_action))
 {}
 
-std::vector<const feature*>
+std::vector<feature_ref>
 testing_fail_action::valuable_features() const
 {
    return failing_action_->valuable_features();

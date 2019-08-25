@@ -51,9 +51,9 @@ void requirements_decl::add(std::unique_ptr<requirement_base> r) {
    impl_->requirements_.push_back(std::move(r));
 }
 
-void requirements_decl::add(const feature& f)
+void requirements_decl::add(feature_ref f)
 {
-   add(boost::make_unique<just_feature_requirement>(const_cast<feature*>(&f)));
+   add(boost::make_unique<just_feature_requirement>(f));
 }
 
 requirements_decl::~requirements_decl() {
@@ -68,37 +68,6 @@ void requirements_decl::eval(const feature_set& build_request,
       r->eval(build_request, result, public_result);
 }
 
-void linear_and_condition::eval(const feature_set& build_request,
-                                feature_set* result,
-                                feature_set* public_result) const
-{
-   bool satisfy = true;
-   for(features_t::const_iterator i = features_.begin(), last = features_.end(); i != last; ++i)
-   {
-      if (build_request.contains(**i) != build_request.end() ||
-          result->contains(**i) != result->end())
-      {
-         continue;
-      }
-      else
-         if (build_request.find((**i).name()) != build_request.end() ||
-             result->find((**i).name()) != result->end() ||
-             !(**i).definition().defaults_contains((**i).value()))
-         {
-            satisfy = false;
-            break;
-         }
-   }
-
-   if (satisfy)
-   {
-      result->join(result_);
-
-      if (is_public() && public_result)
-         public_result->join(result_);
-   }
-}
-
 void just_feature_requirement::eval(const feature_set& build_request,
                                     feature_set* result,
                                     feature_set* public_result) const
@@ -107,11 +76,6 @@ void just_feature_requirement::eval(const feature_set& build_request,
    
    if (is_public() && public_result)
       public_result->join(f_);
-}
-
-void linear_and_condition::add(feature* c)
-{
-   features_.push_back(c);
 }
 
 void requirements_decl::insert_infront(const requirements_decl& v)
@@ -162,7 +126,7 @@ requirement_condition::clone() const
 bool requirement_condition_op_feature::eval(const feature_set& build_request,
                                             feature_set* result) const
 {
-   if (build_request.contains(*f_) != build_request.end() || result->contains(*f_) != result->end())
+   if (build_request.contains(f_) != build_request.end() || result->contains(f_) != result->end())
       return true;
    else {
       if (build_request.find(f_->name()) != build_request.end() ||

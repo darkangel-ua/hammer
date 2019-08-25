@@ -3,6 +3,7 @@
 #include <vector>
 #include <memory>
 #include <hammer/core/type_tag.h>
+#include <hammer/core/feature_ref.h>
 
 namespace hammer {
 
@@ -51,7 +52,7 @@ class target_type {
       std::unique_ptr<target_type>
       clone(const type_registry& tr) const;
 
-      const std::vector<const feature*>&
+      const std::vector<feature_ref>&
       valuable_features() const { return valuable_features_; }
 
    private:
@@ -60,12 +61,12 @@ class target_type {
       prefixes_t prefixes_;
       const type_registry* owner_;
       const target_type* base_;
-      const std::vector<const feature*> valuable_features_;
+      const std::vector<feature_ref> valuable_features_;
 
       bool equal(const target_type& rhs) const;
 
       static
-      std::vector<const feature*>
+      std::vector<feature_ref>
       make_valuable_features(const suffixes_t& suffixes,
                              const prefixes_t& prefixes);
 };

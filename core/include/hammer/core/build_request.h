@@ -7,6 +7,7 @@ namespace hammer {
 class feature;
 class feature_set;
 class feature_registry;
+class feature_ref;
 
 class build_request {
    public:
@@ -40,7 +41,7 @@ class build_request {
 
       // will join with resolved set
       void join(const feature_set& props);
-      void join(feature* f);
+      void join(feature_ref f);
       void join_unresolved(std::string name,
                            std::string value);
 

@@ -45,7 +45,7 @@ class copy_action : public build_action {
       std::string
       target_tag(const build_node& node,
                  const build_environment& environment) const override;
-      std::vector<const feature*>
+      std::vector<feature_ref>
       valuable_features() const override { return {}; }
 
    protected:

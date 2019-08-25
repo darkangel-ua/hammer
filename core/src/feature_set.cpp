@@ -21,13 +21,13 @@ using namespace std;
 
 namespace hammer{
 
-feature_set::feature_set(feature_registry* fr) : fr_(fr)
+feature_set::feature_set(feature_registry& fr) : fr_(fr)
 {
 }
 
 feature_set& feature_set::join(const char* name, const char* value)
 {
-   return join(fr_->create_feature(name, value));
+   return join(owner().create_feature(name, value));
 }
 
 feature_set&
@@ -120,8 +120,7 @@ void feature_set::join_impl(feature_set* lhs, const feature_set& rhs) const
 
 feature_set* feature_set::join(const feature_set& rhs) const
 {
-   assert(fr_);
-   feature_set* result = fr_->make_set();
+   feature_set* result = owner().make_set();
    result->features_ = features_;
    join_impl(result, rhs);
    return result;
@@ -134,16 +133,16 @@ feature_set& feature_set::join(const feature_set& rhs)
 }
 
 void feature_set::replace(iterator where,
-                          feature* new_value) {
+                          feature_ref new_value) {
    assert((**where).definition().attributes().free &&
           (**where).definition() == new_value->definition());
 
-   *where = new_value;
+   *where = const_cast<feature*>(&new_value.get());
 }
 
 feature_set* feature_set::clone() const
 {
-   feature_set* result = fr_->make_set();
+   feature_set* result = owner().make_set();
    result->features_ = features_;
    return result;
 }
@@ -174,14 +173,14 @@ feature_set::const_iterator feature_set::find(const feature& f) const
 }
 
 feature_set::const_iterator
-feature_set::contains(const feature& f) const
+feature_set::contains(feature_ref f) const
 {
-   for(const_iterator i = find(f.name()), last = end(); i != last;) {
+   for(const_iterator i = find(f->name()), last = end(); i != last;) {
       if ((**i).contains(f))
          return i;
 
-      if (f.attributes().free)
-         i = find(++i, f.name());
+      if (f->attributes().free)
+         i = find(++i, f->name());
       else
          break;
    }
@@ -474,39 +473,39 @@ void apply_build_request(feature_set& dest,
    }
 }
 
-std::vector<const feature*>
+std::vector<feature_ref>
 make_valuable_features(const feature_set& fs)
 {
-   std::vector<const feature*> result;
+   std::vector<feature_ref> result;
 
    append_valuable_features(result, fs);
 
    return result;
 }
 
-void append_valuable_feature(std::vector<const feature*>& result,
-                             const feature& f,
+void append_valuable_feature(std::vector<feature_ref>& result,
+                             feature_ref f,
                              feature_registry& f_owner)
 {
-   if (f.attributes().free) {
-      auto i = std::find_if(result.begin(), result.end(), [&](const feature* v) {
-         return v->name() == f.name();
+   if (f->attributes().free) {
+      auto i = std::find_if(result.begin(), result.end(), [&](feature_ref v) {
+         return v->name() == f->name();
       });
 
       if (i == result.end())
-         result.push_back(f_owner.create_feature(f.name(), std::string()));
+         result.push_back(f_owner.create_feature(f->name(), std::string()));
 
    } else {
-      auto i = std::find_if(result.begin(), result.end(), [&](const feature* v) {
-         return *v == f;
+      auto i = std::find_if(result.begin(), result.end(), [&](feature_ref v) {
+         return v == f;
       });
 
       if (i == result.end())
-         result.push_back(&f);
+         result.push_back(f);
    }
 }
 
-void append_valuable_features(std::vector<const feature*>& result,
+void append_valuable_features(std::vector<feature_ref>& result,
                               const feature_set& fs)
 {
    for (const feature* f : fs) {
@@ -515,7 +514,7 @@ void append_valuable_features(std::vector<const feature*>& result,
 //         continue;
 
       if (f->attributes().free) {
-         auto i = std::find_if(result.begin(), result.end(), [&](const feature* v) {
+         auto i = std::find_if(result.begin(), result.end(), [&](feature_ref v) {
             return v->name() == f->name();
          });
 
@@ -523,22 +522,22 @@ void append_valuable_features(std::vector<const feature*>& result,
             result.push_back(fs.owner().create_feature(f->name(), std::string()));
 
       } else {
-         auto i = std::find_if(result.begin(), result.end(), [&](const feature* v) {
-            return *v == *f;
+         auto i = std::find_if(result.begin(), result.end(), [&](feature_ref v) {
+            return &v.get() == f;
          });
 
          if (i == result.end())
-            result.push_back(f);
+            result.push_back(*f);
       }
    }
 }
 
-void merge(std::vector<const feature*>& result,
-           const std::vector<const feature*>& features)
+void merge(std::vector<feature_ref>& result,
+           const std::vector<feature_ref>& features)
 {
-   for (const feature* f : features) {
-      auto i = std::find_if(result.begin(), result.end(), [&](const feature* v) {
-         return *v == *f;
+   for (feature_ref f : features) {
+      auto i = std::find_if(result.begin(), result.end(), [&](feature_ref v) {
+         return v == f;
       });
 
       if (i == result.end())

@@ -12,7 +12,7 @@ class unix_libraries_argument_writer : public argument_writer {
                                      linker_type::value linker,
                                      engine& e);
       unix_libraries_argument_writer* clone() const override;
-      std::vector<const feature*> valuable_features() const override { return {}; }
+      std::vector<feature_ref> valuable_features() const override { return {}; }
 
    private:
       linker_type::value linker_type_;

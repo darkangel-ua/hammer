@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <hammer/core/build_action_fwd.h>
+#include <hammer/core/feature_ref.h>
 
 namespace hammer {
 
@@ -26,7 +27,7 @@ class build_action {
       // FIXME: this need to factored out. This should be fully const object
       void batched_action(const build_action_ptr& ba) { batched_action_ = ba; }
       const build_action_ptr& batched_action() const { return batched_action_; }
-      virtual std::vector<const feature*> valuable_features() const = 0;
+      virtual std::vector<feature_ref> valuable_features() const = 0;
 
       virtual ~build_action();
 

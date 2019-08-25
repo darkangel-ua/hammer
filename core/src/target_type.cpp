@@ -1,20 +1,20 @@
 #include "stdafx.h"
+#include <algorithm>
+#include <cassert>
+#include <boost/format.hpp>
 #include <hammer/core/target_type.h>
 #include <hammer/core/feature_set.h>
 #include <hammer/core/type_registry.h>
-#include <boost/format.hpp>
-#include <algorithm>
-#include <cassert>
 
 using namespace std;
 
 namespace hammer{
 
-std::vector<const feature*>
+std::vector<feature_ref>
 target_type::make_valuable_features(const suffixes_t& suffixes,
                                     const prefixes_t& prefixes)
 {
-   std::vector<const feature*> result;
+   std::vector<feature_ref> result;
 
    for (auto& s : suffixes) {
       if (s.condition_)

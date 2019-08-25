@@ -3,6 +3,7 @@
 #include <vector>
 #include <memory>
 #include <map>
+#include <hammer/core/feature_ref.h>
 
 namespace hammer {
 
@@ -30,7 +31,7 @@ class cmdline_builder {
 
       void writers(const writers_t& w) { writers_ = w; }
 
-      std::vector<const feature*>
+      std::vector<feature_ref>
       valuable_features() const;
 
    private:

@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "enviroment.h"
+#include <boost/make_unique.hpp>
 #include <hammer/core/feature_registry.h>
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature.h>
@@ -45,10 +46,10 @@ make_requirements_decl(feature_registry& fr,
 {
    requirements_decl requirements;
 
-   unique_ptr<linear_and_condition> condition(new linear_and_condition);
-   condition->add(fr.create_feature("toolset", toolset));
-   condition->result(fr.create_feature("link", "shared"));
-   requirements.add(std::move(condition));
+   auto c = boost::make_unique<requirement_condition_op_feature>(fr.create_feature("toolset", toolset));
+   requirement_condition::result_t r = {{fr.create_feature("link", "shared"), false}};
+   auto cc = boost::make_unique<requirement_condition>(std::move(c), std::move(r), false);
+   requirements.add(std::move(cc));
 
    return requirements;
 }
@@ -170,10 +171,10 @@ BOOST_FIXTURE_TEST_CASE(conditions_match_defaults, environment)
 
    requirements_decl requirements;
 
-   unique_ptr<linear_and_condition> condition(new linear_and_condition);
-   condition->add(fr_.create_feature("link", "shared"));
-   condition->result(fr_.create_feature("define", "FOO"));
-   requirements.add(std::move(condition));
+   auto c = boost::make_unique<requirement_condition_op_feature>(fr_.create_feature("link", "shared"));
+   requirement_condition::result_t r = {{fr_.create_feature("define", "FOO"), false}};
+   auto cc = boost::make_unique<requirement_condition>(std::move(c), std::move(r), false);
+   requirements.add(std::move(cc));
 
    feature_set& evaluation_result = *fr_.make_set();
    requirements.eval(build_request, &evaluation_result, nullptr);

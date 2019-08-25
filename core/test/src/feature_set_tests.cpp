@@ -98,16 +98,17 @@ BOOST_FIXTURE_TEST_CASE(join_non_free_ns, enviroment)
    fs.join("toolset", "qt");
    BOOST_REQUIRE_EQUAL(fs.size(), 2);
 
-   vector<const feature*> toolsets;
+   vector<feature_ref> toolsets;
    for (auto i = fs.find("toolset"); i != fs.end(); i = fs.find(i + 1, "toolset"))
-      toolsets.push_back(*i);
+      toolsets.push_back(**i);
 
-   sort(toolsets.begin(), toolsets.end(), [](const feature* lhs, const feature* rhs) { return *lhs < *rhs; });
-
-   const vector<const feature*> expected_toolsets =
+   vector<feature_ref> expected_toolsets =
       { fr_.create_feature("toolset", "gcc"),
         fr_.create_feature("toolset", "qt")
       };
+
+   sort(toolsets.begin(), toolsets.end(), [](feature_ref lhs, feature_ref rhs) { return lhs < rhs; });
+   sort(expected_toolsets.begin(), expected_toolsets.end(), [](feature_ref lhs, feature_ref rhs) { return lhs < rhs; });
 
    BOOST_CHECK(toolsets[0] == expected_toolsets[0]);
    BOOST_CHECK(toolsets[1] == expected_toolsets[1]);

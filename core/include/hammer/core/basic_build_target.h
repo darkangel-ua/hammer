@@ -5,6 +5,7 @@
 #include <hammer/core/location.h>
 #include <hammer/core/timestamp_info.h>
 #include <hammer/core/build_node.h>
+#include <hammer/core/feature_ref.h>
 
 namespace hammer {
 
@@ -45,7 +46,7 @@ class basic_build_target : private boost::noncopyable {
 		virtual bool clean(const build_environment& environment) const = 0;
 
 		virtual
-		const std::vector<const feature*>&
+		const std::vector<feature_ref>&
 		valuable_features() const;
 
 	protected:

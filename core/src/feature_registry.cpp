@@ -320,7 +320,7 @@ namespace hammer {
    feature_set*
    feature_registry::make_set() const
    {
-      unique_ptr<feature_set> r(new feature_set(const_cast<feature_registry*>(this)));
+      auto r = boost::make_unique<feature_set>(*const_cast<feature_registry*>(this));
       impl_->feature_set_list_.push_back(r.get());
 
       return r.release();
@@ -406,33 +406,33 @@ namespace hammer {
       return simply_create_feature(*posible_feature, value, constructor);
    }
 
-   feature*
+   feature_ref
    feature_registry::create_feature(const std::string& name,
                                     const std::string& value,
                                     const project& p) const {
-      return create_feature(name, value, [&] (const feature_def& def) {
+      return *create_feature(name, value, [&] (const feature_def& def) {
          return new feature(def, value, p);
       });
    }
 
-   feature*
+   feature_ref
    feature_registry::create_feature(const std::string& name,
                                     const source_decl& s) const {
-      return create_feature(name, {}, [&] (const feature_def& def) {
+      return *create_feature(name, {}, [&] (const feature_def& def) {
          return new feature(def, s);
       });
    }
 
-   feature*
+   feature_ref
    feature_registry::create_feature(const std::string& name,
                                     const std::string& value,
                                     const basic_target& t) const {
-      return create_feature(name, value, [&] (const feature_def& def) {
+      return *create_feature(name, value, [&] (const feature_def& def) {
          return new feature(def, value, t);
       });
    }
 
-   feature*
+   feature_ref
    feature_registry::create_feature(const std::string& name,
                                     const std::string& value) const
    {
@@ -454,7 +454,7 @@ namespace hammer {
       if (posible_feature->attributes().free ||
           posible_feature->is_legal_value(value))
       {
-         return simply_create_feature(*posible_feature, value);
+         return *simply_create_feature(*posible_feature, value);
       }
 
       typedef boost::tokenizer<boost::char_separator<char>, const char*> tokenizer;
@@ -462,7 +462,7 @@ namespace hammer {
                     boost::char_separator<char>("-"));
       tokenizer::const_iterator first = tok.begin(), last = tok.end();
       if (first != last) {
-         feature* result = simply_create_feature(*posible_feature, *first);
+         feature_ref result = *simply_create_feature(*posible_feature, *first);
          const string feature_value = *first;
          ++first;
 
@@ -470,20 +470,20 @@ namespace hammer {
             const subfeature_def* sdef = result->definition().find_subfeature_for_value(feature_value, *first);
             if (!sdef) {
                if (result->attributes().no_checks)
-                  return simply_create_feature(*posible_feature, value);
+                  return *simply_create_feature(*posible_feature, value);
                else
                   throw std::runtime_error("Can't find subfeature with legal value '" + *first + "' for feature <" + name + ">" + result->value());
             } else
-               result = create_feature(*result, sdef->name(), *first);
+               result = create_feature(result, sdef->name(), *first);
          }
 
          return result;
       }
 
-      return simply_create_feature(*posible_feature, value);
+      return *simply_create_feature(*posible_feature, value);
    }
 
-   feature*
+   feature_ref
    feature_registry::create_feature(const feature& f,
                                     const string& subfeature_name,
                                     const string& subfeature_value) const
@@ -504,7 +504,7 @@ namespace hammer {
          impl_->features_.get<0>().insert(shared_result);
       }
 
-      return result;
+      return *result;
    }
 
    feature_set&

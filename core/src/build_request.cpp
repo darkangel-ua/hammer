@@ -38,7 +38,7 @@ void build_request::join(const feature_set& props) {
    resolved_features_->join(props);
 }
 
-void build_request::join(feature* f) {
+void build_request::join(feature_ref f) {
    resolved_features_->join(f);
 }
 

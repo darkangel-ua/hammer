@@ -86,7 +86,7 @@ free_feature_arg_writer* free_feature_arg_writer::clone() const
    return new free_feature_arg_writer(*this);
 }
 
-std::vector<const feature*>
+std::vector<feature_ref>
 free_feature_arg_writer::valuable_features() const
 {
    if (feature_def_.attributes().path)

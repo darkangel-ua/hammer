@@ -17,16 +17,16 @@
 namespace hammer {
 
 static
-std::vector<const feature*> empty_valuable_features;
+std::vector<feature_ref> empty_valuable_features;
 
 static
-std::vector<const feature*>
+std::vector<feature_ref>
 make_generator_valuable_properties(const bool composite,
                                    feature_registry& fr)
 {
    if (composite) {
-      std::vector<const feature*> result;
-      append_valuable_feature(result, *fr.create_feature("name", ""), fr);
+      std::vector<feature_ref> result;
+      append_valuable_feature(result, fr.create_feature("name", ""), fr);
       return result;
    } else
       return empty_valuable_features;
@@ -45,8 +45,8 @@ generator::generator(hammer::engine& e,
    constraints_(c),
    action_(action),
    include_composite_generators_(false),
-   action_valuable_features_( action ? action->valuable_features() : std::vector<const feature*>()),
-   constraints_valuable_features_(c ? make_valuable_features(*c) : std::vector<const feature*>()),
+   action_valuable_features_(action ? action->valuable_features() : empty_valuable_features),
+   constraints_valuable_features_(c ? make_valuable_features(*c) : empty_valuable_features),
    generator_valuable_features_(make_generator_valuable_properties(composite, e.feature_registry()))
 {
 }
@@ -259,8 +259,8 @@ make_consume_types(const generator::producable_types_t& types)
 
 feature_set*
 generator::make_valuable_properties(const feature_set& target_props,
-                                    const std::vector<const feature*>& target_type_valuable_features,
-                                    const std::vector<const feature*>& source_target_valuable_features) const
+                                    const std::vector<feature_ref>& target_type_valuable_features,
+                                    const std::vector<feature_ref>& source_target_valuable_features) const
 {
    feature_set* result = target_props.owner().make_set();
 
@@ -271,12 +271,12 @@ generator::make_valuable_properties(const feature_set& target_props,
    merge(all_valuable_features, source_target_valuable_features);
    // FIXME: this two should be valuable only for specific target types not for all.
    // OBJ shouldn't be versioned of mangled because it is intermediate thing, but all final artifacts should
-   append_valuable_feature(all_valuable_features, *result->owner().create_feature("version", ""), result->owner());
-   append_valuable_feature(all_valuable_features, *result->owner().create_feature("mangling", "full"), result->owner());
-   append_valuable_feature(all_valuable_features, *result->owner().create_feature("mangling", "version"), result->owner());
-   append_valuable_feature(all_valuable_features, *result->owner().create_feature("mangling", "none"), result->owner());
+   append_valuable_feature(all_valuable_features, result->owner().create_feature("version", ""), result->owner());
+   append_valuable_feature(all_valuable_features, result->owner().create_feature("mangling", "full"), result->owner());
+   append_valuable_feature(all_valuable_features, result->owner().create_feature("mangling", "version"), result->owner());
+   append_valuable_feature(all_valuable_features, result->owner().create_feature("mangling", "none"), result->owner());
 
-   auto process_one = [&](const feature* f) {
+   auto process_one = [&](feature_ref f) {
       if (f->attributes().free || f->attributes().no_checks) {
          // copy all
          const std::string& name = f->name();
@@ -286,11 +286,11 @@ generator::make_valuable_properties(const feature_set& target_props,
          }
       } else {
          if (const feature* tpf = target_props.find(f->name().c_str(), f->value().c_str()))
-            result->join(tpf);
+            result->join(*tpf);
       }
    };
 
-   for (const feature* f : all_valuable_features)
+   for (auto& f : all_valuable_features)
       process_one(f);
 
    return result;

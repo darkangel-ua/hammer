@@ -3,6 +3,7 @@
 #include <functional>
 #include <hammer/core/feature_def.h>
 #include <hammer/core/feature_value_ns_fwd.h>
+#include <hammer/core/feature_ref.h>
 
 namespace hammer {
 
@@ -45,25 +46,25 @@ class feature_registry {
       make_set() const;
 
       // feature will belongs to registry that owns definition
-      feature*
+      feature_ref
       create_feature(const std::string& name,
                      const std::string& value) const;
       // path feature
-      feature*
+      feature_ref
       create_feature(const std::string& name,
                      const std::string& value,
                      const project& p) const;
       // dependency feature
-      feature*
+      feature_ref
       create_feature(const std::string& name,
                      const source_decl& s) const;
       // generated feature
-      feature*
+      feature_ref
       create_feature(const std::string& name,
                      const std::string& value,
                      const basic_target& t) const;
 
-      feature*
+      feature_ref
       create_feature(const feature& f,
                      const std::string& subfeature_name,
                      const std::string& subfeature_value) const;

@@ -14,7 +14,7 @@ make_requirements(feature_registry& fr,
                   const string& version)
 {
    requirements_decl result;
-   result.add(*fr.create_feature("version", version));
+   result.add(fr.create_feature("version", version));
 
    return result;
 }

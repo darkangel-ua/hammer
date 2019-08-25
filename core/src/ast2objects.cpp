@@ -86,7 +86,7 @@ make_one_arg(invocation_context& ctx,
              const ast::expression* e);
 
 static
-feature*
+feature_ref
 ast2feature(invocation_context& ctx,
             const ast::feature& f,
             const feature_registry& fr,
@@ -109,15 +109,14 @@ ast2feature(invocation_context& ctx,
                                handle_one_source(ctx,
                                                  ctx.current_project_.get_engine().get_type_registry(),
                                                  f.value()));
-   else if (const ast::path* p = ast::as<ast::path>(f.value())) {
-      feature* result = fr.create_feature(f.name().to_string(), p->to_string(), ctx.current_project_);
-      return result;
-   } else
+   else if (const ast::path* p = ast::as<ast::path>(f.value()))
+      return fr.create_feature(f.name().to_string(), p->to_string(), ctx.current_project_);
+   else
       throw std::runtime_error("Not implemented");
 }
 
 static
-feature*
+feature_ref
 ast2feature(invocation_context& ctx,
             const ast::feature& f)
 {
@@ -513,7 +512,7 @@ make_one_arg(invocation_context& ctx,
          case rule_argument_type::feature: {
             const ast::feature* f = ast::as<ast::feature>(e);
             assert(f);
-            return rule_manager_arg_ptr{new rule_manager_arg<feature>{*ast2feature(ctx, *f)}};
+            return rule_manager_arg_ptr{new rule_manager_arg<feature>{ast2feature(ctx, *f)}};
          }
 
          case rule_argument_type::feature_set: {
@@ -687,7 +686,7 @@ ast2feature_or_feature_set(invocation_context& ctx,
                            const ast::expression& e)
 {
    if (const ast::feature* f = ast::as<ast::feature>(&e))
-      return boost::make_unique<feature_or_feature_set_t>(ast2feature(ctx, *f));
+      return boost::make_unique<feature_or_feature_set_t>(&ast2feature(ctx, *f).get());
    else if (const ast::feature_set* fs = ast::as<ast::feature_set>(&e))
       return boost::make_unique<feature_or_feature_set_t>(ast2feature_set(ctx, *fs));
    else

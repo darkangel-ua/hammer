@@ -61,7 +61,7 @@ void pch_meta_target::compute_usage_requirements(feature_set& result,
 {
    // adding pch feature to usage requirements to mark dependent targets as built with pch
    this->usage_requirements().eval(constructed_target.properties(), &result);
-   feature* pch_feature = get_engine().feature_registry().create_feature("pch", "use", *last_constructed_main_target_);
+   feature_ref pch_feature = get_engine().feature_registry().create_feature("pch", "use", *last_constructed_main_target_);
    result.join(pch_feature);
    // add dependency on self to build pch before main target that use it
    if (!owner)
@@ -71,7 +71,7 @@ void pch_meta_target::compute_usage_requirements(feature_set& result,
       if (i->is_meta_target() &&
           i->target_path() == name()) // FIXME: skip self - should be more intelligent logic
       {
-         feature* self_dependency_feature = get_engine().feature_registry().create_feature("dependency", *i);
+         feature_ref self_dependency_feature = get_engine().feature_registry().create_feature("dependency", *i);
          result.join(self_dependency_feature);
          break;
       }

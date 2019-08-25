@@ -47,7 +47,7 @@ void alias_meta_target::instantiate_impl(instantiation_context& ctx,
          if (looks_like_local_target_ref(sd))
             new_sd.set_locals_allowed(true);
 
-         feature* f = get_engine().feature_registry().create_feature("source", new_sd);
+         feature_ref f = get_engine().feature_registry().create_feature("source", new_sd);
          sources_as_features.join(f);
       }
 

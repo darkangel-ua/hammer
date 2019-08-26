@@ -39,7 +39,6 @@ class feature_set {
       const_iterator find(const_iterator from, const char* name) const; // find next occurrence
       const_iterator find(const_iterator from, const std::string& name) const { return find(from, name.c_str()); }
       iterator find(iterator from, const char* name); // find next occurrence
-      feature_set* join(const feature_set& rhs) const;
       feature_set& join(feature_ref f);
       feature_set& join(const char* name, const char* value);
       feature_set& join(const feature_set& v);
@@ -51,7 +50,6 @@ class feature_set {
       size_t size() const { return features_.size(); }
       bool empty() const { return features_.empty(); }
       void clear();
-      void swap(feature_set& fs);
 
       bool operator == (const feature_set& rhs) const;
       bool compatible_with(const feature_set& rhs) const;

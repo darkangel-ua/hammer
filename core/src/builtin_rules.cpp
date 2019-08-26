@@ -318,7 +318,7 @@ valid_feature_attributes = {
    "propagated", "composite", "free", "path",
    "incidental", "optional",
    "dependency", "no-defaults", "no-checks",
-   "generated"
+   "generated", "ordered"
 };
 
 // FIXME: we need to create ast::error_expression instead of just diagnose errors
@@ -391,6 +391,10 @@ resolve_attributes(const one_or_list<parscore::identifier>* attributes)
    i = find(attributes->begin(), attributes->end(), "no-checks");
    if (i != attributes->end())
       result.no_checks = true;
+
+   i = find(attributes->begin(), attributes->end(), "ordered");
+   if (i != attributes->end())
+      result.ordered = true;
 
    return result;
 }

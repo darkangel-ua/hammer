@@ -15,6 +15,9 @@ struct feature_attributes {
    unsigned no_checks   : 1;
    // if feature has some generated target info
    unsigned generated   : 1;
+   // means that lower values can be overriden by higher
+   // say, <cxxstd>98 can be overriden by <cxxstd>11
+   unsigned ordered     : 1;
 };
 
 }

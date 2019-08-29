@@ -21,10 +21,7 @@
 #include <hammer/core/rule_manager.h>
 #include <hammer/core/ast2objects.h>
 
-using namespace boost;
 namespace fs = boost::filesystem;
-using std::string;
-using std::unique_ptr;
 
 namespace hammer {
 
@@ -121,17 +118,8 @@ void gcc_toolset::init_toolset(engine& e,
    generator_condition->join("toolset", (name() + "-" + td.version_).c_str());
    generator_condition->join(*td.constraints_);
 
-   std::shared_ptr<product_argument_writer> obj_product(new product_argument_writer("obj_product", e.get_type_registry().get(types::OBJ)));
-   std::shared_ptr<source_argument_writer> static_lib_sources(new source_argument_writer("static_lib_sources", e.get_type_registry().get(types::STATIC_LIB), true, source_argument_writer::FULL_PATH));
-   std::shared_ptr<source_argument_writer> shared_lib_sources(new source_argument_writer("shared_lib_sources", e.get_type_registry().get(types::SHARED_LIB), true, source_argument_writer::FULL_PATH));
-   std::shared_ptr<source_argument_writer> searched_lib_sources(new source_argument_writer("searched_lib_sources", e.get_type_registry().get(types::SEARCHED_STATIC_LIB), true, source_argument_writer::WITHOUT_PATH, "", "-l"));
-
-   std::shared_ptr<free_feature_arg_writer> searched_lib_searched_dirs(
-      new free_feature_arg_writer("searched_lib_searched_dirs",
-                                  e.feature_registry(),
-                                  "search",
-                                  string("-L \""),
-                                  string("\"")));
+   auto obj_product = std::make_shared<product_argument_writer>("obj_product", e.get_type_registry().get(types::OBJ));
+   auto searched_lib_searched_dirs = std::make_shared<free_feature_arg_writer>("searched_lib_searched_dirs", e.feature_registry(), "search", "-L \"", "\"");
 
    auto common_compiler_flags = std::make_shared<fs_argument_writer>("common-compiler-flags", e.feature_registry());
    common_compiler_flags
@@ -151,27 +139,27 @@ void gcc_toolset::init_toolset(engine& e,
          add("<address-model>32", "-m32").
          add("<address-model>64", "-m64");
 
-   std::shared_ptr<fs_argument_writer> link_flags(new fs_argument_writer("link_flags", e.feature_registry()));
+   auto link_flags = std::make_shared<fs_argument_writer>("link_flags", e.feature_registry());
    link_flags->add("<debug-symbols>on", "-g").
                add("<profiling>on", "-pg").
                add("<address-model>32", "-m32").
                add("<address-model>64", "-m64").
                add("<runtime-link>static", "-static-libgcc -static-libstdc++");
 
-   std::shared_ptr<free_feature_arg_writer> user_linkflags(new free_feature_arg_writer("user_linkflags", e.feature_registry(), "linkflags"));
-   std::shared_ptr<free_feature_arg_writer> user_cxx_flags(new free_feature_arg_writer("user_cxx_flags", e.feature_registry(), "cxxflags"));
-   std::shared_ptr<free_feature_arg_writer> user_c_flags(new free_feature_arg_writer("user_c_flags", e.feature_registry(), "cflags"));
-   std::shared_ptr<free_feature_arg_writer> user_archive_flags(new free_feature_arg_writer("user_archive_flags", e.feature_registry(), "archiveflags"));
+   auto user_linkflags = std::make_shared<free_feature_arg_writer>("user_linkflags", e.feature_registry(), "linkflags");
+   auto user_cxx_flags = std::make_shared<free_feature_arg_writer>("user_cxx_flags", e.feature_registry(), "cxxflags");
+   auto user_c_flags = std::make_shared<free_feature_arg_writer>("user_c_flags", e.feature_registry(), "cflags");
+   auto user_archive_flags = std::make_shared<free_feature_arg_writer>("user_archive_flags", e.feature_registry(), "archiveflags");
 
-   std::shared_ptr<free_feature_arg_writer> includes(new free_feature_arg_writer("includes", e.feature_registry(), "include", "-I\"", "\""));
-   std::shared_ptr<free_feature_arg_writer> generated_includes(new free_feature_arg_writer("generated-includes", e.feature_registry(), "__generated-include", "-I\"", "\""));
-   std::shared_ptr<free_feature_arg_writer> defines(new free_feature_arg_writer("defines", e.feature_registry(), "define", "-D"));
+   auto includes = std::make_shared<free_feature_arg_writer>("includes", e.feature_registry(), "include", "-I\"", "\"");
+   auto generated_includes = std::make_shared<free_feature_arg_writer>("generated-includes", e.feature_registry(), "__generated-include", "-I\"", "\"");
+   auto defines = std::make_shared<free_feature_arg_writer>("defines", e.feature_registry(), "define", "-D");
 
-   const string generator_prefix = name() + "-" + td.version_;
+   const std::string generator_prefix = name() + "-" + td.version_;
 
    // C -> OBJ
    {
-      std::shared_ptr<source_argument_writer> c_input(new source_argument_writer("c_input", e.get_type_registry().get(types::C), /*exact_type=*/false, source_argument_writer::FULL_PATH));
+      auto c_input = std::make_shared<source_argument_writer>("c_input", e.get_type_registry().get(types::C), /*exact_type=*/false, source_argument_writer::FULL_PATH);
       cmdline_builder obj_cmd(td.compiler_.string() +
                               " -x c -c $(common-compiler-flags) $(user_c_flags) $(generated-includes) $(includes) $(defines) -o \"$(obj_product)\" $(c_input)");
       obj_cmd += common_compiler_flags;
@@ -189,13 +177,13 @@ void gcc_toolset::init_toolset(engine& e,
       target.push_back(generator::produced_type(e.get_type_registry().get(types::OBJ)));
 
       add_compile_generators(e, obj_action, [&](const build_action_ptr& compile_action) {
-         return make_unique<gcc_generator>(e, generator_prefix + ".compiler.c", source, target, false, compile_action, generator_condition, td.c_flags_);
+         return boost::make_unique<gcc_generator>(e, generator_prefix + ".compiler.c", source, target, false, compile_action, generator_condition, td.c_flags_);
       });
    }
 
    // CPP -> OBJ
    {
-      std::shared_ptr<fs_argument_writer> cxxflags(new fs_argument_writer("cxxflags", e.feature_registry()));
+      auto cxxflags = std::make_shared<fs_argument_writer>("cxxflags", e.feature_registry());
       cxxflags->add("<rtti>off", "-fno-rtti").
                 add("<cxxstd>98", "-std=c++98").
                 add("<cxxstd>03", "-std=c++03").
@@ -204,7 +192,7 @@ void gcc_toolset::init_toolset(engine& e,
                 add("<cxxstd>17", "-std=c++17").
                 add("<cxxstd>2a", "-std=c++2a");
 
-      std::shared_ptr<source_argument_writer> cpp_input(new source_argument_writer("cpp_input", e.get_type_registry().get(types::CPP), /*exact_type=*/false, source_argument_writer::FULL_PATH));
+      auto cpp_input = std::make_shared<source_argument_writer>("cpp_input", e.get_type_registry().get(types::CPP), /*exact_type=*/false, source_argument_writer::FULL_PATH);
       cmdline_builder obj_cmd(td.compiler_.string() +
                               " -x c++ -c -ftemplate-depth-128 $(common-compiler-flags) $(cxxflags) $(user_cxx_flags) $(generated-includes) $(includes) $(defines) -o \"$(obj_product)\" $(cpp_input)");
       obj_cmd += common_compiler_flags;
@@ -223,15 +211,15 @@ void gcc_toolset::init_toolset(engine& e,
       target.push_back(generator::produced_type(e.get_type_registry().get(types::OBJ)));
 
       add_compile_generators(e, obj_action, [&](const build_action_ptr& compile_action) {
-         return make_unique<gcc_generator>(e, generator_prefix + ".compiler.cpp", source, target, false, compile_action, generator_condition, td.cxx_flags_);
+         return boost::make_unique<gcc_generator>(e, generator_prefix + ".compiler.cpp", source, target, false, compile_action, generator_condition, td.cxx_flags_);
       });
    }
 
    // ... -> SHARED_LIB
    {
-      std::shared_ptr<source_argument_writer> obj_sources(new source_argument_writer("obj_sources", e.get_type_registry().get(types::OBJ)));
-      std::shared_ptr<product_argument_writer> shared_lib_product(new product_argument_writer("shared_lib_product", e.get_type_registry().get(types::SHARED_LIB)));
-      std::shared_ptr<unix_libraries_argument_writer> libraries_writer(new unix_libraries_argument_writer("libraries", linker_type::GNU, e));
+      auto obj_sources = std::make_shared<source_argument_writer>("obj_sources", e.get_type_registry().get(types::OBJ));
+      auto shared_lib_product = std::make_shared<product_argument_writer>("shared_lib_product", e.get_type_registry().get(types::SHARED_LIB));
+      auto libraries_writer = std::make_shared<unix_libraries_argument_writer>("libraries", linker_type::GNU, e);
       cmdline_builder shared_lib_cmd(td.linker_.string() + " -shared $(link_flags) $(user_linkflags) $(searched_lib_searched_dirs) -o \"$(shared_lib_product)\" $(obj_sources) $(libraries)\n");
       shared_lib_cmd += link_flags;
       shared_lib_cmd += user_linkflags;
@@ -254,23 +242,16 @@ void gcc_toolset::init_toolset(engine& e,
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::SEARCHED_SHARED_LIB), 0, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::SHARED_LIB), true));
 
-      unique_ptr<generator> g(new exe_and_shared_lib_generator(e, generator_prefix + ".linker.shared_lib", source, target, true, shared_lib_action, generator_condition, td.link_flags_));
+      auto g = boost::make_unique<exe_and_shared_lib_generator>(e, generator_prefix + ".linker.shared_lib", source, target, true, shared_lib_action, generator_condition, td.link_flags_);
       e.generators().insert(std::move(g));
    }
 
    // ... -> EXE
    {
-      std::shared_ptr<free_feature_arg_writer> ld_library_path_dirs(
-         new free_feature_arg_writer("ld_library_path_dirs",
-                                     e.feature_registry(),
-                                     "search",
-                                     string(),
-                                     string(),
-                                     ":"));
-
-      std::shared_ptr<source_argument_writer> obj_sources(new source_argument_writer("obj_sources", e.get_type_registry().get(types::OBJ)));
-      std::shared_ptr<product_argument_writer> exe_product(new product_argument_writer("exe_product", e.get_type_registry().get(types::EXE)));
-      std::shared_ptr<unix_libraries_argument_writer> libraries_writer(new unix_libraries_argument_writer("libraries", linker_type::GNU, e));
+      auto ld_library_path_dirs = std::make_shared<free_feature_arg_writer>("ld_library_path_dirs", e.feature_registry(), "search", std::string(), std::string(), ":");
+      auto obj_sources = std::make_shared<source_argument_writer>("obj_sources", e.get_type_registry().get(types::OBJ));
+      auto exe_product = std::make_shared<product_argument_writer>("exe_product", e.get_type_registry().get(types::EXE));
+      auto libraries_writer = std::make_shared<unix_libraries_argument_writer>("libraries", linker_type::GNU, e);
       auto exe_action = std::make_shared<cmdline_action>("link-exe", exe_product);
       cmdline_builder exe_cmd("LD_LIBRARY_PATH=$(ld_library_path_dirs):LD_LIBRARY_PATH " + td.linker_.string() + " $(link_flags) $(user_linkflags) $(searched_lib_searched_dirs) -o \"$(exe_product)\" $(obj_sources) $(libraries)\n");
 
@@ -295,14 +276,14 @@ void gcc_toolset::init_toolset(engine& e,
       target.push_back(generator::produced_type(e.get_type_registry().get(types::EXE)));
 
       add_link_generators(e, exe_action, [&](const build_action_ptr& link_action) {
-         return make_unique<exe_and_shared_lib_generator>(e, generator_prefix + ".linker.exe", source, target, true, link_action, generator_condition, td.link_flags_);
+         return boost::make_unique<exe_and_shared_lib_generator>(e, generator_prefix + ".linker.exe", source, target, true, link_action, generator_condition, td.link_flags_);
       });
    }
 
    // ... -> STATIC_LIB
    {
-      std::shared_ptr<source_argument_writer> obj_sources(new source_argument_writer("obj_sources", e.get_type_registry().get(types::OBJ)));
-      std::shared_ptr<product_argument_writer> static_lib_product(new product_argument_writer("static_lib_product", e.get_type_registry().get(types::STATIC_LIB)));
+      auto obj_sources = std::make_shared<source_argument_writer>("obj_sources", e.get_type_registry().get(types::OBJ));
+      auto static_lib_product = std::make_shared<product_argument_writer>("static_lib_product", e.get_type_registry().get(types::STATIC_LIB));
       cmdline_builder static_lib_cmd(td.librarian_.string() + " $(user_archive_flags) rc $(static_lib_product) $(obj_sources)");
 
       static_lib_cmd += static_lib_product;
@@ -321,7 +302,7 @@ void gcc_toolset::init_toolset(engine& e,
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::SEARCHED_STATIC_LIB), 0, 0));
       source.push_back(generator::consumable_type(e.get_type_registry().get(types::SEARCHED_SHARED_LIB), 0, 0));
       target.push_back(generator::produced_type(e.get_type_registry().get(types::STATIC_LIB), true));
-      unique_ptr<generator> g(new static_lib_generator(e, generator_prefix + ".linker.static_lib", source, target, true, static_lib_action, generator_condition));
+      auto g = boost::make_unique<static_lib_generator>(e, generator_prefix + ".linker.static_lib", source, target, true, static_lib_action, generator_condition);
       e.generators().insert(std::move(g));
    }
 

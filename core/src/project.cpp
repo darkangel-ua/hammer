@@ -278,22 +278,28 @@ int compute_alternative_rank(const feature_set& target_properties,
                              const feature_set& build_request) {
    unsigned rank = 0;
    for (feature_ref tf : target_properties) {
-      if (!(tf->attributes().free ||
-            tf->attributes().incidental))
-      {
-         auto bf = build_request.find(tf->name());
-         if (bf != build_request.end())
+      if (tf->attributes().free || tf->attributes().incidental)
+         continue;
+
+      auto bf = build_request.find(tf->name());
+      if (bf != build_request.end()) {
+         if (tf->attributes().ordered) {
+            if (tf->value_index() > (*bf)->value_index())
+               return -1;
+            else
+               ++rank;
+         } else {
             if (tf->value() != (**bf).value())
                return -1;
             else
                ++rank;
-         else {
-            // feature is not in build_request
-            if (tf->name() == "override")
-               rank += 10000;
-            else
-               rank += tf->definition().defaults_contains(tf->value());
          }
+      } else {
+         // feature is not in build_request
+         if (tf->name() == "override")
+            rank += 10000;
+         else
+            rank += tf->definition().defaults_contains(tf->value());
       }
    }
 

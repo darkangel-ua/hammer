@@ -1,5 +1,7 @@
 #include <algorithm>
 #include <stdexcept>
+#include <cassert>
+#include <boost/range/algorithm/find_if.hpp>
 #include <hammer/core/feature.h>
 #include <hammer/core/subfeature.h>
 
@@ -79,6 +81,17 @@ bool feature::equal_without_subfeatures(const feature& rhs) const {
       return false;
 
    return true;
+}
+
+std::size_t
+feature::value_index() const {
+   assert(!attributes().free && !attributes().no_defaults);
+
+   auto i = boost::find_if(definition().legal_values(), [&] (const feature_def::legal_value& v) {
+      return value() == v.value_;
+   });
+
+   return std::distance(definition().legal_values().begin(), i);
 }
 
 bool feature::operator == (const feature& rhs) const {

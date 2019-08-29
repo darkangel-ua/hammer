@@ -73,7 +73,7 @@ void just_feature_requirement::eval(const feature_set& build_request,
                                     feature_set* public_result) const
 {
    result->join(f_);
-   
+
    if (is_public() && public_result)
       public_result->join(f_);
 }
@@ -124,19 +124,22 @@ requirement_condition::clone() const
 }
 
 bool requirement_condition_op_feature::eval(const feature_set& build_request,
-                                            feature_set* result) const
-{
+                                            feature_set* result) const {
    if (build_request.contains(f_) != build_request.end() || result->contains(f_) != result->end())
       return true;
-   else {
-      if (build_request.find(f_->name()) != build_request.end() ||
-          result->find(f_->name()) != result->end() ||
-          !f_->definition().defaults_contains(f_->value()))
-      {
-         return false;
-      } else
-         return true;
-   }
+
+   auto bf = build_request.find(f_->name());
+   if (bf != build_request.end() && f_->attributes().ordered)
+      return f_->value_index() > (*bf)->value_index();
+
+   if (bf != build_request.end() ||
+       result->find(f_->name()) != result->end() ||
+       !f_->definition().defaults_contains(f_->value()))
+   {
+      return false;
+   } else
+      return true;
+
 }
 
 }

@@ -1,0 +1,14 @@
+# test that we can select and build lib1 when <cxxstd>14 used 
+
+exe test
+   : sources =
+       main.cpp lib1/<cxxstd>14
+   ;
+
+local
+lib lib1
+   : sources =
+      lib1.cpp
+   : requirements =
+      <cxxstd>11 
+   ;

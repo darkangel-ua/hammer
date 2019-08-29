@@ -1,0 +1,7 @@
+test {
+    main.cpp {}
+    lib1 [ features = <cxxstd>14; ] {
+        lib1.cpp {}
+    }
+}
+

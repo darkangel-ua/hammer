@@ -31,25 +31,30 @@ feature_set& feature_set::join(const char* name, const char* value)
 }
 
 feature_set&
-feature_set::join(feature_ref f)
-{
-   if (!f->attributes().free) {
-      iterator i = find(f->name(), f->get_value_ns());
-      if (i != end()) {
-         if ((**i).value() != f->value()) {
-            *i = f;
-            if (f->attributes().composite)
-               f->definition().expand_composites(f->value(), this);
-         }
-      } else {
+feature_set::join(feature_ref f) {
+   if (f->attributes().free) {
+      if (find(*f) == end())
          features_.push_back(f);
+
+      return *this;
+   }
+
+   iterator i = find(f->name(), f->get_value_ns());
+   if (i != end()) {
+      if ((**i).value() != f->value()) {
+         bool leave_unchanged = f->attributes().ordered && (**i).value_index() >= f->value_index();
+         if (!leave_unchanged)
+            *i = f;
+
          if (f->attributes().composite)
             f->definition().expand_composites(f->value(), this);
       }
-   } else {
-      if (find(*f) == end())
-         features_.push_back(f);
+      return *this;
    }
+
+   features_.push_back(f);
+   if (f->attributes().composite)
+      f->definition().expand_composites(f->value(), this);
    
    return *this;
 }

@@ -1,0 +1,15 @@
+# test that we fail to select alternative when use lower in order value 
+# options: should-fail=true
+
+exe test
+   : sources =
+       main.cpp lib1/<cxxstd>11
+   ;
+
+local
+lib lib1
+   : sources =
+      lib1.cpp
+   : requirements =
+      <cxxstd>14 
+   ;

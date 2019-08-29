@@ -69,6 +69,10 @@ class feature {
       const subfeatures_t&
       subfeatures() const { return subfeatures_; }
 
+      // looking for position of value in definition().legal_values()
+      std::size_t
+      value_index() const;
+
       // <toolset>gcc will be equal only to <toolset>gcc - full match, including subfeatures
       bool operator == (const feature& rhs) const;
 

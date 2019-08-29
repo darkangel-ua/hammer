@@ -133,22 +133,23 @@ void gcc_toolset::init_toolset(engine& e,
                                   string("-L \""),
                                   string("\"")));
 
-   std::shared_ptr<fs_argument_writer> cflags(new fs_argument_writer("cflags", e.feature_registry()));
-   cflags->add("<optimization>speed", "-O3").
-           add("<optimization>space", "-Os").
-           add("<optimization>off", "-O0").
-           add("<inlining>off", "-fno-inline").
-           add("<inlining>on", "-Wno-inline").
-           add("<inlining>full", "-finline-functions -Wno-inline").
-           add("<warnings>on", "-Wall").
-           add("<warnings>off", "-w").
-           add("<warnings>all", "-Wall -pedantic").
-           add("<warnings-as-errors>on", "-Werror").
-           add("<debug-symbols>on", "-g").
-           add("<profiling>on", "-pg").
-           add("<pic>on", "-fPIC").
-           add("<address-model>32", "-m32").
-           add("<address-model>64", "-m64");
+   auto common_compiler_flags = std::make_shared<fs_argument_writer>("common-compiler-flags", e.feature_registry());
+   common_compiler_flags
+       ->add("<optimization>speed", "-O3").
+         add("<optimization>space", "-Os").
+         add("<optimization>off", "-O0").
+         add("<inlining>off", "-fno-inline").
+         add("<inlining>on", "-Wno-inline").
+         add("<inlining>full", "-finline-functions -Wno-inline").
+         add("<warnings>on", "-Wall").
+         add("<warnings>off", "-w").
+         add("<warnings>all", "-Wall -pedantic").
+         add("<warnings-as-errors>on", "-Werror").
+         add("<debug-symbols>on", "-g").
+         add("<profiling>on", "-pg").
+         add("<pic>on", "-fPIC").
+         add("<address-model>32", "-m32").
+         add("<address-model>64", "-m64");
 
    std::shared_ptr<fs_argument_writer> link_flags(new fs_argument_writer("link_flags", e.feature_registry()));
    link_flags->add("<debug-symbols>on", "-g").
@@ -172,8 +173,8 @@ void gcc_toolset::init_toolset(engine& e,
    {
       std::shared_ptr<source_argument_writer> c_input(new source_argument_writer("c_input", e.get_type_registry().get(types::C), /*exact_type=*/false, source_argument_writer::FULL_PATH));
       cmdline_builder obj_cmd(td.compiler_.string() +
-                              " -x c -c $(cflags) $(user_c_flags) $(generated-includes) $(includes) $(defines) -o \"$(obj_product)\" $(c_input)");
-      obj_cmd += cflags;
+                              " -x c -c $(common-compiler-flags) $(user_c_flags) $(generated-includes) $(includes) $(defines) -o \"$(obj_product)\" $(c_input)");
+      obj_cmd += common_compiler_flags;
       obj_cmd += user_c_flags;
       obj_cmd += c_input;
       obj_cmd += generated_includes;
@@ -195,12 +196,18 @@ void gcc_toolset::init_toolset(engine& e,
    // CPP -> OBJ
    {
       std::shared_ptr<fs_argument_writer> cxxflags(new fs_argument_writer("cxxflags", e.feature_registry()));
-      cxxflags->add("<rtti>off", "-fno-rtti");
+      cxxflags->add("<rtti>off", "-fno-rtti").
+                add("<cxxstd>98", "-std=c++98").
+                add("<cxxstd>03", "-std=c++03").
+                add("<cxxstd>11", "-std=c++11").
+                add("<cxxstd>14", "-std=c++14").
+                add("<cxxstd>17", "-std=c++17").
+                add("<cxxstd>2a", "-std=c++2a");
 
       std::shared_ptr<source_argument_writer> cpp_input(new source_argument_writer("cpp_input", e.get_type_registry().get(types::CPP), /*exact_type=*/false, source_argument_writer::FULL_PATH));
       cmdline_builder obj_cmd(td.compiler_.string() +
-                              " -x c++ -c -ftemplate-depth-128 $(cflags) $(cxxflags) $(user_cxx_flags) $(generated-includes) $(includes) $(defines) -o \"$(obj_product)\" $(cpp_input)");
-      obj_cmd += cflags;
+                              " -x c++ -c -ftemplate-depth-128 $(common-compiler-flags) $(cxxflags) $(user_cxx_flags) $(generated-includes) $(includes) $(defines) -o \"$(obj_product)\" $(cpp_input)");
+      obj_cmd += common_compiler_flags;
       obj_cmd += cxxflags;
       obj_cmd += user_cxx_flags;
       obj_cmd += cpp_input;

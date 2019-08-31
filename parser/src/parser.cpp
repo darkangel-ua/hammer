@@ -75,8 +75,8 @@ createTokenFromToken(pANTLR3_BASE_TREE_ADAPTOR adaptor,
 }
 
 static
-void displayRecognitionError(struct ANTLR3_BASE_RECOGNIZER_struct* recognizer,
-                             pANTLR3_UINT8* tokenNames) {
+void lexerDisplayRecognitionError(struct ANTLR3_BASE_RECOGNIZER_struct* recognizer,
+                                  pANTLR3_UINT8* tokenNames) {
    pANTLR3_LEXER lexer = (pANTLR3_LEXER)(recognizer->super);
    diagnostic& diag = *static_cast<diagnostic*>(lexer->super);
 
@@ -92,25 +92,42 @@ void displayRecognitionError(struct ANTLR3_BASE_RECOGNIZER_struct* recognizer,
 }
 
 static
+void parserDisplayRecognitionError(struct ANTLR3_BASE_RECOGNIZER_struct* recognizer,
+                                   pANTLR3_UINT8* tokenNames) {
+   pANTLR3_PARSER parser = (pANTLR3_PARSER)(recognizer->super);
+   diagnostic& diag = *static_cast<diagnostic*>(parser->super);
+
+   pANTLR3_EXCEPTION	ex = parser->rec->state->exception;
+
+   pANTLR3_COMMON_TOKEN errorToken = (pANTLR3_COMMON_TOKEN)(ex->token);
+   if (errorToken->type == ANTLR3_TOKEN_EOF)
+      diag.error(parscore::source_location(errorToken), "Unexpected end of input");
+   else
+      diag.error(parscore::source_location(errorToken), "Parser error");
+}
+
+static
 ast_hamfile_ptr
 parse(std::unique_ptr<parser_context> ctx,
       sema::actions& actions,
       diagnostic& diag)
 {
    ctx->lexer_ = hammer_v2LexerNew(ctx->input_);
-   ctx->lexer_->pLexer->rec->displayRecognitionError = displayRecognitionError;
+   ctx->lexer_->pLexer->rec->displayRecognitionError = lexerDisplayRecognitionError;
    ctx->lexer_->pLexer->super = &diag;
 
    ctx->tstream_ = antlr3CommonTokenStreamSourceNew(ANTLR3_SIZE_HINT, TOKENSOURCE(ctx->lexer_));
    ctx->parser_ = hammer_v2ParserNew(ctx->tstream_);
    ctx->parser_->adaptor->createTokenFromToken = createTokenFromToken;
+   ctx->parser_->pParser->rec->displayRecognitionError = parserDisplayRecognitionError;
+   ctx->parser_->pParser->super = &diag;
 
    ctx->langAST_ = ctx->parser_->hamfile(ctx->parser_);
 //   pANTLR3_STRING s = langAST_.tree->toStringTree(langAST_.tree);
    // FIXME: quick hack to be fixed later
 
    if (ctx->parser_->pParser->rec->state->errorCount)
-      throw std::runtime_error("Parsing error");
+      return {};
 
    pANTLR3_COMMON_TREE_NODE_STREAM nodes;
    phammer_sema_v2          hammer_sema;

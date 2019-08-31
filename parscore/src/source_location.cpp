@@ -38,6 +38,9 @@ source_location::line_content() const
 {
    std::string result;
 
+   if (antlr_token_->type == ANTLR3_TOKEN_EOF)
+      return "EOF";
+
    if (!antlr_token_->lineStart)
       return "Internal error: lineStart == nullptr";
 

@@ -179,8 +179,10 @@ void remove_duplicates(deduplicator_t& deduplicator,
    static
    void apply_default_build(feature_set& requirements,
                             const feature_set& build_request,
-                            const feature_set& default_build) {
-      for (auto& df : default_build ) {
+                            const requirements_decl& default_build) {
+      feature_set* evaluated_default_build = requirements.owner().make_set();
+      default_build.eval(build_request, evaluated_default_build);
+      for (auto& df : *evaluated_default_build ) {
          if (build_request.find(df->name()) == build_request.end())
             requirements.join(df);
       }
@@ -197,8 +199,7 @@ void remove_duplicates(deduplicator_t& deduplicator,
       feature_set* mt_fs = build_request.clone();
       feature_set* public_requirements = get_engine().feature_registry().make_set();
       requirements().eval(build_request, mt_fs, public_requirements);
-      if (default_build())
-         apply_default_build(*mt_fs, build_request, *default_build());
+      apply_default_build(*mt_fs, build_request, default_build());
       apply_project_dependencies(*public_requirements, *this);
       usage_requirements->join(*public_requirements);
 

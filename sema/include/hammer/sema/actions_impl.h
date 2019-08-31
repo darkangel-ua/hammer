@@ -170,6 +170,11 @@ class actions_impl : public actions {
                               const rule_argument_type_desc& nested_type,
                               const ast::expression* arg);
       const ast::expression*
+      process_simple(const rule_argument_type type,
+                     const char* prefix,
+                     const rule_argument& ra,
+                     const ast::expression* arg);
+      const ast::expression*
       wrap_public(const ast::expression* e,
                   const ast::public_expr* pe);
 

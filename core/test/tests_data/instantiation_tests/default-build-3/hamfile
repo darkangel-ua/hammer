@@ -1,0 +1,8 @@
+# condions are not allowed in default-build's
+# options: load-should-fail=true
+exe test 
+   : sources = 
+      main.cpp 
+   : default-build =
+      (<link>static -> <define>FOO)
+   ;

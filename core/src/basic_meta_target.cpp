@@ -29,10 +29,7 @@ basic_meta_target::basic_meta_target(hammer::project* p,
                                      usage_requirements_(usage_req),
                                      is_explicit_(false)
 {
-   if (p->default_build())
-      default_build_ = p->default_build()->clone();
-   else
-      default_build_ = nullptr;
+   default_build_ = get_project().default_build();
 }
 
 void basic_meta_target::sources(const sources_decl& s) {
@@ -43,10 +40,9 @@ void basic_meta_target::add_sources(const sources_decl& s) {
    sources_.insert(s);
 }
 
-void basic_meta_target::default_build(const feature_set& v) {
-   default_build_ = get_project().default_build() ? get_project().default_build()->clone()
-                                                  : get_engine().feature_registry().make_set();
-   default_build_->join(v);
+void basic_meta_target::default_build(const requirements_decl& v) {
+   default_build_ = get_project().default_build();
+   default_build_.append(v);
 }
 
 const location_t&

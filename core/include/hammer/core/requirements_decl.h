@@ -143,7 +143,7 @@ class requirements_decl {
                 feature_set* result,
                 feature_set* public_result = nullptr) const;
       void insert_infront(const requirements_decl& v);
-      void insert(const requirements_decl& v); // insert in the end
+      void append(const requirements_decl& v); // insert in the end
       bool empty() const;
       virtual ~requirements_decl();
 

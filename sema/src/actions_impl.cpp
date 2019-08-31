@@ -540,7 +540,7 @@ actions_impl::process_one_or_list_arg(const char* prefix,
          }
       } else if (auto type = nested_type.as_struct())
          return process_struct_arg(prefix, ra, *type, e);
-      else if (auto type = nested_type.as_variant())
+      else if (nested_type.as_variant())
          throw std::runtime_error("[actions_impl::process_one_or_list_arg]: variants not implemented");
 
       assert(false && "[actions_impl::process_one_or_list_arg]: Unhandled argument type!");
@@ -555,6 +555,54 @@ actions_impl::process_one_or_list_arg(const char* prefix,
       return new (ctx_) list_of(values);
    } else
       return process_one(arg);
+}
+
+const ast::expression*
+actions_impl::process_simple(const rule_argument_type type,
+                             const char* prefix,
+                             const rule_argument& ra,
+                             const ast::expression* arg) {
+   switch(type) {
+      case rule_argument_type::identifier:
+         return process_identifier_arg(prefix, ra, arg);
+
+      case rule_argument_type::feature:
+         return process_feature_arg(prefix, ra, arg);
+
+      case rule_argument_type::feature_set:
+         return process_feature_set_arg(prefix, ra, arg);
+
+      case rule_argument_type::sources:
+         return process_sources_arg(ra, arg);
+
+      case rule_argument_type::requirement_set:
+         return process_requirements_decl_arg(prefix, ra, arg);
+
+      case rule_argument_type::usage_requirements:
+         return process_usage_requirements_arg(ra, arg);
+
+      case rule_argument_type::path:
+         return process_path_arg(prefix, ra, arg);
+
+      case rule_argument_type::wcpath:
+         return process_wcpath_arg(prefix, ra, arg);
+
+      case rule_argument_type::ast_expression:
+         return arg;
+
+      case rule_argument_type::feature_or_feature_set:
+         return process_feature_of_feature_set_arg(prefix, ra, arg);
+
+      case rule_argument_type::target_ref:
+         return process_target_ref_arg(prefix, ra, arg);
+
+      case rule_argument_type::target_ref_mask:
+         return process_target_ref_mask_arg(prefix, ra, arg);
+
+      default:
+         assert(false && "Unknown argument type");
+         abort();
+   }
 }
 
 const expression*
@@ -574,52 +622,31 @@ actions_impl::process_one_arg(const char* prefix,
       return arg;
 
    const auto error_count = diag_.error_count();
-   arg = ra.ast_transformer() ? ra.ast_transformer()(ctx_, diag_, arg) : arg;
+
+   bool need_postprocess = false;
+   arg = [&] {
+      if (!ra.ast_transformer())
+         return arg;
+
+      // don't process arguments that is not ast - process them after
+      if (auto simple_type_ptr = ra.type().as_simple()) {
+         if (*simple_type_ptr != rule_argument_type::ast_expression) {
+            need_postprocess = true;
+            return arg;
+         }
+      }
+
+      return ra.ast_transformer()(ctx_, diag_, arg);
+   } ();
+
    if (error_count != diag_.error_count())
       return arg;
 
-   if (auto simple_type_ptr = ra.type().as_simple()) {
-      switch(*simple_type_ptr) {
-         case rule_argument_type::identifier:
-            return process_identifier_arg(prefix, ra, arg);
-
-         case rule_argument_type::feature:
-            return process_feature_arg(prefix, ra, arg);
-
-         case rule_argument_type::feature_set:
-            return process_feature_set_arg(prefix, ra, arg);
-
-         case rule_argument_type::sources:
-            return process_sources_arg(ra, arg);
-
-         case rule_argument_type::requirement_set:
-            return process_requirements_decl_arg(prefix, ra, arg);
-
-         case rule_argument_type::usage_requirements:
-            return process_usage_requirements_arg(ra, arg);
-
-         case rule_argument_type::path:
-            return process_path_arg(prefix, ra, arg);
-
-         case rule_argument_type::wcpath:
-            return process_wcpath_arg(prefix, ra, arg);
-
-         case rule_argument_type::ast_expression:
-            return arg;
-
-         case rule_argument_type::feature_or_feature_set:
-            return process_feature_of_feature_set_arg(prefix, ra, arg);
-
-         case rule_argument_type::target_ref:
-            return process_target_ref_arg(prefix, ra, arg);
-
-         case rule_argument_type::target_ref_mask:
-            return process_target_ref_mask_arg(prefix, ra, arg);
-
-         default:
-            assert(false && "Unknown argument type");
-            abort();
-      }
+   if (auto simple_type_ptr = ra.type().as_simple()) {    
+      auto result = process_simple(*simple_type_ptr, prefix, ra, arg);
+      if (need_postprocess)
+         result = ra.ast_transformer()(ctx_, diag_, result);
+      return result;
    } else if (auto list_type_ptr = ra.type().as_list())
       return process_one_or_list_arg(prefix, ra, *list_type_ptr->nested_type_, arg);
    else if (auto struct_type_ptr = ra.type().as_struct()) {

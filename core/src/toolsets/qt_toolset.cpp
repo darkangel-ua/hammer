@@ -349,9 +349,9 @@ void add_lib(project& qt_project,
       feature_ref source_feature = e.feature_registry().create_feature("source", sd);
       usage_req.add(boost::make_unique<just_feature_requirement>(source_feature));
 
-      lib_debug->usage_requirements().insert(usage_req);
-      lib_release->usage_requirements().insert(usage_req);
-      lib_profile->usage_requirements().insert(usage_req);
+      lib_debug->usage_requirements().append(usage_req);
+      lib_release->usage_requirements().append(usage_req);
+      lib_profile->usage_requirements().append(usage_req);
    }
 
    qt_project.add_target(std::move(lib_debug));

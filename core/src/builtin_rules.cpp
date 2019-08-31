@@ -23,6 +23,7 @@
 #include <hammer/ast/path.h>
 #include <hammer/ast/list_of.h>
 #include <hammer/ast/casts.h>
+#include <hammer/ast/requirement_set.h>
 #include <hammer/core/diagnostic.h>
 #include <hammer/core/feature_set.h>
 #include <hammer/core/feature.h>
@@ -110,12 +111,38 @@ void process_project_id(invocation_context& ctx,
 }
 
 static
+const ast::expression*
+default_build_checker(ast::context& ctx,
+                      diagnostic& diag,
+                      const ast::expression* e) {
+   assert(ast::as<ast::requirement_set>(e));
+   auto rs = ast::as<ast::requirement_set>(e);
+
+   auto process_one = [&] (const ast::expression* requirement) -> const ast::expression* {
+      if (ast::as<ast::feature>(requirement))
+         return requirement;
+      else {
+         diag.error(e->start_loc(), "Only plain features allowed here");
+         return new (ctx) ast::error_expression(requirement);
+      }
+   };
+
+   if (const ast::list_of* l = ast::as<ast::list_of>(rs->requirements())) {
+      auto elements = ast::expressions_t{ast::expressions_t::allocator_type{ctx}};
+      for (const ast::expression* e : l->values())
+         elements.push_back(process_one(e));
+      return new (ctx) ast::requirement_set(new (ctx) ast::list_of(elements));
+   } else
+      return new (ctx) ast::requirement_set(process_one(rs->requirements()));
+}
+
+static
 void project_rule(invocation_context& ctx,
                   const ast::expression* id,
                   requirements_decl* requirements,
                   usage_requirements_decl* usage_requirements,
                   const one_or_list<details::project_dependency>* dependencies,
-                  const feature_set* default_build)
+                  const requirements_decl* default_build)
 {
    process_project_id(ctx, id);
 
@@ -144,7 +171,7 @@ void exe_rule(target_invocation_context& ctx,
               const parscore::identifier& id,
               const sources_decl& sources,
               const requirements_decl* requirements,
-              const feature_set* default_build,
+              const requirements_decl* default_build,
               const usage_requirements_decl* usage_requirements)
 {
    unique_ptr<basic_meta_target> mt(new typed_meta_target(&ctx.current_project_,
@@ -184,7 +211,7 @@ void lib_rule(target_invocation_context& ctx,
               const parscore::identifier& id,
               const sources_decl& sources,
               const requirements_decl* requirements,
-              const feature_set* default_build,
+              const requirements_decl* default_build,
               const usage_requirements_decl* usage_requirements)
 {
    unique_ptr<basic_meta_target> mt(new lib_meta_target(&ctx.current_project_,
@@ -205,7 +232,7 @@ void header_lib_rule(target_invocation_context& ctx,
                      const parscore::identifier& id,
                      const sources_decl* sources,
                      const requirements_decl* requirements,
-                     const feature_set* default_build,
+                     const requirements_decl* default_build,
                      const usage_requirements_decl* usage_requirements)
 {
    unique_ptr<basic_meta_target> mt(new header_lib_meta_target(&ctx.current_project_,
@@ -637,7 +664,7 @@ void obj_rule(target_invocation_context& ctx,
               const parscore::identifier& name,
               const sources_decl& sources,
               const requirements_decl* requirements,
-              const feature_set* default_build,
+              const requirements_decl* default_build,
               const usage_requirements_decl* usage_requirements)
 {
    unique_ptr<basic_meta_target> mt(new obj_meta_target(&ctx.current_project_,
@@ -1101,7 +1128,7 @@ c_as_cpp_rule(invocation_context& ctx,
 
 void install_builtin_rules(rule_manager& rm)
 {
-   rm.add_rule("project", project_rule, {{"id", project_id_validator}, "requirements", "usage-requirements", "dependencies", "default-build"});
+   rm.add_rule("project", project_rule, {{"id", project_id_validator}, "requirements", "usage-requirements", "dependencies", {"default-build", default_build_checker}});
    rm.add_rule("use-project", use_project_rule, {{"alias", use_project_alias_validator}, "location", "requirements", {"match", use_project_match_validator}});
    rm.add_rule("feature", feature_rule, {"name", "values", {"attributes", feature_attributes_validator}});
    rm.add_rule("feature.compose", feature_compose_rule, {"feature", "components"});
@@ -1109,15 +1136,15 @@ void install_builtin_rules(rule_manager& rm)
    rm.add_rule("variant", variant_rule, {"name", "base", "components"});
    rm.add_rule("glob", glob_rule, {{"patterns", glob_patterns_validator}, "exceptions"});
    rm.add_rule("rglob", rglob_rule, {{"patterns", glob_patterns_validator}, "exceptions"});
-   rm.add_target("exe", exe_rule, {"name", "sources", "requirements", "default-build", "usage-requirements"});
-   rm.add_target("lib", lib_rule, {"name", "sources", "requirements", "default-build", "usage-requirements"});
+   rm.add_target("exe", exe_rule, {"name", "sources", "requirements", {"default-build", default_build_checker}, "usage-requirements"});
+   rm.add_target("lib", lib_rule, {"name", "sources", "requirements", {"default-build", default_build_checker}, "usage-requirements"});
    rm.add_target("alias", alias_rule, {"name", "sources", "requirements", "usage-requirements"});
-   rm.add_target("header-lib", header_lib_rule, {"name", "sources", "requirements", "default-build", "usage-requirements"});
+   rm.add_target("header-lib", header_lib_rule, {"name", "sources", "requirements", {"default-build", default_build_checker}, "usage-requirements"});
    rm.add_target("prebuilt-lib", prebuilt_lib_rule, {"name", "sources", "filename", "requirements", "usage-requirements"});
    rm.add_target("searched-shared-lib", searched_shared_lib_rule, {"name", "sources", "libname", "requirements", "usage-requirements"});
    rm.add_target("searched-static-lib", searched_static_lib_rule, {"name", "sources", "libname", "requirements", "usage-requirements"});
    rm.add_target("copy", copy_rule, {"name", "sources", "destination", "types", "recursive"});
-   rm.add_target("obj", obj_rule, {"name", "sources", "requirements", "default-build", "usage-requirements"});
+   rm.add_target("obj", obj_rule, {"name", "sources", "requirements", {"default-build", default_build_checker}, "usage-requirements"});
    rm.add_target("testing.suite", testing_suite_rule, {"name", "sources", "common-sources", "common-requirements"});
    rm.add_target("testing.run", testing_run_rule, {"sources", "requirements", "args", "name", { "recheck", testing_run_recheck_validator }});
    rm.add_rule("testing.run-many", testing_run_many_rule, {"sources", "common-sources", "requirements", "args", "name-template", { "recheck", testing_run_recheck_validator }});

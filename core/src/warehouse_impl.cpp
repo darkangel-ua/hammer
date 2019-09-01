@@ -29,6 +29,7 @@
 #include <hammer/core/feature.h>
 #include <hammer/core/virtual_project.h>
 #include <hammer/core/build_request.h>
+#include <hammer/core/system_paths.h>
 
 using namespace std;
 using namespace boost::spirit::classic;
@@ -118,33 +119,6 @@ struct warehouse_impl::gramma : public grammar<warehouse_impl::gramma>
    void assign_int_value(unsigned v) const { int_value_ = v; }
    void assign_bool_value(bool v) const { bool_value_ = v; }
 };
-
-static
-fs::path get_home_path()
-{
-#if defined(_WIN32)
-
-   const char* home_path = getenv("USERPROFILE");
-   if (home_path)
-      return hammer::location_t(home_path);
-   else
-      throw std::runtime_error("Can't find user home directory.");
-
-#else
-#   if defined(__linux__)
-
-   const char* home_path = getenv("HOME");
-   if (home_path)
-      return hammer::location_t(home_path);
-   else
-      throw std::runtime_error("Can't find user home directory.");
-
-#   else
-#      error "Platform not supported"
-#   endif
-#endif
-
-}
 
 static
 void download_file(const fs::path& working_dir,
@@ -262,8 +236,9 @@ global_trap_wh_project::load_project(const location_t& path) const {
 
 static
 fs::path
-make_storage_dir(const boost::filesystem::path& storage_dir) {
-   fs::path result = storage_dir.empty() ? (get_home_path() / ".hammer") : storage_dir;
+make_storage_dir(const std::string& id,
+                 const boost::filesystem::path& storage_dir) {
+   fs::path result = storage_dir.empty() ? (get_system_paths().data_folder_ / "warehouses" / id) : storage_dir;
    // path should be without trailing '.' to be correctly compared in package_from_warehouse()
    result.normalize();
    if (result.filename() == ".")
@@ -276,14 +251,14 @@ warehouse_impl::warehouse_impl(engine& e,
                                const std::string& id,
                                const std::string& url,
                                const boost::filesystem::path& storage_dir)
-   : warehouse(id, make_storage_dir(storage_dir)),
+   : warehouse(id, make_storage_dir(id, storage_dir)),
      repository_url_(url)
 {
    if (!storage_dir_.has_root_path())
       throw std::runtime_error("Warehouse storage directory should be a full path");
 
    if (!exists(storage_dir_)) {
-      if (!create_directory(storage_dir_))
+      if (!create_directories(storage_dir_))
          throw std::runtime_error("Failed to create directory '" + storage_dir_.string() + "'");
    }
 

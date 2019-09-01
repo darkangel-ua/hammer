@@ -1085,17 +1085,12 @@ void setup_warehouse_rule(invocation_context& ctx,
                           const parscore::identifier& url,
                           const location_t* storage_dir_)
 {
-   string storage_dir;
-   if (storage_dir_ && !storage_dir_->empty()) {
-      fs::path sd(*storage_dir_);
-      if (sd.is_absolute())
-         storage_dir = sd.string();
-      else {
-         sd = ctx.current_project_.location() / sd;
-         sd.normalize();
-         storage_dir = sd.string();
-      }
-   }
+   fs::path storage_dir = [&] {
+      if (storage_dir_ && !storage_dir_->empty())
+         return *storage_dir_;
+      else
+         return fs::path();
+   }();
 
    auto& whm = ctx.current_project_.get_engine().warehouse_manager();
    auto sid = id.to_string();

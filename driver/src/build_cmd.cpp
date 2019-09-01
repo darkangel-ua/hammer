@@ -30,7 +30,7 @@
 #include <hammer/core/actuality_checker.h>
 #include <hammer/core/build_environment_impl.h>
 #include <hammer/core/instantiation_context.h>
-#include "user_config_location.h"
+#include <hammer/core/system_paths.h>
 #include "build_cmd.h"
 #include "build_request.h"
 
@@ -239,7 +239,7 @@ setup_engine(const unsigned debug_level,
    if (debug_level > 0)
       cout << "Done" << endl;
 
-   location_t user_config_script = get_user_config_location();
+   location_t user_config_script = get_system_paths().config_file_;
    if (user_config_script.empty() || !exists(user_config_script)) {
       if (debug_level > 0)
          cout << "...user-config.ham not founded...\n";

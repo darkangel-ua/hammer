@@ -47,7 +47,6 @@
 #include <hammer/core/warehouse.h>
 #include <hammer/core/generated_build_target.h>
 
-#include "user_config_location.h"
 #include "version.h"
 
 #include "build_cmd.h"

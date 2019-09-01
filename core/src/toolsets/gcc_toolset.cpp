@@ -394,6 +394,7 @@ void gcc_toolset::configure(engine& e,
          return toolset_data{version, "/usr/bin/g++-" + version, "/usr/bin/g++-" + version, "/usr/bin/gcc-ar-" + version};
    }();
 
+   td.constraints_ = e.feature_registry().make_set();
    init_toolset(e, td);
 }
 

@@ -10,6 +10,10 @@ class virtual_project : public project {
       virtual_project(engine& e,
                       const project* parent,
                       const std::string& name);
+      virtual_project(engine& e,
+                      const project* parent,
+                      const std::string& name,
+                      const location_t& relative_path);
 };
 
 }

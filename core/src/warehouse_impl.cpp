@@ -154,7 +154,7 @@ class trap_wh_project : public virtual_project {
       trap_wh_project(engine& e,
                       const project* parent,
                       const std::string& name)
-         : virtual_project(e, parent, name)
+         : virtual_project(e, parent, name, location_t("wareshouses") / parent->name() / name )
       {}
 };
 
@@ -162,7 +162,7 @@ class global_trap_wh_project : public virtual_project {
    public:
       global_trap_wh_project(engine& e,
                              warehouse_impl& wh)
-         : virtual_project(e, nullptr),
+         : virtual_project(e, nullptr, wh.id_),
            warehouse_(wh)
       {}
 

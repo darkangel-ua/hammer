@@ -1,13 +1,8 @@
 #pragma once
 #include <boost/noncopyable.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <hammer/core/build_node.h>
 #include <hammer/core/location.h>
-
-namespace boost {
-
-class guid;
-
-}
 
 namespace hammer {
 
@@ -32,7 +27,7 @@ class msvc_solution : public boost::noncopyable {
 
    protected:
       // used for testing now
-      virtual boost::guid generate_id() const;
+      virtual boost::uuids::uuid generate_id() const;
 
    private:
       impl_t* impl_;

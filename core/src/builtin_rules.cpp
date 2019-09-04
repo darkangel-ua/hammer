@@ -32,7 +32,8 @@
 #include <hammer/core/warehouse_manager.h>
 #include <hammer/core/warehouse_impl.h>
 #include <boost/make_unique.hpp>
-#include <boost/guid.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/random_generator.hpp>
 #include <boost/variant/get.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/make_unique.hpp>
@@ -737,7 +738,7 @@ std::string testing_make_target_name(const sources_decl& sources,
       auto first_src = *sources.begin();
       if (!fs::path(first_src.target_path()).has_extension() || !first_src.target_name().empty()) {
          // ok, user doesn't need readable name
-         return boost::guid::create().to_string();
+         return to_string(boost::uuids::random_generator{}());
       } else
          return fs::path(first_src.target_path()).stem().string();
    }

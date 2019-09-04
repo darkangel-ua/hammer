@@ -6,13 +6,13 @@ testing.run
          [ glob ../src/*.h ]
          [ glob ../src/build/*.h ]
          ^hammer/core
-         /boost/test//utf
+         /boost/test//utf/<link>static
          /boost/format
          /boost/regex
          /libantlr3c
          /ext/boost/process
          /boost/spirit
          /yaml-cpp
-   : args = '--catch_system_errors=no' ../tests_data
+   : args = '--catch_system_errors=no' -- ../tests_data
    : recheck = true
    ;

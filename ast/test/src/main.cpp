@@ -1,10 +1,15 @@
-#include <boost/test/auto_unit_test.hpp>
+#include <iostream>
+#include <set>
+
+#include <boost/test/unit_test.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/convenience.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/bind.hpp>
 #include <boost/optional/optional.hpp>
-#include <iostream>
+#include <boost/regex.hpp>
+#include <boost/lexical_cast.hpp>
+
 #include <hammer/parser/parser.h>
 #include <hammer/sema/actions_impl.h>
 #include <hammer/ast/context.h>
@@ -14,9 +19,6 @@
 #include <hammer/ast/casts.h>
 #include <hammer/core/rule_manager.h>
 #include <hammer/core/diagnostic.h>
-#include <boost/regex.hpp>
-#include <boost/lexical_cast.hpp>
-#include <set>
 
 boost::filesystem::path test_data_path;
 
@@ -439,7 +441,7 @@ init_unit_test_suite(int argc, char* argv[]) {
 
    for (fs::directory_iterator i{test_data_path}, last = {}; i != last; ++i) {
       if (i->path().filename() != ".svn" && extension(i->path()) == ".ham")
-         framework::master_test_suite().add(make_test_case(boost::bind(&test_function, i->path()), basename(i->path())));
+         framework::master_test_suite().add(make_test_case(boost::bind(&test_function, i->path()), i->path().filename().string(), i->path().string(), 0));
    }
 
    return nullptr;

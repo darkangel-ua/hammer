@@ -1,8 +1,8 @@
-#include "stdafx.h"
 #include <fstream>
 #include <stdlib.h>
 #include <boost/filesystem/operations.hpp>
 #include <boost/bind.hpp>
+#include <boost/test/unit_test.hpp>
 #include <hammer/core/toolsets/msvc_toolset.h>
 #include <hammer/core/obj_generator.h>
 #include <hammer/core/generator_registry.h>
@@ -140,7 +140,7 @@ void add_tests_from_filesystem(const boost::filesystem::path& test_data_path,
          continue;
 
       const string test_name = i->path().filename().string();
-      ts->add(make_test_case([=] { test_function(test_path); }, test_name));
+      ts->add(make_test_case([=] { test_function(test_path); }, test_name, test_path.string(), 0));
    }
 
    framework::master_test_suite().add(ts);

@@ -1,12 +1,14 @@
 #include "stdafx.h"
 #include <fstream>
 #include <iterator>
+#include <iostream>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/filesystem/convenience.hpp>
 #include <boost/regex.hpp>
 #include <boost/process.hpp>
-#include <boost/guid.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/uuid_generators.hpp>
 #include <boost/thread/thread.hpp>
 #include <hammer/core/build_environment_impl.h>
 #include <hammer/core/fs_helpers.h>
@@ -44,7 +46,7 @@ bool build_environment_impl::run_shell_commands(std::ostream* captured_output_st
                                                 const std::vector<std::string>& cmds,
                                                 const location_t& working_dir) const
 {
-   string tmp_file_name(boost::guid::create().to_string() + ".cmd");
+   auto tmp_file_name = to_string(boost::uuids::random_generator{}()) + ".cmd";
    location_t full_tmp_file_name(working_dir / tmp_file_name);
    full_tmp_file_name.normalize();
    std::stringstream cmd_stream;

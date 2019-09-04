@@ -3,7 +3,8 @@
 #include <vector>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/filesystem/convenience.hpp>
-#include <boost/guid.hpp>
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <hammer/core/engine.h>
 #include <hammer/core/feature.h>
 #include <hammer/core/fs_helpers.h>
@@ -46,7 +47,7 @@ struct msvc_solution::impl_t
    void generate_dependencies(dependencies_t::const_iterator first, 
                               dependencies_t::const_iterator last) const;
    void write_project_section(ostream& os, const msvc_project& project) const;
-   boost::guid generate_id() const { return boost::guid(); }
+   boost::uuids::uuid generate_id() const { return boost::uuids::uuid{}; }
    location_t project_output_dir(const build_node& node) const;
 
    msvc_solution* owner_;
@@ -231,7 +232,7 @@ void msvc_solution::write() const
      << "EndGlobal\n";
 }
 
-boost::guid msvc_solution::generate_id() const
+boost::uuids::uuid msvc_solution::generate_id() const
 {
    return impl_->generate_id();
 }

@@ -10,5 +10,5 @@ testing.run
       /boost/test//utf/<link>static
       /boost/regex
       /boost/conversion
-   : args = ../work
+   : args = -- ../work
    ;

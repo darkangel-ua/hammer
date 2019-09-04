@@ -3,6 +3,8 @@
 #include <boost/filesystem/convenience.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/regex.hpp>
+#include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <hammer/core/project_generators/msvc_project.h>
 #include <hammer/core/main_target.h>
 #include <hammer/core/basic_build_target.h>
@@ -97,7 +99,7 @@ static const string post_build_step_format_string("$(non_path_args) $(path_args)
 msvc_project::msvc_project(engine& e,
                            const location_t& output_dir,
                            const std::string& solution_configuration_name,
-                           const boost::guid& uid)
+                           const boost::uuids::uuid& uid)
    :
     engine_(&e),
     uid_(uid),
@@ -276,9 +278,9 @@ void msvc_project::add_variant(boost::intrusive_ptr<const build_node> node)
       full_project_name_ = project_output_dir() / (name() + ".vcproj");
       meta_target_relative_to_output_ = relative_path(meta_target_->location(), project_output_dir());
       meta_target_relative_to_output_.normalize();
-      if (uid_.is_null())
+      if (uid_.is_nil())
       {
-         uid_ = boost::guid::create();
+         uid_ = boost::uuids::random_generator{}();
 
          if (exists(full_project_name()))
          {
@@ -289,7 +291,7 @@ void msvc_project::add_variant(boost::intrusive_ptr<const build_node> node)
             boost::regex pattern("ProjectGUID=\"\\{([^\\}]+)\\}\"");
             boost::smatch match;
             if (boost::regex_search(content, match, pattern))
-               uid_ = boost::guid(string(match[1]));
+               uid_ = boost::uuids::string_generator{}(std::string(match[1]));
          }
       }
    }
@@ -327,7 +329,7 @@ void msvc_project::write_header(ostream& s) const
         "   ProjectType=\"Visual C++\"\n"
         "   Version=\"8,00\"\n"
         "   Name=\"" << name() <<"\"\n"
-        "   ProjectGUID=\"" << boost::guid::showbraces << uid_ << "\"\n"
+        "   ProjectGUID=\"{" << uid_ << "}\"\n"
         "   RootNamespace=\"" << name() << "\"\n"
         "   Keyword=\"Win32Proj\">\n"
         "       <Platforms>\n"

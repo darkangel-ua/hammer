@@ -1,7 +1,8 @@
 #pragma once
 #include <vector>
 #include <utility>
-#include <boost/guid.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/random_generator.hpp>
 #include <boost/intrusive_ptr.hpp>
 #include <hammer/core/feature_set.h>
 #include <hammer/core/build_node.h>
@@ -43,15 +44,15 @@ class msvc_project {
       msvc_project(engine& e,
                    const location_t& output_dir,
                    const std::string& solution_configuration_name,
-                   const boost::guid& uid = boost::guid::create());
+                   const boost::uuids::uuid& uid = boost::uuids::random_generator{}());
 
       void add_variant(boost::intrusive_ptr<const build_node> node);
       bool has_variant(const main_target* v) const;
       void generate();
       void write() const;
       const std::string& id() const { return id_; }
-      const boost::guid& guid() const { return uid_; }
-      void guid(const boost::guid& new_uid) { uid_ = new_uid; }
+      const boost::uuids::uuid& guid() const { return uid_; }
+      void guid(const boost::uuids::uuid& new_uid) { uid_ = new_uid; }
       const basic_meta_target& meta_target() const { return *meta_target_; }
       const dependencies_t& dependencies() const { return dependencies_;}
       location_t full_project_name() const { return full_project_name_; }
@@ -125,7 +126,7 @@ class msvc_project {
       engine* engine_;
       mutable variants_t variants_;
       files_t files_;
-      boost::guid uid_;
+      boost::uuids::uuid uid_;
       std::string id_;
       const basic_meta_target* meta_target_;
       mutable dependencies_t dependencies_;

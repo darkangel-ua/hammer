@@ -12,7 +12,7 @@ lib hammer.core
       @/boost/function_types
       @/boost/smart_ptr
       @/boost/filesystem
-      @/ext/boost/guid
+      @/boost/uuid
       /boost/regex
       /ext/boost/process
       /boost/format

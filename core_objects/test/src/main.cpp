@@ -1,5 +1,5 @@
-#define BOOST_AUTO_TEST_MAIN
-#include <boost/test/auto_unit_test.hpp>
+#define BOOST_TEST_MAIN
+#include <boost/test/unit_test.hpp>
 #include <boost/optional/optional.hpp>
 #include <hammer/core/rule_manager.h>
 #include <hammer/core/diagnostic.h>

@@ -190,7 +190,7 @@ add_steps(const fs::path& test_case_path)
    unsigned step = 1;
    fs::path step_path = test_case_path / "steps" / to_string(step);
    while(is_directory(step_path)) {
-      ts->add(make_test_case(boost::bind(&test_step, step_path, step), to_string(step)));
+      ts->add(make_test_case(boost::bind(&test_step, step_path, step), to_string(step), step_path.string(), 0));
 
       ++step;
       step_path = test_case_path / "steps" / to_string(step);
@@ -208,7 +208,7 @@ void init_warehouse_auto_tests(const fs::path& test_data_path)
       if (is_directory(i->path() / "steps"))
          ts->add(add_steps(i->path()));
       else
-         ts->add(make_test_case(boost::bind(&test_function, i->path()), i->path().filename().string()));
+         ts->add(make_test_case(boost::bind(&test_function, i->path()), i->path().filename().string(), i->path().string(), 0));
    }
 
    framework::master_test_suite().add(ts);

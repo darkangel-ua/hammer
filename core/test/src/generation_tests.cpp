@@ -126,7 +126,7 @@ struct generation_tests : public complete_build_tests_environment {
          vector<basic_target*> instantiated_targets;
          p.instantiate("test", *build_request, &instantiated_targets);
          if (opts.exists("should-fail"))
-            BOOST_CHECK_THROW(generate(instantiated_targets), std::exception)
+            BOOST_CHECK_THROW(generate(instantiated_targets), std::exception);
          else {
             build_nodes_t nodes = generate(instantiated_targets);
             BOOST_REQUIRE_NO_THROW(verify(nodes, verification_tree["nodes"]));
@@ -146,7 +146,7 @@ void test_function(const fs::path& test_data_path) {
 void init_generation_tests(const fs::path& test_data_path) {
    test_suite* ts = BOOST_TEST_SUITE("generation");
    for (fs::directory_iterator i(test_data_path / "generation_tests"); i != fs::directory_iterator(); ++i)
-      ts->add(make_test_case(boost::bind(&test_function, i->path()), i->path().filename().string()));
+      ts->add(make_test_case(boost::bind(&test_function, i->path()), i->path().filename().string(), i->path().string(), 0));
 
    framework::master_test_suite().add(ts);
 }

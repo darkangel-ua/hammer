@@ -1,7 +1,7 @@
-#include "stdafx.h"
 #include <stdexcept>
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
+#include <boost/test/unit_test.hpp>
 #include <boost/test/debug.hpp>
 #include "enviroment.h"
 

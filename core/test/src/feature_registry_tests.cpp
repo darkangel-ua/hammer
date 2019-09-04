@@ -109,13 +109,14 @@ BOOST_FIXTURE_TEST_CASE(add_defaults_2, feature_registry_test)
    for (auto i = fs.find("toolset"); i != fs.end(); i = fs.find(i + 1, "toolset"))
       defaults.push_back(*i);
 
-   sort(defaults.begin(), defaults.end(), [](feature_ref lhs, feature_ref rhs) { return lhs < rhs; });
    BOOST_REQUIRE_EQUAL(defaults.size(), 2);
 
-   const vector<feature_ref> expected_defaults =
+   vector<feature_ref> expected_defaults =
       { registry_.create_feature("toolset", "gcc"),
         registry_.create_feature("toolset", "qt")
       };
+   sort(defaults.begin(), defaults.end(), [](feature_ref lhs, feature_ref rhs) { return lhs < rhs; });
+   sort(expected_defaults.begin(), expected_defaults.end(), [](feature_ref lhs, feature_ref rhs) { return lhs < rhs; });
 
    BOOST_CHECK(defaults[0] == expected_defaults[0]);
    BOOST_CHECK(defaults[1] == expected_defaults[1]);

@@ -1,0 +1,3 @@
+test [ features = <define>FOO_1; ] {
+    main.cpp {}
+}

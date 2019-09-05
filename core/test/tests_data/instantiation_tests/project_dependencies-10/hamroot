@@ -1,0 +1,11 @@
+# test that dependency overriding works well with alias usage requirements
+project 
+    dependencies = 
+     { /foo : 1.0 }
+   ;
+
+use-project /foo : ./foo ;
+
+local alias foo_1 : usage-requirements = <use>(/foo) ;
+
+exe test : main.cpp foo_1 ;

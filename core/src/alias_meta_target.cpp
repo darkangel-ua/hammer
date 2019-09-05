@@ -31,7 +31,10 @@ void alias_meta_target::instantiate_impl(instantiation_context& ctx,
    if (owner) {
       // compute usage requirements based only on build request
       // our own requirements is just for target selection - that's how alias works
-      this->usage_requirements().eval(build_request, usage_requirements);
+      feature_set& this_usage_requirements = *get_engine().feature_registry().make_set();
+      this->usage_requirements().eval(build_request, &this_usage_requirements);
+      apply_project_dependencies(this_usage_requirements, *this);
+      usage_requirements->join(this_usage_requirements);
 
       feature_set& sources_as_features = *get_engine().feature_registry().make_set();
 

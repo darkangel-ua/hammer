@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <cassert>
+#include <cstdio>
 #include <unordered_set>
 #include <unordered_map>
 //#define BOOST_SPIRIT_DEBUG
@@ -132,20 +133,15 @@ void download_file(const fs::path& working_dir,
       return;
    }
 
-   bp::context ctx;
-//   ctx.stderr_behavior = bp::inherit_stream();
-//   ctx.stdout_behavior = bp::inherit_stream();
-   ctx.work_directory = working_dir.string();
+   auto args = [&] () -> std::vector<std::string> {
+      if (to_file.empty())
+          return {"-L", "-O", url};
+      else
+          return {"-L", "-o", to_file, url};
+   } ();
 
-   string cmd;
-   if (to_file.empty())
-       cmd = "curl -L -O " + url + "";
-   else
-       cmd = "curl -L -o " + to_file + " " + url;
-
-   bp::child child = bp::launch_shell(cmd, ctx);
-   bp::status status = child.wait();
-   if (status.exit_status() != 0)
+   int result = bp::system(bp::search_path("curl"), bp::args = args, bp::start_dir(working_dir), bp::std_out > bp::null, bp::std_err > bp::null);
+   if (result != 0)
       throw std::runtime_error("Failed to download '" + url + "'");
 }
 
@@ -569,12 +565,14 @@ void warehouse_impl::install_package(const package_t& p,
    if (!exists(package_root))
       create_directory(package_root);
 
-   bp::context ctx;
-   ctx.work_directory = package_root.string();
    const fs::path package_archive = working_dir / "downloads" / p.filename_;
-   bp::child child = bp::launch_shell("bzcat " + package_archive.string() + " | tar -x", ctx);
-   bp::status status = child.wait();
-   if (status.exit_status() != 0)
+
+   bp::pipe pp;
+   auto bzcat = bp::child(bp::search_path("bzcat"), bp::args = package_archive.string(), bp::std_out > pp, bp::start_dir(package_root));
+   auto tar = bp::child(bp::search_path("tar"), bp::args = "-x", bp::std_in < pp, bp::start_dir(package_root));
+   bzcat.wait();
+   tar.wait();
+   if (bzcat.exit_code() != 0 || tar.exit_code() != 0)
       throw std::runtime_error("Failed to unpack package '" + p.public_id_ + "'");
 
    const fs::path package_hamfile = lib_path / "hamfile";
@@ -706,12 +704,17 @@ static
 void make_package_archive(const fs::path& package_root,
                           const fs::path& package_filename)
 {
-   bp::context ctx;
-   ctx.work_directory = package_root.string();
-   ctx.stdout_behavior = bp::inherit_stream();
-   bp::child child = bp::launch_shell("tar --exclude \\.git --exclude \\.svn --exclude \\.hammer -c . | bzip2 -c > " + package_filename.string(), ctx);
-   bp::status status = child.wait();
-   if (status.exit_status() != 0)
+   const std::string cmd = "tar --exclude \\.git --exclude \\.svn --exclude \\.hammer -c . | bzip2 -c > " + package_filename.string();
+   boost::asio::io_context ioctx;
+   auto c = bp::child(bp::shell(),
+                      bp::start_dir(package_root),
+                      bp::std_in = boost::asio::buffer(cmd),
+                      bp::std_out > stdout,
+                      bp::std_err > stderr,
+                      ioctx);
+   ioctx.run();
+   c.wait();
+   if (c.exit_code() != 0)
       throw std::runtime_error("Failed to create package archive");
 }
 

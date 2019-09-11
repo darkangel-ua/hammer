@@ -10,9 +10,9 @@ testing.run
          /boost/format
          /boost/regex
          /libantlr3c
-         /ext/boost/process
+         /boost/process
          /boost/spirit
          /yaml-cpp
-   : args = '--catch_system_errors=no' -- ../tests_data
+   : args = '--catch_system_errors=no' '--run_test=*' -- ../tests_data
    : recheck = true
    ;

@@ -14,7 +14,7 @@ lib hammer.core
       @/boost/filesystem
       @/boost/uuid
       /boost/regex
-      /ext/boost/process
+      /boost/process
       /boost/format
       @/boost/unordered
       /boost/spirit

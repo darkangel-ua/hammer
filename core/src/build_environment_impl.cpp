@@ -1,10 +1,12 @@
 #include "stdafx.h"
+#include <cstdio>
 #include <fstream>
 #include <iterator>
 #include <iostream>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/filesystem/convenience.hpp>
+#include <boost/algorithm/string/join.hpp>
 #include <boost/regex.hpp>
 #include <boost/process.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -34,13 +36,6 @@ build_environment_impl::~build_environment_impl()
 {
 }
 
-static void stream_copy_thread(std::istream& source, std::ostream& sink)
-{
-   std::copy(istreambuf_iterator<char>(source),
-             istreambuf_iterator<char>(),
-             ostreambuf_iterator<char>(sink));
-}
-
 bool build_environment_impl::run_shell_commands(std::ostream* captured_output_stream,
                                                 std::ostream* captured_error_stream,
                                                 const std::vector<std::string>& cmds,
@@ -49,79 +44,95 @@ bool build_environment_impl::run_shell_commands(std::ostream* captured_output_st
    auto tmp_file_name = to_string(boost::uuids::random_generator{}()) + ".cmd";
    location_t full_tmp_file_name(working_dir / tmp_file_name);
    full_tmp_file_name.normalize();
-   std::stringstream cmd_stream;
+   const std::string fullcmd = boost::join(cmds, "\n");
 
    try
    {
 #if defined(_WIN32)
       {
          std::unique_ptr<ostream> f(create_output_file(full_tmp_file_name.string().c_str(), std::ios_base::out));
-
-         for(vector<string>::const_iterator i = cmds.begin(), last = cmds.end(); i != last; ++i)
-            *f << *i << '\n';
+         *f << fullcmd;
       }
-#else
-      for(vector<string>::const_iterator i = cmds.begin(), last = cmds.end(); i != last; ++i)
-         cmd_stream << *i << '\n';
 #endif
 
-      bp::context ctx;
-      ctx.environment = bp::self::get_environment();
-      ctx.stdin_behavior = bp::inherit_stream();
-      ctx.work_directory = working_dir.string();
-
-      if (captured_output_stream)
-      {
-         ctx.stdout_behavior = bp::capture_stream();
-         if (captured_error_stream)
-            ctx.stderr_behavior = bp::capture_stream();
-         else
-            ctx.stderr_behavior = bp::redirect_stream_to_stdout();
-      }
-      else
-      {
-         ctx.stdout_behavior = bp::inherit_stream();
-         ctx.stderr_behavior = bp::inherit_stream();
-      }
-
-     std::vector<std::string> cmdline;
-#if defined(_WIN32)
-      cmdline.push_back("cmd.exe");
-      cmdline.push_back("/Q");
-      cmdline.push_back("/C");
-      cmdline.push_back("call " + tmp_file_name);
-#endif
+      boost::asio::io_context ioctx;
+      bp::async_pipe output_pipe(ioctx);
+      bp::async_pipe error_pipe(ioctx);
 
 #if defined(_WIN32)
+      const std::vector<std::string> cmd_args = {"/Q", "/C", "call", tmp_file_name};
       if (print_shell_commands_ && captured_output_stream)
          dump_shell_command(*captured_output_stream, full_tmp_file_name);
 
-      bp::child shell_action_child = bp::launch(std::string(), cmdline, ctx);
+      auto shell_action_child = bp::child(bp::search_path("cmd.exe"), bp::args = cmd_args,
+                                          bp::std_out > output_pipe,
+                                          bp::std_err > error_pipe,
+                                          bp::start_dir(working_dir),
+                                          ioctx);
 #else
       if (print_shell_commands_ && captured_output_stream)
-         *captured_output_stream << cmd_stream.str();
+         *captured_output_stream << fullcmd;
 
-      bp::child shell_action_child = bp::launch_shell(cmd_stream.str(), ctx);
+      auto shell_action_child = bp::child(bp::shell(),
+                                          bp::std_in = boost::asio::buffer(fullcmd),
+                                          bp::std_out > output_pipe,
+                                          bp::std_err > error_pipe,
+                                          bp::start_dir(working_dir),
+                                          ioctx);
 #endif
 
-      if (captured_output_stream)
-      {
-         boost::thread_group tg;
+      std::array<char, 128> outbuf;
+      std::function<void()> output_thread;
+      output_thread = [&] {
+         boost::asio::async_read(output_pipe, boost::asio::buffer(outbuf), [&] (const boost::system::error_code& ec, std::size_t transferred) {
+            if (transferred == 0)
+               return;
 
-         tg.create_thread(boost::bind(&stream_copy_thread, boost::ref(shell_action_child.get_stdout()), boost::ref(*captured_output_stream)));
-         if (captured_error_stream)
-            tg.create_thread(boost::bind(&stream_copy_thread, boost::ref(shell_action_child.get_stderr()), boost::ref(*captured_error_stream)));
+            if (captured_output_stream)
+               captured_output_stream->write(outbuf.data(), transferred);
+            else
+               std::fwrite(outbuf.data(), 1, transferred, stdout);
 
-         tg.join_all();
-      }
+            if (ec)
+               return;
 
-      bp::status st = shell_action_child.wait();
+            output_thread();
+         });
+      };
 
-      if (st.exit_status() != 0)
+      std::array<char, 128> errbuf;
+      std::function<void()> error_thread;
+      error_thread = [&] {
+         boost::asio::async_read(error_pipe, boost::asio::buffer(errbuf), [&] (const boost::system::error_code& ec, std::size_t transferred) {
+            if (transferred == 0)
+               return;
+
+            if (!captured_error_stream)
+               std::fwrite(errbuf.data(), 1, transferred, stderr);
+
+            if (captured_error_stream)
+               captured_error_stream->write(errbuf.data(), transferred);
+            else
+               std::fwrite(errbuf.data(), 1, transferred, stdout);
+
+            if (ec)
+               return;
+
+            error_thread();
+         });
+      };
+
+      output_thread();
+      error_thread();
+
+      ioctx.run();
+      shell_action_child.wait();
+
+      if (shell_action_child.exit_code() != 0)
 #if defined(_WIN32)
          dump_shell_command(captured_error_stream ? *captured_error_stream : cerr, full_tmp_file_name);
 #else
-         (captured_error_stream ? *captured_error_stream : cerr) << cmd_stream.str();
+         (captured_error_stream ? *captured_error_stream : cerr) << fullcmd;
 #endif
 
 
@@ -129,7 +140,7 @@ bool build_environment_impl::run_shell_commands(std::ostream* captured_output_st
       remove(full_tmp_file_name);
 #endif
 
-      return st.exit_status() == 0;
+      return shell_action_child.exit_code() == 0;
    }
    catch(const std::exception& e)
    {
@@ -144,7 +155,7 @@ bool build_environment_impl::run_shell_commands(std::ostream* captured_output_st
    dump_shell_command(captured_error_stream ? *captured_error_stream : cerr, full_tmp_file_name);
    remove(full_tmp_file_name);
 #else
-   (captured_error_stream ? *captured_error_stream : cerr) << cmd_stream.str();
+   (captured_error_stream ? *captured_error_stream : cerr) << fullcmd;
 #endif
    return false;
 }

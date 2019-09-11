@@ -37,7 +37,7 @@ get_user_config_path() {
       return fs::path(user_provided_user_config_path);
 
 #if defined(_WIN32)
-   const char* home_path = getenv("USERPROFILE");
+   const char* c_home_path = getenv("USERPROFILE");
 #else
    const char* c_home_path = getenv("HOME");
 #endif

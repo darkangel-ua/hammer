@@ -11,8 +11,9 @@ bool build_action::execute(const build_node& node,
                            const build_environment& environment,
                            const bool expected_to_fail) const
 { 
-   string tag(target_tag(node, environment));
-   environment.output_stream() << name() << ' ' << tag << std::endl;
+   auto tag = target_tag(node, environment);
+   if (!tag.empty())
+      environment.output_stream() << name() << ' ' << tag << std::endl;
 
    // FIXME: here we have a situation.. we can't distinguish between 'preparation' failure and
    // actual action execution failure... Right now assume 'preparation` cannot fail

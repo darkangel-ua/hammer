@@ -95,9 +95,9 @@ class testing_action : public build_action {
       }
 
       std::string
-      target_tag(const build_node& node,
-                 const build_environment& environment) const override {
-         return wrapped_action_->target_tag(node, environment);
+      target_tag(const build_node&,
+                 const build_environment&) const override {
+         return {};
       }
 
       std::vector<feature_ref>

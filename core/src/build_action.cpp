@@ -12,7 +12,7 @@ bool build_action::execute(const build_node& node,
                            const bool expected_to_fail) const
 { 
    string tag(target_tag(node, environment));
-   environment.output_stream() << name() << ' ' << tag << '\n';
+   environment.output_stream() << name() << ' ' << tag << std::endl;
 
    // FIXME: here we have a situation.. we can't distinguish between 'preparation' failure and
    // actual action execution failure... Right now assume 'preparation` cannot fail
@@ -20,12 +20,12 @@ bool build_action::execute(const build_node& node,
    try {
       execution_result = execute_impl(node, environment); 
    } catch(const std::exception& e) {
-      environment.output_stream() << "error: " << e.what() << '\n';
+      environment.output_stream() << "error: " << e.what() << std::endl;
    }
 
    if (execution_result == false && !expected_to_fail) {
-      environment.output_stream() << "...failed " << name() << ' ' << tag << '\n';
-      environment.output_stream() << "...cleaning " << tag << '\n';
+      environment.output_stream() << "...failed " << name() << ' ' << tag << std::endl;
+      environment.output_stream() << "...cleaning " << tag << std::endl;
       clean_on_fail(node, environment);
    }
 

@@ -81,17 +81,19 @@ bool build_environment_impl::run_shell_commands(std::ostream* captured_output_st
                                           ioctx);
 #endif
 
-      std::array<char, 128> outbuf;
+      std::array<char, 1024> outbuf;
       std::function<void()> output_thread;
       output_thread = [&] {
-         boost::asio::async_read(output_pipe, boost::asio::buffer(outbuf), [&] (const boost::system::error_code& ec, std::size_t transferred) {
+         output_pipe.async_read_some(boost::asio::buffer(outbuf), [&] (const boost::system::error_code& ec, std::size_t transferred) {
             if (transferred == 0)
                return;
-
-            if (captured_output_stream)
+            if (captured_output_stream) {
                captured_output_stream->write(outbuf.data(), transferred);
-            else
-               std::fwrite(outbuf.data(), 1, transferred, stdout);
+               captured_output_stream->flush();
+            } else {
+               std::cout.write(outbuf.data(), transferred);
+               std::cout.flush();
+            }
 
             if (ec)
                return;
@@ -100,20 +102,25 @@ bool build_environment_impl::run_shell_commands(std::ostream* captured_output_st
          });
       };
 
-      std::array<char, 128> errbuf;
+      std::array<char, 1024> errbuf;
       std::function<void()> error_thread;
       error_thread = [&] {
-         boost::asio::async_read(error_pipe, boost::asio::buffer(errbuf), [&] (const boost::system::error_code& ec, std::size_t transferred) {
+         error_pipe.async_read_some(boost::asio::buffer(errbuf), [&] (const boost::system::error_code& ec, std::size_t transferred) {
             if (transferred == 0)
                return;
 
-            if (!captured_error_stream)
-               std::fwrite(errbuf.data(), 1, transferred, stderr);
+            if (!captured_error_stream) {
+               std::cerr.write(errbuf.data(), transferred);
+               std::cerr.flush();
+            }
 
-            if (captured_error_stream)
+            if (captured_error_stream) {
                captured_error_stream->write(errbuf.data(), transferred);
-            else
-               std::fwrite(errbuf.data(), 1, transferred, stdout);
+               captured_error_stream->flush();
+            } else {
+               std::cout.write(errbuf.data(), transferred);
+               std::cout.flush();
+            }
 
             if (ec)
                return;

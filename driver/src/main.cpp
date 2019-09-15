@@ -215,19 +215,15 @@ int main(int argc, char** argv) {
          return handle_warehouse_cmd(global_options.command_args_, global_options.debug_level_);
       else if (cmd == "package")
          return handle_package_cmd(global_options.command_args_, global_options.debug_level_);
-      else {
-         signal(SIGINT, ctrl_handler);
-         terminate_immediately = false;
-         return handle_build_cmd(global_options.command_args_, global_options.debug_level_, interrupt_flag);
-      }
+
+      signal(SIGINT, ctrl_handler);
+      terminate_immediately = false;
+      return handle_build_cmd(global_options.command_args_, global_options.debug_level_, interrupt_flag);
    } catch (const hammer::parsing_error& e) {
-      cout << e.what() << "\n";
-      return -1;
+      cerr << "\n" << e.what() << "\n";
    } catch (const std::exception& e) {
-      cout << "Error: " << e.what() << "\n";
-      return -1;
-   } catch (...) {
-      cout << "Error: Unknown error.\n";
-      return -1;
+      cerr << "\nError: " << e.what() << "\n";
    }
+
+   return -1;
 }

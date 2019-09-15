@@ -256,14 +256,16 @@ engine::try_load_project(location_t fs_project_path) {
    if (!exists(project_file)) {
       project_file = fs_project_path / hamroot;
       is_top_level = true;
-   }
-   else if (!upper_project)
+   } else if (!upper_project)
       upper_project = get_upper_project(fs_project_path);
 
    if (!exists(project_file))
       return {};
 
-   auto loaded_project = load_project(project_file, is_top_level ? global_project_.get() : upper_project);
+   if (!upper_project)
+      upper_project = global_project_.get();
+
+   auto loaded_project = load_project(project_file, upper_project);
    if (is_top_level)
       loaded_project->set_root(true);
 

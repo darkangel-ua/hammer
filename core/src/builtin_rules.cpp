@@ -328,7 +328,7 @@ void use_project_rule(invocation_context& ctx,
          const ast::target_ref* tr = ast::as<ast::target_ref>(alias);
          // FIXME: we need a way to move this check upper, to ast processing
          if (tr->target_path()->root_name().valid() && ctx.current_project_.is_root())
-            throw ast2objects_semantic_error(alias->start_loc(), "Argument 'alias': Global aliases can be declared only in homroot file");
+            throw ast2objects_semantic_error(alias->start_loc(), "Argument 'alias': Global aliases can be declared only in hamroot file");
 
          project_alias = location_t{tr->target_path()->to_string()};
       }

@@ -24,7 +24,9 @@
 #include <hammer/core/toolsets/qt_toolset.h>
 #include <hammer/core/toolsets/msvc_toolset.h>
 #include <hammer/core/warehouse.h>
+#include <hammer/core/warehouse_impl.h>
 #include <hammer/core/warehouse_target.h>
+#include <hammer/core/warehouse_manager.h>
 #include <hammer/core/builder.h>
 #include <hammer/core/generic_batcher.h>
 #include <hammer/core/actuality_checker.h>
@@ -245,7 +247,7 @@ setup_engine(const unsigned debug_level,
          cout << "...user-config.ham not founded...\n";
    } else {
       if (debug_level > 0)
-         cout << "...Loading user-config.ham at '" << user_config_script.string<string>() << "'..." << flush;
+         cout << "...Loading " << user_config_script << "..." << flush;
 
       engine.load_hammer_script(user_config_script);
       if (debug_level > 0)
@@ -257,7 +259,12 @@ setup_engine(const unsigned debug_level,
 
       if (!has_configured_toolsets(engine))
          throw std::runtime_error("No toolsets were configured and no toolset founded by auto-configure!\n"
-                                  "Please, specify some toolset in " + get_system_paths().config_file_.string() + " to operate properly.\n");
+                                  "Please, specify some toolset in " + get_system_paths().config_file_.string() + " to operate properly.");
+   }
+
+   if (!engine.warehouse_manager().get_default()) {
+      auto default_warehouse = boost::make_unique<warehouse_impl>(engine, "implicit", "https://dl.bintray.com/darkangel-ua/hammer");
+      engine.warehouse_manager().insert(std::move(default_warehouse));
    }
 
    return engine_ptr;
@@ -383,7 +390,7 @@ int handle_build_cmd(const std::vector<std::string>& args,
    auto engine = setup_engine(debug_level);
 
    if (debug_level > 0)
-      cout << "...Loading project at '" << fs::current_path() << "'... " << flush;
+      cout << "...Loading project at " << fs::current_path() << "... " << flush;
 
    const project* project_to_build = has_project_file(fs::current_path()) ? &engine->load_project(fs::current_path()) : nullptr;
 

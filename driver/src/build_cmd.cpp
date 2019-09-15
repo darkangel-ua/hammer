@@ -255,13 +255,9 @@ setup_engine(const unsigned debug_level,
    if (configure_toolsets) {
       engine.toolset_manager().autoconfigure(engine);
 
-      if (!has_configured_toolsets(engine)) {
-         // FIXME: fix user config location
-         cerr << "WARNING!!!WARNING!!!WARNING!!!WARNING!!!\n"
-                 "No toolsets were configured and no toolset founded by auto-configure!\n"
-                 "Please, specify some toolset in $(HOME)/user-config.ham to operate properly.\n"
-                 "WARNING!!!WARNING!!!WARNING!!!WARNING!!!\n\n" << flush;
-      }
+      if (!has_configured_toolsets(engine))
+         throw std::runtime_error("No toolsets were configured and no toolset founded by auto-configure!\n"
+                                  "Please, specify some toolset in " + get_system_paths().config_file_.string() + " to operate properly.\n");
    }
 
    return engine_ptr;

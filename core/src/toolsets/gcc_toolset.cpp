@@ -1,3 +1,4 @@
+#include <regex>
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/make_unique.hpp>
@@ -387,20 +388,28 @@ void gcc_toolset::use_toolset_rule(invocation_context& ctx,
 
 void gcc_toolset::configure(engine& e,
                             const std::string& version) {
-   auto td = [&] {
-      if (version == "system")
-         return toolset_data{"system", "/usr/bin/g++", "/usr/bin/g++", "/usr/bin/gcc-ar"};
-      else
-         return toolset_data{version, "/usr/bin/g++-" + version, "/usr/bin/g++-" + version, "/usr/bin/gcc-ar-" + version};
-   }();
-
+   auto td = toolset_data{version, "-" + version, "/usr/bin/g++-" + version, "/usr/bin/g++-" + version, "/usr/bin/gcc-ar-" + version};
+   td.c_flags_ = nullptr;
+   td.cxx_flags_ = nullptr;
+   td.link_flags_ = nullptr;
    td.constraints_ = e.feature_registry().make_set();
    init_toolset(e, td);
 }
 
+static auto gcc_version_pattern = std::regex("gcc-(.*)");
 void gcc_toolset::autoconfigure(engine& e) {
-   if (exists(location_t("/usr/bin/gcc")))
-      configure(e, "system");
+   auto default_gcc = fs::path("/usr/bin/gcc");
+   if (fs::exists(default_gcc) && fs::is_symlink(default_gcc)) {
+      // lets where it points to figure out exact version
+      auto gcc = fs::read_symlink(default_gcc).filename();
+
+      std::smatch m;
+      if (!std::regex_match(gcc.string(), m, gcc_version_pattern))
+          return;
+
+      std::string version = m[1];
+      configure(e, version);
+   }
 }
 
 }

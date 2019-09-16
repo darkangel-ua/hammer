@@ -466,7 +466,7 @@ warehouse_impl::get_unresoved_targets_info(engine& e,
    unresolved_dependencies_t deps;
    unresolved_packages_t packages;
 
-   for(std::vector<const warehouse_target*>::const_iterator i = targets.begin(), last = targets.end(); i != last; ++i) {
+   for (std::vector<const warehouse_target*>::const_iterator i = targets.begin(), last = targets.end(); i != last; ++i) {
       package_info p;
       const feature_set& props = (**i).properties();
       feature_set::const_iterator version_i = props.find("version");
@@ -719,14 +719,25 @@ void make_package_archive(const fs::path& package_root,
 }
 
 vector<warehouse_impl::dependency_t>
-warehouse_impl::gather_dependencies(const project& p)
-{
+warehouse_impl::gather_dependencies(const project& p) {
    vector<source_decl> source_dependencies;
-   for(project::targets_t::const_iterator i = p.targets().begin(), last = p.targets().end(); i != last; ++i) {
-      const sources_decl& sources = i->second->sources();
-      for(sources_decl::const_iterator s_i = sources.begin(), s_last = sources.end(); s_i != s_last; ++s_i) {
-         if (s_i->target_path_is_global())
-            source_dependencies.push_back(*s_i);
+   // we need to gather all direct and transparent targets at least
+   // maybe later we add all others alias handling because otherwise building
+   // tests or docs will fail
+   auto loaded_projects = p.load_project({});
+   loaded_projects.push_back(&p);
+   for (auto* lp : loaded_projects) {
+      for (auto& target : lp->targets()) {
+         const sources_decl& sources = target.second->sources();
+         sources_decl deps;
+         for (auto& s : sources) {
+            if (s.target_path_is_global())
+               deps.push_back(s);
+         }
+
+         apply_project_dependencies(deps, *target.second);
+         for (auto& s : deps)
+            source_dependencies.push_back(s);
       }
    }
 
@@ -734,7 +745,7 @@ warehouse_impl::gather_dependencies(const project& p)
    source_dependencies.erase(unique(source_dependencies.begin(), source_dependencies.end()), source_dependencies.end());
 
    vector<dependency_t> dependencies;
-   for(const source_decl& s : source_dependencies) {
+   for (const source_decl& s : source_dependencies) {
       auto& build_request = s.build_request()->resolved_request();
       feature_set::const_iterator i = build_request.find("version");
       if (i == build_request.end())

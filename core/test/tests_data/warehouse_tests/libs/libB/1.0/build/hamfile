@@ -1,0 +1,1 @@
+lib libB : libB.cpp /libA : @<define>LIBB_1_0 ;

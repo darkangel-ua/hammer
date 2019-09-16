@@ -1,0 +1,2 @@
+# test this we correctly export dependencies between libA and libB
+exe test : main.cpp /libB/<version>1.0 ;

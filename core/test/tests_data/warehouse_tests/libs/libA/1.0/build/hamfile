@@ -1,0 +1,1 @@
+lib libA : libA.cpp : @<define>LIBA_1_0 ;

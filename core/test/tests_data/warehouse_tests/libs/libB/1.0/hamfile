@@ -1,0 +1,6 @@
+project libB 
+   : requirements = <version>1.0 
+   : dependencies = { /libA : 1.0 }
+   ;
+
+use-project location = ./build : match = exact ;

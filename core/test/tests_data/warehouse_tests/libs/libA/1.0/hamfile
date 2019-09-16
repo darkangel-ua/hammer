@@ -1,0 +1,3 @@
+project libA : requirements = <version>1.0 ;
+
+use-project location = ./build : match = exact ;

@@ -1,3 +1,7 @@
 project libA : requirements = <version>1.0 ;
 
 use-project location = ./build : match = exact ;
+
+# this target is just to test that we correctly handling explicit targets in traps creation
+explicit
+lib libAE : libAE.cpp ;

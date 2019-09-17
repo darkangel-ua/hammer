@@ -105,8 +105,12 @@ void add_traps(warehouse& wh,
             return offset;
          } ();
 
-         if (target_name_offset != std::string::npos)
-            p.add_target(boost::make_unique<warehouse_meta_target>(p, full_target_name.substr(target_name_offset), v.version_));
+         if (target_name_offset != std::string::npos) {
+            auto target = boost::make_unique<warehouse_meta_target>(p, full_target_name.substr(target_name_offset), v.version_);
+            if (full_target_name.front() != '@')
+               target->set_explicit(true);
+            p.add_target(std::move(target));
+         }
       }
    }
 }

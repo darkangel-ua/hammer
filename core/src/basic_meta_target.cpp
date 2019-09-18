@@ -205,6 +205,10 @@ void basic_meta_target::instantiate(instantiation_context& ctx,
       instantiate_impl(ctx, owner, build_request, result, usage_requirements);
 }
 
+void basic_meta_target::clear_instantiation_cache() {
+   instantiation_cache_.clear();
+}
+
 engine&
 basic_meta_target::get_engine() const {
    return project_->get_engine();

@@ -346,6 +346,11 @@ void project::instantiate(const std::string& target_name,
    best_target.target_->instantiate(ctx, nullptr, build_request, result, usage_requirements);
 }
 
+void project::clear_instantiation_cache() {
+   for (auto& mt : targets_)
+      mt.second->clear_instantiation_cache();
+}
+
 project::selected_target
 project::select_best_alternative(const std::string& target_name,
                                  const build_request& build_request,

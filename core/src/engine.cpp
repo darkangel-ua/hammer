@@ -308,6 +308,13 @@ void engine::unload_project(const project& project_to_unload) {
       projects_.erase(i.second);
 
    projects_.erase(projects_.find(project_to_unload.location()));
+
+   // brutally prune all meta target caches
+   // maybe later we will do this in more intelligent way
+   // doing this because in caches there might be targets that has referenfces on targets that has
+   // been instantiated from unloaded projects :)
+   for (auto& project : projects_)
+      project.second->clear_instantiation_cache();
 }
 
 engine::~engine()

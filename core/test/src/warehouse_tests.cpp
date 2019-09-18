@@ -71,8 +71,7 @@ void warehouse_test::add_all_libs()
 }
 
 static
-void test_function_phase_1(const fs::path& test_data_path)
-{
+void simulate_build_cmd(const fs::path& test_data_path) {
    warehouse_test env(false, false);
 
    options opts(test_data_path / "hamfile");
@@ -97,80 +96,47 @@ void test_function_phase_1(const fs::path& test_data_path)
 
    build_request->join("variant", "debug");
 
-   vector<basic_target*> instantiated_targets;
-   p.instantiate("test", *build_request, &instantiated_targets);
+   { // phase 1
+      vector<basic_target*> instantiated_targets;
+      p.instantiate("test", *build_request, &instantiated_targets);
 
-   try {
+      try {
+         build_nodes_t generated_nodes;
+         for (const basic_target* bt : instantiated_targets) {
+            build_nodes_t tmp = bt->generate();
+            generated_nodes.insert(generated_nodes.end(), tmp.begin(), tmp.end());
+         }
+         BOOST_ERROR("Target generation should throw");
+      } catch(const warehouse_unresolved_target_exception& e) {
+      }
+
+      const vector<warehouse::package_info> packages =
+         env.engine_.warehouse_manager().get_default()->get_unresoved_targets_info(env.engine_, find_all_warehouse_unresolved_targets(instantiated_targets));
+
+      null_warehouse_download_and_install notifier;
+      BOOST_REQUIRE_NO_THROW(env.engine_.warehouse_manager().get_default()->download_and_install(env.engine_, packages, notifier));
+   }
+
+   { // phase 2
+      vector<basic_target*> instantiated_targets;
+      p.instantiate("test", *build_request, &instantiated_targets);
+
+      // should be no throw here
       build_nodes_t generated_nodes;
       for (const basic_target* bt : instantiated_targets) {
          build_nodes_t tmp = bt->generate();
          generated_nodes.insert(generated_nodes.end(), tmp.begin(), tmp.end());
       }
-      BOOST_ERROR("Target generation should throw");
-   } catch(const warehouse_unresolved_target_exception& e) {
+
+      jcf_parser checker;
+      BOOST_CHECK(checker.parse(test_data_path / "instantiation.jcf"));
+      checker.walk(instantiated_targets, &env.engine_);
    }
-
-   const vector<warehouse::package_info> packages =
-      env.engine_.warehouse_manager().get_default()->get_unresoved_targets_info(env.engine_, find_all_warehouse_unresolved_targets(instantiated_targets));
-
-   null_warehouse_download_and_install notifier;
-   BOOST_REQUIRE_NO_THROW(env.engine_.warehouse_manager().get_default()->download_and_install(env.engine_, packages, notifier));
-}
-
-static
-void test_function_phase_2(const fs::path& test_data_path)
-{
-   // Phase 2
-   warehouse_test env_2(false, false);
-
-   const project& p = env_2.engine_.load_project(test_data_path);
-
-   feature_set* build_request = env_2.engine_.feature_registry().make_set();
-#if defined(_WIN32)
-   const string default_toolset_name = "msvc";
-#else
-   const string default_toolset_name = "gcc";
-#endif
-   const feature_def& toolset_definition = env_2.engine_.feature_registry().get_def("toolset");
-   const subfeature_def& toolset_version_def = toolset_definition.get_subfeature("version");
-   // peek first configured as default
-   const string& default_toolset_version = *toolset_version_def.legal_values(default_toolset_name).begin();
-   build_request->join("toolset", (default_toolset_name + "-" + default_toolset_version).c_str());
-
-   build_request->join("variant", "debug");
-
-   vector<basic_target*> instantiated_targets;
-   p.instantiate("test", *build_request, &instantiated_targets);
-
-   // should be no throw here
-   build_nodes_t generated_nodes;
-   for (const basic_target* bt : instantiated_targets) {
-      build_nodes_t tmp = bt->generate();
-      generated_nodes.insert(generated_nodes.end(), tmp.begin(), tmp.end());
-   }
-
-   jcf_parser checker;
-   BOOST_CHECK(checker.parse(test_data_path / "instantiation.jcf"));
-   checker.walk(instantiated_targets, &env_2.engine_);
-}
-
-static
-void test_function(const fs::path& test_data_path)
-{
-   {
-      warehouse_test test;
-      test.add_all_libs();
-      test.engine_.warehouse_manager().get_default()->update();
-   }
-
-   test_function_phase_1(test_data_path);
-   test_function_phase_2(test_data_path);
 }
 
 static
 void test_step(const fs::path& test_data_path,
-               const unsigned step)
-{
+               const unsigned step) {
    // full test env rebuild only at beggining
    if (step == 1) {
       warehouse_test test;
@@ -178,14 +144,12 @@ void test_step(const fs::path& test_data_path,
       test.engine_.warehouse_manager().get_default()->update();
    }
 
-   test_function_phase_1(test_data_path);
-   test_function_phase_2(test_data_path);
+   simulate_build_cmd(test_data_path);
 }
 
 static
 test_suite*
-add_steps(const fs::path& test_case_path)
-{
+add_steps(const fs::path& test_case_path) {
    using namespace boost::unit_test;
 
    test_suite* ts = BOOST_TEST_SUITE(test_case_path.filename().string());
@@ -201,8 +165,7 @@ add_steps(const fs::path& test_case_path)
    return ts;
 }
 
-void init_warehouse_auto_tests(const fs::path& test_data_path)
-{
+void init_warehouse_auto_tests(const fs::path& test_data_path) {
    using namespace boost::unit_test;
 
    test_suite* ts = BOOST_TEST_SUITE("warehouse");
@@ -210,7 +173,7 @@ void init_warehouse_auto_tests(const fs::path& test_data_path)
       if (is_directory(i->path() / "steps"))
          ts->add(add_steps(i->path()));
       else
-         ts->add(make_test_case(boost::bind(&test_function, i->path()), i->path().filename().string(), i->path().string(), 0));
+         ts->add(make_test_case(boost::bind(&test_step, i->path(), 1), i->path().filename().string(), i->path().string(), 0));
    }
 
    framework::master_test_suite().add(ts);

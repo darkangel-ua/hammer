@@ -76,6 +76,7 @@ class basic_meta_target {
                        const feature_set& build_request,
                        std::vector<basic_target*>* result,
                        feature_set* usage_requirements) const;
+      void clear_instantiation_cache();
 
       void set_explicit(bool v) { is_explicit_ = v; }
       bool is_explicit() const { return is_explicit_; }

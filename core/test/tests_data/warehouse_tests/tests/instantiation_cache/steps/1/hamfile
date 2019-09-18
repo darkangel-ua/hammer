@@ -1,0 +1,12 @@
+# test that after we download and install warehouse package
+# we actually prune all instantiation caches that might contain references
+# on unloaded warehouse projects.
+#
+# meta target 'proxy' will contain reference on /libA that would reference unloaded project
+# after we resolve & download & install dependencies
+
+exe test : main.cpp proxy ;
+
+explicit
+lib proxy : proxy.cpp /libA/<version>1.0 ;
+ 

@@ -1,0 +1,9 @@
+test {
+   main.cpp {}
+   proxy {
+       proxy.cpp {}
+       libA {
+          libA.cpp {}
+       }
+   }
+}

@@ -159,6 +159,7 @@ class project : public boost::noncopyable {
       void instantiate(const std::string& target_name,
                        const feature_set& build_request,
                        std::vector<basic_target*>* result) const;
+      void clear_instantiation_cache();
 
       bool operator == (const project& rhs) const { return this == &rhs; }
       bool operator != (const project& rhs) const { return !(*this == rhs); }

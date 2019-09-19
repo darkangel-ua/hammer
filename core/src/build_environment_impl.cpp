@@ -72,12 +72,12 @@ bool build_environment_impl::run_shell_commands(std::ostream* captured_output_st
 #else
       if (print_shell_commands_ && captured_output_stream)
          *captured_output_stream << fullcmd;
-
       auto shell_action_child = bp::child(bp::shell(),
                                           bp::std_in = boost::asio::buffer(fullcmd),
                                           bp::std_out > output_pipe,
                                           bp::std_err > error_pipe,
                                           bp::start_dir(working_dir),
+                                          bp::on_exit([](int, const std::error_code&){}),
                                           ioctx);
 #endif
 
@@ -133,7 +133,6 @@ bool build_environment_impl::run_shell_commands(std::ostream* captured_output_st
       error_thread();
 
       ioctx.run();
-      shell_action_child.wait();
 
       if (shell_action_child.exit_code() != 0)
 #if defined(_WIN32)

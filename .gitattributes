@@ -1,2 +1,10 @@
-*.ham text
+*       text=auto
+*.c     text
+*.cpp   text
+*.h     text
+*.ui    text
+
+*.ham   text
+hamfile text
+hamroot text
 instantiation.jcf text

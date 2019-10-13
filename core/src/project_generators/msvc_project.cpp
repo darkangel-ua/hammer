@@ -27,43 +27,45 @@
 
 using namespace std;
 
-namespace hammer{ namespace project_generators{
+namespace hammer { namespace project_generators {
 
 namespace
 {
-   class fake_environment : public build_environment
-   {
+   class fake_environment : public build_environment {
       public:
          fake_environment(const location_t& project_output_dir)
             : project_output_dir_(project_output_dir)
          {}
 
-         virtual ~fake_environment() {}
+         bool run_shell_commands(std::ostream* captured_output_stream,
+                                 std::ostream* captured_error_stream,
+                                 const std::vector<std::string>& cmds,
+                                 const location_t& working_dir) const override {
+            return true;
+         }
 
-         virtual bool run_shell_commands(const std::vector<std::string>& cmds, const location_t& working_dir) const { return true; }
-         virtual bool run_shell_commands(std::string& captured_output, const std::vector<std::string>& cmds, const location_t& working_dir) const { return true; }
-         virtual bool run_shell_commands(std::ostream& captured_output_stream, const std::vector<std::string>& cmds, const location_t& working_dir) const { return true; }
-         virtual bool run_shell_commands(std::ostream& captured_output_stream, std::ostream& captured_error_stream, const std::vector<std::string>& cmds, const location_t& working_dir) const { return true; }
-         virtual const location_t& current_directory() const { return project_output_dir_; }
-         virtual void create_directories(const location_t& dir_to_create) const {};
-         virtual void remove(const location_t& p) const {};
-         virtual void remove_file_by_pattern(const location_t& dir, const std::string& pattern) const {};
-         virtual void copy(const location_t& source, const location_t& destination) const {};
-         virtual bool write_tag_file(const std::string& filename, const std::string& content) const { return true; }
-         virtual std::unique_ptr<std::ostream> create_output_file(const char* filename, std::ios_base::openmode mode) const
-         {
+         const location_t& current_directory() const override { return project_output_dir_; }
+         void create_directories(const location_t& dir_to_create) const override {}
+         void remove(const location_t& p) const override  {}
+         void remove_file_by_pattern(const location_t& dir, const std::string& pattern) const override {}
+         void copy(const location_t& source, const location_t& destination) const override {}
+         bool write_tag_file(const std::string& filename, const std::string& content) const override  { return true; }
+
+         std::unique_ptr<std::ostream>
+         create_output_file(const char* filename,
+                            std::ios_base::openmode mode) const override {
             return std::unique_ptr<std::ostream>(new ostringstream);
          }
 
-         location_t working_directory(const basic_build_target& t) const override
-         {
+         location_t
+         working_directory(const basic_build_target& t) const override {
             return project_output_dir_;
          }
-         virtual std::ostream& output_stream() const { return std::cout; }
-         virtual std::ostream& error_stream() const { return std::cerr; }
 
-         const location_t* cache_directory() const { return nullptr; }
+         std::ostream& output_stream() const override { return std::cout; }
+         std::ostream& error_stream() const override { return std::cerr; }
 
+         const location_t* cache_directory() const override { return nullptr; }
 
       private:
          location_t project_output_dir_;

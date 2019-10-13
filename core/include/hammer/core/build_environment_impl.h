@@ -10,18 +10,6 @@ class build_environment_impl : public build_environment {
                              const bool print_shell_commands = false);
       ~build_environment_impl() override;
 
-      bool run_shell_commands(const std::vector<std::string>& cmds,
-		                        const location_t& working_dir) const override;
-      bool run_shell_commands(std::string& captured_output,
-		                        const std::vector<std::string>& cmds,
-		                        const location_t& working_dir) const override;
-		bool run_shell_commands(std::ostream& captured_output_stream,
-		                        const std::vector<std::string>& cmds,
-		                        const location_t& working_dir) const override;
-		bool run_shell_commands(std::ostream& captured_output_stream,
-		                        std::ostream& captured_error_stream,
-		                        const std::vector<std::string>& cmds,
-		                        const location_t& working_dir) const override;
 		const location_t& current_directory() const override;
       void create_directories(const location_t& dir_to_create) const override;
       void remove(const location_t& p) const override;

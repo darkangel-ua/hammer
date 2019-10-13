@@ -14,15 +14,25 @@ class build_environment : public boost::noncopyable {
    public:
       virtual ~build_environment() = default;
 
-      virtual bool run_shell_commands(const std::vector<std::string>& cmds, const location_t& working_dir) const = 0;
-      virtual bool run_shell_commands(std::string& captured_output, const std::vector<std::string>& cmds, const location_t& working_dir) const = 0;
-      virtual bool run_shell_commands(std::ostream& captured_output_stream,
-                                      const std::vector<std::string>& cmds,
-                                      const location_t& working_dir) const = 0;
-      virtual bool run_shell_commands(std::ostream& captured_output_stream,
-                                      std::ostream& captured_error_stream,
-                                      const std::vector<std::string>& cmds,
-                                      const location_t& working_dir) const = 0;
+      virtual
+      bool run_shell_commands(std::ostream* captured_output_stream,
+                              std::ostream* captured_error_stream,
+                              const std::vector<std::string>& cmds,
+                              const location_t& working_dir) const = 0;
+
+      bool run_shell_commands(const std::vector<std::string>& cmds,
+                              const location_t& working_dir) const;
+      bool run_shell_commands(std::string& captured_output,
+                              const std::vector<std::string>& cmds,
+                              const location_t& working_dir) const ;
+      bool run_shell_commands(std::ostream& captured_output_stream,
+                              const std::vector<std::string>& cmds,
+                              const location_t& working_dir) const;
+      bool run_shell_commands(std::ostream& captured_output_stream,
+                              std::ostream& captured_error_stream,
+                              const std::vector<std::string>& cmds,
+                              const location_t& working_dir) const;
+
       virtual const location_t& current_directory() const = 0;
       virtual void create_directories(const location_t& dir_to_create) const = 0;
       virtual void remove(const location_t& p) const = 0;

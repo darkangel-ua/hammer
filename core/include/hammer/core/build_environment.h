@@ -7,16 +7,12 @@
 #include <hammer/core/location.h>
 
 namespace hammer {
-namespace details { class buffered_output_environment; }
 
 class basic_build_target;
 
 class build_environment : public boost::noncopyable {
    public:
-      friend class ::hammer::details::buffered_output_environment;
-
-      build_environment();
-      virtual ~build_environment();
+      virtual ~build_environment() = default;
 
       virtual bool run_shell_commands(const std::vector<std::string>& cmds, const location_t& working_dir) const = 0;
       virtual bool run_shell_commands(std::string& captured_output, const std::vector<std::string>& cmds, const location_t& working_dir) const = 0;
@@ -41,13 +37,6 @@ class build_environment : public boost::noncopyable {
       // Returns directory where build process counterparts should save/load cashes
       // If returns null - caching is not allowed
       virtual const location_t* cache_directory() const = 0;
-
-   private:
-      struct impl_t;
-      mutable impl_t* impl_;
-
-      std::ostream& begin_use_output_stream() const;
-      void end_use_output_stream(std::ostream& s) const;
 };
 
 }

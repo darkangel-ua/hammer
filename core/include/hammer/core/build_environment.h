@@ -4,6 +4,7 @@
 #include <memory>
 #include <iosfwd>
 #include <boost/noncopyable.hpp>
+#include <boost/asio/io_context.hpp>
 #include <hammer/core/location.h>
 
 namespace hammer {
@@ -13,6 +14,11 @@ class basic_build_target;
 class build_environment : public boost::noncopyable {
    public:
       virtual ~build_environment() = default;
+
+      // this is main shell execution context because all shell activity
+      // must be non-concurrent to be safe
+      virtual
+      boost::asio::io_context& shell_executor() const = 0;
 
       virtual
       bool run_shell_commands(std::ostream* captured_output_stream,

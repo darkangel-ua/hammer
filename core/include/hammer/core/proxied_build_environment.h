@@ -8,6 +8,8 @@ class proxied_build_environment : public build_environment {
    public:
       proxied_build_environment(const build_environment& env) : env_(env) {}
 
+      boost::asio::io_context& shell_executor() const override { return env_.shell_executor(); }
+
       bool run_shell_commands(std::ostream* captured_output_stream,
                               std::ostream* captured_error_stream,
                               const std::vector<std::string>& cmds,

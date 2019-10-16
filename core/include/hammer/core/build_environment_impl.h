@@ -1,5 +1,7 @@
 #pragma once
 #include <memory>
+#include <thread>
+#include <boost/asio/executor_work_guard.hpp>
 #include <hammer/core/build_environment.h>
 
 namespace hammer {
@@ -33,6 +35,9 @@ class build_environment_impl : public build_environment {
       location_t cache_directory_;
       std::auto_ptr<std::ostream*> output_stream_;
       std::auto_ptr<std::ostream*> error_stream_;
+      mutable boost::asio::io_context shell_executor_;
+      boost::asio::executor_work_guard<boost::asio::io_context::executor_type> shell_executor_guard_;
+      std::thread shell_executor_thread_;
 
       // FIXME: need to find better name
       void dump_shell_command(std::ostream& s, const location_t& full_content_file_name) const;
@@ -40,6 +45,8 @@ class build_environment_impl : public build_environment {
                               std::ostream* captured_error_stream,
                               const std::vector<std::string>& cmds,
                               const location_t& working_dir) const;
+      virtual
+      boost::asio::io_context& shell_executor() const { return shell_executor_; }
 };
 
 }

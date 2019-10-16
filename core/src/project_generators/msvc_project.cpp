@@ -37,6 +37,10 @@ namespace
             : project_output_dir_(project_output_dir)
          {}
 
+         boost::asio::io_context& shell_executor() const override {
+            throw std::runtime_error("fake_environment::shell_executor must never be called");
+         }
+
          bool run_shell_commands(std::ostream* captured_output_stream,
                                  std::ostream* captured_error_stream,
                                  const std::vector<std::string>& cmds,

@@ -23,7 +23,7 @@ lib hammer.core
       /boost/multi_index
       /boost/iostreams
       /boost/serialization
-      /boost/asio
+      @/boost/asio
       /boost/pool
       /boost/thread
       /boost/range

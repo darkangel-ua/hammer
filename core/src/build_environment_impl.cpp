@@ -108,8 +108,8 @@ bool build_environment_impl::run_shell_commands(std::ostream* captured_output_st
                      captured_output_stream->write(outbuf.data(), transferred);
                      captured_output_stream->flush();
                   } else {
-                     std::cout.write(outbuf.data(), transferred);
-                     std::cout.flush();
+                     output_stream().write(outbuf.data(), transferred);
+                     output_stream().flush();
                   }
                }
 
@@ -126,16 +126,16 @@ bool build_environment_impl::run_shell_commands(std::ostream* captured_output_st
             error_pipe->async_read_some(boost::asio::buffer(errbuf), [&] (const boost::system::error_code& ec, std::size_t transferred) {
                if (transferred) {
                   if (!captured_error_stream) {
-                     std::cerr.write(errbuf.data(), transferred);
-                     std::cerr.flush();
+                     error_stream().write(errbuf.data(), transferred);
+                     error_stream().flush();
                   }
 
                   if (captured_error_stream) {
                      captured_error_stream->write(errbuf.data(), transferred);
                      captured_error_stream->flush();
                   } else {
-                     std::cout.write(errbuf.data(), transferred);
-                     std::cout.flush();
+                     output_stream().write(errbuf.data(), transferred);
+                     output_stream().flush();
                   }
                }
 

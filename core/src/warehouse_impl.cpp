@@ -864,6 +864,9 @@ void warehouse_impl::add_to_packages(const project& p)
    if (p.name().empty())
       throw std::runtime_error("Project must have id to be exported");
 
+   if (has_project(p.name(), p.publishable_version()))
+      throw std::runtime_error("Package '" + p.name() +"' v" + p.publishable_version() + " already exists in warehouse");
+
    const feature_set* build_request = p.get_engine().feature_registry().make_set();
    feature_set* project_requirements  = p.get_engine().feature_registry().make_set();
    p.local_requirements().eval(*build_request, project_requirements);

@@ -423,6 +423,11 @@ int handle_build_cmd(const std::vector<std::string>& args,
 
    auto build_request = resolve_build_request(*engine, build_options.build_request_, project_to_build);
 
+   if (build_request.target_ids_.empty() && project_to_build && project_to_build->targets().empty()) {
+      std::cout << "Nothing to build" << std::endl;
+      return 0;
+   }
+
    auto instantiator = [&] {
       auto resolved_targets = resolve_target_ids(*engine, project_to_build, build_request.target_ids_, *build_request.build_request_);
 

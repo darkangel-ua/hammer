@@ -20,18 +20,30 @@ int publish_current_package(engine& e,
                             warehouse& target_warehouse) {
    cout << "Publishing project at '" << fs::current_path().string() << "' ... " << flush;
 
-   if (!has_project_file(fs::current_path())) {
-      cout << "Failed (File not found)" << endl;
+   try {
+      // before we can publish package we need to ensure that remote doesn't have it already
+      // FIXME: this should be only for local warehouses
+      target_warehouse.update();
 
-      return 1;
+      if (!has_project_file(fs::current_path())) {
+         cout << "Failed (File not found)" << endl;
+
+         return 1;
+      }
+
+      const project& project_to_publish = e.load_project(fs::current_path());
+
+      // before we can publish package we need to ensure that remote doesn't have it already
+      target_warehouse.update();
+
+      target_warehouse.add_to_packages(project_to_publish);
+      cout << "Done\n" << endl;
+
+      return 0;
+   } catch (const std::exception& e) {
+      std::cout << "Failed" << std::endl << "Error: " << e.what() << std::endl;
+      return -1;
    }
-
-   const project& project_to_publish = e.load_project(fs::current_path());
-   target_warehouse.add_to_packages(project_to_publish);
-
-   cout << "Done\n" << endl;
-
-   return 0;
 }
 
 int handle_publish_cmd(engine& e,
@@ -55,6 +67,10 @@ int handle_publish_cmd(engine& e,
       cout << "Nothing to publish - query didn't match any of existing projects\n" << endl;
       return 0;
    }
+
+   // before we can publish package we need to ensure that remote doesn't have it already
+   // FIXME: this should be only for local warehouses
+   target_warehouse.update();
 
    decltype(all_matched_projects) projects_to_publish;
 

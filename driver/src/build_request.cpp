@@ -1,3 +1,4 @@
+#include <cassert>
 #include <boost/regex.hpp>
 #include <hammer/core/feature.h>
 #include <hammer/core/project.h>
@@ -172,6 +173,8 @@ resolve_build_request(hammer::engine& e,
 
    if (result.build_request_->find("target-os") == result.build_request_->end())
       result.build_request_->join("target-os", fr.get_def("target-os").get_defaults().front().value_.c_str());
+
+   assert(result.build_request_->find("toolset") != result.build_request_->end());
 
    return result;
 }
